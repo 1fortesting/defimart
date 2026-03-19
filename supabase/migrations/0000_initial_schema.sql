@@ -1,120 +1,128 @@
--- Create custom types
-CREATE TYPE public.order_status AS ENUM ('pending', 'ready', 'completed');
-
--- Create profiles table
-CREATE TABLE public.profiles (
-    id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    display_name text,
-    avatar_url text,
-    phone_number text,
-    PRIMARY KEY (id)
+-- Create Profiles Table
+create table public.profiles (
+  id uuid references auth.users on delete cascade not null primary key,
+  display_name text,
+  avatar_url text,
+  phone_number text
 );
-
--- RLS for profiles
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Public profiles are viewable by everyone." ON public.profiles FOR SELECT USING (true);
-CREATE POLICY "Users can insert their own profile." ON public.profiles FOR INSERT WITH CHECK (auth.uid() = id);
-CREATE POLICY "Users can update their own profile." ON public.profiles FOR UPDATE USING (auth.uid() = id);
+-- Allow public read access
+alter table public.profiles enable row level security;
+create policy "Public profiles are viewable by everyone." on public.profiles for select using (true);
+create policy "Users can insert their own profile." on public.profiles for insert with check (auth.uid() = id);
+create policy "Users can update their own profile." on public.profiles for update using (auth.uid() = id);
 
 -- Function to create a profile for a new user
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER SET search_path = public
-AS $$
-BEGIN
-  INSERT INTO public.profiles (id, display_name, phone_number)
-  VALUES (new.id, new.raw_user_meta_data->>'display_name', new.raw_user_meta_data->>'phone_number');
-  RETURN new;
-END;
+create function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.profiles (id, display_name, phone_number, avatar_url)
+  values (
+    new.id,
+    new.raw_user_meta_data->>'display_name',
+    new.raw_user_meta_data->>'phone_number',
+    new.raw_user_meta_data->>'avatar_url'
+  );
+  return new;
+end;
 $$;
 
--- Trigger to call the function when a new user is created
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+-- Trigger to call the function on new user signup
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
 
--- Create products table
-CREATE TABLE public.products (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    name text NOT NULL,
-    description text,
-    price numeric NOT NULL,
-    image_urls text[],
-    seller_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    PRIMARY KEY (id)
+-- Storage Bucket for Product Images
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('product_images', 'product_images', true, 5242880, ARRAY['image/jpeg','image/png','image/gif','image/webp']);
+
+create policy "Product images are publicly accessible." on storage.objects for select using (bucket_id = 'product_images');
+create policy "Authenticated users can upload product images." on storage.objects for insert to authenticated with check (bucket_id = 'product_images');
+create policy "Users can update their own product images." on storage.objects for update using (auth.uid() = owner) with check (bucket_id = 'product_images');
+create policy "Users can delete their own product images." on storage.objects for delete using (auth.uid() = owner);
+
+
+-- Create Products Table
+create table public.products (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamptz default now() not null,
+  name text not null,
+  description text,
+  price real not null,
+  image_urls text[],
+  seller_id uuid references public.profiles on delete cascade not null
 );
 
 -- RLS for products
-ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Products are viewable by everyone." ON public.products FOR SELECT USING (true);
-CREATE POLICY "Users can create products." ON public.products FOR INSERT WITH CHECK (auth.uid() = seller_id);
-CREATE POLICY "Users can update their own products." ON public.products FOR UPDATE USING (auth.uid() = seller_id);
-CREATE POLICY "Users can delete their own products." ON public.products FOR DELETE USING (auth.uid() = seller_id);
+alter table public.products enable row level security;
+create policy "Products are viewable by everyone." on public.products for select using (true);
+create policy "Users can insert their own products." on public.products for insert with check (auth.uid() = seller_id);
+create policy "Users can update their own products." on public.products for update using (auth.uid() = seller_id);
+create policy "Users can delete their own products." on public.products for delete using (auth.uid() = seller_id);
 
--- Create orders table
-CREATE TABLE public.orders (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    product_id uuid NOT NULL REFERENCES public.products(id),
-    buyer_id uuid NOT NULL REFERENCES public.profiles(id),
-    seller_id uuid NOT NULL REFERENCES public.profiles(id),
-    quantity int NOT NULL,
-    status public.order_status NOT NULL DEFAULT 'pending',
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    PRIMARY KEY (id)
+
+-- Create Order Status Enum
+create type public.order_status as enum ('pending', 'ready', 'completed');
+
+-- Create Orders Table
+create table public.orders (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamptz default now() not null,
+  product_id uuid references public.products not null,
+  buyer_id uuid references public.profiles on delete cascade not null,
+  seller_id uuid references public.profiles on delete cascade not null,
+  quantity integer not null,
+  status public.order_status default 'pending' not null
 );
 
 -- RLS for orders
-ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Buyer or seller can view their orders." ON public.orders FOR SELECT USING (auth.uid() = buyer_id OR auth.uid() = seller_id);
-CREATE POLICY "Buyers can create orders." ON public.orders FOR INSERT WITH CHECK (auth.uid() = buyer_id);
-CREATE POLICY "Sellers can update order status." ON public.orders FOR UPDATE USING (auth.uid() = seller_id) WITH CHECK (auth.uid() = seller_id);
+alter table public.orders enable row level security;
+create policy "Buyers and sellers can view their orders." on public.orders for select using (auth.uid() = buyer_id or auth.uid() = seller_id);
+create policy "Buyers can create orders." on public.orders for insert with check (auth.uid() = buyer_id);
+create policy "Sellers can update order status." on public.orders for update using (auth.uid() = seller_id) with check (auth.uid() = seller_id);
 
--- Create conversations table
-CREATE TABLE public.conversations (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
-    buyer_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    seller_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    UNIQUE (product_id, buyer_id),
-    PRIMARY KEY (id)
+
+-- Create Conversations Table
+create table public.conversations (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamptz default now() not null,
+  product_id uuid references public.products on delete cascade not null,
+  buyer_id uuid references public.profiles on delete cascade not null,
+  seller_id uuid references public.profiles on delete cascade not null
 );
-
 -- RLS for conversations
-ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Participants can view conversations." ON public.conversations FOR SELECT USING (auth.uid() = buyer_id OR auth.uid() = seller_id);
-CREATE POLICY "Buyers can initiate conversations." ON public.conversations FOR INSERT WITH CHECK (auth.uid() = buyer_id);
+alter table public.conversations enable row level security;
+create policy "Participants can view their conversations." on public.conversations for select using (auth.uid() = buyer_id or auth.uid() = seller_id);
+create policy "Participants can create conversations." on public.conversations for insert with check (auth.uid() = buyer_id or auth.uid() = seller_id);
 
--- Create messages table
-CREATE TABLE public.messages (
-    id uuid NOT NULL DEFAULT gen_random_uuid(),
-    conversation_id uuid NOT NULL REFERENCES public.conversations(id) ON DELETE CASCADE,
-    sender_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    content text NOT NULL,
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    PRIMARY KEY (id)
+
+-- Create Messages Table
+create table public.messages (
+  id uuid default gen_random_uuid() primary key,
+  created_at timestamptz default now() not null,
+  conversation_id uuid references public.conversations on delete cascade not null,
+  sender_id uuid references public.profiles on delete cascade not null,
+  content text not null
 );
 
 -- RLS for messages
-ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Participants can view messages." ON public.messages FOR SELECT USING (
-    EXISTS (
-        SELECT 1
-        FROM public.conversations
-        WHERE conversations.id = messages.conversation_id AND (conversations.buyer_id = auth.uid() OR conversations.seller_id = auth.uid())
-    )
+alter table public.messages enable row level security;
+create policy "Participants can view messages in their conversations." on public.messages for select using (
+  exists (
+    select 1
+    from public.conversations
+    where public.conversations.id = messages.conversation_id
+    and (public.conversations.buyer_id = auth.uid() or public.conversations.seller_id = auth.uid())
+  )
 );
-CREATE POLICY "Participants can send messages." ON public.messages FOR INSERT WITH CHECK (
-    EXISTS (
-        SELECT 1
-        FROM public.conversations
-        WHERE conversations.id = messages.conversation_id AND (conversations.buyer_id = auth.uid() OR conversations.seller_id = auth.uid())
-    ) AND sender_id = auth.uid()
+create policy "Participants can send messages in their conversations." on public.messages for insert with check (
+  sender_id = auth.uid() and
+  exists (
+    select 1
+    from public.conversations
+    where public.conversations.id = messages.conversation_id
+    and (public.conversations.buyer_id = auth.uid() or public.conversations.seller_id = auth.uid())
+  )
 );
-
--- Enable realtime on tables
-ALTER PUBLICATION supabase_realtime ADD TABLE public.conversations;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.orders;
