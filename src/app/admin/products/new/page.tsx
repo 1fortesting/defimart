@@ -7,13 +7,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
-import React, { useActionState, useState, useEffect } from 'react';
+import React, { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { regions, municipalities } from '@/lib/locations';
-import { createClient } from '@/lib/supabase/client';
-import type { Tables } from '@/types/supabase';
+
+const categories = [
+    "Electronics",
+    "Fashion",
+    "Home & Kitchen",
+    "Books",
+    "Sports & Outdoors",
+    "Health & Beauty",
+    "Toys & Games",
+    "Automotive",
+    "Services",
+    "Other"
+];
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -26,19 +36,6 @@ export default function NewProductPage() {
     const initialState = { message: null, errors: {} };
     const [state, dispatch] = useActionState(createProduct, initialState);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [selectedRegion, setSelectedRegion] = useState<string>("");
-    const [categories, setCategories] = useState<Tables<'categories'>[]>([]);
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            const supabase = createClient();
-            const { data } = await supabase.from('categories').select('*');
-            if (data) {
-                setCategories(data);
-            }
-        };
-        fetchCategories();
-    }, []);
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -78,44 +75,18 @@ export default function NewProductPage() {
                     {state.errors?.quantity && <p className="text-sm text-red-500">{state.errors.quantity[0]}</p>}
                 </div>
                  <div className="grid gap-3">
-                    <Label htmlFor="category_id">Category</Label>
-                    <Select name="category_id">
+                    <Label htmlFor="category">Category</Label>
+                    <Select name="category">
                         <SelectTrigger>
                             <SelectValue placeholder="Select Category" />
                         </SelectTrigger>
                         <SelectContent>
                             {categories.map(category => (
-                                <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                                <SelectItem key={category} value={category}>{category}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-                     {state.errors?.category_id && <p className="text-sm text-red-500">{state.errors.category_id[0]}</p>}
-                </div>
-                <div className="grid gap-3">
-                    <Label htmlFor="region">Region</Label>
-                    <Select name="region" onValueChange={setSelectedRegion}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select Region" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {regions.map(region => (
-                                <SelectItem key={region} value={region}>{region}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="grid gap-3">
-                    <Label htmlFor="municipality">Municipality/District</Label>
-                     <Select name="municipality" disabled={!selectedRegion}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select Municipality" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {selectedRegion && municipalities[selectedRegion]?.map(muni => (
-                                <SelectItem key={muni} value={muni}>{muni}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                     {state.errors?.category && <p className="text-sm text-red-500">{state.errors.category[0]}</p>}
                 </div>
             </div>
             <div className="grid gap-3">
@@ -141,5 +112,3 @@ export default function NewProductPage() {
     </Card>
   );
 }
-
-    

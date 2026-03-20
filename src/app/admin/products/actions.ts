@@ -10,9 +10,7 @@ const ProductSchema = z.object({
   description: z.string().optional(),
   price: z.coerce.number().min(0, 'Price must be non-negative'),
   quantity: z.coerce.number().int().min(0, 'Quantity must be a non-negative integer'),
-  category_id: z.string().optional(),
-  region: z.string().optional(),
-  municipality: z.string().optional(),
+  category: z.string().optional(),
   image: z
     .any()
     .refine((file) => file?.size > 0, 'Image is required.')
@@ -36,9 +34,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     description: formData.get('description'),
     price: formData.get('price'),
     quantity: formData.get('quantity'),
-    category_id: formData.get('category_id'),
-    region: formData.get('region'),
-    municipality: formData.get('municipality'),
+    category: formData.get('category'),
     image: formData.get('image'),
   });
 
@@ -49,7 +45,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     };
   }
   
-  const { name, description, price, quantity, category_id, region, municipality, image } = validatedFields.data;
+  const { name, description, price, quantity, category, image } = validatedFields.data;
 
   const imageFile = image as File;
   const fileName = `${Date.now()}-${imageFile.name}`;
@@ -70,9 +66,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     description,
     price,
     quantity,
-    category_id: category_id || null,
-    region,
-    municipality,
+    category: category || null,
     image_urls: [publicUrl],
     seller_id: user.id
   });

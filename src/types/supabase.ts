@@ -48,24 +48,6 @@ export type Database = {
           },
         ]
       }
-      categories: {
-        Row: {
-          created_at: string
-          id: string
-          name: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
       conversations: {
         Row: {
           buyer_id: string
@@ -212,9 +194,7 @@ export type Database = {
           name: string
           price: number
           seller_id: string
-          region: string | null
-          municipality: string | null
-          category_id: string | null
+          category: string | null
           quantity: number | null
         }
         Insert: {
@@ -225,9 +205,7 @@ export type Database = {
           name: string
           price: number
           seller_id: string
-          region?: string | null
-          municipality?: string | null
-          category_id?: string | null
+          category?: string | null
           quantity?: number | null
         }
         Update: {
@@ -238,9 +216,7 @@ export type Database = {
           name?: string
           price?: number
           seller_id?: string
-          region?: string | null
-          municipality?: string | null
-          category_id?: string | null
+          category?: string | null
           quantity?: number | null
         }
         Relationships: [
@@ -249,13 +225,6 @@ export type Database = {
             columns: ["seller_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "products_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
             referencedColumns: ["id"]
           }
         ]

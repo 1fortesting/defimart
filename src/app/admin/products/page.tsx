@@ -14,11 +14,7 @@ import {
 import { deleteProduct } from './actions';
 import { Tables } from '@/types/supabase';
 
-type ProductWithCategory = Tables<'products'> & {
-  categories: { name: string } | null;
-};
-
-const ProductRow = ({ product }: { product: ProductWithCategory }) => {
+const ProductRow = ({ product }: { product: Tables<'products'> }) => {
   return (
     <TableRow>
       <TableCell>
@@ -31,7 +27,7 @@ const ProductRow = ({ product }: { product: ProductWithCategory }) => {
         />
       </TableCell>
       <TableCell className="font-medium">{product.name}</TableCell>
-      <TableCell>{product.categories?.name ?? 'N/A'}</TableCell>
+      <TableCell>{product.category ?? 'N/A'}</TableCell>
       <TableCell>GHS {product.price.toFixed(2)}</TableCell>
       <TableCell>{product.quantity ?? 'N/A'}</TableCell>
       <TableCell className="hidden md:table-cell">{new Date(product.created_at).toLocaleDateString()}</TableCell>
@@ -65,9 +61,9 @@ export default async function AdminProductsPage() {
 
   const { data: products } = await supabase
     .from('products')
-    .select('*, categories(name)')
+    .select('*')
     .order('created_at', { ascending: false })
-    .returns<ProductWithCategory[]>();
+    .returns<Tables<'products'>[]>();
 
   return (
     <div>
