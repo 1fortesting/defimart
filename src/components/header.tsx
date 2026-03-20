@@ -30,7 +30,7 @@ export async function Header() {
   }
 
   return (
-    <header className="bg-card border-b p-4 flex flex-col gap-2">
+    <header className="bg-background border-b p-4 flex flex-col gap-2">
       {/* Desktop Header */}
       <div className="hidden md:flex justify-between items-center gap-4">
         <div className="font-bold text-3xl text-primary tracking-tight">

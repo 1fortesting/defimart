@@ -15,7 +15,7 @@ export async function BottomNav() {
   }
 
   return (
-    <header className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t p-1 z-50">
+    <header className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t p-1 z-50">
       <HeaderNav cartItemCount={cartItemCount} isMobile={true} />
     </header>
   );
