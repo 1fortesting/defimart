@@ -6,6 +6,7 @@ import {
   Search,
   Menu,
   ShoppingCart,
+  User,
 } from 'lucide-react';
 import { HeaderNav } from './header-nav';
 import Image from 'next/image';
@@ -14,6 +15,7 @@ import { Badge } from './ui/badge';
 import { UserMenu } from './user-menu';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ThemeToggle } from './theme-toggle';
+import { logout } from '@/app/auth/actions';
 
 export async function Header() {
   const supabase = createClient();
