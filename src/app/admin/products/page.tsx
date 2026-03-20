@@ -2,13 +2,16 @@ import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Tag } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Tables } from '@/types/supabase';
 import { ProductActions } from './product-actions';
+import { Badge } from '@/components/ui/badge';
 
 const ProductRow = ({ product }: { product: Tables<'products'> }) => {
+  const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
+
   return (
     <TableRow>
       <TableCell className="hidden sm:table-cell">
@@ -24,6 +27,16 @@ const ProductRow = ({ product }: { product: Tables<'products'> }) => {
       <TableCell>{product.category ?? 'N/A'}</TableCell>
       <TableCell>GHS {product.price.toFixed(2)}</TableCell>
       <TableCell>{product.quantity ?? 'N/A'}</TableCell>
+      <TableCell>
+        {isDiscountActive ? (
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <Tag className="h-3 w-3" />
+            {product.discount_percentage}%
+          </Badge>
+        ) : (
+          '-'
+        )}
+      </TableCell>
       <TableCell className="hidden md:table-cell">{new Date(product.created_at).toLocaleDateString()}</TableCell>
       <TableCell>
         <ProductActions product={product} />
@@ -66,6 +79,7 @@ export default async function AdminProductsPage() {
                 <TableHead>Category</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Quantity</TableHead>
+                <TableHead>Discount</TableHead>
                 <TableHead className="hidden md:table-cell">Created at</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
@@ -78,7 +92,7 @@ export default async function AdminProductsPage() {
               ))}
                {!products || products.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">No products found.</TableCell>
+                    <TableCell colSpan={8} className="text-center">No products found.</TableCell>
                   </TableRow>
                 )}
             </TableBody>

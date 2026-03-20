@@ -196,6 +196,8 @@ export type Database = {
           seller_id: string
           category: string | null
           quantity: number | null
+          discount_percentage: number | null
+          discount_end_date: string | null
         }
         Insert: {
           created_at?: string
@@ -207,6 +209,8 @@ export type Database = {
           seller_id: string
           category?: string | null
           quantity?: number | null
+          discount_percentage?: number | null
+          discount_end_date?: string | null
         }
         Update: {
           created_at?: string
@@ -218,6 +222,8 @@ export type Database = {
           seller_id?: string
           category?: string | null
           quantity?: number | null
+          discount_percentage?: number | null
+          discount_end_date?: string | null
         }
         Relationships: [
           {

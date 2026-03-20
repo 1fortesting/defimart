@@ -1,6 +1,6 @@
 'use client'
 
-import { createProduct } from '../actions';
+import { updateProduct } from '../../actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,8 @@ import React, { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tables } from '@/types/supabase';
+import { format } from 'date-fns';
 
 const categories = [
     "Electronics",
@@ -28,13 +30,13 @@ const categories = [
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>{pending ? 'Creating...' : 'Create Product'}</Button>
+    <Button type="submit" disabled={pending}>{pending ? 'Saving...' : 'Save Changes'}</Button>
   );
 }
 
-export default function NewProductPage() {
+export function EditProductForm({ product }: { product: Tables<'products'>}) {
     const initialState = { message: null, errors: {} };
-    const [state, dispatch] = useActionState(createProduct, initialState);
+    const [state, dispatch] = useActionState(updateProduct, initialState);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,13 +47,16 @@ export default function NewProductPage() {
         setImagePreview(null);
       }
     };
+    
+    const defaultEndDate = product.discount_end_date ? format(new Date(product.discount_end_date), "yyyy-MM-dd'T'HH:mm") : '';
 
   return (
     <form action={dispatch} className="grid flex-1 items-start gap-4 sm:py-0 md:gap-8">
+      <input type="hidden" name="id" value={product.id} />
       <div className="mx-auto grid max-w-5xl flex-1 auto-rows-max gap-4">
         <div className="flex items-center gap-4">
            <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-            Add New Product
+            Edit Product
           </h1>
           <div className="hidden items-center gap-2 md:ml-auto md:flex">
              <Button variant="outline" asChild>
@@ -72,12 +77,12 @@ export default function NewProductPage() {
                     <CardContent className="grid gap-6">
                         <div className="grid gap-3">
                             <Label htmlFor="name">Name</Label>
-                            <Input id="name" name="name" type="text" className="w-full" required />
+                            <Input id="name" name="name" type="text" className="w-full" defaultValue={product.name} required />
                             {state.errors?.name && <p className="text-sm text-red-500">{state.errors.name[0]}</p>}
                         </div>
                         <div className="grid gap-3">
                             <Label htmlFor="description">Description</Label>
-                            <Textarea id="description" name="description" className="min-h-32" />
+                            <Textarea id="description" name="description" className="min-h-32" defaultValue={product.description || ''} />
                         </div>
                     </CardContent>
                 </Card>
@@ -88,12 +93,12 @@ export default function NewProductPage() {
                     <CardContent className="grid gap-6 md:grid-cols-2">
                         <div className="grid gap-3">
                             <Label htmlFor="price">Price (GHS)</Label>
-                            <Input id="price" name="price" type="number" step="0.01" required />
+                            <Input id="price" name="price" type="number" step="0.01" defaultValue={product.price} required />
                             {state.errors?.price && <p className="text-sm text-red-500">{state.errors.price[0]}</p>}
                         </div>
                         <div className="grid gap-3">
                             <Label htmlFor="quantity">Quantity</Label>
-                            <Input id="quantity" name="quantity" type="number" min="0" required />
+                            <Input id="quantity" name="quantity" type="number" min="0" defaultValue={product.quantity || 0} required />
                             {state.errors?.quantity && <p className="text-sm text-red-500">{state.errors.quantity[0]}</p>}
                         </div>
                     </CardContent>
@@ -108,12 +113,12 @@ export default function NewProductPage() {
                     <CardContent className="grid gap-6 md:grid-cols-2">
                         <div className="grid gap-3">
                             <Label htmlFor="discount_percentage">Discount (%)</Label>
-                            <Input id="discount_percentage" name="discount_percentage" type="number" step="0.1" min="0" max="100" />
+                            <Input id="discount_percentage" name="discount_percentage" type="number" step="0.1" min="0" max="100" defaultValue={product.discount_percentage || ''} />
                             {state.errors?.discount_percentage && <p className="text-sm text-red-500">{state.errors.discount_percentage[0]}</p>}
                         </div>
                         <div className="grid gap-3">
                             <Label htmlFor="discount_end_date">Discount End Date</Label>
-                            <Input id="discount_end_date" name="discount_end_date" type="datetime-local" />
+                            <Input id="discount_end_date" name="discount_end_date" type="datetime-local" defaultValue={defaultEndDate} />
                              {state.errors?.discount_end_date && <p className="text-sm text-red-500">{state.errors.discount_end_date[0]}</p>}
                         </div>
                     </CardContent>
@@ -125,7 +130,7 @@ export default function NewProductPage() {
                         <CardTitle>Category</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Select name="category">
+                        <Select name="category" defaultValue={product.category || undefined}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select Category" />
                             </SelectTrigger>
@@ -143,13 +148,11 @@ export default function NewProductPage() {
                         <CardTitle>Product Image</CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-4">
-                        <Input id="image" name="image" type="file" accept="image/*" required onChange={handleImageChange} className="w-full"/>
+                        <Input id="image" name="image" type="file" accept="image/*" onChange={handleImageChange} className="w-full"/>
                         {state.errors?.image && <p className="text-sm text-red-500">{state.errors.image[0]}</p>}
-                        {imagePreview && (
-                            <div className="mt-2">
-                            <Image src={imagePreview} alt="Image Preview" width={200} height={200} className="w-full aspect-square rounded-md object-cover" />
-                            </div>
-                        )}
+                        <div className="mt-2">
+                           <Image src={imagePreview || product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'} alt="Image Preview" width={200} height={200} className="w-full aspect-square rounded-md object-cover" />
+                        </div>
                     </CardContent>
                 </Card>
              </div>
