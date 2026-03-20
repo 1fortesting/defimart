@@ -7,11 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
-import React, { useActionState, useState } from 'react';
+import React, { useActionState, useState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { regions, municipalities } from '@/lib/locations';
+import { createClient } from '@/lib/supabase/client';
+import type { Tables } from '@/types/supabase';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -25,6 +27,18 @@ export default function NewProductPage() {
     const [state, dispatch] = useActionState(createProduct, initialState);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [selectedRegion, setSelectedRegion] = useState<string>("");
+    const [categories, setCategories] = useState<Tables<'categories'>[]>([]);
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const supabase = createClient();
+            const { data } = await supabase.from('categories').select('*');
+            if (data) {
+                setCategories(data);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -57,6 +71,25 @@ export default function NewProductPage() {
                     <Label htmlFor="price">Price (GHS)</Label>
                     <Input id="price" name="price" type="number" step="0.01" required />
                     {state.errors?.price && <p className="text-sm text-red-500">{state.errors.price[0]}</p>}
+                </div>
+                 <div className="grid gap-3">
+                    <Label htmlFor="quantity">Quantity</Label>
+                    <Input id="quantity" name="quantity" type="number" min="0" required />
+                    {state.errors?.quantity && <p className="text-sm text-red-500">{state.errors.quantity[0]}</p>}
+                </div>
+                 <div className="grid gap-3">
+                    <Label htmlFor="category_id">Category</Label>
+                    <Select name="category_id">
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {categories.map(category => (
+                                <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                     {state.errors?.category_id && <p className="text-sm text-red-500">{state.errors.category_id[0]}</p>}
                 </div>
                 <div className="grid gap-3">
                     <Label htmlFor="region">Region</Label>
@@ -108,3 +141,5 @@ export default function NewProductPage() {
     </Card>
   );
 }
+
+    

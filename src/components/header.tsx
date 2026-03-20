@@ -66,7 +66,11 @@ export async function Header() {
           )}
         </div>
       </div>
-      <HeaderNav cartItemCount={cartItemCount} />
+      <div className="hidden md:flex justify-center">
+        <HeaderNav cartItemCount={cartItemCount} />
+      </div>
     </header>
   );
 }
+
+    

@@ -30,6 +30,7 @@ const ProductRow = ({ product }: { product: Tables<'products'> }) => {
       </TableCell>
       <TableCell className="font-medium">{product.name}</TableCell>
       <TableCell>GHS {product.price.toFixed(2)}</TableCell>
+      <TableCell>{product.quantity ?? 'N/A'}</TableCell>
       <TableCell className="hidden md:table-cell">{new Date(product.created_at).toLocaleDateString()}</TableCell>
       <TableCell>
         <DropdownMenu>
@@ -86,6 +87,7 @@ export default async function AdminProductsPage() {
                 </TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Price</TableHead>
+                <TableHead>Quantity</TableHead>
                 <TableHead className="hidden md:table-cell">Created at</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
@@ -98,7 +100,7 @@ export default async function AdminProductsPage() {
               ))}
                {!products || products.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">No products found.</TableCell>
+                    <TableCell colSpan={6} className="text-center">No products found.</TableCell>
                   </TableRow>
                 )}
             </TableBody>
@@ -108,3 +110,5 @@ export default async function AdminProductsPage() {
     </div>
   );
 }
+
+    

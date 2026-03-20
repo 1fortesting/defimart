@@ -215,6 +215,7 @@ export type Database = {
           region: string | null
           municipality: string | null
           category_id: string | null
+          quantity: number | null
         }
         Insert: {
           created_at?: string
@@ -227,6 +228,7 @@ export type Database = {
           region?: string | null
           municipality?: string | null
           category_id?: string | null
+          quantity?: number | null
         }
         Update: {
           created_at?: string
@@ -239,6 +241,7 @@ export type Database = {
           region?: string | null
           municipality?: string | null
           category_id?: string | null
+          quantity?: number | null
         }
         Relationships: [
           {
@@ -417,3 +420,5 @@ export type Enums<
   : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
     ? Database["public"]["Enums"][PublicEnumNameOrOptions]
     : never
+
+    

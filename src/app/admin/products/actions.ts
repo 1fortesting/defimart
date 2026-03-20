@@ -9,6 +9,8 @@ const ProductSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
   price: z.coerce.number().min(0, 'Price must be non-negative'),
+  quantity: z.coerce.number().int().min(0, 'Quantity must be a non-negative integer'),
+  category_id: z.string().optional(),
   region: z.string().optional(),
   municipality: z.string().optional(),
   image: z
@@ -33,6 +35,8 @@ export async function createProduct(prevState: any, formData: FormData) {
     name: formData.get('name'),
     description: formData.get('description'),
     price: formData.get('price'),
+    quantity: formData.get('quantity'),
+    category_id: formData.get('category_id'),
     region: formData.get('region'),
     municipality: formData.get('municipality'),
     image: formData.get('image'),
@@ -45,7 +49,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     };
   }
   
-  const { name, description, price, region, municipality, image } = validatedFields.data;
+  const { name, description, price, quantity, category_id, region, municipality, image } = validatedFields.data;
 
   const imageFile = image as File;
   const fileName = `${Date.now()}-${imageFile.name}`;
@@ -65,6 +69,8 @@ export async function createProduct(prevState: any, formData: FormData) {
     name,
     description,
     price,
+    quantity,
+    category_id: category_id || null,
     region,
     municipality,
     image_urls: [publicUrl],
@@ -96,3 +102,5 @@ export async function deleteProduct(formData: FormData) {
     revalidatePath('/admin/products');
     revalidatePath('/');
 }
+
+    
