@@ -17,9 +17,6 @@ const Header = ({ user }: { user: any }) => (
       <Button variant="link" asChild>
         <Link href="/orders">My Orders</Link>
       </Button>
-      <Button variant="link" asChild>
-        <Link href="/admin">Admin</Link>
-      </Button>
       <span className="text-sm text-muted-foreground">
         Welcome, {user.user_metadata?.display_name || user.email}
       </span>

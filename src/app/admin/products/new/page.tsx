@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
-import { useFormState } from 'react-dom';
+import { useFormState, useFormStatus } from 'react-dom';
 
 function SubmitButton() {
+  const { pending } = useFormStatus();
   return (
-    <Button type="submit">Create Product</Button>
+    <Button type="submit" disabled={pending}>{pending ? 'Creating...' : 'Create Product'}</Button>
   );
 }
 
@@ -42,11 +43,9 @@ export default function NewProductPage() {
               {state.errors?.price && <p className="text-sm text-red-500">{state.errors.price[0]}</p>}
             </div>
             <div className="grid gap-3">
-              <Label htmlFor="image_urls">Image URLs</Label>
-               <Input id="image_urls" name="image_urls" type="text" placeholder="e.g. url1, url2" />
-               <p className="text-xs text-muted-foreground">
-                Provide comma-separated URLs for product images.
-              </p>
+              <Label htmlFor="image">Product Image</Label>
+              <Input id="image" name="image" type="file" accept="image/*" required />
+              {state.errors?.image && <p className="text-sm text-red-500">{state.errors.image[0]}</p>}
             </div>
             <div className="flex justify-end gap-2">
                 <Button variant="outline" asChild>

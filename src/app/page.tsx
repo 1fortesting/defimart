@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { logout } from './auth/actions';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -13,25 +12,35 @@ const Header = ({ user }: { user: any }) => (
       <Link href="/">DEFIMART</Link>
     </div>
     <div className="flex items-center gap-4">
-      <Button variant="link" asChild>
-        <Link href="/orders">My Orders</Link>
-      </Button>
-      <Button variant="link" asChild>
-        <Link href="/admin">Admin</Link>
-      </Button>
-      <span className="text-sm text-muted-foreground">
-        Welcome, {user.user_metadata?.display_name || user.email}
-      </span>
-      <form action={logout}>
-        <Button variant="outline" size="sm">
-          Logout
-        </Button>
-      </form>
+    {user ? (
+        <>
+          <Button variant="link" asChild>
+            <Link href="/orders">My Orders</Link>
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Welcome, {user.user_metadata?.display_name || user.email}
+          </span>
+          <form action={logout}>
+            <Button variant="outline" size="sm">
+              Logout
+            </Button>
+          </form>
+        </>
+      ) : (
+        <>
+          <Button variant="ghost" asChild>
+            <Link href="/login">Login</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/signup">Sign Up</Link>
+          </Button>
+        </>
+      )}
     </div>
   </header>
 );
 
-const ProductCard = ({ product }: { product: Tables<'products'> }) => (
+const ProductCard = ({ product, user }: { product: Tables<'products'>; user: any }) => (
     <Card className="overflow-hidden">
         <CardHeader className="p-0">
             <Image
@@ -48,7 +57,13 @@ const ProductCard = ({ product }: { product: Tables<'products'> }) => (
             <p className="text-sm text-muted-foreground h-10 overflow-hidden text-ellipsis">{product.description}</p>
             <div className="flex items-center justify-between mt-4">
                 <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
-                <Button>Buy Now</Button>
+                 {user ? (
+                    <Button>Buy Now</Button>
+                ) : (
+                    <Button asChild>
+                        <Link href="/login">Buy Now</Link>
+                    </Button>
+                )}
             </div>
         </CardContent>
     </Card>
@@ -61,10 +76,6 @@ export default async function Home() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return redirect('/login');
-  }
-
   const { data: products } = await supabase.from('products').select('*');
 
   return (
@@ -74,7 +85,7 @@ export default async function Home() {
         <h1 className="text-3xl font-bold mb-8">All Products</h1>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products?.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} user={user} />
           ))}
         </div>
       </main>

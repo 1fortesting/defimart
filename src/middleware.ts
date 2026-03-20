@@ -60,13 +60,19 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Protect root and other app routes
-  if (!user && !pathname.startsWith('/login') && !pathname.startsWith('/signup')) {
+  // Publicly accessible routes
+  const publicRoutes = ['/login', '/signup'];
+
+  if (pathname === '/') {
+    return response;
+  }
+
+  if (!user && !publicRoutes.some(p => pathname.startsWith(p))) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // Redirect logged-in users from auth pages to home
-  if (user && (pathname.startsWith('/login') || pathname.startsWith('/signup'))) {
+  if (user && publicRoutes.some(p => pathname.startsWith(p))) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
