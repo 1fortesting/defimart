@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Tables } from '@/types/supabase';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Flame } from 'lucide-react';
+import { Heart, Flame, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { toggleSaveProduct } from '@/app/saved/actions';
@@ -35,8 +35,9 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
         if (!isDiscountActive || !product.discount_end_date) return;
 
         const endDate = new Date(product.discount_end_date);
+        let timer: NodeJS.Timeout;
 
-        const timer = setInterval(() => {
+        const updateTimer = () => {
             const now = new Date();
             const difference = endDate.getTime() - now.getTime();
 
@@ -58,7 +59,12 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                     clearInterval(timer);
                 }
             }
-        }, 1000);
+        }
+
+        // Run on client-side only
+        updateTimer();
+        timer = setInterval(updateTimer, 1000);
+
 
         return () => clearInterval(timer);
     }, [isDiscountActive, product.discount_end_date]);
@@ -91,7 +97,7 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                 />
             </Link>
             {isDiscountActive && (
-                 <div className="absolute top-0 left-2 w-12 h-28 animate-swing origin-top z-10">
+                 <div className="absolute top-0 left-0 w-12 h-28 animate-swing origin-top z-10">
                     <svg
                         viewBox="0 0 54 110"
                         className="w-full h-full"
@@ -167,13 +173,17 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                 {user ? (
                     <form action={addToCart}>
                         <input type="hidden" name="productId" value={product.id} />
-                        <Button type="submit" size="sm" disabled={product.quantity === 0}>
-                            {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-                        </Button>
+                        {product.quantity === 0 ? (
+                            <Button size="sm" disabled>Out of Stock</Button>
+                        ) : (
+                            <Button type="submit" size="icon" className="h-9 w-9" aria-label="Add to cart">
+                                <ShoppingCart className="h-4 w-4" />
+                            </Button>
+                        )}
                     </form>
                 ) : (
-                    <Button asChild size="sm">
-                        <Link href="/login">Add to Cart</Link>
+                    <Button asChild size="icon" className="h-9 w-9" aria-label="Add to cart">
+                        <Link href="/login"><ShoppingCart className="h-4 w-4" /></Link>
                     </Button>
                 )}
             </div>
