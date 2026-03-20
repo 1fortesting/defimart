@@ -37,8 +37,11 @@ export default function SignupPage() {
 
   return (
      <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">
-       <div className="hidden lg:flex flex-col items-center justify-center bg-primary text-primary-foreground p-8">
-            <div className="text-left w-full max-w-md">
+       <div className="relative hidden lg:flex flex-col items-center justify-center bg-primary text-primary-foreground p-8 overflow-hidden">
+            <div className="absolute -top-1/4 -left-1/4 w-96 h-96 bg-primary-foreground/10 rounded-full" />
+            <div className="absolute -bottom-1/4 -right-1/4 w-96 h-96 bg-primary-foreground/10 rounded-full" />
+            <div className="absolute bottom-1/4 left-1/4 w-48 h-48 bg-primary-foreground/5 rounded-full" />
+            <div className="z-10 text-left w-full max-w-md">
                 <h1 className="text-4xl font-bold mb-4">Join DEFIMART!</h1>
                 <p className="text-lg mb-8">Create an account to start buying and selling with ease.</p>
                  <Image
