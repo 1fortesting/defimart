@@ -94,7 +94,7 @@ export default {
         },
         'heartbeat': {
           '0%': { transform: 'scale(1)' },
-          '20%': { transform: 'scale(1.3)' },
+          '20%': { transform: 'scale(1.15)' },
           '40%': { transform: 'scale(1)' },
           '100%': { transform: 'scale(1)' },
         }
