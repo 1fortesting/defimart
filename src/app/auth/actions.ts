@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-export async function login(formData: FormData) {
+export async function login(prevState: any, formData: FormData) {
   const supabase = createClient();
 
   const email = formData.get('email') as string;
@@ -16,14 +16,14 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
-    return redirect(`/login?error=${encodeURIComponent(error.message)}`);
+    return { error: error.message };
   }
   
   revalidatePath('/', 'layout');
   redirect('/');
 }
 
-export async function signup(formData: FormData) {
+export async function signup(prevState: any, formData: FormData) {
   const supabase = createClient();
   
   const email = formData.get('email') as string;
@@ -43,7 +43,7 @@ export async function signup(formData: FormData) {
   });
 
   if (error) {
-    return redirect(`/signup?error=${encodeURIComponent(error.message)}`);
+    return { error: error.message };
   }
 
   revalidatePath('/', 'layout');

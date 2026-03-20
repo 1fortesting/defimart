@@ -1,13 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useFormStatus } from 'react-dom';
+import { useFormStatus, useActionState } from 'react-dom';
 import { signup } from '@/app/auth/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Image from 'next/image';
 
@@ -23,6 +23,9 @@ function SubmitButton() {
 export default function SignupPage() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [state, formAction] = useActionState(signup, { error: null });
 
   useEffect(() => {
     const error = searchParams.get('error');
@@ -32,8 +35,20 @@ export default function SignupPage() {
         title: 'Registration Error',
         description: error,
       });
+      router.replace('/signup', { scroll: false });
     }
-  }, [searchParams, toast]);
+  }, [searchParams, toast, router]);
+
+  useEffect(() => {
+    if (state?.error) {
+      toast({
+        variant: 'destructive',
+        title: 'Registration Error',
+        description: state.error,
+      });
+    }
+  }, [state, toast]);
+
 
   return (
      <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">
@@ -57,7 +72,7 @@ export default function SignupPage() {
         <div className="w-full max-w-sm">
             <h2 className="text-3xl font-bold text-center mb-2 text-foreground">Create your Account</h2>
             <p className="text-center text-muted-foreground mb-8">Get started in just a few clicks</p>
-            <form action={signup}>
+            <form action={formAction}>
             <div className="grid gap-4">
                 <div className="grid gap-2">
                 <Label htmlFor="display_name">Display Name</Label>

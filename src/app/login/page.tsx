@@ -1,14 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useFormStatus } from 'react-dom';
+import { useFormStatus, useActionState } from 'react-dom';
 import { login } from '@/app/auth/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 
 function SubmitButton() {
@@ -23,6 +23,7 @@ function SubmitButton() {
 export default function LoginPage() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     const error = searchParams.get('error');
@@ -32,9 +33,22 @@ export default function LoginPage() {
         title: 'Authentication Error',
         description: error,
       });
+      router.replace('/login', { scroll: false });
     }
-  }, [searchParams, toast]);
+  }, [searchParams, toast, router]);
   
+  const [state, formAction] = useActionState(login, { error: null });
+
+  useEffect(() => {
+    if (state?.error) {
+       toast({
+        variant: 'destructive',
+        title: 'Authentication Error',
+        description: state.error,
+      });
+    }
+  }, [state, toast]);
+
   return (
     <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">
        <div className="relative hidden lg:flex flex-col items-center justify-center bg-primary text-primary-foreground p-8 overflow-hidden">
@@ -57,7 +71,7 @@ export default function LoginPage() {
           <div className="w-full max-w-sm">
             <h2 className="text-3xl font-bold text-center mb-2 text-foreground">Login to DEFIMART</h2>
             <p className="text-center text-muted-foreground mb-8">Enter your details below</p>
-            <form action={login}>
+            <form action={formAction}>
               <div className="grid gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
