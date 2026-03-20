@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { updateOrderStatus } from './actions';
 import { useFormStatus } from 'react-dom';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 
 type OrderWithDetails = Tables<'orders'> & {
   products: Pick<Tables<'products'>, 'name'> | null;
@@ -18,9 +19,9 @@ function StatusSelector({ orderId, currentStatus }: { orderId: string, currentSt
     const { pending } = useFormStatus();
 
     return (
-        <div className="flex items-center gap-2">
+        <form action={updateOrderStatus} className="flex items-center gap-2">
             <Select name="status" defaultValue={currentStatus}>
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-[140px]">
                     <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -31,7 +32,7 @@ function StatusSelector({ orderId, currentStatus }: { orderId: string, currentSt
             </Select>
             <input type="hidden" name="orderId" value={orderId} />
             <Button size="sm" type="submit" disabled={pending}>{pending ? 'Saving...' : 'Save'}</Button>
-        </div>
+        </form>
     );
 }
 
@@ -53,6 +54,7 @@ export default function AdminOrdersClientPage({ initialOrders }: { initialOrders
               <TableHead>Quantity</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -64,15 +66,16 @@ export default function AdminOrdersClientPage({ initialOrders }: { initialOrders
                     <TableCell>{order.quantity}</TableCell>
                     <TableCell>{new Date(order.created_at).toLocaleString()}</TableCell>
                     <TableCell>
-                      <form action={updateOrderStatus}>
-                        <StatusSelector orderId={order.id} currentStatus={order.status} />
-                      </form>
+                      <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : 'outline'}>{order.status}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <StatusSelector orderId={order.id} currentStatus={order.status} />
                     </TableCell>
                 </TableRow>
             ))}
             {(!orders || orders.length === 0) && (
                 <TableRow>
-                    <TableCell colSpan={6} className="text-center">No orders found.</TableCell>
+                    <TableCell colSpan={7} className="text-center">No orders found.</TableCell>
                 </TableRow>
             )}
           </TableBody>

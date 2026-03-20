@@ -40,11 +40,13 @@ export default async function AdminDashboardPage() {
         .returns<OrderWithProductAndBuyer[]>();
 
     return (
-        <div className="space-y-8">
-            <h1 className="text-3xl font-bold">Dashboard</h1>
+        <div className="flex flex-col gap-4">
+            <div className="flex items-center">
+                <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
+            </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <StatCard title="Total Products" value={productCount ?? 0} icon={ShoppingCart} />
-                <StatCard title="Total Users" value={userCount ?? 0} icon={Users} />
+                <StatCard title="Total Customers" value={userCount ?? 0} icon={Users} />
                 <StatCard title="Total Orders" value={orderCount ?? 0} icon={Package} />
             </div>
 

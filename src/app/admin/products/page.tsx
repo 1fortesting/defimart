@@ -1,29 +1,23 @@
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, MoreHorizontal } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { deleteProduct } from './actions';
 import { Tables } from '@/types/supabase';
+import { ProductActions } from './product-actions';
 
 const ProductRow = ({ product }: { product: Tables<'products'> }) => {
   return (
     <TableRow>
-      <TableCell>
+      <TableCell className="hidden sm:table-cell">
         <Image
           src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/100/100'}
           alt={product.name}
-          width={40}
-          height={40}
-          className="rounded-md object-cover"
+          width={64}
+          height={64}
+          className="aspect-square rounded-md object-cover"
         />
       </TableCell>
       <TableCell className="font-medium">{product.name}</TableCell>
@@ -32,25 +26,7 @@ const ProductRow = ({ product }: { product: Tables<'products'> }) => {
       <TableCell>{product.quantity ?? 'N/A'}</TableCell>
       <TableCell className="hidden md:table-cell">{new Date(product.created_at).toLocaleDateString()}</TableCell>
       <TableCell>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button aria-haspopup="true" size="icon" variant="ghost">
-              <MoreHorizontal className="h-4 w-4" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-                <Link href={`/admin/products/${product.id}/edit`}>Edit</Link>
-            </DropdownMenuItem>
-            <form action={deleteProduct}>
-              <input type="hidden" name="productId" value={product.id} />
-              <DropdownMenuItem asChild>
-                <button type="submit" className="w-full text-left text-red-500">Delete</button>
-              </DropdownMenuItem>
-            </form>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ProductActions product={product} />
       </TableCell>
     </TableRow>
   )
@@ -66,17 +42,20 @@ export default async function AdminProductsPage() {
     .returns<Tables<'products'>[]>();
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold">Products</h1>
-        <Button asChild>
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-lg font-semibold md:text-2xl">Products</h1>
+        <Button asChild size="sm">
           <Link href="/admin/products/new">
             <PlusCircle className="mr-2 h-4 w-4" /> Add Product
           </Link>
         </Button>
       </div>
       <Card>
-        <CardContent className="p-0">
+        <CardHeader>
+            <CardTitle>All Products</CardTitle>
+        </CardHeader>
+        <CardContent>
           <Table>
             <TableHeader>
               <TableRow>

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function AdminLoginPage() {
     setLoading(true);
     if (password === 'DEV') {
       sessionStorage.setItem('isAdmin', 'true');
-      router.push('/admin/products');
+      router.push('/admin');
     } else {
       toast({
         variant: 'destructive',
@@ -31,32 +32,44 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
-          <CardDescription className="text-center">Enter the password to access the admin panel</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Logging in...' : 'Login'}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+      <div className="w-full max-w-md">
+         <div className="text-center mb-8">
+            <Image
+                src="https://iili.io/qO5Jeou.png"
+                alt="DEFIMART Logo"
+                width={200}
+                height={40}
+                className="object-contain mx-auto"
+            />
+         </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-center">Admin Panel Access</CardTitle>
+              <CardDescription className="text-center">Enter the master password to manage the store</CardDescription>
+            </CardHeader>
+            <form onSubmit={handleSubmit}>
+              <CardContent className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                  />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Verifying...' : 'Login'}
+                </Button>
+              </CardFooter>
+            </form>
+          </Card>
+      </div>
     </div>
   );
 }

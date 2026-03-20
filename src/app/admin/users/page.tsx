@@ -45,44 +45,49 @@ export default async function AdminUsersPage() {
     });
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Registered Users</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Avatar</TableHead>
-              <TableHead>Display Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Joined</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {usersWithProfiles.map((user) => (
-                <TableRow key={user.id}>
-                    <TableCell>
-                        <Avatar>
-                            <AvatarImage src={user.avatar_url ?? undefined} />
-                            <AvatarFallback>{user.display_name?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                    </TableCell>
-                    <TableCell>{user.display_name || 'N/A'}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.phone_number || 'N/A'}</TableCell>
-                    <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                </TableRow>
-            ))}
-            {(!users || users.length === 0) && (
+    <div className="flex flex-col gap-4">
+        <div className="flex items-center">
+            <h1 className="text-lg font-semibold md:text-2xl">Customers</h1>
+        </div>
+        <Card>
+        <CardHeader>
+            <CardTitle>Registered Users</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <Table>
+            <TableHeader>
                 <TableRow>
-                    <TableCell colSpan={5} className="text-center">No users found.</TableCell>
+                <TableHead>Avatar</TableHead>
+                <TableHead>Display Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Joined</TableHead>
                 </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+            </TableHeader>
+            <TableBody>
+                {usersWithProfiles.map((user) => (
+                    <TableRow key={user.id}>
+                        <TableCell>
+                            <Avatar>
+                                <AvatarImage src={user.avatar_url ?? undefined} />
+                                <AvatarFallback>{user.display_name?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                        </TableCell>
+                        <TableCell>{user.display_name || 'N/A'}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>{user.phone_number || 'N/A'}</TableCell>
+                        <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
+                    </TableRow>
+                ))}
+                {(!users || users.length === 0) && (
+                    <TableRow>
+                        <TableCell colSpan={5} className="text-center">No users found.</TableCell>
+                    </TableRow>
+                )}
+            </TableBody>
+            </Table>
+        </CardContent>
+        </Card>
+    </div>
   );
 }

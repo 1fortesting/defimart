@@ -33,5 +33,12 @@ export default async function AdminOrdersPage() {
         console.error("Error fetching orders from server:", error);
     }
     
-    return <AdminOrdersClientPage initialOrders={orders || []} />;
+    return (
+        <div className="flex flex-col gap-4">
+            <div className="flex items-center">
+                <h1 className="text-lg font-semibold md:text-2xl">Orders</h1>
+            </div>
+            <AdminOrdersClientPage initialOrders={orders || []} />
+        </div>
+    );
 }

@@ -2,7 +2,7 @@
 
 import { createProduct } from '../actions';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,68 +47,101 @@ export default function NewProductPage() {
     };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create New Product</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form action={dispatch}>
-          <div className="grid gap-6">
-            <div className="grid gap-3">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" name="name" type="text" className="w-full" required />
-               {state.errors?.name && <p className="text-sm text-red-500">{state.errors.name[0]}</p>}
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="description">Description</Label>
-              <Textarea id="description" name="description" className="min-h-32" />
-            </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="grid gap-3">
-                    <Label htmlFor="price">Price (GHS)</Label>
-                    <Input id="price" name="price" type="number" step="0.01" required />
-                    {state.errors?.price && <p className="text-sm text-red-500">{state.errors.price[0]}</p>}
-                </div>
-                 <div className="grid gap-3">
-                    <Label htmlFor="quantity">Quantity</Label>
-                    <Input id="quantity" name="quantity" type="number" min="0" required />
-                    {state.errors?.quantity && <p className="text-sm text-red-500">{state.errors.quantity[0]}</p>}
-                </div>
-                 <div className="grid gap-3">
-                    <Label htmlFor="category">Category</Label>
-                    <Select name="category">
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select Category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {categories.map(category => (
-                                <SelectItem key={category} value={category}>{category}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                     {state.errors?.category && <p className="text-sm text-red-500">{state.errors.category[0]}</p>}
-                </div>
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="image">Product Image</Label>
-              <Input id="image" name="image" type="file" accept="image/*" required onChange={handleImageChange} />
-              {state.errors?.image && <p className="text-sm text-red-500">{state.errors.image[0]}</p>}
-              {imagePreview && (
-                <div className="mt-4">
-                  <Image src={imagePreview} alt="Image Preview" width={200} height={200} className="rounded-md object-cover" />
-                </div>
-              )}
-            </div>
-            <div className="flex justify-end gap-2">
-                <Button variant="outline" asChild>
-                    <Link href="/admin/products">Cancel</Link>
-                </Button>
-                <SubmitButton />
-            </div>
-             {state.message && <p className="text-sm text-red-500">{state.message}</p>}
+    <form action={dispatch} className="grid flex-1 items-start gap-4 sm:py-0 md:gap-8">
+      <div className="mx-auto grid max-w-5xl flex-1 auto-rows-max gap-4">
+        <div className="flex items-center gap-4">
+           <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
+            Add New Product
+          </h1>
+          <div className="hidden items-center gap-2 md:ml-auto md:flex">
+             <Button variant="outline" asChild>
+                <Link href="/admin/products">Cancel</Link>
+            </Button>
+            <SubmitButton />
           </div>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+        <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
+            <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Product Details</CardTitle>
+                        <CardDescription>
+                            Basic information about the product.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-6">
+                        <div className="grid gap-3">
+                            <Label htmlFor="name">Name</Label>
+                            <Input id="name" name="name" type="text" className="w-full" required />
+                            {state.errors?.name && <p className="text-sm text-red-500">{state.errors.name[0]}</p>}
+                        </div>
+                        <div className="grid gap-3">
+                            <Label htmlFor="description">Description</Label>
+                            <Textarea id="description" name="description" className="min-h-32" />
+                        </div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Pricing & Stock</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-6 md:grid-cols-2">
+                        <div className="grid gap-3">
+                            <Label htmlFor="price">Price (GHS)</Label>
+                            <Input id="price" name="price" type="number" step="0.01" required />
+                            {state.errors?.price && <p className="text-sm text-red-500">{state.errors.price[0]}</p>}
+                        </div>
+                        <div className="grid gap-3">
+                            <Label htmlFor="quantity">Quantity</Label>
+                            <Input id="quantity" name="quantity" type="number" min="0" required />
+                            {state.errors?.quantity && <p className="text-sm text-red-500">{state.errors.quantity[0]}</p>}
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+             <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Category</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <Select name="category">
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select Category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {categories.map(category => (
+                                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        {state.errors?.category && <p className="text-sm text-red-500">{state.errors.category[0]}</p>}
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Product Image</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-4">
+                        <Input id="image" name="image" type="file" accept="image/*" required onChange={handleImageChange} className="w-full"/>
+                        {state.errors?.image && <p className="text-sm text-red-500">{state.errors.image[0]}</p>}
+                        {imagePreview && (
+                            <div className="mt-2">
+                            <Image src={imagePreview} alt="Image Preview" width={200} height={200} className="w-full aspect-square rounded-md object-cover" />
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+             </div>
+        </div>
+         <div className="flex items-center justify-center gap-2 md:hidden">
+            <Button variant="outline" asChild>
+                <Link href="/admin/products">Cancel</Link>
+            </Button>
+            <SubmitButton />
+        </div>
+        {state.message && <p className="text-sm text-red-500 text-center">{state.message}</p>}
+      </div>
+    </form>
   );
 }
