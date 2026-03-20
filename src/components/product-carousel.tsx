@@ -10,8 +10,6 @@ import {
 } from '@/components/ui/carousel';
 import Image from 'next/image';
 import { Tables } from '@/types/supabase';
-import { Button } from './ui/button';
-import Link from 'next/link';
 
 type ProductCarouselProps = {
     products: Tables<'products'>[];
@@ -57,9 +55,6 @@ export function ProductCarousel({ products }: ProductCarouselProps) {
                 <div className="absolute inset-0 flex flex-col justify-center items-start p-8 md:p-16 text-foreground">
                     <h2 className="text-3xl md:text-5xl font-bold max-w-lg leading-tight text-white">{product.name}</h2>
                     <p className="mt-2 text-lg max-w-lg hidden md:block text-slate-300">{product.description}</p>
-                    <Button asChild className="mt-6" size="lg">
-                        <Link href="#">Shop Now</Link>
-                    </Button>
                 </div>
               </Card>
             </CarouselItem>
