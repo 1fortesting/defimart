@@ -45,7 +45,7 @@ export default function LoginPage() {
     }
   }, [searchParams, toast, router]);
   
-  const [state, formAction] = useActionState(login, { error: null, success: false });
+  const [state, formAction] = useActionState(login, { error: null });
 
   useEffect(() => {
     if (state?.error) {
@@ -55,10 +55,7 @@ export default function LoginPage() {
         description: state.error,
       });
     }
-    if (state?.success) {
-      router.push('/');
-    }
-  }, [state, toast, router]);
+  }, [state, toast]);
 
   return (
     <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">

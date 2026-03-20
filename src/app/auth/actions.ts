@@ -16,11 +16,11 @@ export async function login(prevState: any, formData: FormData) {
   });
 
   if (error) {
-    return { error: error.message, success: false };
+    return { error: error.message };
   }
   
   revalidatePath('/', 'layout');
-  return { success: true, error: null };
+  redirect('/');
 }
 
 export async function signup(prevState: any, formData: FormData) {
@@ -43,11 +43,11 @@ export async function signup(prevState: any, formData: FormData) {
   });
 
   if (error) {
-    return { error: error.message, success: false };
+    return { error: error.message };
   }
 
   revalidatePath('/', 'layout');
-  return { success: true, error: null };
+  redirect('/');
 }
 
 export async function logout() {
