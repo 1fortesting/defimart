@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { toggleSaveProduct } from '@/app/saved/actions';
 import { addToCart } from '@/app/cart/actions';
+import { useState, useEffect } from 'react';
 
 type ProductCardProps = {
   product: Tables<'products'>;
@@ -27,13 +28,56 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
         ? product.price - (product.price * (product.discount_percentage! / 100))
         : product.price;
 
+    const [timeLeft, setTimeLeft] = useState<{ hours: string; minutes: string; seconds: string } | null>(null);
+    const [showCountdown, setShowCountdown] = useState(false);
+
+    useEffect(() => {
+        if (!isDiscountActive || !product.discount_end_date) return;
+
+        const endDate = new Date(product.discount_end_date);
+
+        const interval = setInterval(() => {
+            const now = new Date();
+            const diff = endDate.getTime() - now.getTime();
+
+            if (diff > 0 && diff <= 12 * 60 * 60 * 1000) {
+                if (!showCountdown) setShowCountdown(true);
+
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                setTimeLeft({
+                    hours: String(hours).padStart(2, '0'),
+                    minutes: String(minutes).padStart(2, '0'),
+                    seconds: String(seconds).padStart(2, '0'),
+                });
+
+            } else {
+                if(showCountdown) setShowCountdown(false);
+                if (diff <= 0) {
+                    clearInterval(interval);
+                }
+            }
+        }, 1000);
+        
+        // Initial check
+        const initialDiff = endDate.getTime() - new Date().getTime();
+        if (initialDiff > 0 && initialDiff <= 12 * 60 * 60 * 1000) {
+            setShowCountdown(true);
+        }
+
+
+        return () => clearInterval(interval);
+    }, [isDiscountActive, product.discount_end_date, showCountdown]);
+
     const getStockLabel = () => {
         if (product.quantity === null || product.quantity === undefined) return null;
         if (product.quantity > 5) {
-            return <Badge className="border-transparent bg-green-600 text-primary-foreground hover:bg-green-700">In Stock</Badge>;
+            return <Badge className="border-transparent bg-green-600 text-white hover:bg-green-700">In Stock</Badge>;
         }
         if (product.quantity > 0 && product.quantity <= 5) {
-            return <Badge className="border-transparent bg-red-600 text-primary-foreground hover:bg-red-700">Few left</Badge>;
+            return <Badge className="border-transparent bg-red-600 text-white hover:bg-red-700">Few left</Badge>;
         }
         if (product.quantity === 0) {
             return <Badge variant="destructive">Out of Stock</Badge>;
@@ -61,6 +105,7 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                 </div>
             )}
             <div className="absolute top-2 right-2 flex flex-col gap-2 items-end">
+                {getStockLabel()}
                  {user && (
                     <form action={toggleSaveProduct}>
                         <input type="hidden" name="productId" value={product.id} />
@@ -70,19 +115,29 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                         </Button>
                     </form>
                 )}
-                {getStockLabel()}
             </div>
         </CardHeader>
         <CardContent className="p-3">
             <h3 className="font-semibold truncate text-sm">{product.name}</h3>
             <p className="text-sm text-muted-foreground">{product.category}</p>
 
-            {isDiscountActive && (
+            {showCountdown && timeLeft ? (
+                <div className="flex items-center justify-between mt-2">
+                    <Badge variant="outline" className="text-orange-500 border-orange-500 animate-pulse-second">
+                        <Flame className="mr-1 h-3 w-3" />
+                        Limited time
+                    </Badge>
+                    <span className="text-sm font-mono font-medium text-red-500 tabular-nums">
+                        {timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
+                    </span>
+                </div>
+            ) : isDiscountActive && (
                  <Badge variant="outline" className="mt-2 text-orange-500 border-orange-500">
                     <Flame className="mr-1 h-3 w-3" />
                     Limited time offer
                 </Badge>
             )}
+
 
             <div className="flex items-center justify-between mt-2">
                 <div className="flex items-baseline gap-2">
@@ -104,11 +159,6 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                     </Button>
                 )}
             </div>
-             {isDiscountActive && (
-                 <div className="flex justify-end mt-1">
-                     <Badge variant="destructive">-{product.discount_percentage}%</Badge>
-                 </div>
-            )}
         </CardContent>
     </Card>
     )
