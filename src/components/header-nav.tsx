@@ -11,6 +11,7 @@ import {
   Heart,
   HelpCircle,
   ShoppingCart,
+  Store,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from './ui/badge';
@@ -21,8 +22,9 @@ const NavLink = ({ href, icon: Icon, children, active, badgeCount }: { href: str
     variant={active ? 'secondary' : 'ghost'} 
     asChild 
     className={cn(
-      "relative flex flex-col items-center justify-center h-auto font-sans text-xs p-2 gap-1 md:flex-row md:h-10 md:px-4 md:text-sm md:rounded-md text-primary",
-      !active && "hover:bg-accent/20"
+      "relative flex flex-col items-center justify-center h-auto font-sans text-xs p-2 gap-1 md:flex-row md:h-10 md:px-4 md:py-2 md:text-sm md:rounded-md",
+       active ? "bg-primary text-primary-foreground hover:bg-primary/90" : "text-primary hover:bg-primary/10",
+       isMobile && "w-full"
     )}
   >
     <Link href={href}>
@@ -35,8 +37,11 @@ const NavLink = ({ href, icon: Icon, children, active, badgeCount }: { href: str
   </Button>
 );
 
-export function HeaderNav({ cartItemCount, isMobile }: { cartItemCount: number, isMobile?: boolean }) {
+let isMobile = false;
+
+export function HeaderNav({ cartItemCount, isMobile: mobileProp }: { cartItemCount: number, isMobile?: boolean }) {
   const pathname = usePathname();
+  isMobile = mobileProp || false;
 
   const desktopLinks = [
     { href: "/", icon: Home, text: "Home" },
@@ -52,8 +57,9 @@ export function HeaderNav({ cartItemCount, isMobile }: { cartItemCount: number, 
   const mobileLinks = [
       { href: "/", icon: Home, text: "Home" },
       { href: "/categories", icon: LayoutGrid, text: "Categories" },
+      { href: "/sell", icon: Store, text: "Sell" },
       { href: "/saved", icon: Heart, text: "Wishlist" },
-      { href: "/help", icon: HelpCircle, text: "Help" },
+      { href: "/profile", icon: User, text: "Account" },
   ];
 
   const navLinks = isMobile ? mobileLinks : desktopLinks;

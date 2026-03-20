@@ -1,68 +1,14 @@
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Tables } from '@/types/supabase';
 import { Header } from '@/components/header';
 import { Filters } from '@/components/filters';
-import { addToCart } from './cart/actions';
-import { Badge } from '@/components/ui/badge';
 import { ProductCarousel } from '@/components/product-carousel';
-
-const ProductCard = ({ product, user }: { product: Tables<'products'>; user: any }) => {
-    const getStockLabel = () => {
-        if (product.quantity === null || product.quantity === undefined) return null;
-        if (product.quantity > 10) {
-            return <Badge variant="secondary" className="border-green-500/50 bg-green-500/10 text-green-500">In Stock</Badge>;
-        }
-        if (product.quantity > 0 && product.quantity <= 5) {
-            return <Badge variant="destructive">Few left</Badge>;
-        }
-        if (product.quantity === 0) {
-            return <Badge variant="outline">Out of Stock</Badge>;
-        }
-        return null;
-    };
-    
-    return (
-    <Card className="overflow-hidden group transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-        <CardHeader className="p-0 relative">
-            <Link href="#">
-                <Image
-                    src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/600/400'}
-                    alt={product.name}
-                    width={600}
-                    height={400}
-                    className="object-cover w-full aspect-[4/3] group-hover:scale-105 transition-transform duration-300"
-                    data-ai-hint="product image"
-                />
-            </Link>
-             <div className="absolute top-2 right-2">
-                {getStockLabel()}
-            </div>
-        </CardHeader>
-        <CardContent className="p-4">
-            <h3 className="text-lg font-semibold truncate">{product.name}</h3>
-            <p className="text-sm text-muted-foreground h-10 overflow-hidden text-ellipsis">{product.description}</p>
-            <div className="flex items-center justify-between mt-4">
-                <span className="text-lg font-bold">GHS {product.price.toFixed(2)}</span>
-                 {user ? (
-                    <form action={addToCart}>
-                        <input type="hidden" name="productId" value={product.id} />
-                        <Button type="submit" disabled={product.quantity === 0}>
-                            {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-                        </Button>
-                    </form>
-                ) : (
-                    <Button asChild>
-                        <Link href="/login">Add to Cart</Link>
-                    </Button>
-                )}
-            </div>
-        </CardContent>
-    </Card>
-)};
+import { ProductCard } from '@/components/product-card';
+import { Input } from '@/components/ui/input';
+import { Search, ListFilter } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tables } from '@/types/supabase';
 
 export default async function Home() {
   const supabase = createClient();
@@ -73,6 +19,11 @@ export default async function Home() {
 
   const { data: products } = await supabase.from('products').select('*');
   
+  const { data: savedProducts } = user 
+      ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 
+      : { data: null };
+  const savedProductIds = new Set(savedProducts?.map(p => p.product_id) || []);
+
   const allProducts = products || [];
 
   // Select 5 random products for the carousel
@@ -83,16 +34,45 @@ export default async function Home() {
     <div className="min-h-screen flex flex-col">
       <Header />
       <main className="flex-1">
+        {/* Search for mobile */}
+        <div className="p-4 md:hidden">
+          <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search for anything..." className="pl-10" />
+          </div>
+        </div>
+
         {carouselProducts.length > 0 && <ProductCarousel products={carouselProducts} />}
         
         <div className="p-4 md:p-8">
             <Filters />
             
-            <h1 className="text-3xl font-bold mb-8 mt-12">All Products</h1>
-            <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {allProducts.map((product) => (
-                <ProductCard key={product.id} product={product} user={user} />
-              ))}
+            <div className="mt-12">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">Browse All</h2>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" className="hidden md:flex">
+                      <ListFilter className="mr-2 h-4 w-4" />
+                      Filter
+                    </Button>
+                    <Select defaultValue="default">
+                        <SelectTrigger className="w-auto md:w-[180px]" >
+                            <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="default">Default (Boosted)</SelectItem>
+                            <SelectItem value="price-asc">Price: Low to High</SelectItem>
+                            <SelectItem value="price-desc">Price: High to Low</SelectItem>
+                            <SelectItem value="newest">Newest</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+              </div>
+              <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {allProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} user={user} isSaved={savedProductIds.has(product.id)} />
+                ))}
+              </div>
             </div>
         </div>
       </main>
