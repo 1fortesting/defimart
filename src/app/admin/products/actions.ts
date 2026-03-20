@@ -46,7 +46,7 @@ export async function createProduct(prevState: any, formData: FormData) {
   const imageFile = image as File;
   const fileName = `${Date.now()}-${imageFile.name}`;
   const { error: uploadError } = await supabase.storage
-    .from('products-images')
+    .from('product_images')
     .upload(fileName, imageFile);
   
   if (uploadError) {
@@ -54,7 +54,7 @@ export async function createProduct(prevState: any, formData: FormData) {
   }
 
   const { data: { publicUrl } } = supabase.storage
-    .from('products-images')
+    .from('product_images')
     .getPublicUrl(fileName);
   
   const { error } = await supabase.from('products').insert({
@@ -67,7 +67,7 @@ export async function createProduct(prevState: any, formData: FormData) {
 
   if (error) {
     // Attempt to delete the uploaded image if the DB insert fails
-    await supabase.storage.from('products-images').remove([fileName]);
+    await supabase.storage.from('product_images').remove([fileName]);
     return { message: error.message };
   }
   
