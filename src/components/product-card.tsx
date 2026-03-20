@@ -23,7 +23,7 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
 
     const getStockLabel = () => {
         if (product.quantity === null || product.quantity === undefined) return null;
-        if (product.quantity > 10) {
+        if (product.quantity > 5) {
             return <Badge variant="secondary" className="border-green-500/50 bg-green-500/10 text-green-500">In Stock</Badge>;
         }
         if (product.quantity > 0 && product.quantity <= 5) {
