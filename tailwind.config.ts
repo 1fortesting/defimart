@@ -97,13 +97,18 @@ export default {
           '20%': { transform: 'scale(1.02)' },
           '40%': { transform: 'scale(1)' },
           '100%': { transform: 'scale(1)' },
-        }
+        },
+        'swing': {
+            '0%, 100%': { transform: 'rotate(10deg)' },
+            '50%': { transform: 'rotate(-10deg)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'pulse-second': 'pulse-second 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'heartbeat': 'heartbeat 1s ease-in-out infinite',
+        'swing': 'swing 3s ease-in-out infinite',
       },
     },
   },

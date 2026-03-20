@@ -98,14 +98,19 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                     data-ai-hint="product image"
                 />
             </Link>
-             {isDiscountActive && (
-                <div className="absolute top-0 left-0 bg-red-600 text-white text-xs font-bold uppercase p-4 rounded-br-lg flex flex-col items-center justify-center w-16 h-16 transform -rotate-15 -translate-x-4 -translate-y-4 shadow-lg">
-                    <span className="text-lg leading-none">-{product.discount_percentage}%</span>
-                    <span className="leading-none">OFF</span>
+            {isDiscountActive && (
+                <div className="absolute top-0 left-4 w-16 h-24 animate-swing origin-top">
+                    {/* String */}
+                    <div className="h-6 w-px bg-gray-500 mx-auto"></div>
+                    {/* Badge */}
+                    <div className="w-16 h-16 bg-red-600 text-white text-xs font-bold rounded-full flex flex-col items-center justify-center shadow-lg">
+                        <span className="text-lg leading-none">-{product.discount_percentage}%</span>
+                        <span className="leading-none -mt-1">OFF</span>
+                    </div>
                 </div>
             )}
             <div className="absolute top-0 right-0 z-10">
-                {getStockLabel("rounded-none rounded-bl-lg")}
+                {getStockLabel("rounded-none rounded-bl-lg rounded-tr-lg")}
             </div>
             {user && (
                 <form action={toggleSaveProduct} className="absolute bottom-2 right-2">
