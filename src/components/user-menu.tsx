@@ -13,6 +13,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { logout } from '@/app/auth/actions';
 import type { User } from '@supabase/supabase-js';
+import { User as UserIcon, LogOut, MessageSquare, HelpCircle } from 'lucide-react';
 
 export function UserMenu({ user }: { user: User | null }) {
   if (!user) {
@@ -36,24 +37,29 @@ export function UserMenu({ user }: { user: User | null }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full">
-          <Avatar className="h-9 w-9">
+          <Avatar className="h-10 w-10">
             <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
             <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0]}</AvatarFallback>
           </Avatar>
           <span className="sr-only">Toggle user menu</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>
+            <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user.user_metadata.display_name}</p>
+                <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+            </div>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/profile">Profile</Link>
+          <Link href="/profile"><UserIcon className="mr-2 h-4 w-4" />Profile</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/messages">Messages</Link>
+          <Link href="/messages"><MessageSquare className="mr-2 h-4 w-4" />Messages</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/help">Help</Link>
+          <Link href="/help"><HelpCircle className="mr-2 h-4 w-4" />Help</Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -61,8 +67,9 @@ export function UserMenu({ user }: { user: User | null }) {
             e.preventDefault();
             handleLogout();
           }}
-          className="cursor-pointer"
+          className="cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10"
         >
+          <LogOut className="mr-2 h-4 w-4" />
           Logout
         </DropdownMenuItem>
       </DropdownMenuContent>
