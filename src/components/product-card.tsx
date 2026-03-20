@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Tables } from '@/types/supabase';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Flame } from 'lucide-react';
+import { Heart, Flame, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { toggleSaveProduct } from '@/app/saved/actions';
@@ -99,18 +99,21 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                 />
             </Link>
             {isDiscountActive && (
-                <div className="absolute top-0 left-4 w-16 h-24 animate-swing origin-top">
+                <div className="absolute top-0 left-0 w-20 h-24 animate-swing origin-top z-10">
                     {/* String */}
                     <div className="h-6 w-px bg-gray-500 mx-auto"></div>
                     {/* Badge */}
-                    <div className="w-16 h-16 bg-red-600 text-white text-xs font-bold rounded-full flex flex-col items-center justify-center shadow-lg">
-                        <span className="text-lg leading-none">-{product.discount_percentage}%</span>
-                        <span className="leading-none -mt-1">OFF</span>
+                    <div className="relative w-20 h-12 mx-auto">
+                        <Tag className="w-full h-full text-red-600 drop-shadow-lg" fill="currentColor"/>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold pl-3">
+                            <span className="text-lg leading-none">-{product.discount_percentage}%</span>
+                            <span className="text-[10px] leading-none">OFF</span>
+                        </div>
                     </div>
                 </div>
             )}
             <div className="absolute top-0 right-0 z-10">
-                {getStockLabel("rounded-none rounded-bl-lg rounded-tr-lg")}
+                {getStockLabel("rounded-none rounded-bl-lg rounded-tr-md")}
             </div>
             {user && (
                 <form action={toggleSaveProduct} className="absolute bottom-2 right-2">
