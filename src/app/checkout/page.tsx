@@ -49,8 +49,8 @@ export default async function CheckoutPage() {
                             <AlertTitle>Order & Pickup Schedule</AlertTitle>
                             <AlertDescription>
                                 <ul className="list-disc list-inside mt-2">
-                                    <li><strong>Order Processing:</strong> Monday to Wednesday</li>
-                                    <li><strong>Pickup Window:</strong> Thursday to Saturday</li>
+                                    <li><strong>Pickup 1 (Wednesday):</strong> For all orders placed between Monday and Wednesday.</li>
+                                    <li><strong>Pickup 2 (Saturday):</strong> For all orders placed between Thursday and Saturday.</li>
                                 </ul>
                             </AlertDescription>
                         </Alert>
