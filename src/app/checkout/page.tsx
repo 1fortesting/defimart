@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Calendar, Info } from 'lucide-react';
 import { placeOrder } from '@/app/cart/actions';
+import { AuthPrompt } from '@/components/auth-prompt';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
   products: Pick<Tables<'products'>, 'name' | 'price' > | null
@@ -17,7 +18,14 @@ export default async function CheckoutPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect('/login?redirect=/checkout');
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 p-8 flex items-center justify-center">
+            <AuthPrompt />
+        </main>
+      </div>
+    );
   }
 
   const { data: cartItems, error } = await supabase

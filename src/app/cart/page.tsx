@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
 import { Header } from '@/components/header';
 import { Tables } from '@/types/supabase';
 import { Button } from '@/components/ui/button';
@@ -8,8 +7,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
-import { X } from 'lucide-react';
+import { ShoppingCart, X } from 'lucide-react';
 import { removeItem, updateItemQuantity } from './actions';
+import { AuthPrompt } from '@/components/auth-prompt';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
   products: Pick<Tables<'products'>, 'name' | 'price' | 'image_urls'> | null
@@ -58,7 +58,14 @@ export default async function CartPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect('/login');
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 p-8 flex items-center justify-center">
+          <AuthPrompt />
+        </main>
+      </div>
+    );
   }
 
   const { data: cartItems, error } = await supabase

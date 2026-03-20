@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tables } from '@/types/supabase';
 import { Header } from '@/components/header';
+import { AuthPrompt } from '@/components/auth-prompt';
 
 type OrderWithProduct = Tables<'orders'> & {
   products: Pick<Tables<'products'>, 'name' | 'price' | 'image_urls'> | null
@@ -15,7 +15,14 @@ export default async function OrdersPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login');
+    return (
+       <div className="min-h-screen flex flex-col">
+        <Header />
+        <main className="flex-1 p-8 flex items-center justify-center">
+          <AuthPrompt />
+        </main>
+      </div>
+    )
   }
 
   const { data: orders, error } = await supabase

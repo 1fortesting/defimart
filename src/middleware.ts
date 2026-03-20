@@ -60,19 +60,10 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Publicly accessible routes
-  const publicRoutes = ['/login', '/signup'];
-
-  if (pathname === '/') {
-    return response;
-  }
-
-  if (!user && !publicRoutes.some(p => pathname.startsWith(p))) {
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
+  const authRoutes = ['/login', '/signup'];
 
   // Redirect logged-in users from auth pages to home
-  if (user && publicRoutes.some(p => pathname.startsWith(p))) {
+  if (user && authRoutes.some(p => pathname.startsWith(p))) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
