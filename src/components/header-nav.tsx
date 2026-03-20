@@ -45,11 +45,8 @@ export function HeaderNav({ cartItemCount, isMobile: mobileProp }: { cartItemCou
   const desktopLinks = [
     { href: "/", icon: Home, text: "Home" },
     { href: "/categories", icon: LayoutGrid, text: "Categories" },
-    { href: "/profile", icon: User, text: "Profile" },
     { href: "/orders", icon: Package, text: "Orders" },
-    { href: "/messages", icon: MessageSquare, text: "Messages" },
     { href: "/saved", icon: Heart, text: "Wishlist" },
-    { href: "/help", icon: HelpCircle, text: "Help" },
     { href: "/cart", icon: ShoppingCart, text: "Cart", badgeCount: cartItemCount },
   ];
   

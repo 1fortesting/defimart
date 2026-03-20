@@ -13,6 +13,8 @@ import { HeaderNav } from './header-nav';
 import Image from 'next/image';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Badge } from './ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 export async function Header() {
   const supabase = createClient();
@@ -51,14 +53,41 @@ export async function Header() {
         <div className="flex items-center gap-2">
             {user ? (
               <>
-                <span className="text-sm text-muted-foreground">
-                  Welcome, {user.user_metadata?.display_name || user.email}
-                </span>
-                <form action={logout}>
-                  <Button variant="outline" size="sm">
-                    Logout
-                  </Button>
-                </form>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="rounded-full">
+                       <Avatar className="h-9 w-9">
+                        <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
+                        <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0]}</AvatarFallback>
+                      </Avatar>
+                      <span className="sr-only">Toggle user menu</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile">Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/messages">Messages</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/help">Help</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        (document.getElementById('desktop-logout-form') as HTMLFormElement)?.submit();
+                      }}
+                      className="cursor-pointer"
+                    >
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <form id="desktop-logout-form" action={logout} className="hidden" />
               </>
             ) : (
               <>
@@ -82,9 +111,9 @@ export async function Header() {
                     <span className="sr-only">Open menu</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-3/4">
-                <SheetHeader>
-                    <SheetTitle className="sr-only">Menu</SheetTitle>
+            <SheetContent side="left" className="w-3/4 p-0">
+                <SheetHeader className="p-4 border-b">
+                    <SheetTitle>Menu</SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-4 p-4">
                    <Link className="font-bold text-lg" href="/profile">Profile</Link>
@@ -110,15 +139,25 @@ export async function Header() {
             />
         </Link>
         
-        <Button asChild variant="ghost" size="icon" className="relative">
-            <Link href="/cart">
-                <ShoppingCart className="h-6 w-6 text-primary"/>
-                <span className="sr-only">Cart</span>
-                {cartItemCount > 0 && (
-                    <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-0 text-xs">{cartItemCount}</Badge>
-                )}
-            </Link>
-        </Button>
+        <div className="flex items-center">
+            <Button asChild variant="ghost" size="icon" className="relative">
+                <Link href="/cart">
+                    <ShoppingCart className="h-6 w-6 text-primary"/>
+                    <span className="sr-only">Cart</span>
+                    {cartItemCount > 0 && (
+                        <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-0 text-xs">{cartItemCount}</Badge>
+                    )}
+                </Link>
+            </Button>
+             {user && (
+                <Button asChild variant="ghost" size="icon" className="relative">
+                    <Link href="/profile">
+                        <User className="h-6 w-6 text-primary"/>
+                        <span className="sr-only">Profile</span>
+                    </Link>
+                </Button>
+             )}
+        </div>
       </div>
 
       {/* Desktop Nav */}
