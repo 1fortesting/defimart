@@ -14,7 +14,7 @@ function AdminHeader() {
 
   return (
     <header className="bg-card border-b p-4 flex justify-between items-center">
-      <div className="font-bold text-lg text-primary">
+      <div className="font-bold text-2xl text-primary tracking-tight">
         <Link href="/admin">DEFIMART Admin</Link>
       </div>
       <div className="flex items-center gap-4">
@@ -32,34 +32,35 @@ function AdminHeader() {
   );
 }
 
-const AdminSidebar = () => (
-    <aside className="w-64 bg-card border-r p-4 flex flex-col gap-4">
-        <nav>
-            <ul>
-                <li>
-                    <Button variant="ghost" asChild className="w-full justify-start">
-                        <Link href="/admin">Dashboard</Link>
-                    </Button>
-                </li>
-                <li>
-                    <Button variant="ghost" asChild className="w-full justify-start">
-                        <Link href="/admin/products">Products</Link>
-                    </Button>
-                </li>
-                <li>
-                    <Button variant="ghost" asChild className="w-full justify-start">
-                        <Link href="/admin/orders">Orders</Link>
-                    </Button>
-                </li>
-                <li>
-                    <Button variant="ghost" asChild className="w-full justify-start">
-                        <Link href="/admin/users">Users</Link>
-                    </Button>
-                </li>
-            </ul>
-        </nav>
-    </aside>
-);
+const AdminSidebar = () => {
+    const pathname = usePathname();
+    const navLinks = [
+        { href: "/admin", text: "Dashboard" },
+        { href: "/admin/products", text: "Products" },
+        { href: "/admin/orders", text: "Orders" },
+        { href: "/admin/users", text: "Users" },
+    ];
+
+    return (
+        <aside className="w-64 bg-card border-r p-4 flex flex-col gap-4">
+            <nav>
+                <ul>
+                    {navLinks.map((link) => (
+                        <li key={link.href}>
+                            <Button 
+                                variant={pathname.startsWith(link.href) && (link.href !== "/admin" || pathname === "/admin") ? 'secondary' : 'ghost'} 
+                                asChild 
+                                className="w-full justify-start"
+                            >
+                                <Link href={link.href}>{link.text}</Link>
+                            </Button>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
+        </aside>
+    );
+};
 
 export default function AdminLayout({
   children,
