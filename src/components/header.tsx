@@ -24,7 +24,7 @@ export async function Header() {
   return (
     <header className="bg-card border-b p-4 flex flex-col gap-4">
       <div className="flex justify-between items-center">
-        <div className="font-bold text-lg text-primary">
+        <div className="font-bold text-3xl text-primary tracking-tight">
           <Link href="/">DEFIMART</Link>
         </div>
         <div className="flex-1 max-w-md mx-4">
