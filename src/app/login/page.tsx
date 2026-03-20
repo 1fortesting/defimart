@@ -4,12 +4,12 @@ import Link from 'next/link';
 import { useFormStatus } from 'react-dom';
 import { login } from '@/app/auth/actions';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -36,34 +36,50 @@ export default function LoginPage() {
   }, [searchParams, toast]);
   
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center font-headline">DEFIMART</CardTitle>
-          <CardDescription className="text-center">Enter your email below to login to your account</CardDescription>
-        </CardHeader>
-        <form action={login}>
-          <CardContent className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+    <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">
+       <div className="hidden lg:flex flex-col items-center justify-center bg-primary text-primary-foreground p-8">
+            <div className="text-left w-full max-w-md">
+                <h1 className="text-4xl font-bold mb-4">Welcome Back!</h1>
+                <p className="text-lg mb-8">Sign in to access your account and continue your shopping.</p>
+                 <Image
+                    src="https://iili.io/qO5Jeou.png"
+                    alt="DEFIMART Logo"
+                    width={400}
+                    height={100}
+                    className="object-contain"
+                />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required />
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col gap-4">
-            <SubmitButton />
-            <div className="text-center text-sm">
-              Don&apos;t have an account?{' '}
-              <Link href="/signup" className="underline text-primary">
-                Sign up
-              </Link>
-            </div>
-          </CardFooter>
-        </form>
-      </Card>
+        </div>
+      <div className="flex items-center justify-center p-4 bg-background">
+          <div className="w-full max-w-sm">
+            <h2 className="text-3xl font-bold text-center mb-2 text-foreground">Login to DEFIMART</h2>
+            <p className="text-center text-muted-foreground mb-8">Enter your details below</p>
+            <form action={login}>
+              <div className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+                </div>
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between">
+                     <Label htmlFor="password">Password</Label>
+                     <Link href="/auth/forgot-password" className="text-sm underline text-primary">
+                        Forgot password?
+                    </Link>
+                  </div>
+                  <Input id="password" name="password" type="password" required />
+                </div>
+                <SubmitButton />
+                <div className="text-center text-sm text-muted-foreground">
+                  Don&apos;t have an account?{' '}
+                  <Link href="/signup" className="underline text-primary">
+                    Sign up
+                  </Link>
+                </div>
+              </div>
+            </form>
+          </div>
+      </div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useFormStatus } from 'react-dom';
-import { signup } from '@/app/auth/actions';
+import { requestPasswordReset } from '@/app/auth/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,22 +15,29 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" className="w-full" aria-disabled={pending}>
-      {pending ? 'Creating Account...' : 'Create an account'}
+      {pending ? 'Sending...' : 'Send Reset Link'}
     </Button>
   );
 }
 
-export default function SignupPage() {
+export default function ForgotPasswordPage() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const error = searchParams.get('error');
+    const message = searchParams.get('message');
     if (error) {
       toast({
         variant: 'destructive',
-        title: 'Registration Error',
+        title: 'Error',
         description: error,
+      });
+    }
+     if (message) {
+      toast({
+        title: 'Success',
+        description: message,
       });
     }
   }, [searchParams, toast]);
@@ -39,8 +46,8 @@ export default function SignupPage() {
      <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">
        <div className="hidden lg:flex flex-col items-center justify-center bg-primary text-primary-foreground p-8">
             <div className="text-left w-full max-w-md">
-                <h1 className="text-4xl font-bold mb-4">Join DEFIMART!</h1>
-                <p className="text-lg mb-8">Create an account to start buying and selling with ease.</p>
+                <h1 className="text-4xl font-bold mb-4">Forgot Password?</h1>
+                <p className="text-lg mb-8">No worries, we'll send you reset instructions.</p>
                  <Image
                     src="https://iili.io/qO5Jeou.png"
                     alt="DEFIMART Logo"
@@ -52,34 +59,22 @@ export default function SignupPage() {
         </div>
       <div className="flex items-center justify-center p-4 bg-background">
         <div className="w-full max-w-sm">
-            <h2 className="text-3xl font-bold text-center mb-2 text-foreground">Create your Account</h2>
-            <p className="text-center text-muted-foreground mb-8">Get started in just a few clicks</p>
-            <form action={signup}>
-            <div className="grid gap-4">
+            <h2 className="text-3xl font-bold text-center mb-2 text-foreground">Reset your Password</h2>
+            <p className="text-center text-muted-foreground mb-8">Enter your email to receive a password reset link.</p>
+            <form action={requestPasswordReset}>
+              <div className="grid gap-4">
                 <div className="grid gap-2">
-                <Label htmlFor="display_name">Display Name</Label>
-                <Input id="display_name" name="display_name" placeholder="Your Name" required />
-                </div>
-                <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="m@example.com" required />
-                </div>
-                <div className="grid gap-2">
-                <Label htmlFor="phone_number">Phone Number</Label>
-                <Input id="phone_number" name="phone_number" type="tel" placeholder="+1234567890" />
-                </div>
-                <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" name="password" type="password" required />
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" name="email" type="email" placeholder="m@example.com" required />
                 </div>
                 <SubmitButton />
                 <div className="text-center text-sm text-muted-foreground">
-                Already have an account?{' '}
-                <Link href="/login" className="underline text-primary">
-                    Sign in
-                </Link>
+                    Remember your password?{' '}
+                  <Link href="/login" className="underline text-primary">
+                    Back to Sign in
+                  </Link>
                 </div>
-            </div>
+              </div>
             </form>
         </div>
       </div>
