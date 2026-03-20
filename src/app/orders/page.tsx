@@ -1,33 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { logout } from '../auth/actions';
-import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tables } from '@/types/supabase';
-
-const Header = ({ user }: { user: any }) => (
-  <header className="bg-card border-b p-4 flex justify-between items-center">
-    <div className="font-bold text-lg text-primary">
-      <Link href="/">DEFIMART</Link>
-    </div>
-    <div className="flex items-center gap-4">
-      <Button variant="link" asChild>
-        <Link href="/orders">My Orders</Link>
-      </Button>
-      <span className="text-sm text-muted-foreground">
-        Welcome, {user.user_metadata?.display_name || user.email}
-      </span>
-      <form action={logout}>
-        <Button variant="outline" size="sm">
-          Logout
-        </Button>
-      </form>
-    </div>
-  </header>
-);
+import { Header } from '@/components/header';
 
 type OrderWithProduct = Tables<'orders'> & {
   products: Pick<Tables<'products'>, 'name' | 'price' | 'image_urls'> | null
@@ -53,7 +30,7 @@ export default async function OrdersPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header user={user} />
+      <Header />
       <main className="flex-1 p-8">
         <h1 className="text-3xl font-bold mb-8">My Orders</h1>
         <Card>

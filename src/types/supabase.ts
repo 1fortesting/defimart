@@ -155,6 +155,8 @@ export type Database = {
           name: string
           price: number
           seller_id: string
+          region: string | null
+          municipality: string | null
         }
         Insert: {
           created_at?: string
@@ -164,6 +166,8 @@ export type Database = {
           name: string
           price: number
           seller_id: string
+          region?: string | null
+          municipality?: string | null
         }
         Update: {
           created_at?: string
@@ -173,6 +177,8 @@ export type Database = {
           name?: string
           price?: number
           seller_id?: string
+          region?: string | null
+          municipality?: string | null
         }
         Relationships: [
           {

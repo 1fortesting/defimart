@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
-import { useActionState } from 'react';
+import React, { useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { useState } from 'react';
 import Image from 'next/image';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { regions, municipalities } from '@/lib/locations';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -23,6 +24,7 @@ export default function NewProductPage() {
     const initialState = { message: null, errors: {} };
     const [state, dispatch] = useActionState(createProduct, initialState);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [selectedRegion, setSelectedRegion] = useState<string>("");
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -50,10 +52,38 @@ export default function NewProductPage() {
               <Label htmlFor="description">Description</Label>
               <Textarea id="description" name="description" className="min-h-32" />
             </div>
-             <div className="grid gap-3">
-              <Label htmlFor="price">Price</Label>
-              <Input id="price" name="price" type="number" step="0.01" required />
-              {state.errors?.price && <p className="text-sm text-red-500">{state.errors.price[0]}</p>}
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid gap-3">
+                    <Label htmlFor="price">Price (GHS)</Label>
+                    <Input id="price" name="price" type="number" step="0.01" required />
+                    {state.errors?.price && <p className="text-sm text-red-500">{state.errors.price[0]}</p>}
+                </div>
+                <div className="grid gap-3">
+                    <Label htmlFor="region">Region</Label>
+                    <Select name="region" onValueChange={setSelectedRegion}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select Region" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {regions.map(region => (
+                                <SelectItem key={region} value={region}>{region}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="grid gap-3">
+                    <Label htmlFor="municipality">Municipality/District</Label>
+                     <Select name="municipality" disabled={!selectedRegion}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select Municipality" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {selectedRegion && municipalities[selectedRegion]?.map(muni => (
+                                <SelectItem key={muni} value={muni}>{muni}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
             <div className="grid gap-3">
               <Label htmlFor="image">Product Image</Label>
