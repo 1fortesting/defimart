@@ -32,47 +32,57 @@ export function UserMenu({ user }: { user: User | null }) {
   const handleLogout = async () => {
     await logout();
   };
+  
+  const displayName = user.user_metadata.display_name || user.email;
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
-            <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0]}</AvatarFallback>
-          </Avatar>
-          <span className="sr-only">Toggle user menu</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>
-            <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user.user_metadata.display_name}</p>
-                <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+    <div className="flex items-center gap-3">
+        {displayName && (
+            <div className="hidden md:flex flex-col items-end">
+                <p className="text-sm font-medium leading-none">Welcome</p>
+                <p className="text-xs leading-none text-muted-foreground truncate max-w-32">{displayName}</p>
             </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/profile"><UserIcon className="mr-2 h-4 w-4" />Profile</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/messages"><MessageSquare className="mr-2 h-4 w-4" />Messages</Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/help"><HelpCircle className="mr-2 h-4 w-4" />Help</Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onSelect={(e) => {
-            e.preventDefault();
-            handleLogout();
-          }}
-          className="cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10"
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        )}
+        <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="rounded-full">
+            <Avatar className="h-10 w-10">
+                <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
+                <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0]}</AvatarFallback>
+            </Avatar>
+            <span className="sr-only">Toggle user menu</span>
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>
+                <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.user_metadata.display_name}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+            <Link href="/profile"><UserIcon className="mr-2 h-4 w-4" />Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+            <Link href="/messages"><MessageSquare className="mr-2 h-4 w-4" />Messages</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+            <Link href="/help"><HelpCircle className="mr-2 h-4 w-4" />Help</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+            onSelect={(e) => {
+                e.preventDefault();
+                handleLogout();
+            }}
+            className="cursor-pointer text-red-500 focus:text-red-500 focus:bg-red-500/10"
+            >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+        </DropdownMenu>
+    </div>
   );
 }
