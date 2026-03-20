@@ -29,7 +29,7 @@ const ProductRow = ({ product }: { product: Tables<'products'> }) => {
         />
       </TableCell>
       <TableCell className="font-medium">{product.name}</TableCell>
-      <TableCell>${product.price.toFixed(2)}</TableCell>
+      <TableCell>GHS {product.price.toFixed(2)}</TableCell>
       <TableCell className="hidden md:table-cell">{new Date(product.created_at).toLocaleDateString()}</TableCell>
       <TableCell>
         <DropdownMenu>

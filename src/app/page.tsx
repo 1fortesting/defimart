@@ -56,7 +56,7 @@ const ProductCard = ({ product, user }: { product: Tables<'products'>; user: any
             <h3 className="text-lg font-semibold">{product.name}</h3>
             <p className="text-sm text-muted-foreground h-10 overflow-hidden text-ellipsis">{product.description}</p>
             <div className="flex items-center justify-between mt-4">
-                <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
+                <span className="text-lg font-bold">GHS {product.price.toFixed(2)}</span>
                  {user ? (
                     <Button>Buy Now</Button>
                 ) : (

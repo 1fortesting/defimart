@@ -77,7 +77,7 @@ export default async function OrdersPage() {
                       </div>
                     </TableCell>
                     <TableCell>{order.quantity}</TableCell>
-                    <TableCell>${((order.products?.price || 0) * order.quantity).toFixed(2)}</TableCell>
+                    <TableCell>GHS {((order.products?.price || 0) * order.quantity).toFixed(2)}</TableCell>
                     <TableCell>
                       <Badge variant={order.status === 'completed' ? 'default' : 'secondary'}>{order.status}</Badge>
                     </TableCell>
