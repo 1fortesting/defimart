@@ -71,16 +71,16 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
         return () => clearInterval(interval);
     }, [isDiscountActive, product.discount_end_date, showCountdown]);
 
-    const getStockLabel = () => {
+    const getStockLabel = (className?: string) => {
         if (product.quantity === null || product.quantity === undefined) return null;
         if (product.quantity > 5) {
-            return <Badge className="border-transparent bg-green-600 text-white hover:bg-green-700">In Stock</Badge>;
+            return <Badge className={cn("border-transparent bg-green-600 text-white hover:bg-green-700", className)}>In Stock</Badge>;
         }
         if (product.quantity > 0 && product.quantity <= 5) {
-            return <Badge className="border-transparent bg-red-600 text-white hover:bg-red-700">Few left</Badge>;
+            return <Badge className={cn("border-transparent bg-red-600 text-white hover:bg-red-700", className)}>Few left</Badge>;
         }
         if (product.quantity === 0) {
-            return <Badge variant="destructive">Out of Stock</Badge>;
+            return <Badge variant="destructive" className={cn(className)}>Out of Stock</Badge>;
         }
         return null;
     };
@@ -104,8 +104,8 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                     <span className="leading-none">OFF</span>
                 </div>
             )}
-            <div className="absolute top-2 right-2">
-                {getStockLabel()}
+            <div className="absolute top-0 right-0 z-10">
+                {getStockLabel("rounded-none rounded-bl-lg")}
             </div>
             {user && (
                 <form action={toggleSaveProduct} className="absolute bottom-2 right-2">
