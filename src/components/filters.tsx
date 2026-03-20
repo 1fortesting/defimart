@@ -1,48 +1,36 @@
-'use client'
+'use client';
 
-import { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { regions, municipalities } from '@/lib/locations';
-import { Card } from './ui/card';
-import { MapPin, Building } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Laptop, Shirt, Briefcase, Package } from 'lucide-react';
+import Link from 'next/link';
+
+const categories = [
+  { name: 'Electronics', icon: Laptop, href: '#' },
+  { name: 'Fashion', icon: Shirt, href: '#' },
+  { name: 'Services', icon: Briefcase, href: '#' },
+  { name: 'Other', icon: Package, href: '#' },
+];
+
+function CategoryCard({ name, icon: Icon, href }: { name: string, icon: React.ElementType, href: string }) {
+    return (
+        <Link href={href} className="group">
+            <Card className="flex flex-col items-center justify-center p-4 aspect-square bg-card rounded-lg border border-border group-hover:border-primary group-hover:bg-accent/5 transition-colors cursor-pointer">
+                <Icon className="h-8 w-8 text-primary mb-2 transition-transform group-hover:scale-110" />
+                <span className="text-sm text-center text-foreground font-medium">{name}</span>
+            </Card>
+        </Link>
+    )
+}
 
 export function Filters() {
-    const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-
-    return (
-        <Card className="p-4 mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="h-4 w-4" /> REGION
-                    </label>
-                    <Select onValueChange={setSelectedRegion}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="All Regions" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {regions.map(region => (
-                                <SelectItem key={region} value={region}>{region}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <label className="text-sm font-medium flex items-center gap-2 text-muted-foreground">
-                        <Building className="h-4 w-4" /> MUNICIPALITY/DISTRICT
-                    </label>
-                    <Select disabled={!selectedRegion}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="All Municipalities" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {selectedRegion && municipalities[selectedRegion]?.map(muni => (
-                                <SelectItem key={muni} value={muni}>{muni}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-        </Card>
-    )
+  return (
+    <div className="mb-8">
+      <h2 className="text-xl font-bold mb-4">Shop by Category</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {categories.map((category) => (
+          <CategoryCard key={category.name} {...category} />
+        ))}
+      </div>
+    </div>
+  );
 }
