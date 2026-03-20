@@ -38,10 +38,19 @@ const AdminSidebar = () => (
             <ul>
                 <li>
                     <Button variant="ghost" asChild className="w-full justify-start">
+                        <Link href="/admin">Dashboard</Link>
+                    </Button>
+                </li>
+                <li>
+                    <Button variant="ghost" asChild className="w-full justify-start">
                         <Link href="/admin/products">Products</Link>
                     </Button>
                 </li>
-                {/* Add other admin links here */}
+                <li>
+                    <Button variant="ghost" asChild className="w-full justify-start">
+                        <Link href="/admin/users">Users</Link>
+                    </Button>
+                </li>
             </ul>
         </nav>
     </aside>
