@@ -36,7 +36,7 @@ export async function createProduct(prevState: any, formData: FormData) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return { error: 'You must be logged in to create a product.' };
+    return { error: 'You must be logged in to create a product.', success: false, errors: {} };
   }
 
   const rawFormData = Object.fromEntries(formData.entries());
@@ -53,6 +53,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: 'Missing Fields. Failed to Create Product.',
+      success: false,
     };
   }
   
@@ -65,7 +66,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     .upload(fileName, imageFile);
   
   if (uploadError) {
-    return { message: `Storage Error: ${uploadError.message}` };
+    return { message: `Storage Error: ${uploadError.message}`, success: false, errors: {} };
   }
 
   const { data: { publicUrl } } = supabase.storage
@@ -87,19 +88,19 @@ export async function createProduct(prevState: any, formData: FormData) {
   if (error) {
     // Attempt to delete the uploaded image if the DB insert fails
     await supabase.storage.from('product_images').remove([fileName]);
-    return { message: error.message };
+    return { message: error.message, success: false, errors: {} };
   }
   
   revalidatePath('/admin/products');
   revalidatePath('/');
-  redirect('/admin/products');
+  return { success: true };
 }
 
 export async function updateProduct(prevState: any, formData: FormData) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return { error: 'You must be logged in to update a product.' };
+        return { error: 'You must be logged in to update a product.', success: false, errors: {} };
     }
 
     const rawFormData = Object.fromEntries(formData.entries());
@@ -116,26 +117,27 @@ export async function updateProduct(prevState: any, formData: FormData) {
         return {
             errors: validatedFields.error.flatten().fieldErrors,
             message: 'Missing Fields. Failed to Update Product.',
+            success: false
         };
     }
 
     const { id, name, description, price, quantity, category, image, discount_percentage, discount_end_date } = validatedFields.data;
 
     const { data: existingProduct, error: fetchError } = await supabase.from('products').select('image_urls').eq('id', id).single();
-    if(fetchError) return { message: `Failed to fetch existing product: ${fetchError.message}` };
+    if(fetchError) return { message: `Failed to fetch existing product: ${fetchError.message}`, success: false, errors: {} };
 
     let newImageUrls = existingProduct.image_urls;
     const imageFile = image as File;
 
     if (imageFile && imageFile.size > 0) {
         // Validate image
-        if (imageFile.size > 5 * 1024 * 1024) return { message: 'Max image size is 5MB.' };
-        if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(imageFile.type)) return { message: 'Only .jpg, .jpeg, .png and .webp formats are supported.' };
+        if (imageFile.size > 5 * 1024 * 1024) return { message: 'Max image size is 5MB.', success: false, errors: {} };
+        if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(imageFile.type)) return { message: 'Only .jpg, .jpeg, .png and .webp formats are supported.', success: false, errors: {} };
 
         const fileName = `${Date.now()}-${imageFile.name}`;
         const { error: uploadError } = await supabase.storage.from('product_images').upload(fileName, imageFile);
 
-        if (uploadError) return { message: `Storage Error: ${uploadError.message}` };
+        if (uploadError) return { message: `Storage Error: ${uploadError.message}`, success: false, errors: {} };
 
         const { data: { publicUrl } } = supabase.storage.from('product_images').getPublicUrl(fileName);
         newImageUrls = [publicUrl];
@@ -160,13 +162,13 @@ export async function updateProduct(prevState: any, formData: FormData) {
 
 
     if (updateError) {
-        return { message: updateError.message };
+        return { message: updateError.message, success: false, errors: {} };
     }
 
     revalidatePath('/admin/products');
     revalidatePath(`/admin/products/${id}/edit`);
     revalidatePath('/');
-    redirect('/admin/products');
+    return { success: true };
 }
 
 

@@ -7,12 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
-import React, { useActionState, useState } from 'react';
+import React, { useActionState, useState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tables } from '@/types/supabase';
 import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 const categories = [
     "Electronics",
@@ -35,9 +37,20 @@ function SubmitButton() {
 }
 
 export function EditProductForm({ product }: { product: Tables<'products'>}) {
-    const initialState = { message: null, errors: {} };
+    const initialState = { message: null, errors: {}, success: false };
     const [state, dispatch] = useActionState(updateProduct, initialState);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const router = useRouter();
+    const { toast } = useToast();
+
+    useEffect(() => {
+      if (state.success) {
+        toast({ title: 'Success', description: 'Product updated successfully.' });
+        router.push('/admin/products');
+      } else if (state.message) {
+        toast({ variant: 'destructive', title: 'Error', description: state.message });
+      }
+    }, [state, router, toast]);
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -163,7 +176,6 @@ export function EditProductForm({ product }: { product: Tables<'products'>}) {
             </Button>
             <SubmitButton />
         </div>
-        {state.message && <p className="text-sm text-red-500 text-center">{state.message}</p>}
       </div>
     </form>
   );
