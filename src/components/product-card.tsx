@@ -99,34 +99,34 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                 />
             </Link>
             {isDiscountActive && (
-                 <div className="absolute top-0 left-2 w-16 h-20 animate-swing origin-top z-10">
+                 <div className="absolute top-0 left-2 w-14 h-24 animate-swing origin-top z-10">
                     <svg
-                        viewBox="0 0 68 85"
+                        viewBox="0 0 54 95"
                         className="w-full h-full"
                         style={{ filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.2))' }}
                     >
                         {/* Back Tag */}
                         <path
-                            d="M 18 20 L 53 20 L 68 35 L 68 80 L 3 80 L 3 35 Z"
+                            d="M 14 30 L 42 30 L 54 45 L 54 90 L 2 90 L 2 45 Z"
                             fill="#991B1B" // darker red
                         />
                         {/* String */}
-                        <path d="M 34 0 L 34 23" stroke="#888" strokeWidth="1.5" />
+                        <path d="M 27 0 L 27 33" stroke="#888" strokeWidth="1.5" />
 
                         {/* Front Tag */}
                         <path
-                            d="M 15 15 L 50 15 L 65 30 L 65 75 L 0 75 L 0 30 Z"
+                            d="M 12 25 L 40 25 L 51 40 L 51 85 L 0 85 L 0 40 Z"
                             fill="#EF4444" // red-500
                         />
 
                         {/* Hole */}
-                        <circle cx="34" cy="23" r="3.5" fill="white" />
+                        <circle cx="27" cy="33" r="3.5" fill="white" />
                     </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold pt-7">
-                        <span className="text-base leading-none">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold pt-9">
+                        <span className="text-sm leading-none">
                             -{product.discount_percentage}%
                         </span>
-                        <span className="text-[9px] leading-tight">OFF</span>
+                        <span className="text-[8px] leading-tight">OFF</span>
                     </div>
                 </div>
             )}
