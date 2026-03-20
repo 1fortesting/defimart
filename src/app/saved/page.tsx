@@ -14,7 +14,7 @@ export default async function SavedPage() {
           <AuthPrompt />
         ) : (
           <div>
-            <h1 className="text-3xl font-bold mb-8 text-center">Saved Items</h1>
+            <h1 className="text-3xl font-bold mb-8 text-center">Wishlist</h1>
             <div className="text-center text-muted-foreground">
                 You have no saved items.
             </div>
