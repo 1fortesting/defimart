@@ -1,12 +1,14 @@
-import { createClient } from '@/lib/supabase/server';
+'use client';
+
+import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tables, Database } from '@/types/supabase';
 import { Button } from '@/components/ui/button';
 import { updateOrderStatus } from './actions';
 import { useFormStatus } from 'react-dom';
+import { useEffect, useState } from 'react';
 
 type OrderWithDetails = Tables<'orders'> & {
   products: Pick<Tables<'products'>, 'name'> | null;
@@ -34,18 +36,29 @@ function StatusSelector({ orderId, currentStatus }: { orderId: string, currentSt
     );
 }
 
-export default async function AdminOrdersPage() {
-    const supabase = createClient();
+export default function AdminOrdersPage() {
+    const [orders, setOrders] = useState<OrderWithDetails[]>([]);
+    const [loading, setLoading] = useState(true);
     
-    const { data: orders, error } = await supabase
-        .from('orders')
-        .select('*, products(name), profiles(display_name, phone_number)')
-        .order('created_at', { ascending: false })
-        .returns<OrderWithDetails[]>();
+    useEffect(() => {
+        const supabase = createClient();
+        const fetchOrders = async () => {
+            const { data, error } = await supabase
+                .from('orders')
+                .select('*, products(name), profiles(display_name, phone_number)')
+                .order('created_at', { ascending: false })
+                .returns<OrderWithDetails[]>();
 
-    if (error) {
-        console.error('Error fetching orders:', error);
-    }
+            if (error) {
+                console.error('Error fetching orders:', error);
+            } else if (data) {
+                setOrders(data);
+            }
+            setLoading(false);
+        }
+
+        fetchOrders();
+    }, []);
 
   return (
     <Card>
@@ -65,7 +78,11 @@ export default async function AdminOrdersPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders?.map((order) => (
+            {loading ? (
+                <TableRow>
+                    <TableCell colSpan={6} className="text-center">Loading...</TableCell>
+                </TableRow>
+            ) : orders?.map((order) => (
                 <TableRow key={order.id}>
                     <TableCell>{order.profiles?.display_name || 'N/A'}</TableCell>
                     <TableCell>{order.profiles?.phone_number || 'N/A'}</TableCell>
@@ -79,7 +96,7 @@ export default async function AdminOrdersPage() {
                     </TableCell>
                 </TableRow>
             ))}
-            {(!orders || orders.length === 0) && (
+            {!loading && (!orders || orders.length === 0) && (
                 <TableRow>
                     <TableCell colSpan={6} className="text-center">No orders found.</TableCell>
                 </TableRow>
