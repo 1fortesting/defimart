@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { BottomNav } from '@/components/bottom-nav';
 import { Header } from '@/components/header';
 import { ThemeProvider } from '@/components/theme-provider';
+import { StorefrontShell } from '@/components/storefront-shell';
 
 export const metadata: Metadata = {
   title: 'DEFIMART',
@@ -32,12 +33,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="pb-20 md:pb-0 min-h-screen flex flex-col">
-            <Header />
+          <StorefrontShell header={<Header />} bottomNav={<BottomNav />}>
             {children}
-          </div>
+          </StorefrontShell>
           <Toaster />
-          <BottomNav />
         </ThemeProvider>
       </body>
     </html>
