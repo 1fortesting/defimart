@@ -13,8 +13,7 @@ import { HeaderNav } from './header-nav';
 import Image from 'next/image';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Badge } from './ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { UserMenu } from './user-menu';
 
 export async function Header() {
   const supabase = createClient();
@@ -51,54 +50,7 @@ export async function Header() {
             </div>
         </div>
         <div className="flex items-center gap-2">
-            {user ? (
-              <>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                       <Avatar className="h-9 w-9">
-                        <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
-                        <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0]}</AvatarFallback>
-                      </Avatar>
-                      <span className="sr-only">Toggle user menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile">Profile</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/messages">Messages</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href="/help">Help</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        (document.getElementById('desktop-logout-form') as HTMLFormElement)?.submit();
-                      }}
-                      className="cursor-pointer"
-                    >
-                      Logout
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <form id="desktop-logout-form" action={logout} className="hidden" />
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link href="/login">Login</Link>
-                </Button>
-                <Button asChild>
-                  <Link href="/signup">Sign Up</Link>
-                </Button>
-              </>
-            )}
+            <UserMenu user={user} />
         </div>
       </div>
       
@@ -113,7 +65,7 @@ export async function Header() {
             </SheetTrigger>
             <SheetContent side="left" className="w-3/4 p-0">
                 <SheetHeader className="p-4 border-b">
-                    <SheetTitle>Menu</SheetTitle>
+                    <SheetTitle className="sr-only">Menu</SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-4 p-4">
                    <Link className="font-bold text-lg" href="/profile">Profile</Link>
