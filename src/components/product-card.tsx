@@ -123,7 +123,7 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
 
             {showCountdown && timeLeft ? (
                 <div className="flex items-center justify-between mt-2">
-                    <Badge variant="outline" className="text-orange-500 border-orange-500 animate-pulse-second">
+                    <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
                         <Flame className="mr-1 h-3 w-3" />
                         Limited time
                     </Badge>
