@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -15,8 +14,11 @@ import {
 import { deleteProduct } from './actions';
 import { Tables } from '@/types/supabase';
 
+type ProductWithCategory = Tables<'products'> & {
+  categories: { name: string } | null;
+};
 
-const ProductRow = ({ product }: { product: Tables<'products'> }) => {
+const ProductRow = ({ product }: { product: ProductWithCategory }) => {
   return (
     <TableRow>
       <TableCell>
@@ -29,6 +31,7 @@ const ProductRow = ({ product }: { product: Tables<'products'> }) => {
         />
       </TableCell>
       <TableCell className="font-medium">{product.name}</TableCell>
+      <TableCell>{product.categories?.name ?? 'N/A'}</TableCell>
       <TableCell>GHS {product.price.toFixed(2)}</TableCell>
       <TableCell>{product.quantity ?? 'N/A'}</TableCell>
       <TableCell className="hidden md:table-cell">{new Date(product.created_at).toLocaleDateString()}</TableCell>
@@ -59,13 +62,12 @@ const ProductRow = ({ product }: { product: Tables<'products'> }) => {
 
 export default async function AdminProductsPage() {
   const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
-    redirect('/login');
-  }
-
-  const { data: products } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+  const { data: products } = await supabase
+    .from('products')
+    .select('*, categories(name)')
+    .order('created_at', { ascending: false })
+    .returns<ProductWithCategory[]>();
 
   return (
     <div>
@@ -86,6 +88,7 @@ export default async function AdminProductsPage() {
                   <span className="sr-only">Image</span>
                 </TableHead>
                 <TableHead>Name</TableHead>
+                <TableHead>Category</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Quantity</TableHead>
                 <TableHead className="hidden md:table-cell">Created at</TableHead>
@@ -100,7 +103,7 @@ export default async function AdminProductsPage() {
               ))}
                {!products || products.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">No products found.</TableCell>
+                    <TableCell colSpan={7} className="text-center">No products found.</TableCell>
                   </TableRow>
                 )}
             </TableBody>
@@ -110,5 +113,3 @@ export default async function AdminProductsPage() {
     </div>
   );
 }
-
-    
