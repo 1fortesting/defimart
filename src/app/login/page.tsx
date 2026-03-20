@@ -1,29 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { useFormStatus } from 'react-dom';
-import { useActionState, useEffect } from 'react';
-import { login } from '@/app/auth/actions';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" className="w-full" aria-disabled={pending}>
-      {pending ? 'Signing In...' : 'Sign In'}
-    </Button>
-  );
-}
+import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const error = searchParams.get('error');
@@ -45,17 +39,27 @@ export default function LoginPage() {
     }
   }, [searchParams, toast, router]);
   
-  const [state, formAction] = useActionState(login, { error: null });
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  useEffect(() => {
-    if (state?.error) {
-       toast({
+    if (error) {
+      toast({
         variant: 'destructive',
         title: 'Authentication Error',
-        description: state.error,
+        description: error.message,
       });
+      setLoading(false);
+    } else {
+      router.push('/');
+      router.refresh();
     }
-  }, [state, toast]);
+  };
 
   return (
     <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">
@@ -79,11 +83,19 @@ export default function LoginPage() {
           <div className="w-full max-w-sm">
             <h2 className="text-3xl font-bold text-center mb-2 text-foreground">Login to DEFIMART</h2>
             <p className="text-center text-muted-foreground mb-8">Enter your details below</p>
-            <form action={formAction}>
+            <form onSubmit={handleLogin}>
               <div className="grid gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    placeholder="m@example.com" 
+                    required 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
@@ -92,9 +104,18 @@ export default function LoginPage() {
                         Forgot password?
                     </Link>
                   </div>
-                  <Input id="password" name="password" type="password" required />
+                  <Input 
+                    id="password" 
+                    name="password" 
+                    type="password" 
+                    required 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
                 </div>
-                <SubmitButton />
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Signing In...' : 'Sign In'}
+                </Button>
                 <div className="text-center text-sm text-muted-foreground">
                   Don&apos;t have an account?{' '}
                   <Link href="/signup" className="underline text-primary transition-colors hover:text-primary/80">

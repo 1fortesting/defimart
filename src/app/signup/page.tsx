@@ -1,29 +1,25 @@
 'use client';
 
 import Link from 'next/link';
-import { useFormStatus } from 'react-dom';
-import { useActionState, useEffect } from 'react';
-import { signup } from '@/app/auth/actions';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" className="w-full" aria-disabled={pending}>
-      {pending ? 'Creating Account...' : 'Create an account'}
-    </Button>
-  );
-}
+import { createClient } from '@/lib/supabase/client';
 
 export default function SignupPage() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const error = searchParams.get('error');
@@ -37,18 +33,33 @@ export default function SignupPage() {
     }
   }, [searchParams, toast, router]);
 
-  const [state, formAction] = useActionState(signup, { error: null });
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          display_name: displayName,
+          phone_number: phoneNumber,
+        },
+      },
+    });
 
-  useEffect(() => {
-    if (state?.error) {
+    if (error) {
       toast({
         variant: 'destructive',
         title: 'Registration Error',
-        description: state.error,
+        description: error.message,
       });
+      setLoading(false);
+    } else {
+      router.push('/');
+      router.refresh();
     }
-  }, [state, toast]);
-
+  };
 
   return (
      <div className="w-full min-h-screen grid grid-cols-1 lg:grid-cols-2">
@@ -72,25 +83,56 @@ export default function SignupPage() {
         <div className="w-full max-w-sm">
             <h2 className="text-3xl font-bold text-center mb-2 text-foreground">Create your Account</h2>
             <p className="text-center text-muted-foreground mb-8">Get started in just a few clicks</p>
-            <form action={formAction}>
+            <form onSubmit={handleSignup}>
             <div className="grid gap-4">
                 <div className="grid gap-2">
                 <Label htmlFor="display_name">Display Name</Label>
-                <Input id="display_name" name="display_name" placeholder="Your Name" required />
+                <Input 
+                  id="display_name" 
+                  name="display_name" 
+                  placeholder="Your Name" 
+                  required 
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                />
                 </div>
                 <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+                <Input 
+                  id="email" 
+                  name="email" 
+                  type="email" 
+                  placeholder="m@example.com" 
+                  required 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
                 </div>
                 <div className="grid gap-2">
                 <Label htmlFor="phone_number">Phone Number</Label>
-                <Input id="phone_number" name="phone_number" type="tel" placeholder="+1234567890" />
+                <Input 
+                  id="phone_number" 
+                  name="phone_number" 
+                  type="tel" 
+                  placeholder="+1234567890"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                />
                 </div>
                 <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" name="password" type="password" required />
+                <Input 
+                  id="password" 
+                  name="password" 
+                  type="password" 
+                  required 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
                 </div>
-                <SubmitButton />
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? 'Creating Account...' : 'Create an account'}
+                </Button>
                 <div className="text-center text-sm text-muted-foreground">
                 Already have an account?{' '}
                 <Link href="/login" className="underline text-primary transition-colors hover:text-primary/80">
