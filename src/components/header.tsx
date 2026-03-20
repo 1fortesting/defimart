@@ -14,12 +14,16 @@ import {
   Search,
 } from 'lucide-react';
 import { logout } from '@/app/auth/actions';
+import { Badge } from './ui/badge';
 
-const NavLink = ({ href, icon: Icon, children, active }: { href: string, icon: React.ElementType, children: React.ReactNode, active?: boolean }) => (
-  <Button variant={active ? "secondary" : "ghost"} asChild className={`flex items-center gap-2 ${active ? 'bg-accent' : ''}`}>
+const NavLink = ({ href, icon: Icon, children, active, badgeCount }: { href: string, icon: React.ElementType, children: React.ReactNode, active?: boolean, badgeCount?: number }) => (
+  <Button variant={active ? "secondary" : "ghost"} asChild className={`relative flex items-center gap-2 ${active ? 'bg-accent' : ''}`}>
     <Link href={href}>
       <Icon className="h-4 w-4" />
       <span>{children}</span>
+      {badgeCount !== undefined && badgeCount > 0 && (
+        <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{badgeCount}</Badge>
+      )}
     </Link>
   </Button>
 );
@@ -27,6 +31,15 @@ const NavLink = ({ href, icon: Icon, children, active }: { href: string, icon: R
 export async function Header() {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  let cartItemCount = 0;
+  if (user) {
+    const { count } = await supabase
+      .from('cart_items')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+    cartItemCount = count ?? 0;
+  }
 
   const navLinks = [
     { href: "/", icon: Home, text: "Home", active: true },
@@ -36,7 +49,7 @@ export async function Header() {
     { href: "/messages", icon: MessageSquare, text: "Messages" },
     { href: "/saved", icon: Heart, text: "Saved" },
     { href: "/help", icon: HelpCircle, text: "Help" },
-    { href: "/cart", icon: ShoppingCart, text: "Cart" },
+    { href: "/cart", icon: ShoppingCart, text: "Cart", badgeCount: cartItemCount },
   ];
 
   return (
@@ -77,7 +90,7 @@ export async function Header() {
       </div>
       <nav className="flex justify-center items-center gap-2 overflow-x-auto pb-2">
          {navLinks.map(link => (
-          <NavLink key={link.href} href={link.href} icon={link.icon} active={link.active}>
+          <NavLink key={link.href} href={link.href} icon={link.icon} active={link.active} badgeCount={link.badgeCount}>
             {link.text}
           </NavLink>
         ))}

@@ -7,6 +7,7 @@ import { Tables } from '@/types/supabase';
 import { Header } from '@/components/header';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Filters } from '@/components/filters';
+import { addToCart } from './cart/actions';
 
 const ProductCard = ({ product, user }: { product: Tables<'products'>; user: any }) => (
     <Card className="overflow-hidden">
@@ -26,10 +27,13 @@ const ProductCard = ({ product, user }: { product: Tables<'products'>; user: any
             <div className="flex items-center justify-between mt-4">
                 <span className="text-lg font-bold">GHS {product.price.toFixed(2)}</span>
                  {user ? (
-                    <Button>Buy Now</Button>
+                    <form action={addToCart}>
+                        <input type="hidden" name="productId" value={product.id} />
+                        <Button type="submit">Add to Cart</Button>
+                    </form>
                 ) : (
                     <Button asChild>
-                        <Link href="/login">Buy Now</Link>
+                        <Link href="/login">Add to Cart</Link>
                     </Button>
                 )}
             </div>

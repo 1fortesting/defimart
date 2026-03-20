@@ -48,6 +48,11 @@ const AdminSidebar = () => (
                 </li>
                 <li>
                     <Button variant="ghost" asChild className="w-full justify-start">
+                        <Link href="/admin/orders">Orders</Link>
+                    </Button>
+                </li>
+                <li>
+                    <Button variant="ghost" asChild className="w-full justify-start">
                         <Link href="/admin/users">Users</Link>
                     </Button>
                 </li>
