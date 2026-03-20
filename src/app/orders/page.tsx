@@ -1,9 +1,9 @@
+
 import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tables } from '@/types/supabase';
-import { Header } from '@/components/header';
 import { AuthPrompt } from '@/components/auth-prompt';
 
 type OrderWithProduct = Tables<'orders'> & {
@@ -16,12 +16,9 @@ export default async function OrdersPage() {
 
   if (!user) {
     return (
-       <div className="min-h-screen flex flex-col">
-        <Header />
         <main className="flex-1 p-8 flex items-center justify-center">
           <AuthPrompt />
         </main>
-      </div>
     )
   }
 
@@ -36,8 +33,6 @@ export default async function OrdersPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
       <main className="flex-1 p-8">
         <h1 className="text-3xl font-bold mb-8">My Orders</h1>
         <Card>
@@ -78,6 +73,5 @@ export default async function OrdersPage() {
           </CardContent>
         </Card>
       </main>
-    </div>
   );
 }

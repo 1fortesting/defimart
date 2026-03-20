@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { BottomNav } from '@/components/bottom-nav';
+import { Header } from '@/components/header';
 
 export const metadata: Metadata = {
   title: 'DEFIMART',
@@ -24,7 +25,8 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <div className="pb-20 md:pb-0">
+        <div className="pb-20 md:pb-0 min-h-screen flex flex-col">
+          <Header />
           {children}
         </div>
         <Toaster />
@@ -33,5 +35,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-    

@@ -1,6 +1,6 @@
+
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { Header } from '@/components/header';
 import { Tables } from '@/types/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,12 +19,9 @@ export default async function CheckoutPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
         <main className="flex-1 p-8 flex items-center justify-center">
             <AuthPrompt />
         </main>
-      </div>
     );
   }
 
@@ -41,8 +38,6 @@ export default async function CheckoutPage() {
   const subtotal = cartItems.reduce((acc, item) => acc + (item.products?.price ?? 0) * item.quantity, 0);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
       <main className="flex-1 p-4 md:p-8">
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -117,6 +112,5 @@ export default async function CheckoutPage() {
             </div>
         </div>
       </main>
-    </div>
   );
 }

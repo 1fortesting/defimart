@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Header } from '@/components/header';
 import { Filters } from '@/components/filters';
 import { ProductCarousel } from '@/components/product-carousel';
 import { ProductCard } from '@/components/product-card';
@@ -31,9 +30,7 @@ export default async function Home() {
   const carouselProducts = shuffledProducts.slice(0, 5);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1">
+    <main className="flex-1">
         {/* Search for mobile */}
         <div className="p-4 md:hidden">
           <div className="relative">
@@ -76,6 +73,5 @@ export default async function Home() {
             </div>
         </div>
       </main>
-    </div>
   );
 }

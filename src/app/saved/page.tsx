@@ -1,4 +1,4 @@
-import { Header } from '@/components/header';
+
 import { createClient } from '@/lib/supabase/server';
 import { AuthPrompt } from '@/components/auth-prompt';
 import { ProductCard } from '@/components/product-card';
@@ -14,12 +14,9 @@ export default async function SavedPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
         <main className="flex-1 p-8 flex items-center justify-center">
           <AuthPrompt />
         </main>
-      </div>
     );
   }
 
@@ -33,8 +30,6 @@ export default async function SavedPage() {
   const savedProductIds = new Set(savedItems?.map(item => item.product_id) || []);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
       <main className="flex-1 p-4 md:p-8">
         <div className="container mx-auto">
           <h1 className="text-3xl font-bold mb-8">My Wishlist</h1>
@@ -59,6 +54,5 @@ export default async function SavedPage() {
           )}
         </div>
       </main>
-    </div>
   );
 }

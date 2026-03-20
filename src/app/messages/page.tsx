@@ -1,4 +1,4 @@
-import { Header } from '@/components/header';
+
 import { createClient } from '@/lib/supabase/server';
 import { AuthPrompt } from '@/components/auth-prompt';
 
@@ -7,8 +7,6 @@ export default async function MessagesPage() {
   const { data: { user } } = await supabase.auth.getUser();
   
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
       <main className="flex-1 p-8 flex items-center justify-center">
         {!user ? (
           <AuthPrompt />
@@ -21,6 +19,5 @@ export default async function MessagesPage() {
           </div>
         )}
       </main>
-    </div>
   );
 }
