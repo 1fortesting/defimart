@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
                 <SubmitButton />
                 <div className="text-center text-sm text-muted-foreground">
                     Remember your password?{' '}
-                  <Link href="/login" className="underline text-primary">
+                  <Link href="/login" className="underline text-primary transition-colors hover:text-primary/80">
                     Back to Sign in
                   </Link>
                 </div>

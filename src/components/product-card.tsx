@@ -36,7 +36,7 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
     };
     
     return (
-    <Card className="overflow-hidden group transition-all duration-300 hover:shadow-lg">
+    <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-primary/50 hover:-translate-y-1">
         <CardHeader className="p-0 relative">
             <Link href="#">
                 <Image
@@ -55,7 +55,7 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                 <form action={toggleSaveProduct} className="absolute top-2 right-2">
                     <input type="hidden" name="productId" value={product.id} />
                     <input type="hidden" name="pathname" value={pathname} />
-                    <Button type="submit" size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-black/20 hover:bg-black/50 text-white">
+                    <Button type="submit" size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-black/20 hover:bg-black/50 text-white transition-all hover:scale-110">
                         <Heart className={cn("h-4 w-4", isSaved && "fill-red-500 text-red-500")} />
                     </Button>
                 </form>

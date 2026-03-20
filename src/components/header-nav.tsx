@@ -21,7 +21,7 @@ const NavLink = ({ href, icon: Icon, children, active, badgeCount }: { href: str
     variant={active ? 'secondary' : 'ghost'} 
     asChild 
     className={cn(
-      "relative flex flex-col items-center justify-center h-auto font-sans text-xs p-2 gap-1 md:flex-row md:h-10 md:px-4 md:py-2 md:text-sm md:rounded-md",
+      "relative flex flex-col items-center justify-center h-auto font-sans text-xs p-2 gap-1 md:flex-row md:h-10 md:px-4 md:py-2 md:text-sm md:rounded-md transition-transform duration-200 transform md:hover:scale-105 active:scale-95",
        active ? "bg-yellow-400 text-black hover:bg-yellow-400/90" : "text-yellow-400 hover:bg-yellow-400/10",
        isMobile && "w-full"
     )}
@@ -57,7 +57,7 @@ export function HeaderNav({ cartItemCount, isMobile: mobileProp }: { cartItemCou
       { href: "/", icon: Home, text: "Home" },
       { href: "/categories", icon: LayoutGrid, text: "Categories" },
       { href: "/saved", icon: Heart, text: "Wishlist" },
-      { href: "/profile", icon: User, text: "Account" },
+      { href: "/help", icon: HelpCircle, text: "Help" },
   ];
 
   const navLinks = isMobile ? mobileLinks : desktopLinks;

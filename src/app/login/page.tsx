@@ -66,7 +66,7 @@ export default function LoginPage() {
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
                      <Label htmlFor="password">Password</Label>
-                     <Link href="/auth/forgot-password" className="text-sm underline text-primary">
+                     <Link href="/auth/forgot-password" className="text-sm underline text-primary transition-colors hover:text-primary/80">
                         Forgot password?
                     </Link>
                   </div>
@@ -75,7 +75,7 @@ export default function LoginPage() {
                 <SubmitButton />
                 <div className="text-center text-sm text-muted-foreground">
                   Don&apos;t have an account?{' '}
-                  <Link href="/signup" className="underline text-primary">
+                  <Link href="/signup" className="underline text-primary transition-colors hover:text-primary/80">
                     Sign up
                   </Link>
                 </div>

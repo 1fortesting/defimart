@@ -14,7 +14,7 @@ const categories = [
 function CategoryCard({ name, icon: Icon, href }: { name: string, icon: React.ElementType, href: string }) {
     return (
         <Link href={href} className="group">
-            <Card className="flex flex-col items-center justify-center p-2 aspect-square bg-card rounded-lg border border-border group-hover:border-primary group-hover:bg-accent/5 transition-colors cursor-pointer">
+            <Card className="flex flex-col items-center justify-center p-2 aspect-square bg-card rounded-lg border border-border group-hover:border-primary group-hover:bg-accent/10 transition-all duration-300 ease-in-out cursor-pointer transform group-hover:-translate-y-1">
                 <Icon className="h-6 w-6 text-primary mb-1 transition-transform group-hover:scale-110" />
                 <span className="text-xs text-center text-foreground font-medium">{name}</span>
             </Card>

@@ -78,7 +78,7 @@ export default function SignupPage() {
                 <SubmitButton />
                 <div className="text-center text-sm text-muted-foreground">
                 Already have an account?{' '}
-                <Link href="/login" className="underline text-primary">
+                <Link href="/login" className="underline text-primary transition-colors hover:text-primary/80">
                     Sign in
                 </Link>
                 </div>
