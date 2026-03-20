@@ -11,7 +11,6 @@ import {
   Heart,
   HelpCircle,
   ShoppingCart,
-  Store,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from './ui/badge';
@@ -23,7 +22,7 @@ const NavLink = ({ href, icon: Icon, children, active, badgeCount }: { href: str
     asChild 
     className={cn(
       "relative flex flex-col items-center justify-center h-auto font-sans text-xs p-2 gap-1 md:flex-row md:h-10 md:px-4 md:py-2 md:text-sm md:rounded-md",
-       active ? "bg-primary text-primary-foreground hover:bg-primary/90" : "text-primary hover:bg-primary/10",
+       active ? "bg-yellow-400 text-black hover:bg-yellow-400/90" : "text-yellow-400 hover:bg-yellow-400/10",
        isMobile && "w-full"
     )}
   >
@@ -57,7 +56,6 @@ export function HeaderNav({ cartItemCount, isMobile: mobileProp }: { cartItemCou
   const mobileLinks = [
       { href: "/", icon: Home, text: "Home" },
       { href: "/categories", icon: LayoutGrid, text: "Categories" },
-      { href: "/sell", icon: Store, text: "Sell" },
       { href: "/saved", icon: Heart, text: "Wishlist" },
       { href: "/profile", icon: User, text: "Account" },
   ];
