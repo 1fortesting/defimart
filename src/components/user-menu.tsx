@@ -39,14 +39,14 @@ export function UserMenu({ user }: { user: User | null }) {
     <div className="flex items-center gap-3">
         {displayName && (
             <div className="hidden md:flex flex-col items-end">
-                <p className="text-sm font-medium leading-none">Welcome</p>
-                <p className="text-xs leading-none text-muted-foreground truncate max-w-32">{displayName}</p>
+                <p className="text-base font-medium leading-none">Welcome</p>
+                <p className="text-sm leading-none text-muted-foreground truncate max-w-40">{displayName}</p>
             </div>
         )}
         <DropdownMenu>
         <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="rounded-full">
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-12 w-12">
                 <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
                 <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0]}</AvatarFallback>
             </Avatar>

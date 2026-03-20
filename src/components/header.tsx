@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Badge } from './ui/badge';
 import { UserMenu } from './user-menu';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 export async function Header() {
   const supabase = createClient();
@@ -65,7 +66,20 @@ export async function Header() {
             </SheetTrigger>
             <SheetContent side="left" className="w-3/4 p-0">
                 <SheetHeader className="p-4 border-b">
-                    <SheetTitle className="sr-only">Menu</SheetTitle>
+                    <SheetTitle>
+                      {user ? (
+                            <div className="flex items-center gap-4">
+                                <Avatar>
+                                    <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
+                                    <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0]}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col">
+                                    <span className="font-semibold leading-none">{user.user_metadata.display_name}</span>
+                                    <span className="text-xs text-muted-foreground">{user.email}</span>
+                                </div>
+                            </div>
+                        ) : 'Menu'}
+                    </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-4 p-4">
                    <Link className="font-bold text-lg" href="/profile">Profile</Link>
