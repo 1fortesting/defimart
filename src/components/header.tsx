@@ -11,7 +11,7 @@ import {
 import { logout } from '@/app/auth/actions';
 import { HeaderNav } from './header-nav';
 import Image from 'next/image';
-import { Sheet, SheetContent, SheetTrigger } from './ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Badge } from './ui/badge';
 
 export async function Header() {
@@ -83,6 +83,9 @@ export async function Header() {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-3/4">
+                <SheetHeader>
+                    <SheetTitle className="sr-only">Menu</SheetTitle>
+                </SheetHeader>
                 <nav className="flex flex-col gap-4 p-4">
                    <Link className="font-bold text-lg" href="/profile">Profile</Link>
                    <Link className="font-bold text-lg" href="/orders">Orders</Link>
