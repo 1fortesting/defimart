@@ -69,9 +69,15 @@ export async function createProduct(prevState: any, formData: FormData) {
     return { message: `Storage Error: ${uploadError.message}`, success: false, errors: {} };
   }
 
-  const { data: { publicUrl } } = supabase.storage
+  const { data: urlData } = supabase.storage
     .from('product_images')
     .getPublicUrl(fileName);
+
+  if (!urlData?.publicUrl) {
+    await supabase.storage.from('product_images').remove([fileName]);
+    return { message: 'Could not get public URL for image.', success: false, errors: {} };
+  }
+  const publicUrl = urlData.publicUrl;
   
   const { error } = await supabase.from('products').insert({
     name,
@@ -124,7 +130,9 @@ export async function updateProduct(prevState: any, formData: FormData) {
     const { id, name, description, price, quantity, category, image, discount_percentage, discount_end_date } = validatedFields.data;
 
     const { data: existingProduct, error: fetchError } = await supabase.from('products').select('image_urls').eq('id', id).single();
-    if(fetchError) return { message: `Failed to fetch existing product: ${fetchError.message}`, success: false, errors: {} };
+    if (fetchError || !existingProduct) {
+        return { message: `Failed to fetch existing product: ${fetchError?.message || 'Product not found.'}`, success: false, errors: {} };
+    }
 
     let newImageUrls = existingProduct.image_urls;
     const imageFile = image as File;
@@ -139,7 +147,13 @@ export async function updateProduct(prevState: any, formData: FormData) {
 
         if (uploadError) return { message: `Storage Error: ${uploadError.message}`, success: false, errors: {} };
 
-        const { data: { publicUrl } } = supabase.storage.from('product_images').getPublicUrl(fileName);
+        const { data: urlData } = supabase.storage.from('product_images').getPublicUrl(fileName);
+        
+        if (!urlData?.publicUrl) {
+            await supabase.storage.from('product_images').remove([fileName]);
+            return { message: 'Could not get public URL for image.', success: false, errors: {} };
+        }
+        const publicUrl = urlData.publicUrl;
         newImageUrls = [publicUrl];
 
         // Delete old image if it exists
@@ -185,5 +199,3 @@ export async function deleteProduct(formData: FormData) {
     revalidatePath('/admin/products');
     revalidatePath('/');
 }
-
-    
