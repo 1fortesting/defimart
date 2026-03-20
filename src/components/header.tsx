@@ -4,17 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
   Search,
-  User,
   Menu,
   ShoppingCart,
 } from 'lucide-react';
-import { logout } from '@/app/auth/actions';
 import { HeaderNav } from './header-nav';
 import Image from 'next/image';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 import { Badge } from './ui/badge';
 import { UserMenu } from './user-menu';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { ThemeToggle } from './theme-toggle';
 
 export async function Header() {
   const supabase = createClient();
@@ -51,6 +50,7 @@ export async function Header() {
             </div>
         </div>
         <div className="flex items-center gap-2">
+            <ThemeToggle />
             <UserMenu user={user} />
         </div>
       </div>
@@ -67,18 +67,16 @@ export async function Header() {
             <SheetContent side="left" className="w-3/4 p-0">
                 <SheetHeader className="p-4 border-b">
                     <SheetTitle>
-                      {user ? (
-                            <div className="flex items-center gap-4">
-                                <Avatar>
-                                    <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
-                                    <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0]}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col">
-                                    <span className="font-semibold leading-none">{user.user_metadata.display_name}</span>
-                                    <span className="text-xs text-muted-foreground">{user.email}</span>
-                                </div>
+                      <div className="flex items-center gap-4">
+                            <Avatar>
+                                <AvatarImage src={user?.user_metadata.avatar_url ?? undefined} />
+                                <AvatarFallback>{user?.user_metadata.display_name?.[0] || user?.email?.[0] || 'D'}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex flex-col">
+                                <span className="font-semibold leading-none">{user ? `Welcome, ${user.user_metadata.display_name}` : 'Menu'}</span>
+                                {user && <span className="text-xs text-muted-foreground">{user.email}</span>}
                             </div>
-                        ) : 'Menu'}
+                        </div>
                     </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-4 p-4">
@@ -87,7 +85,7 @@ export async function Header() {
                    <Link className="font-bold text-lg" href="/messages">Messages</Link>
                    <Link className="font-bold text-lg" href="/help">Help</Link>
                    {user && (
-                     <form action={logout} className="mt-8">
+                     <form action={logout}>
                        <Button variant="outline" className="w-full">Logout</Button>
                      </form>
                    )}
@@ -115,13 +113,15 @@ export async function Header() {
                     )}
                 </Link>
             </Button>
-             {user && (
+             {user ? (
                 <Button asChild variant="ghost" size="icon" className="relative">
                     <Link href="/profile">
                         <User className="h-6 w-6 text-primary"/>
                         <span className="sr-only">Profile</span>
                     </Link>
                 </Button>
+             ) : (
+                <ThemeToggle />
              )}
         </div>
       </div>
