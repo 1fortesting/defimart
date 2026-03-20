@@ -40,6 +40,9 @@ export function ProductActions({ product }: { product: Tables<'products'> }) {
                     <DropdownMenuItem asChild>
                         <Link href={`/admin/products/${product.id}/edit`}>Edit</Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href={`/admin/products/${product.id}/edit`}>Add Discount</Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <AlertDialogTrigger asChild>
                          <DropdownMenuItem className="text-red-500" onSelect={(e) => e.preventDefault()}>Delete</DropdownMenuItem>
