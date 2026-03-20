@@ -36,40 +36,32 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
 
         const endDate = new Date(product.discount_end_date);
 
-        const interval = setInterval(() => {
+        const timer = setInterval(() => {
             const now = new Date();
-            const diff = endDate.getTime() - now.getTime();
+            const difference = endDate.getTime() - now.getTime();
 
-            if (diff > 0 && diff <= 12 * 60 * 60 * 1000) {
-                if (!showCountdown) setShowCountdown(true);
-
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            if (difference > 0 && difference <= 12 * 60 * 60 * 1000) {
+                setShowCountdown(true);
+                const hours = Math.floor(difference / (1000 * 60 * 60));
+                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
                 setTimeLeft({
                     hours: String(hours).padStart(2, '0'),
                     minutes: String(minutes).padStart(2, '0'),
                     seconds: String(seconds).padStart(2, '0'),
                 });
-
             } else {
-                if(showCountdown) setShowCountdown(false);
-                if (diff <= 0) {
-                    clearInterval(interval);
+                setShowCountdown(false);
+                setTimeLeft(null);
+                if (difference <= 0) {
+                    clearInterval(timer);
                 }
             }
         }, 1000);
-        
-        // Initial check
-        const initialDiff = endDate.getTime() - new Date().getTime();
-        if (initialDiff > 0 && initialDiff <= 12 * 60 * 60 * 1000) {
-            setShowCountdown(true);
-        }
 
-
-        return () => clearInterval(interval);
-    }, [isDiscountActive, product.discount_end_date, showCountdown]);
+        return () => clearInterval(timer);
+    }, [isDiscountActive, product.discount_end_date]);
 
     const getStockLabel = (className?: string) => {
         if (product.quantity === null || product.quantity === undefined) return null;
@@ -99,34 +91,34 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                 />
             </Link>
             {isDiscountActive && (
-                 <div className="absolute top-0 left-2 w-14 h-24 animate-swing origin-top z-10">
+                 <div className="absolute top-0 left-2 w-12 h-28 animate-swing origin-top z-10">
                     <svg
-                        viewBox="0 0 54 95"
+                        viewBox="0 0 54 110"
                         className="w-full h-full"
                         style={{ filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.2))' }}
                     >
                         {/* Back Tag */}
                         <path
-                            d="M 14 30 L 42 30 L 54 45 L 54 90 L 2 90 L 2 45 Z"
+                            d="M 14 45 L 42 45 L 54 60 L 54 105 L 2 105 L 2 60 Z"
                             fill="#991B1B" // darker red
                         />
                         {/* String */}
-                        <path d="M 27 0 L 27 33" stroke="#888" strokeWidth="1.5" />
+                        <path d="M 27 0 L 27 48" stroke="#888" strokeWidth="1.5" />
 
                         {/* Front Tag */}
                         <path
-                            d="M 12 25 L 40 25 L 51 40 L 51 85 L 0 85 L 0 40 Z"
+                            d="M 12 40 L 40 40 L 51 55 L 51 100 L 0 100 L 0 55 Z"
                             fill="#EF4444" // red-500
                         />
 
                         {/* Hole */}
-                        <circle cx="27" cy="33" r="3.5" fill="white" />
+                        <circle cx="27" cy="48" r="3.5" fill="white" />
                     </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold pt-9">
-                        <span className="text-sm leading-none">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold pt-12">
+                        <span className="text-[11px] leading-none">
                             -{product.discount_percentage}%
                         </span>
-                        <span className="text-[8px] leading-tight">OFF</span>
+                        <span className="text-[7px] leading-tight">OFF</span>
                     </div>
                 </div>
             )}
