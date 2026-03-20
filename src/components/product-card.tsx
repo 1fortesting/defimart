@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Tables } from '@/types/supabase';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Flame, Tag } from 'lucide-react';
+import { Heart, Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { toggleSaveProduct } from '@/app/saved/actions';
@@ -99,16 +99,34 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                 />
             </Link>
             {isDiscountActive && (
-                <div className="absolute top-0 left-0 w-20 h-24 animate-swing origin-top z-10">
-                    {/* String */}
-                    <div className="h-6 w-px bg-gray-500 mx-auto"></div>
-                    {/* Badge */}
-                    <div className="relative w-20 h-12 mx-auto">
-                        <Tag className="w-full h-full text-red-600 drop-shadow-lg" fill="currentColor"/>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold pl-3">
-                            <span className="text-lg leading-none">-{product.discount_percentage}%</span>
-                            <span className="text-[10px] leading-none">OFF</span>
-                        </div>
+                 <div className="absolute top-0 left-2 w-16 h-20 animate-swing origin-top z-10">
+                    <svg
+                        viewBox="0 0 68 85"
+                        className="w-full h-full"
+                        style={{ filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.2))' }}
+                    >
+                        {/* Back Tag */}
+                        <path
+                            d="M 18 20 L 53 20 L 68 35 L 68 80 L 3 80 L 3 35 Z"
+                            fill="#991B1B" // darker red
+                        />
+                        {/* String */}
+                        <path d="M 34 0 L 34 23" stroke="#888" strokeWidth="1.5" />
+
+                        {/* Front Tag */}
+                        <path
+                            d="M 15 15 L 50 15 L 65 30 L 65 75 L 0 75 L 0 30 Z"
+                            fill="#EF4444" // red-500
+                        />
+
+                        {/* Hole */}
+                        <circle cx="34" cy="23" r="3.5" fill="white" />
+                    </svg>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold pt-7">
+                        <span className="text-base leading-none">
+                            -{product.discount_percentage}%
+                        </span>
+                        <span className="text-[9px] leading-tight">OFF</span>
                     </div>
                 </div>
             )}
