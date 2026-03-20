@@ -27,11 +27,19 @@ export default function LoginPage() {
 
   useEffect(() => {
     const error = searchParams.get('error');
+    const message = searchParams.get('message');
     if (error) {
       toast({
         variant: 'destructive',
         title: 'Authentication Error',
         description: error,
+      });
+      router.replace('/login', { scroll: false });
+    }
+    if (message) {
+      toast({
+        title: 'Info',
+        description: message,
       });
       router.replace('/login', { scroll: false });
     }
