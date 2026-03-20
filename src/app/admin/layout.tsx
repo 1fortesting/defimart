@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 function AdminHeader() {
   const router = useRouter();
@@ -14,8 +15,17 @@ function AdminHeader() {
 
   return (
     <header className="bg-card border-b p-4 flex justify-between items-center">
-      <div className="font-bold text-2xl text-primary tracking-tight">
-        <Link href="/admin">DEFIMART Admin</Link>
+      <div className="flex items-center gap-2">
+         <Link href="/admin">
+            <Image
+                src="https://iili.io/qO5Jeou.png"
+                alt="DEFIMART Logo"
+                width={150}
+                height={35}
+                className="object-contain"
+            />
+        </Link>
+        <span className="font-semibold text-lg text-muted-foreground">Admin</span>
       </div>
       <div className="flex items-center gap-4">
         <Button variant="link" asChild>

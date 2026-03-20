@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { logout } from '@/app/auth/actions';
 import { HeaderNav } from './header-nav';
+import Image from 'next/image';
 
 export async function Header() {
   const supabase = createClient();
@@ -25,7 +26,15 @@ export async function Header() {
     <header className="bg-card border-b p-4 flex flex-col gap-4">
       <div className="flex justify-between items-center">
         <div className="font-bold text-3xl text-primary tracking-tight">
-          <Link href="/">DEFIMART</Link>
+           <Link href="/">
+            <Image
+                src="https://iili.io/qO5Jeou.png"
+                alt="DEFIMART Logo"
+                width={180}
+                height={40}
+                className="object-contain"
+            />
+          </Link>
         </div>
         <div className="flex-1 max-w-md mx-4">
             <div className="relative">
