@@ -35,14 +35,14 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
         if (!isDiscountActive || !product.discount_end_date) return;
 
         const endDate = new Date(product.discount_end_date);
-        let timer: NodeJS.Timeout;
-
-        const updateTimer = () => {
+        
+        // This effect should only run on the client
+        const timer = setInterval(() => {
             const now = new Date();
             const difference = endDate.getTime() - now.getTime();
 
             if (difference > 0 && difference <= 12 * 60 * 60 * 1000) {
-                setShowCountdown(true);
+                if (!showCountdown) setShowCountdown(true);
                 const hours = Math.floor(difference / (1000 * 60 * 60));
                 const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((difference % (1000 * 60)) / 1000);
@@ -53,21 +53,17 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                     seconds: String(seconds).padStart(2, '0'),
                 });
             } else {
-                setShowCountdown(false);
-                setTimeLeft(null);
+                if (showCountdown) setShowCountdown(false);
+                if (timeLeft) setTimeLeft(null);
                 if (difference <= 0) {
                     clearInterval(timer);
                 }
             }
-        }
-
-        // Run on client-side only
-        updateTimer();
-        timer = setInterval(updateTimer, 1000);
+        }, 1000);
 
 
         return () => clearInterval(timer);
-    }, [isDiscountActive, product.discount_end_date]);
+    }, [isDiscountActive, product.discount_end_date, showCountdown, timeLeft]);
 
     const getStockLabel = (className?: string) => {
         if (product.quantity === null || product.quantity === undefined) return null;
@@ -97,48 +93,48 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                 />
             </Link>
             {isDiscountActive && (
-                 <div className="absolute top-0 left-0 w-12 h-28 animate-swing origin-top z-10">
+                 <div className="absolute top-0 left-0 w-16 h-28 animate-swing origin-top z-10 -translate-x-2 -translate-y-2">
                     <svg
-                        viewBox="0 0 54 110"
+                        viewBox="0 0 64 120"
                         className="w-full h-full"
                         style={{ filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.2))' }}
                     >
-                        {/* Back Tag */}
                         <path
-                            d="M 14 45 L 42 45 L 54 60 L 54 105 L 2 105 L 2 60 Z"
+                            d="M 14 55 L 50 55 L 62 70 L 62 115 L 2 115 L 2 70 Z"
                             fill="#991B1B" // darker red
                         />
-                        {/* String */}
-                        <path d="M 27 0 L 27 48" stroke="#888" strokeWidth="1.5" />
-
-                        {/* Front Tag */}
+                        <path d="M 32 0 L 32 58" stroke="#888" strokeWidth="1.5" />
                         <path
-                            d="M 12 40 L 40 40 L 51 55 L 51 100 L 0 100 L 0 55 Z"
+                            d="M 12 50 L 48 50 L 59 65 L 59 110 L 0 110 L 0 65 Z"
                             fill="#EF4444" // red-500
                         />
-
-                        {/* Hole */}
-                        <circle cx="27" cy="48" r="3.5" fill="white" />
+                        <circle cx="32" cy="58" r="3.5" fill="white" />
                     </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold pt-12">
-                        <span className="text-[11px] leading-none">
+                     <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold pt-16">
+                        <span className="text-sm leading-none">
                             -{product.discount_percentage}%
                         </span>
-                        <span className="text-[7px] leading-tight">OFF</span>
+                        <span className="text-[10px] leading-tight">OFF</span>
                     </div>
                 </div>
             )}
             <div className="absolute top-0 right-0 z-10">
                 {getStockLabel("rounded-none rounded-bl-lg rounded-tr-md")}
             </div>
-            {user && (
-                <form action={toggleSaveProduct} className="absolute bottom-2 right-2">
+            {user ? (
+                <form action={toggleSaveProduct} className="absolute bottom-2 right-2 z-10">
                     <input type="hidden" name="productId" value={product.id} />
                     <input type="hidden" name="pathname" value={pathname} />
                     <Button type="submit" size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-black/20 hover:bg-black/50 text-white transition-all hover:scale-110">
                         <Heart className={cn("h-4 w-4", isSaved && "fill-red-500 text-red-500")} />
                     </Button>
                 </form>
+            ) : (
+                 <Button asChild size="icon" variant="ghost" className="absolute bottom-2 right-2 z-10 h-8 w-8 rounded-full bg-black/20 hover:bg-black/50 text-white transition-all hover:scale-110">
+                    <Link href="/login">
+                        <Heart className="h-4 w-4" />
+                    </Link>
+                </Button>
             )}
         </CardHeader>
         <CardContent className="p-3">
@@ -147,7 +143,7 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
 
             {showCountdown && timeLeft ? (
                 <div className="flex items-center justify-between mt-2">
-                    <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
+                    <Badge variant="outline" className="text-orange-500 border-orange-500 animate-pulse">
                         <Flame className="mr-1 h-3 w-3" />
                         Limited time
                     </Badge>
