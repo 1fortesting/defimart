@@ -25,8 +25,6 @@ export default function SignupPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [state, formAction] = useActionState(signup, { error: null });
-
   useEffect(() => {
     const error = searchParams.get('error');
     if (error) {
@@ -39,6 +37,8 @@ export default function SignupPage() {
     }
   }, [searchParams, toast, router]);
 
+  const [state, formAction] = useActionState(signup, { error: null, success: false });
+
   useEffect(() => {
     if (state?.error) {
       toast({
@@ -47,7 +47,10 @@ export default function SignupPage() {
         description: state.error,
       });
     }
-  }, [state, toast]);
+    if (state?.success) {
+      router.push('/');
+    }
+  }, [state, toast, router]);
 
 
   return (
