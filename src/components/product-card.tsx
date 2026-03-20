@@ -33,7 +33,7 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
             return <Badge className="border-transparent bg-green-600 text-primary-foreground hover:bg-green-700">In Stock</Badge>;
         }
         if (product.quantity > 0 && product.quantity <= 5) {
-            return <Badge className="border-transparent bg-yellow-500 text-primary-foreground hover:bg-yellow-600">Few left</Badge>;
+            return <Badge className="border-transparent bg-red-600 text-primary-foreground hover:bg-red-700">Few left</Badge>;
         }
         if (product.quantity === 0) {
             return <Badge variant="destructive">Out of Stock</Badge>;
