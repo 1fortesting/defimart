@@ -14,9 +14,17 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from './ui/badge';
+import { cn } from '@/lib/utils';
 
 const NavLink = ({ href, icon: Icon, children, active, badgeCount }: { href: string, icon: React.ElementType, children: React.ReactNode, active?: boolean, badgeCount?: number }) => (
-  <Button variant={active ? "secondary" : "ghost"} asChild className={`relative flex items-center gap-2 ${active ? 'bg-accent' : ''}`}>
+  <Button 
+    variant={active ? "default" : "ghost"} 
+    asChild 
+    className={cn(
+      "relative flex items-center gap-2",
+      !active && "text-primary"
+    )}
+  >
     <Link href={href}>
       <Icon className="h-4 w-4" />
       <span>{children}</span>
