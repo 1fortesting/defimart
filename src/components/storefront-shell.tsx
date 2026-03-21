@@ -13,9 +13,8 @@ export function StorefrontShell({
 }) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith('/admin');
-  const isAuthRoute = pathname === '/login' || pathname === '/signup' || pathname.startsWith('/auth');
-
-  if (isAdminRoute || isAuthRoute) {
+  
+  if (isAdminRoute) {
     return <>{children}</>;
   }
 

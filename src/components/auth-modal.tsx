@@ -200,30 +200,20 @@ const LeftPanel = () => {
 
 export function AuthModal({ initialView }: { initialView: 'login' | 'signup' }) {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const { toast } = useToast();
     const [view, setView] = useState(initialView);
     const [isModalOpen, setIsModalOpen] = useState(true);
 
     useEffect(() => {
-        const error = searchParams.get('error');
-        const message = searchParams.get('message');
-        if (error) {
-            toast({ variant: 'destructive', title: 'Error', description: error });
-            router.replace('/login');
-        }
-        if (message) {
-            toast({ title: 'Info', description: message });
-            router.replace('/login');
-        }
-    }, [searchParams, router, toast]);
-
-    useEffect(() => {
         if (!isModalOpen) {
             // Use a timeout to allow the fade-out animation to finish
-            setTimeout(() => router.push('/'), 150);
+            setTimeout(() => router.back(), 150);
         }
     }, [isModalOpen, router]);
+
+    // When view changes (e.g. from login to signup), update URL without full navigation
+    useEffect(() => {
+        window.history.replaceState(null, '', `/${view}`);
+    }, [view]);
 
     return (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
