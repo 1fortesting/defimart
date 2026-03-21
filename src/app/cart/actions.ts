@@ -140,36 +140,37 @@ export async function placeOrder() {
     }
 
     // --- SMS Notification Logic ---
-    if (createdOrders) {
+    if (createdOrders && createdOrders.length > 0) {
         const buyerPhoneNumber = profile?.phone_number;
         const buyerName = profile?.display_name || 'Valued Customer';
         const adminPhoneNumber = process.env.ADMIN_PHONE_NUMBER;
 
-        for (const order of createdOrders) {
+        const totalAmount = createdOrders.reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0);
+        const productNames = createdOrders.map(order => {
             const cartItem = cartItems.find(item => item.product_id === order.product_id);
-            if (!cartItem || !cartItem.products) continue;
+            const productName = cartItem?.products?.name || 'Unknown Product';
+            const quantity = order.quantity;
+            return `${productName} (x${quantity})`;
+        }).join(', ');
+        const firstOrderId = createdOrders[0].id.substring(0, 8); // Use first order ID for reference
 
-            const productName = cartItem.products.name;
-            const finalPrice = order.price_per_item * order.quantity;
-            
-            // Send SMS to Buyer
-            if (buyerPhoneNumber) {
-                const buyerMessage = `DEFIMART: Your order #${order.id.substring(0, 8)} for '${productName}' (GHS ${finalPrice.toFixed(2)}) has been received successfully. We are processing it and will notify you once it's approved. Thank you for shopping with Defimart.`;
-                try {
-                    await sendSms({ phoneNumber: buyerPhoneNumber, message: buyerMessage });
-                } catch (e) {
-                    console.error("Failed to send order confirmation SMS to buyer:", e);
-                }
+        // Send SMS to Buyer
+        if (buyerPhoneNumber) {
+            const buyerMessage = `DEFIMART: Your order #${firstOrderId}... for ${productNames} (Total: GHS ${totalAmount.toFixed(2)}) has been received. We'll notify you once it's approved for pickup. Thank you!`;
+            try {
+                await sendSms({ phoneNumber: buyerPhoneNumber, message: buyerMessage });
+            } catch (e) {
+                console.error("Failed to send order confirmation SMS to buyer:", e);
             }
+        }
 
-            // Send SMS to Admin
-            if (adminPhoneNumber) {
-                 const adminMessage = `DEFIMART ADMIN ALERT: New order received. Order #${order.id.substring(0, 8)}. Item: ${productName}. Amount: GHS ${finalPrice.toFixed(2)}. Customer: ${buyerName} (${buyerPhoneNumber || 'No Phone'}). Please log in to the dashboard to review and take action.`;
-                 try {
-                    await sendSms({ phoneNumber: adminPhoneNumber, message: adminMessage });
-                } catch(e) {
-                    console.error("Failed to send new order notification SMS to admin:", e);
-                }
+        // Send SMS to Admin
+        if (adminPhoneNumber) {
+             const adminMessage = `DEFIMART ADMIN ALERT: New order #${firstOrderId}. Items: ${productNames}. Total: GHS ${totalAmount.toFixed(2)}. Customer: ${buyerName} (${buyerPhoneNumber || 'No Phone'}). Please review in dashboard.`;
+             try {
+                await sendSms({ phoneNumber: adminPhoneNumber, message: adminMessage });
+            } catch(e) {
+                console.error("Failed to send new order notification SMS to admin:", e);
             }
         }
     }
