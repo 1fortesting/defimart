@@ -21,7 +21,7 @@ import {
   SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet"
-import { SlidersHorizontal, ArrowUpDown, ChevronDown } from 'lucide-react';
+import { SlidersHorizontal, ArrowUpDown, ChevronDown, X } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -38,6 +38,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useSearchParams } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
 
 const categories = [
     "Electronics & Gadgets",
@@ -63,12 +65,19 @@ export default function SearchClientPage({
   user,
   savedProductIds: initialSavedIds,
 }: SearchClientPageProps) {
+  const searchParams = useSearchParams();
   const [filteredProducts, setFilteredProducts] = useState<Tables<'products'>[]>([]);
   const [savedIds, setSavedIds] = useState(new Set(initialSavedIds));
 
   // Filter states
   const [query, setQuery] = useState(initialQuery);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  const getInitialCategories = () => {
+    const catParam = searchParams.get('category');
+    return catParam ? [catParam] : [];
+  };
+
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(getInitialCategories());
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 30000]);
   const [tempPriceRange, setTempPriceRange] = useState<[number, number]>([0, 30000]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -321,6 +330,21 @@ export default function SearchClientPage({
                 </Select>
             </div>
           </div>
+          
+          {selectedCategories.length > 0 && (
+              <div className="flex items-center gap-2 mb-4 flex-wrap">
+                  {selectedCategories.map(cat => (
+                      <Badge key={cat} variant="secondary" className="pl-3 pr-1 py-1 text-sm">
+                          {cat}
+                          <button onClick={() => handleCategoryToggle(cat)} className="ml-1 rounded-full hover:bg-background/50 p-0.5">
+                              <X className="h-3.5 w-3.5" />
+                              <span className="sr-only">Remove filter</span>
+                          </button>
+                      </Badge>
+                  ))}
+              </div>
+          )}
+
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {filteredProducts.map(product => (
               <ProductCard

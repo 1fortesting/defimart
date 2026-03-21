@@ -1,15 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { Filters } from '@/components/filters';
 import { ProductCarousel } from '@/components/product-carousel';
-import { ProductCard } from '@/components/product-card';
 import { SearchBar } from '@/components/search-bar';
-import { ListFilter } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Tables } from '@/types/supabase';
 import { CategorySidebar } from '@/components/category-sidebar';
 import { FlashSaleSection } from '@/components/flash-sale-section';
+import { HomeProductGrid } from './home-product-grid';
 
 export default async function Home() {
   const supabase = createClient();
@@ -54,31 +49,11 @@ export default async function Home() {
             <FlashSaleSection />
             
             <div className="mt-12 lg:mt-0">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Browse All</h2>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="hidden md:flex">
-                      <ListFilter className="mr-2 h-4 w-4" />
-                      Filter
-                    </Button>
-                    <Select defaultValue="default">
-                        <SelectTrigger className="w-auto md:w-[180px]" >
-                            <SelectValue placeholder="Sort by" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="default">Default (Boosted)</SelectItem>
-                            <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                            <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                            <SelectItem value="newest">Newest</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-              </div>
-              <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {allProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} user={user} isSaved={savedProductIds.has(product.id)} />
-                ))}
-              </div>
+              <HomeProductGrid 
+                products={allProducts}
+                user={user}
+                savedProductIds={savedProductIds}
+              />
             </div>
         </div>
       </main>

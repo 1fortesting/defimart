@@ -5,10 +5,10 @@ import { Tv, Shirt, Home, Apple } from 'lucide-react';
 import Link from 'next/link';
 
 const categories = [
-  { name: 'Electronics', icon: Tv, href: '#' },
-  { name: 'Fashion', icon: Shirt, href: '#' },
-  { name: 'Home & Kitchen', icon: Home, href: '#' },
-  { name: 'Groceries', icon: Apple, href: '#' },
+  { name: 'Electronics', icon: Tv, href: '/search?category=Electronics+%26+Gadgets' },
+  { name: 'Fashion', icon: Shirt, href: '/search?category=Fashion+%26+Apparel' },
+  { name: 'Home & Kitchen', icon: Home, href: '/search?category=Home+%26+Kitchen' },
+  { name: 'Groceries', icon: Apple, href: '/search?category=Groceries+%26+Food' },
 ];
 
 function CategoryCard({ name, icon: Icon, href }: { name: string, icon: React.ElementType, href: string }) {
