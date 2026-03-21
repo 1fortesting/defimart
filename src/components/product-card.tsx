@@ -39,40 +39,98 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         : product.price;
 
     const handleAddToCart = () => {
-        const formData = new FormData();
-        formData.append('productId', product.id);
-        
+        // 1. Show toast immediately
         toast({
             title: 'Added to Cart',
             description: `${product.name} has been added.`,
             variant: 'success',
         });
+        
+        // 2. Update local storage
+        try {
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const existingItemIndex = cart.findIndex((item: any) => item.product_id === product.id);
 
-        startTransition(async () => {
-            await addToCart(formData);
-        });
+            if (existingItemIndex > -1) {
+                cart[existingItemIndex].quantity += 1;
+            } else {
+                 const cartItem = {
+                    id: `local-${product.id}-${Date.now()}`, // a temporary unique ID for the cart item
+                    user_id: user?.id,
+                    product_id: product.id,
+                    quantity: 1,
+                    created_at: new Date().toISOString(),
+                    products: { // embed product data for the cart page
+                        name: product.name,
+                        price: product.price,
+                        image_urls: product.image_urls,
+                        quantity: product.quantity,
+                        discount_percentage: product.discount_percentage,
+                        discount_end_date: product.discount_end_date
+                    }
+                };
+                cart.push(cartItem);
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+        } catch (e) {
+            console.error('Failed to update cart in local storage', e);
+        }
+
+        // 3. Dispatch event to update header
+        window.dispatchEvent(new Event('cart-updated'));
+        
+        // 4. Silently sync with DB if user is logged in
+        if (user) {
+            startTransition(async () => {
+                const formData = new FormData();
+                formData.append('productId', product.id);
+                await addToCart(formData);
+            });
+        }
     };
 
     const handleToggleSave = () => {
         const newIsSaved = !isSavedState;
         setIsSavedState(newIsSaved);
         
-        if (!newIsSaved && onUnsave) {
+        if (onUnsave && !newIsSaved) {
             onUnsave(product.id);
         }
-            
+
         toast({
             title: newIsSaved ? 'Product Saved' : 'Product Unsaved',
             description: `${product.name} has been ${newIsSaved ? 'added to' : 'removed from'} your wishlist.`,
             variant: 'success'
         });
 
-        startTransition(async () => {
-            const formData = new FormData();
-            formData.append('productId', product.id);
-            formData.append('pathname', pathname);
-            await toggleSaveProduct(formData);
-        });
+        try {
+            let saved = JSON.parse(localStorage.getItem('saved') || '[]');
+            if (newIsSaved) {
+                if (!saved.some((item: any) => item.product_id === product.id)) {
+                    saved.push({ 
+                        id: `local-${product.id}-${Date.now()}`,
+                        product_id: product.id, 
+                        products: product 
+                    });
+                }
+            } else {
+                saved = saved.filter((item: any) => item.product_id !== product.id);
+            }
+            localStorage.setItem('saved', JSON.stringify(saved));
+        } catch(e) {
+            console.error('Failed to update saved items in local storage', e);
+        }
+
+        window.dispatchEvent(new Event('saved-updated'));
+            
+        if (user) {
+            startTransition(async () => {
+                const formData = new FormData();
+                formData.append('productId', product.id);
+                formData.append('pathname', pathname);
+                await toggleSaveProduct(formData);
+            });
+        }
     };
 
 

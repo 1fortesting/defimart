@@ -105,13 +105,17 @@ export default function CartPage() {
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    const fetchUserAndCart = async () => {
+    const syncCart = async () => {
+      setLoading(true);
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
 
+      let finalCart: CartItemWithProduct[] = [];
+
       if (user) {
-        const { data: items, error } = await supabase
+        // Logged-in user: DB is the source of truth
+        const { data: dbItems, error } = await supabase
           .from('cart_items')
           .select('*, products(name, price, image_urls, quantity, discount_percentage, discount_end_date)')
           .eq('user_id', user.id)
@@ -121,13 +125,27 @@ export default function CartPage() {
         if (error) {
           console.error('Error fetching cart:', error);
         } else {
-          setCartItems(items || []);
+          finalCart = dbItems || [];
+          // Overwrite local storage to sync it with the DB state
+          localStorage.setItem('cart', JSON.stringify(finalCart));
+        }
+      } else {
+        // Logged-out user: local storage is the source of truth
+        try {
+            finalCart = JSON.parse(localStorage.getItem('cart') || '[]') as CartItemWithProduct[];
+        } catch (e) {
+            console.error('Failed to parse cart from local storage', e);
+            finalCart = [];
         }
       }
+      
+      setCartItems(finalCart);
       setLoading(false);
+      // Dispatch event to ensure header count is correct after sync
+      window.dispatchEvent(new Event('cart-updated'));
     };
 
-    fetchUserAndCart();
+    syncCart();
   }, []);
   
   const handleQuantityChange = (itemId: string, newQuantity: number) => {
@@ -136,27 +154,44 @@ export default function CartPage() {
         return;
     }
 
-    setCartItems(currentItems =>
-        currentItems.map(item =>
-            item.id === itemId ? { ...item, quantity: newQuantity } : item
-        )
+    const newCartItems = cartItems.map(item =>
+        item.id === itemId ? { ...item, quantity: newQuantity } : item
     );
+    setCartItems(newCartItems); // Instant UI update
+    
+    // Update local storage
+    localStorage.setItem('cart', JSON.stringify(newCartItems));
+    // Notify header
+    window.dispatchEvent(new Event('cart-updated'));
 
-    startTransition(() => {
-        const formData = new FormData();
-        formData.append('cartItemId', itemId);
-        formData.append('quantity', String(newQuantity));
-        updateItemQuantity(formData);
-    });
+    // Sync with DB if user is logged in and the item is from the DB
+    if(user && !itemId.startsWith('local-')) {
+        startTransition(() => {
+            const formData = new FormData();
+            formData.append('cartItemId', itemId);
+            formData.append('quantity', String(newQuantity));
+            updateItemQuantity(formData);
+        });
+    }
   };
 
   const handleRemoveItem = (itemId: string) => {
-    setCartItems(currentItems => currentItems.filter(item => item.id !== itemId));
-    startTransition(() => {
-        const formData = new FormData();
-        formData.append('cartItemId', itemId);
-        removeItem(formData);
-    });
+    const newCartItems = cartItems.filter(item => item.id !== itemId);
+    setCartItems(newCartItems); // Instant UI update
+
+    // Update local storage
+    localStorage.setItem('cart', JSON.stringify(newCartItems));
+    // Notify header
+    window.dispatchEvent(new Event('cart-updated'));
+
+    // Sync with DB if user is logged in and the item is from the DB
+    if(user && !itemId.startsWith('local-')) {
+        startTransition(() => {
+            const formData = new FormData();
+            formData.append('cartItemId', itemId);
+            removeItem(formData);
+        });
+    }
   };
 
 
@@ -168,7 +203,7 @@ export default function CartPage() {
     );
   }
 
-  if (!user) {
+  if (!user && cartItems.length === 0) {
     return (
         <main className="flex-1 p-8 flex items-center justify-center">
           <AuthPrompt />
