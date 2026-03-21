@@ -57,58 +57,81 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
 
 
     return (
-        <div className="p-8 sm:p-12 flex flex-col justify-center">
-            <span className="text-sm font-bold text-primary tracking-widest uppercase">{view === 'login' ? 'Customer Sign In' : 'Create Account'}</span>
-            <h1 className="text-3xl font-bold mt-2 text-foreground">{view === 'login' ? 'Sign in to continue' : 'Get started with DEFIMART'}</h1>
-            <p className="text-muted-foreground mt-2 text-sm">
-                {view === 'login' 
-                    ? 'Access your saved carts, orders, and delivery updates' 
-                    : 'Create an account to enjoy a seamless shopping experience.'}
-            </p>
+        <div className="flex flex-col h-full bg-background md:justify-center">
+            {/* Mobile Header */}
+            <div className="md:hidden bg-gradient-to-br from-primary via-orange-500 to-amber-600 p-8 text-white rounded-b-2xl shadow-lg">
+                 <div className="flex items-center gap-4">
+                    <div className="bg-white/20 p-2 rounded-lg">
+                        <Image
+                            src="https://iili.io/qO5Jeou.png"
+                            alt="DEFIMART Logo"
+                            width={40}
+                            height={40}
+                            className="object-contain"
+                            style={{ filter: 'brightness(0) invert(1)' }}
+                        />
+                    </div>
+                    <div>
+                        <h2 className="font-bold text-lg">DEFIMART</h2>
+                        <p className="text-sm text-white/80">{view === 'login' ? 'Welcome Back' : 'Create an Account'}</p>
+                    </div>
+                 </div>
+            </div>
 
-            <form onSubmit={view === 'login' ? handleLogin : handleSignup} className="mt-8 space-y-6">
-                {view === 'signup' && (
-                     <div className="space-y-2">
-                        <Label htmlFor="displayName">Display Name</Label>
-                        <Input id="displayName" placeholder="John Doe" value={displayName} onChange={e => setDisplayName(e.target.value)} required />
-                    </div>
-                )}
-                <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required className="pl-10" />
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                         <Label htmlFor="password">Password</Label>
-                         {view === 'login' && (
-                             <Link href="/auth/forgot-password" tabIndex={-1} className="text-sm text-primary hover:underline">Forgot Password?</Link>
-                         )}
-                    </div>
-                    <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required className="pl-10 pr-10" />
-                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
-                    </div>
-                </div>
-                
-                <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                    <LogIn className="mr-2 h-4 w-4"/>
-                    {loading ? (view === 'login' ? 'Signing in...' : 'Creating Account...') : (view === 'login' ? 'Sign In' : 'Create Account')}
-                </Button>
-
-                <p className="text-center text-sm text-muted-foreground">
-                    {view === 'login' ? "New customer?" : "Already have an account?"}
-                    <Button variant="link" type="button" onClick={() => setView(view === 'login' ? 'signup' : 'login')} className="text-primary">
-                        {view === 'login' ? 'Create Account' : 'Sign In'}
-                    </Button>
+            {/* Form section */}
+            <div className="p-8 sm:p-12 flex-grow flex flex-col justify-center">
+                <span className="text-sm font-bold text-primary tracking-widest uppercase">{view === 'login' ? 'Customer Sign In' : 'Create Account'}</span>
+                <h1 className="text-3xl font-bold mt-2 text-foreground">{view === 'login' ? 'Sign in to continue' : 'Get started with DEFIMART'}</h1>
+                <p className="text-muted-foreground mt-2 text-sm">
+                    {view === 'login' 
+                        ? 'Access your saved carts, orders, and delivery updates' 
+                        : 'Create an account to enjoy a seamless shopping experience.'}
                 </p>
-            </form>
+
+                <form onSubmit={view === 'login' ? handleLogin : handleSignup} className="mt-8 space-y-6">
+                    {view === 'signup' && (
+                        <div className="space-y-2">
+                            <Label htmlFor="displayName">Display Name</Label>
+                            <Input id="displayName" placeholder="John Doe" value={displayName} onChange={e => setDisplayName(e.target.value)} required />
+                        </div>
+                    )}
+                    <div className="space-y-2">
+                        <Label htmlFor="email">Email Address</Label>
+                        <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required className="pl-10" />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="password">Password</Label>
+                            {view === 'login' && (
+                                <Link href="/auth/forgot-password" tabIndex={-1} className="text-sm text-primary hover:underline">Forgot Password?</Link>
+                            )}
+                        </div>
+                        <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required className="pl-10 pr-10" />
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                        </div>
+                    </div>
+                    
+                    <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                        <LogIn className="mr-2 h-4 w-4"/>
+                        {loading ? (view === 'login' ? 'Signing in...' : 'Creating Account...') : (view === 'login' ? 'Sign In' : 'Create Account')}
+                    </Button>
+
+                    <p className="text-center text-sm text-muted-foreground">
+                        {view === 'login' ? "New customer?" : "Already have an account?"}
+                        <Button variant="link" type="button" onClick={() => setView(view === 'login' ? 'signup' : 'login')} className="text-primary">
+                            {view === 'login' ? 'Create Account' : 'Sign In'}
+                        </Button>
+                    </p>
+                </form>
+            </div>
         </div>
     )
 }
@@ -188,14 +211,12 @@ export function AuthModal({ initialView }: { initialView: 'login' | 'signup' }) 
 
     return (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent className="max-w-4xl p-0 gap-0 rounded-lg shadow-2xl">
+            <DialogContent className="p-0 gap-0 shadow-2xl w-full h-full overflow-y-auto md:h-auto md:w-auto md:max-w-4xl md:rounded-lg md:grid md:grid-cols-2">
                 <DialogHeader className="sr-only">
                   <DialogTitle>Authentication</DialogTitle>
                 </DialogHeader>
-                <div className="grid grid-cols-1 md:grid-cols-2">
-                    <LeftPanel />
-                    <RightPanel view={view} setView={setView} />
-                </div>
+                <LeftPanel />
+                <RightPanel view={view} setView={setView} />
             </DialogContent>
         </Dialog>
     );
