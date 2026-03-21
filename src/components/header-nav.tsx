@@ -83,7 +83,6 @@ export function HeaderNav({ cartItemCount: initialCartCount, isMobile: mobilePro
 
   const desktopLinks = [
     { href: "/", icon: Home, text: "Home" },
-    { href: "/categories", icon: LayoutGrid, text: "Categories" },
     { href: "/orders", icon: Package, text: "Orders" },
     { href: "/saved", icon: Heart, text: "Wishlist" },
     { href: "/cart", icon: ShoppingCart, text: "Cart", badgeCount: cartCount },
