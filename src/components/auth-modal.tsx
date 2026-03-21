@@ -65,7 +65,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
     };
 
     return (
-        <div className="flex flex-col bg-background p-8 sm:p-12 md:rounded-r-2xl justify-center">
+        <div className="flex flex-col bg-background p-8 sm:p-10 md:rounded-r-2xl justify-center">
              <div className="md:hidden bg-gradient-to-br from-primary via-orange-500 to-amber-600 p-8 text-white shadow-lg rounded-t-2xl -m-8 mb-8">
                  <div className="flex items-center gap-4">
                     <div className="bg-white/20 p-2 rounded-lg">
@@ -78,7 +78,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                  </div>
             </div>
             
-            <div className="mb-8">
+            <div className="mb-6">
                 <p className="text-sm font-semibold text-primary uppercase">{view === 'login' ? 'Customer Sign In' : 'Create Account'}</p>
                 <h1 className="text-3xl font-bold text-foreground mt-1">
                     {view === 'login' ? 'Sign in to continue' : 'Get started with DEFIMART'}
@@ -88,50 +88,52 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                 </p>
             </div>
 
-            <form onSubmit={view === 'login' ? handleLogin : handleSignup} className="space-y-6">
-                {view === 'signup' && (
+            <form onSubmit={view === 'login' ? handleLogin : handleSignup}>
+                <div className="space-y-4">
+                    {view === 'signup' && (
+                        <div className="space-y-2">
+                            <Label htmlFor="displayName">Display Name</Label>
+                            <div className="relative">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input id="displayName" placeholder="John Doe" value={displayName} onChange={e => setDisplayName(e.target.value)} required  className="pl-10" />
+                            </div>
+                        </div>
+                    )}
                     <div className="space-y-2">
-                        <Label htmlFor="displayName">Display Name</Label>
+                        <Label htmlFor="email">Email Address</Label>
                         <div className="relative">
-                             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                             <Input id="displayName" placeholder="John Doe" value={displayName} onChange={e => setDisplayName(e.target.value)} required  className="pl-10" />
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required className="pl-10" />
                         </div>
                     </div>
-                )}
-                <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required className="pl-10" />
-                    </div>
-                </div>
-                 {view === 'signup' && (
-                    <div className="space-y-2">
-                        <Label htmlFor="phoneNumber">Phone Number</Label>
-                        <div className="relative">
-                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input id="phoneNumber" type="tel" placeholder="055 123 4567" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} required className="pl-10" />
+                    {view === 'signup' && (
+                        <div className="space-y-2">
+                            <Label htmlFor="phoneNumber">Phone Number</Label>
+                            <div className="relative">
+                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input id="phoneNumber" type="tel" placeholder="055 123 4567" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} required className="pl-10" />
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Password</Label>
-                        {view === 'login' && (
-                            <Link href="/auth/forgot-password" tabIndex={-1} className="text-sm text-primary hover:underline">Forgot Password?</Link>
-                        )}
-                    </div>
-                    <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required className="pl-10 pr-10" />
-                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </Button>
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                            <Label htmlFor="password">Password</Label>
+                            {view === 'login' && (
+                                <Link href="/auth/forgot-password" tabIndex={-1} className="text-sm text-primary hover:underline">Forgot Password?</Link>
+                            )}
+                        </div>
+                        <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required className="pl-10 pr-10" />
+                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
+                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                        </div>
                     </div>
                 </div>
                 
-                <div className="space-y-4 pt-4">
+                <div className="space-y-4 pt-6">
                     <Button type="submit" className="w-full" size="lg" disabled={loading}>
                         {loading ? (view === 'login' ? 'Signing in...' : 'Creating Account...') : (view === 'login' ? <> <ArrowRight className="mr-2 h-4 w-4"/> Sign In </> : 'Create Account')}
                     </Button>
@@ -153,14 +155,14 @@ const LeftPanel = () => {
         { icon: Award, text: "Exclusive deals & offers" },
     ];
     
-    const title = 'Welcome Back';
-    const description = 'Access your saved carts, orders, and real-time delivery updates.';
+    const title = 'Join Our Marketplace';
+    const description = 'Create your account to unlock fast checkout, wishlists, and exclusive deals.';
 
 
     return (
-        <div className="hidden md:flex flex-col justify-between p-12 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-2xl">
+        <div className="hidden md:flex flex-col justify-between p-10 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-2xl">
             <div>
-                 <div className="flex items-center gap-4 mb-12">
+                 <div className="flex items-center gap-4 mb-8">
                     <div className="bg-white/20 p-2 rounded-lg">
                         <Image src="https://iili.io/qO5Jeou.png" alt="DEFIMART Logo" width={40} height={40} className="brightness-0 invert" />
                     </div>
@@ -172,13 +174,13 @@ const LeftPanel = () => {
                 <h2 className="text-3xl font-bold">{title}</h2>
                 <p className="mt-2 text-base text-white/80">{description}</p>
 
-                <ul className="mt-10 space-y-5">
+                <ul className="mt-8 space-y-4">
                     {features.map((feature, i) => (
                         <li key={i} className="flex items-center gap-4">
                             <div className="bg-white/20 p-2 rounded-lg">
                                 <feature.icon className="h-5 w-5 text-white" />
                             </div>
-                            <span>{feature.text}</span>
+                            <span className="text-sm">{feature.text}</span>
                         </li>
                     ))}
                 </ul>
