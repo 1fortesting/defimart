@@ -34,15 +34,13 @@ const UpdateProductSchema = BaseProductSchema.extend({
 export async function createProduct(prevState: any, formData: FormData) {
   const supabase = createClient();
   
-  // The admin auth is not tied to a Supabase user.
-  // We'll assign the first user in the database as the seller.
-  // This is a temporary workaround. For a production app, admin auth should be integrated with Supabase.
-  const { data: firstUser, error: userError } = await supabase.from('profiles').select('id').limit(1).single();
+  const { data: { user } } = await supabase.auth.getUser();
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
-  if (userError || !firstUser) {
-      return { message: 'Failed to create product: No seller account found in the database. Please ensure at least one user is registered.', success: false, errors: {} };
+  if (!user || !adminEmail || user.email !== adminEmail) {
+      return { message: 'Unauthorized action. Only the designated admin can create products.', success: false, errors: {} };
   }
-  const sellerId = firstUser.id;
+  const sellerId = user.id;
 
   const rawFormData = Object.fromEntries(formData.entries());
 

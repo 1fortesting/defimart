@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Bell, Home, Package, ShoppingCart, Users, Tag, LineChart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { createClient } from '@/lib/supabase/client';
 
 const AdminSidebar = () => {
     const pathname = usePathname();
@@ -75,21 +76,28 @@ export default function AdminLayout({
   const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
-    const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
-    
-    if (pathname === '/admin/login') {
-        if(isAdmin) {
-            router.replace('/admin');
+    const supabase = createClient();
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+
+    const checkAdmin = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        const isAdmin = user?.email === adminEmail;
+        
+        if (pathname === '/admin/login') {
+            if(isAdmin) {
+                router.replace('/admin');
+            } else {
+                setIsVerified(true);
+            }
         } else {
-            setIsVerified(true);
-        }
-    } else {
-        if (!isAdmin) {
-            router.replace('/admin/login');
-        } else {
-            setIsVerified(true);
+            if (!isAdmin) {
+                router.replace('/admin/login');
+            } else {
+                setIsVerified(true);
+            }
         }
     }
+    checkAdmin();
   }, [router, pathname]);
 
   if (!isVerified) {
@@ -100,8 +108,9 @@ export default function AdminLayout({
     return <>{children}</>;
   }
   
-  const handleLogout = () => {
-    sessionStorage.removeItem('isAdmin');
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
     router.push('/admin/login');
   };
 

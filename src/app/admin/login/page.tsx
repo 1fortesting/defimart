@@ -8,27 +8,51 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
+import { createClient } from '@/lib/supabase/client';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    if (password === 'DEV') {
-      sessionStorage.setItem('isAdmin', 'true');
-      router.push('/admin');
-    } else {
+    const supabase = createClient();
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+
+    if (!adminEmail) {
+        toast({
+            variant: 'destructive',
+            title: 'Configuration Error',
+            description: 'Admin email is not configured.',
+        });
+        setLoading(false);
+        return;
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: 'Incorrect password.',
+        description: error.message,
       });
-      setLoading(false);
+    } else if (data.user?.email !== adminEmail) {
+        toast({
+            variant: 'destructive',
+            title: 'Authorization Failed',
+            description: 'You are not authorized to access the admin panel.',
+        });
+        await supabase.auth.signOut(); // Log out the non-admin user
+    } else {
+      // Successful admin login
+      router.push('/admin');
     }
+    setLoading(false);
   };
 
   return (
@@ -46,10 +70,21 @@ export default function AdminLoginPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-center">Admin Panel Access</CardTitle>
-              <CardDescription className="text-center">Enter the master password to manage the store</CardDescription>
+              <CardDescription className="text-center">Enter your admin credentials to manage the store</CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="grid gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        placeholder="admin@example.com"
+                    />
+                </div>
                 <div className="grid gap-2">
                   <Label htmlFor="password">Password</Label>
                   <Input
