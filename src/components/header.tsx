@@ -95,7 +95,7 @@ export async function Header() {
                     <Link className="font-bold text-lg" href="/messages">Messages</Link>
                    </SheetClose>
                    <SheetClose asChild>
-                    <Link className="font-bold text-lg" href="/help">Help</Link>
+                    <Link className="font-bold text-lg" href="/faq">FAQ</Link>
                    </SheetClose>
                    <Separator className="my-2" />
                    <SheetClose asChild>
@@ -132,14 +132,13 @@ export async function Header() {
         </Link>
         
         <div className="flex items-center gap-1">
-            {user ? (
-                <RefreshButton />
-            ) : (
+            {user && <RefreshButton />}
+            <ThemeToggle />
+             {!user && (
                 <Button asChild size="sm">
                     <Link href="/login">Login</Link>
                 </Button>
             )}
-            <ThemeToggle />
         </div>
       </div>
 

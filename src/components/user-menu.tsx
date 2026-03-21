@@ -68,7 +68,7 @@ export function UserMenu({ user }: { user: User | null }) {
             <Link href="/messages"><MessageSquare className="mr-2 h-4 w-4" />Messages</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-            <Link href="/help"><HelpCircle className="mr-2 h-4 w-4" />Help</Link>
+            <Link href="/faq"><HelpCircle className="mr-2 h-4 w-4" />FAQ</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
