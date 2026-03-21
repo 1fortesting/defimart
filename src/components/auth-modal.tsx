@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -23,13 +23,16 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
     const [password, setPassword] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
     const [loading, setLoading] = useState(false);
+    const loadingRef = useRef(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showVerificationMessage, setShowVerificationMessage] = useState(false);
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (loading) return;
+        if (loadingRef.current) return;
+        loadingRef.current = true;
         setLoading(true);
+
         const supabase = createClient();
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) {
@@ -37,13 +40,17 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
         } else {
             router.refresh();
         }
+
         setLoading(false);
+        loadingRef.current = false;
     };
 
     const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (loading) return;
+        if (loadingRef.current) return;
+        loadingRef.current = true;
         setLoading(true);
+
         const supabase = createClient();
 
         let formattedPhoneNumber = phoneNumber.trim();
@@ -72,7 +79,9 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
         } else {
             setShowVerificationMessage(true);
         }
+
         setLoading(false);
+        loadingRef.current = false;
     };
     
     if (showVerificationMessage) {
@@ -104,27 +113,6 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                         Create your account to unlock fast checkout, wishlists, and exclusive deals.
                     </p>
                 </div>
-
-                <div className="flex items-center justify-center gap-4 my-4">
-                    <div className="flex flex-col items-center gap-2 text-primary">
-                        <div className="bg-primary text-primary-foreground rounded-full h-10 w-10 flex items-center justify-center">
-                            <User className="h-5 w-5" />
-                        </div>
-                        <span className="text-xs font-semibold">Personal</span>
-                    </div>
-                     <div className="flex-grow border-t border-dashed"></div>
-                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                        <div className="bg-muted text-muted-foreground rounded-full h-10 w-10 flex items-center justify-center">
-                            <Lock className="h-5 w-5" />
-                        </div>
-                        <span className="text-xs">Security</span>
-                    </div>
-                </div>
-
-                <div className="text-left py-1">
-                     <p className="font-semibold text-sm flex items-center gap-2"><User className="text-primary h-5 w-5" /> Personal Information</p>
-                </div>
-
 
                 <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-1">
@@ -247,8 +235,8 @@ const LeftPanel = () => {
         { icon: Award, text: "Exclusive deals & offers" },
     ];
     
-    const title = 'Join Our Marketplace';
-    const description = 'Create your account to unlock fast checkout, wishlists, and exclusive deals.';
+    const title = 'Welcome Back';
+    const description = 'Sign in to access your saved carts, orders, and delivery updates.';
 
     return (
         <div className="hidden md:flex flex-col justify-between p-6 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-2xl">
@@ -299,16 +287,18 @@ export function AuthModal({ initialView }: { initialView: 'login' | 'signup' }) 
 
     useEffect(() => {
         if (!isModalOpen) {
-            // Use a timeout to allow the fade-out animation to finish
             const from = searchParams.get('from');
-            router.push(from || '/');
+            const targetUrl = from && from.includes('/admin') ? '/' : (from || '/');
+            router.push(targetUrl);
         }
     }, [isModalOpen, router, searchParams]);
 
     // When view changes (e.g. from login to signup), update URL without full navigation
     useEffect(() => {
-        window.history.replaceState(null, '', `/${view}`);
-    }, [view]);
+        const from = searchParams.get('from');
+        const newUrl = from ? `/${view}?from=${from}` : `/${view}`;
+        window.history.replaceState(null, '', newUrl);
+    }, [view, searchParams]);
 
     return (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
