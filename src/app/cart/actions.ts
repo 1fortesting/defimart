@@ -147,17 +147,17 @@ export async function placeOrder() {
         const adminPhoneNumber = process.env.ADMIN_PHONE_NUMBER;
 
         const totalAmount = createdOrders.reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0);
-        const productNames = createdOrders.map(order => {
-            const cartItem = cartItems.find(item => item.product_id === order.product_id);
-            const productName = cartItem?.products?.name || 'Unknown Product';
-            const quantity = order.quantity;
-            return `${productName} (x${quantity})`;
-        }).join(', ');
-        const firstOrderId = createdOrders[0].id.substring(0, 8); // Use first order ID for reference
+        
+        const firstCartItem = cartItems.find(item => item.product_id === createdOrders[0].product_id);
+        const firstProductName = firstCartItem?.products?.name || 'Unknown Product';
+        const totalItems = createdOrders.reduce((sum, order) => sum + order.quantity, 0);
+        const productNameDisplay = totalItems > 1 ? `${firstProductName} & more` : firstProductName;
+        
+        const firstOrderId = createdOrders[0].id.substring(0, 8);
 
         // Send SMS to Buyer
         if (buyerPhoneNumber) {
-            const buyerMessage = `DEFIMART: Your order #${firstOrderId}... for ${productNames} (Total: GHS ${totalAmount.toFixed(2)}) has been received. We'll notify you once it's approved for pickup. Thank you!`;
+            const buyerMessage = `DEFIMART: Your order #${firstOrderId} for '${productNameDisplay}' has been received. We are processing it and will notify you once it's approved. Thank you!`;
             try {
                 await sendSms({ phoneNumber: buyerPhoneNumber, message: buyerMessage });
             } catch (e) {
@@ -167,7 +167,7 @@ export async function placeOrder() {
 
         // Send SMS to Admin
         if (adminPhoneNumber) {
-             const adminMessage = `DEFIMART ADMIN ALERT: New order #${firstOrderId}. Items: ${productNames}. Total: GHS ${totalAmount.toFixed(2)}. Customer: ${buyerName} (${buyerPhoneNumber || 'No Phone'}). Please review in dashboard.`;
+             const adminMessage = `DEFIMART ADMIN ALERT: New order #${firstOrderId}. Item: ${productNameDisplay}. Amount: GHS ${totalAmount.toFixed(2)}. Customer: ${buyerName} (${buyerPhoneNumber || 'No Phone'}). Please review in dashboard.`;
              try {
                 await sendSms({ phoneNumber: adminPhoneNumber, message: adminMessage });
             } catch(e) {
