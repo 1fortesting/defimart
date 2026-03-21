@@ -9,11 +9,12 @@ interface SendSmsParams {
 
 export async function sendSms({ phoneNumber, message }: SendSmsParams): Promise<void> {
   const apiKey = process.env.SENDEXA_API_KEY;
-  const apiUrl = process.env.SENDEXA_API_URL;
-  const senderId = 'DEFIMART';
+  const apiSecret = process.env.SENDEXA_SECRET_KEY;
+  const apiUrl = process.env.SENDEXA_BASE_URL;
+  const senderId = 'Defimart';
 
-  if (!apiKey || !apiUrl) {
-    console.error('Sendexa API Key or URL is not configured in environment variables.');
+  if (!apiKey || !apiSecret || !apiUrl) {
+    console.error('Sendexa API Key, Secret or URL is not configured in environment variables.');
     return;
   }
   
@@ -21,6 +22,8 @@ export async function sendSms({ phoneNumber, message }: SendSmsParams): Promise<
     console.error('SMS requires a phone number and a message.');
     return;
   }
+  
+  const base64token = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64');
 
   const payload = {
     sender_id: senderId,
@@ -33,7 +36,7 @@ export async function sendSms({ phoneNumber, message }: SendSmsParams): Promise<
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${Buffer.from(`${apiKey}:`).toString('base64')}`,
+        'Authorization': `Basic ${base64token}`,
       },
       body: JSON.stringify(payload),
     });
