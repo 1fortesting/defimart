@@ -162,20 +162,18 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                      )}
                 </div>
                 <div className="flex items-center gap-1">
-                    {isClient && (
-                         user ? (
-                            <form action={toggleSaveProduct}>
-                                <input type="hidden" name="productId" value={product.id} />
-                                <input type="hidden" name="pathname" value={pathname} />
-                                <Button type="submit" size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
-                                    <Heart className={cn("h-5 w-5", isSaved && "fill-red-500 text-red-500")} />
-                                </Button>
-                            </form>
-                        ) : (
-                            <Button asChild size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
-                                <Link href="/login"><Heart className="h-5 w-5" /></Link>
+                    {user ? (
+                        <form action={toggleSaveProduct}>
+                            <input type="hidden" name="productId" value={product.id} />
+                            <input type="hidden" name="pathname" value={pathname} />
+                            <Button type="submit" size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
+                                <Heart className={cn("h-5 w-5", isSaved && "fill-red-500 text-red-500")} />
                             </Button>
-                        )
+                        </form>
+                    ) : (
+                        <Button asChild size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
+                            <Link href="/login"><Heart className="h-5 w-5" /></Link>
+                        </Button>
                     )}
 
                     {user ? (
