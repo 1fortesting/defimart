@@ -38,7 +38,10 @@ export default async function AdminUsersPage() {
         const profile = profiles?.find(p => p.id === user.id);
         return {
             ...user,
-            ...profile
+            ...profile,
+            // Flatten user_metadata to ensure the latest data from auth is used,
+            // as the public.profiles table might be out of sync.
+            ...user.user_metadata
         }
     });
 
