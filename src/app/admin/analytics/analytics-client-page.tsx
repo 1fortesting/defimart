@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Package, Users, Star, ShoppingCart, Download } from 'lucide-react';
+import { DollarSign, Package, Users, Star, ShoppingCart, Download, FilterX, Calendar as CalendarIcon } from 'lucide-react';
 import { SalesChart } from './sales-chart';
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 const StatCard = ({ title, value, icon: Icon, change }: { title: string, value: string | number, icon: React.ElementType, change?: string }) => (
     <Card>
@@ -33,12 +39,55 @@ const StatCard = ({ title, value, icon: Icon, change }: { title: string, value: 
 );
 
 
-export default function AnalyticsClientPage({ stats, dailySales, productsWithPerf, recentReviews }: {
+export default function AnalyticsClientPage({
+    stats,
+    dailySales,
+    salesChartDescription,
+    salesChartTimeUnit,
+    productsWithPerf,
+    recentReviews,
+    allProducts,
+    currentFilters
+}: {
     stats: { totalRevenue: number, totalSales: number, totalCustomers: number, productCount: number },
     dailySales: { date: string, total: number }[],
+    salesChartDescription: string,
+    salesChartTimeUnit: 'day' | 'hour',
     productsWithPerf: ProductWithSalesAndReviews[],
-    recentReviews: ReviewWithProductAndProfile[]
+    recentReviews: ReviewWithProductAndProfile[],
+    allProducts: { id: string, name: string }[],
+    currentFilters: { date?: string, productId?: string }
 }) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    // To avoid timezone issues, we add a specific time when parsing the date string from the URL
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+        currentFilters.date ? new Date(`${currentFilters.date}T12:00:00Z`) : undefined
+    );
+    const [selectedProductId, setSelectedProductId] = useState<string | undefined>(
+        currentFilters.productId
+    );
+
+    const handleApplyFilters = () => {
+        const params = new URLSearchParams(searchParams.toString());
+        if (selectedDate) {
+            params.set('date', format(selectedDate, 'yyyy-MM-dd'));
+        } else {
+            params.delete('date');
+        }
+        if (selectedProductId) {
+            params.set('productId', selectedProductId);
+        } else {
+            params.delete('productId');
+        }
+        router.push(`${pathname}?${params.toString()}`);
+    }
+    
+    const handleClearFilters = () => {
+        router.push(pathname);
+    }
 
     const downloadCSV = (data: any[], filename: string) => {
         if (data.length === 0) return;
@@ -48,7 +97,6 @@ export default function AnalyticsClientPage({ stats, dailySales, productsWithPer
             ...data.map(row => headers.map(header => {
                 const cell = row[header];
                 const stringCell = (cell === null || cell === undefined) ? '' : String(cell);
-                // Escape quotes and commas
                 return `"${stringCell.replace(/"/g, '""')}"`;
             }).join(','))
         ].join('\n');
@@ -78,12 +126,15 @@ export default function AnalyticsClientPage({ stats, dailySales, productsWithPer
             review_count: p.review_count,
             created_at: format(new Date(p.created_at), 'yyyy-MM-dd'),
         }));
-        downloadCSV(dataToDownload, 'all_products_performance');
+        downloadCSV(dataToDownload, 'product_performance_report');
     }
+    
+    const hasFilters = currentFilters.date || currentFilters.productId;
 
     return (
         <>
-            <div className="flex justify-end">
+            <div className="flex items-center justify-between">
+                <h1 className="text-lg font-semibold md:text-2xl">Analytics</h1>
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                        <Button>
@@ -95,14 +146,66 @@ export default function AnalyticsClientPage({ stats, dailySales, productsWithPer
                         <DropdownMenuLabel>Performance Reports</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onSelect={handleDownloadAllProducts}>
-                            All Product Performance (.csv)
+                            Product Performance (.csv)
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Filters</CardTitle>
+                    <CardDescription>Filter analytics data by date and/or product.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col sm:flex-row flex-wrap items-center gap-4">
+                     <Popover>
+                        <PopoverTrigger asChild>
+                            <Button
+                            variant={"outline"}
+                            className={cn(
+                                "w-full sm:w-[240px] justify-start text-left font-normal",
+                                !selectedDate && "text-muted-foreground"
+                            )}
+                            >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {selectedDate ? format(selectedDate, "PPP") : <span>Filter by date</span>}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                            <Calendar
+                                mode="single"
+                                selected={selectedDate}
+                                onSelect={setSelectedDate}
+                                initialFocus
+                                disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                            />
+                        </PopoverContent>
+                    </Popover>
+
+                    <Select value={selectedProductId} onValueChange={setSelectedProductId}>
+                        <SelectTrigger className="w-full sm:w-[240px]">
+                            <SelectValue placeholder="Filter by product" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {allProducts.map(product => (
+                                <SelectItem key={product.id} value={product.id}>{product.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <div className="flex gap-2">
+                        <Button onClick={handleApplyFilters}>Apply</Button>
+                        {hasFilters && (
+                            <Button variant="ghost" onClick={handleClearFilters}>
+                                <FilterX className="mr-2 h-4 w-4" />
+                            Clear
+                            </Button>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatCard title="Total Revenue" value={`GHS ${stats.totalRevenue.toFixed(2)}`} icon={DollarSign} />
-                <StatCard title="Total Sales" value={`+${stats.totalSales}`} icon={ShoppingCart} />
+                <StatCard title={hasFilters ? "Filtered Revenue" : "Total Revenue"} value={`GHS ${stats.totalRevenue.toFixed(2)}`} icon={DollarSign} />
+                <StatCard title={hasFilters ? "Filtered Units Sold" : "Total Units Sold"} value={`+${stats.totalSales}`} icon={ShoppingCart} />
                 <StatCard title="Total Customers" value={stats.totalCustomers} icon={Users} />
                 <StatCard title="Total Products" value={stats.productCount} icon={Package} />
             </div>
@@ -110,10 +213,10 @@ export default function AnalyticsClientPage({ stats, dailySales, productsWithPer
                 <Card className="lg:col-span-4">
                     <CardHeader>
                         <CardTitle>Sales Overview</CardTitle>
-                        <CardDescription>Total revenue for the last 7 days.</CardDescription>
+                        <CardDescription>{salesChartDescription}</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
-                       <SalesChart data={dailySales} />
+                       <SalesChart data={dailySales} timeUnit={salesChartTimeUnit} />
                     </CardContent>
                 </Card>
                 <Card className="lg:col-span-3">
@@ -169,6 +272,11 @@ export default function AnalyticsClientPage({ stats, dailySales, productsWithPer
                                         </TableCell>
                                     </TableRow>
                                 ))}
+                                {productsWithPerf.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="text-center h-24">No data for the selected filters.</TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </CardContent>
@@ -193,7 +301,7 @@ export default function AnalyticsClientPage({ stats, dailySales, productsWithPer
                                 </div>
                             </div>
                         ))}
-                         {recentReviews.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No recent reviews.</p>}
+                         {recentReviews.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No recent reviews for the selected filters.</p>}
                     </CardContent>
                 </Card>
             </div>

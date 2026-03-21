@@ -1,10 +1,9 @@
 'use client'
 
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 
-export function SalesChart({ data }: { data: { date: string, total: number }[] }) {
+export function SalesChart({ data, timeUnit = 'day' }: { data: { date: string, total: number }[], timeUnit?: 'day' | 'hour' }) {
 
   const chartConfig = {
     revenue: {
@@ -22,7 +21,7 @@ export function SalesChart({ data }: { data: { date: string, total: number }[] }
                 tickLine={false}
                 tickMargin={10}
                 axisLine={false}
-                tickFormatter={(value) => value.slice(0, 3)}
+                tickFormatter={(value) => timeUnit === 'day' ? value.slice(0, 3) : value}
             />
             <YAxis 
               tickFormatter={(value) => `GHS ${value}`}
