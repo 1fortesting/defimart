@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 
-import { Zap, PackageCheck, Heart, Award, Mail, Lock, Eye, EyeOff, ArrowRight, Phone } from 'lucide-react';
+import { Zap, PackageCheck, Heart, Award, Mail, Lock, Eye, EyeOff, ArrowRight, Phone, User } from 'lucide-react';
 
 const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (view: 'login' | 'signup') => void }) => {
     const router = useRouter();
@@ -92,15 +92,9 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                 {view === 'signup' && (
                     <div className="space-y-2">
                         <Label htmlFor="displayName">Display Name</Label>
-                        <Input id="displayName" placeholder="John Doe" value={displayName} onChange={e => setDisplayName(e.target.value)} required />
-                    </div>
-                )}
-                {view === 'signup' && (
-                    <div className="space-y-2">
-                        <Label htmlFor="phoneNumber">Phone Number</Label>
                         <div className="relative">
-                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input id="phoneNumber" type="tel" placeholder="055 123 4567" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} required className="pl-10" />
+                             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                             <Input id="displayName" placeholder="John Doe" value={displayName} onChange={e => setDisplayName(e.target.value)} required  className="pl-10" />
                         </div>
                     </div>
                 )}
@@ -111,6 +105,15 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                         <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required className="pl-10" />
                     </div>
                 </div>
+                 {view === 'signup' && (
+                    <div className="space-y-2">
+                        <Label htmlFor="phoneNumber">Phone Number</Label>
+                        <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input id="phoneNumber" type="tel" placeholder="055 123 4567" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} required className="pl-10" />
+                        </div>
+                    </div>
+                )}
 
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -142,13 +145,19 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
     )
 }
 
-const LeftPanel = () => {
+const LeftPanel = ({ view }: { view: 'login' | 'signup' }) => {
     const features = [
         { icon: Zap, text: "Lightning-fast checkout" },
         { icon: PackageCheck, text: "Real-time order tracking" },
         { icon: Heart, text: "Wishlists & saved items" },
         { icon: Award, text: "Exclusive deals & offers" },
     ];
+    
+    const title = view === 'login' ? 'Welcome Back' : 'Join DEFIMART Today';
+    const description = view === 'login' 
+        ? 'Access your saved carts, orders, and real-time delivery updates.'
+        : 'Sign up to unlock exclusive features and a seamless shopping experience.';
+
 
     return (
         <div className="hidden md:flex flex-col justify-between p-12 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-2xl">
@@ -162,8 +171,8 @@ const LeftPanel = () => {
                         <p className="text-sm text-white/80 leading-tight">Customer & Checkout</p>
                     </div>
                  </div>
-                <h2 className="text-3xl font-bold">Welcome Back</h2>
-                <p className="mt-2 text-base text-white/80">Access your saved carts, orders, and real-time delivery updates.</p>
+                <h2 className="text-3xl font-bold">{title}</h2>
+                <p className="mt-2 text-base text-white/80">{description}</p>
 
                 <ul className="mt-10 space-y-5">
                     {features.map((feature, i) => (
@@ -224,7 +233,7 @@ export function AuthModal({ initialView }: { initialView: 'login' | 'signup' }) 
                 <DialogHeader className="sr-only">
                   <DialogTitle>Authentication</DialogTitle>
                 </DialogHeader>
-                <LeftPanel />
+                <LeftPanel view={view} />
                 <RightPanel view={view} setView={setView} />
             </DialogContent>
         </Dialog>
