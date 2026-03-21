@@ -72,14 +72,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
             <div className="md:hidden bg-gradient-to-br from-primary via-orange-500 to-amber-600 p-8 text-white shadow-lg">
                  <div className="flex items-center gap-4">
                     <div className="bg-white/20 p-2 rounded-lg">
-                        <Image
-                            src="https://iili.io/qO5Jeou.png"
-                            alt="DEFIMART Logo"
-                            width={40}
-                            height={40}
-                            className="object-contain"
-                            style={{ filter: 'brightness(0) invert(1)' }}
-                        />
+                         <div className="w-10 h-10 flex items-center justify-center font-bold text-white text-2xl">D</div>
                     </div>
                     <div>
                         <h2 className="font-bold text-lg">DEFIMART</h2>
@@ -90,15 +83,19 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
 
             {/* Form section */}
             <div className="p-8 sm:p-12 flex-grow flex flex-col justify-center">
-                <span className="text-sm font-bold text-primary tracking-widest uppercase">{view === 'login' ? 'Customer Sign In' : 'Create Account'}</span>
-                <h1 className="text-3xl font-bold mt-2 text-foreground">{view === 'login' ? 'Sign in to continue' : 'Get started with DEFIMART'}</h1>
-                <p className="text-muted-foreground mt-4 text-base">
-                    {view === 'login' 
-                        ? 'Access your saved carts, orders, and delivery updates' 
-                        : 'Create an account to enjoy a seamless shopping experience.'}
-                </p>
+                <div className="mb-8">
+                    <h1 className="text-4xl font-bold text-foreground leading-tight">
+                        {view === 'login' ? 'Sign in to' : 'Get started with'} <br /> <span className="text-primary">DEFIMART</span>
+                    </h1>
+                    <p className="text-muted-foreground mt-4 text-base">
+                        {view === 'login' 
+                            ? 'Access your saved carts, orders, and delivery updates.' 
+                            : 'Create an account to enjoy a seamless shopping experience.'}
+                    </p>
+                </div>
 
-                <form onSubmit={view === 'login' ? handleLogin : handleSignup} className="mt-8 space-y-6">
+
+                <form onSubmit={view === 'login' ? handleLogin : handleSignup} className="space-y-6">
                     {view === 'signup' && (
                         <div className="space-y-2">
                             <Label htmlFor="displayName">Display Name</Label>
@@ -165,15 +162,11 @@ const LeftPanel = () => {
     return (
         <div className="hidden md:flex flex-col justify-between p-12 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-2xl">
             <div>
-                <Image
-                    src="https://iili.io/qO5Jeou.png"
-                    alt="DEFIMART Logo"
-                    width={150}
-                    height={32}
-                    className="object-contain"
-                    style={{ filter: 'brightness(0) invert(1)' }}
-                />
-                <h2 className="text-3xl font-bold mt-12">Welcome Back</h2>
+                 <div className="mb-20">
+                    <h1 className="text-5xl font-bold text-white">DefiM</h1>
+                    <p className="text-sm text-white/80 tracking-widest mt-1">Shop | Earn | Grow</p>
+                </div>
+                <h2 className="text-4xl font-bold">Welcome Back</h2>
                 <p className="mt-4 text-lg text-white/80">Access your saved carts, orders, and real-time delivery updates.</p>
 
                 <ul className="mt-12 space-y-5">
@@ -185,14 +178,12 @@ const LeftPanel = () => {
                     ))}
                 </ul>
             </div>
-            <div className="grid grid-cols-2 gap-4 text-center">
-                 <div className="bg-black/20 p-4 rounded-lg">
-                    <p className="text-xs text-white/60 font-semibold">SECURITY</p>
-                    <p className="font-bold">OTP + Email</p>
+            <div className="flex items-center gap-4">
+                 <div className="bg-black/20 px-4 py-2 rounded-lg">
+                    <p className="text-xs font-semibold tracking-wider text-white/60">SECURITY</p>
                 </div>
-                 <div className="bg-black/20 p-4 rounded-lg">
-                    <p className="text-xs text-white/60 font-semibold">SUPPORT</p>
-                    <p className="font-bold">24/7</p>
+                 <div className="bg-black/20 px-4 py-2 rounded-lg">
+                    <p className="text-xs font-semibold tracking-wider text-white/60">SUPPORT</p>
                 </div>
             </div>
         </div>
@@ -229,7 +220,7 @@ export function AuthModal({ initialView }: { initialView: 'login' | 'signup' }) 
 
     return (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent className="p-0 gap-0 shadow-2xl rounded-2xl overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-auto md:max-w-5xl md:grid md:grid-cols-2">
+            <DialogContent className="p-0 gap-0 shadow-2xl rounded-2xl overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-full md:max-w-4xl md:grid md:grid-cols-2 md:min-h-[720px]">
                 <DialogHeader className="sr-only">
                   <DialogTitle>Authentication</DialogTitle>
                 </DialogHeader>
