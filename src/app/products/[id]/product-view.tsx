@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useActionState } from 'react';
+import { useState, useEffect, useActionState, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import type { User } from '@supabase/supabase-js';
 import Image from 'next/image';
@@ -119,8 +119,9 @@ function ReviewForm({ productId, userReview }: { productId: string, userReview: 
 }
 
 export default function ProductView({ product, isSaved, reviews, averageRating, user, userReview }: ProductViewProps) {
-    const [quantity, setQuantity] = useState(1);
     const pathname = usePathname();
+    const { toast } = useToast();
+    const [isPending, startTransition] = useTransition();
 
     const isDiscountActive = product.discount_percentage && product.discount_percentage > 0 && product.discount_end_date && new Date(product.discount_end_date) > new Date();
     const discountedPrice = isDiscountActive
@@ -132,6 +133,53 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
         : product.quantity !== null && product.quantity <= 5
         ? <Badge variant="secondary" className="bg-red-100 text-red-700">Only {product.quantity} left!</Badge>
         : <Badge variant="secondary" className="bg-green-100 text-green-700">In Stock</Badge>
+
+    const handleAddToCart = () => {
+        toast({
+            title: 'Added to Cart',
+            description: `${product.name} has been added.`,
+            variant: 'success',
+        });
+        
+        try {
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const existingItemIndex = cart.findIndex((item: any) => item.product_id === product.id);
+
+            if (existingItemIndex > -1) {
+                cart[existingItemIndex].quantity += 1;
+            } else {
+                 const cartItem = {
+                    id: `local-${product.id}-${Date.now()}`,
+                    user_id: user?.id,
+                    product_id: product.id,
+                    quantity: 1,
+                    created_at: new Date().toISOString(),
+                    products: {
+                        name: product.name,
+                        price: product.price,
+                        image_urls: product.image_urls,
+                        quantity: product.quantity,
+                        discount_percentage: product.discount_percentage,
+                        discount_end_date: product.discount_end_date
+                    }
+                };
+                cart.push(cartItem);
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+        } catch (e) {
+            console.error('Failed to update cart in local storage', e);
+        }
+
+        window.dispatchEvent(new Event('cart-updated'));
+        
+        if (user) {
+            startTransition(async () => {
+                const formData = new FormData();
+                formData.append('productId', product.id);
+                await addToCart(formData);
+            });
+        }
+    };
 
 
     return (
@@ -175,18 +223,16 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                 <Separator />
                 
                 <div className="space-y-4">
-                     <form action={addToCart} className="flex items-center gap-4">
-                        <input type="hidden" name="productId" value={product.id} />
-                        <input type="hidden" name="pathname" value={pathname} />
+                    <div className="flex items-center gap-4">
                         {product.quantity === 0 ? (
                             <Button size="lg" disabled>Out of Stock</Button>
                         ) : (
-                            <Button type="submit" size="lg">
+                            <Button onClick={handleAddToCart} size="lg" disabled={isPending}>
                                 <ShoppingCart className="mr-2 h-5 w-5" />
                                 Add to Cart
                             </Button>
                         )}
-                    </form>
+                    </div>
                     {user ? (
                         <form action={toggleSaveProduct}>
                             <input type="hidden" name="productId" value={product.id} />
