@@ -15,6 +15,7 @@ import { logout } from '@/app/auth/actions';
 import { SearchBar } from './search-bar';
 import { Separator } from './ui/separator';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { RefreshButton } from './refresh-button';
 
 export async function Header() {
   const supabase = createClient();
@@ -130,9 +131,12 @@ export async function Header() {
             />
         </Link>
         
-        <div className="flex items-center">
+        <div className="flex items-center gap-1">
             {user ? (
-                <ThemeToggle />
+                <>
+                    <RefreshButton />
+                    <ThemeToggle />
+                </>
             ) : (
                 <Button asChild size="sm">
                     <Link href="/login">Login</Link>
