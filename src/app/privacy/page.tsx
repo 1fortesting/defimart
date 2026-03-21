@@ -46,8 +46,8 @@ export default function PrivacyPolicyPage() {
             </Section>
 
             <Section title="3. Data Storage and Third Parties">
-              <p>Your data is securely stored and managed by Supabase, our backend service provider. Their privacy policy can be found on their website. We do not sell or rent your personal data to third parties.</p>
-              <p>For SMS notifications, we use Sendexa. Your phone number and order details are shared with this service solely for the purpose of sending you order-related updates.</p>
+              <p>Your data is securely stored and managed by our trusted backend service provider. We do not sell or rent your personal data to third parties.</p>
+              <p>For SMS notifications, we use a third-party messaging service. Your phone number and order details are shared with this service solely for the purpose of sending you order-related updates.</p>
             </Section>
 
             <Section title="4. Data Security">
