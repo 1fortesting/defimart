@@ -21,9 +21,23 @@ import {
   SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet"
-import { SlidersHorizontal, ArrowUpDown } from 'lucide-react';
+import { SlidersHorizontal, ArrowUpDown, ChevronDown } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const categories = [
     "Electronics & Gadgets",
@@ -238,6 +252,55 @@ export default function SearchClientPage({
           <FilterControls />
         </aside>
         <main className="lg:col-span-3">
+            <div className="flex lg:hidden items-center gap-2 mb-4">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="flex-1 justify-between">Brand <ChevronDown className="h-4 w-4 opacity-50" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56">
+                        <DropdownMenuLabel>Filter by Brand</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <ScrollArea className="h-48">
+                            {brands.map(brand => (
+                                <DropdownMenuCheckboxItem
+                                    key={brand}
+                                    checked={selectedBrands.includes(brand)}
+                                    onCheckedChange={() => handleBrandToggle(brand)}
+                                >
+                                    {brand}
+                                </DropdownMenuCheckboxItem>
+                            ))}
+                        </ScrollArea>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" className="flex-1 justify-between">Price <ChevronDown className="h-4 w-4 opacity-50" /></Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80">
+                        <div className="grid gap-4">
+                            <div className="space-y-2">
+                                <h4 className="font-medium leading-none">Price Range (GHS)</h4>
+                            </div>
+                            <div className="grid gap-2">
+                                <Slider
+                                    value={tempPriceRange}
+                                    onValueChange={(value) => setTempPriceRange(value as [number, number])}
+                                    max={30000}
+                                    step={100}
+                                />
+                                <div className="flex items-center gap-2">
+                                    <Input value={tempPriceRange[0]} onChange={e => setTempPriceRange([+e.target.value, tempPriceRange[1]])} placeholder="Min" type="number" />
+                                    <span>-</span>
+                                    <Input value={tempPriceRange[1]} onChange={e => setTempPriceRange([tempPriceRange[0], +e.target.value])} placeholder="Max" type="number"/>
+                                </div>
+                            </div>
+                            <Button onClick={() => setPriceRange(tempPriceRange)} className="w-full">Apply Price</Button>
+                        </div>
+                    </PopoverContent>
+                </Popover>
+            </div>
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-xl font-bold">
                 Shop All Products <span className="text-muted-foreground font-normal">({filteredProducts.length} products found)</span>
