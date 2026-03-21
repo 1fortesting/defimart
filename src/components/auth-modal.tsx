@@ -194,11 +194,11 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
     );
 
     return (
-        <div className="flex flex-col bg-background p-8 md:rounded-r-2xl justify-center h-full">
+        <div className="flex flex-col bg-background p-8 md:rounded-r-2xl justify-center h-full rounded-b-2xl md:rounded-b-none">
             <div className="md:hidden bg-gradient-to-br from-primary via-orange-500 to-amber-600 p-8 text-white shadow-lg rounded-t-2xl -m-8 mb-8">
                  <div className="flex items-center gap-4">
                     <div className="bg-white/20 p-2 rounded-lg">
-                         <div className="w-10 h-10 flex items-center justify-center font-bold text-white text-2xl">D</div>
+                         <Image src="https://iili.io/qO5Jeou.png" alt="DEFIMART Logo" width={40} height={40} className="brightness-0 invert" />
                     </div>
                     <div>
                         <h2 className="font-bold text-lg">DEFIMART</h2>
