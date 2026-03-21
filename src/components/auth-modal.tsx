@@ -57,9 +57,9 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
 
 
     return (
-        <div className="flex flex-col h-full bg-background md:justify-center">
+        <div className="flex flex-col bg-background md:justify-center">
             {/* Mobile Header */}
-            <div className="md:hidden bg-gradient-to-br from-primary via-orange-500 to-amber-600 p-8 text-white rounded-b-2xl shadow-lg">
+            <div className="md:hidden bg-gradient-to-br from-primary via-orange-500 to-amber-600 p-8 text-white shadow-lg">
                  <div className="flex items-center gap-4">
                     <div className="bg-white/20 p-2 rounded-lg">
                         <Image
@@ -211,7 +211,7 @@ export function AuthModal({ initialView }: { initialView: 'login' | 'signup' }) 
 
     return (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent className="p-0 gap-0 shadow-2xl w-full h-full overflow-y-auto md:h-auto md:w-auto md:max-w-4xl md:rounded-lg md:grid md:grid-cols-2">
+            <DialogContent className="p-0 gap-0 shadow-2xl rounded-lg overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-auto md:max-w-4xl md:grid md:grid-cols-2">
                 <DialogHeader className="sr-only">
                   <DialogTitle>Authentication</DialogTitle>
                 </DialogHeader>
