@@ -4,73 +4,94 @@ import { createClient } from '@/lib/supabase/client';
 import { Tables } from '@/types/supabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Input } from '@/components/ui/input';
-import { ShoppingCart, X } from 'lucide-react';
+import { ShoppingCart, Trash2, Minus, Plus, CheckCircle } from 'lucide-react';
 import { removeItem, updateItemQuantity } from './actions';
 import { AuthPrompt } from '@/components/auth-prompt';
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
-  products: Pick<Tables<'products'>, 'name' | 'price' | 'image_urls' | 'discount_percentage' | 'discount_end_date'> | null
+  products: Pick<Tables<'products'>, 'name' | 'price' | 'image_urls' | 'quantity' | 'discount_percentage' | 'discount_end_date'> | null
 };
 
-function CartItemRow({ item }: { item: CartItemWithProduct }) {
+function QuantitySelector({ item }: { item: CartItemWithProduct }) {
+    return (
+        <div className="flex items-center gap-2 border rounded-full p-1">
+            <form action={updateItemQuantity}>
+                <input type="hidden" name="cartItemId" value={item.id} />
+                <input type="hidden" name="quantity" value={item.quantity - 1} />
+                <Button type="submit" size="icon" variant="ghost" className="h-6 w-6 rounded-full" disabled={item.quantity <= 1}>
+                    <Minus className="h-4 w-4" />
+                </Button>
+            </form>
+            <span className="w-8 text-center font-semibold">{item.quantity}</span>
+            <form action={updateItemQuantity}>
+                <input type="hidden" name="cartItemId" value={item.id} />
+                <input type="hidden" name="quantity" value={item.quantity + 1} />
+                <Button type="submit" size="icon" variant="ghost" className="h-6 w-6 rounded-full" disabled={(item.products?.quantity ?? 0) <= item.quantity}>
+                    <Plus className="h-4 w-4" />
+                </Button>
+            </form>
+        </div>
+    )
+}
+
+function CartItem({ item }: { item: CartItemWithProduct }) {
   if (!item.products) return null;
 
   const isDiscountActive = item.products.discount_percentage && item.products.discount_end_date && new Date(item.products.discount_end_date) > new Date();
   const finalPrice = isDiscountActive 
     ? item.products.price - (item.products.price * (item.products.discount_percentage! / 100))
     : item.products.price;
+  
+  const stockStatus = item.products.quantity === null ? null :
+    item.products.quantity > 5 ? <p className="text-sm text-green-600">In Stock</p> :
+    item.products.quantity > 0 ? <p className="text-sm text-orange-500">Few units left</p> :
+    <p className="text-sm text-red-500">Out of Stock</p>;
 
 
   return (
-    <TableRow>
-      <TableCell>
-        <div className="flex items-center gap-4">
-          <Image 
-            src={item.products.image_urls?.[0] || 'https://picsum.photos/seed/1/100/100'} 
-            alt={item.products.name}
-            width={60}
-            height={60}
-            className="rounded-md object-cover"
-          />
-          <div className="flex flex-col">
-            <span className="font-medium">{item.products.name}</span>
-             {isDiscountActive && <Badge variant="destructive" className="w-fit">-{item.products.discount_percentage}%</Badge>}
-          </div>
+    <div className="flex flex-col sm:flex-row gap-4 py-4">
+      <Image 
+        src={item.products.image_urls?.[0] || 'https://picsum.photos/seed/1/100/100'} 
+        alt={item.products.name}
+        width={100}
+        height={100}
+        className="rounded-md object-cover aspect-square"
+      />
+      <div className="flex-1 flex flex-col justify-between">
+        <div>
+          <h3 className="font-semibold text-base">{item.products.name}</h3>
+          {stockStatus}
         </div>
-      </TableCell>
-      <TableCell>
-         <div className="flex flex-col">
-            <span className={cn('font-semibold', { 'line-through text-muted-foreground': isDiscountActive })}>
-              GHS {item.products.price.toFixed(2)}
-            </span>
-            {isDiscountActive && <span className="font-bold text-primary">GHS {finalPrice.toFixed(2)}</span>}
-          </div>
-      </TableCell>
-      <TableCell>
-        <form action={updateItemQuantity} className="flex items-center gap-2">
-          <input type="hidden" name="cartItemId" value={item.id} />
-          <Input type="number" name="quantity" defaultValue={item.quantity} className="w-20" min="1" />
-          <Button type="submit" variant="outline" size="sm">Update</Button>
-        </form>
-      </TableCell>
-      <TableCell className="font-semibold">GHS {(finalPrice * item.quantity).toFixed(2)}</TableCell>
-      <TableCell>
-        <form action={removeItem}>
+        <form action={removeItem} className="mt-2">
             <input type="hidden" name="cartItemId" value={item.id} />
-            <Button type="submit" variant="ghost" size="icon">
-                <X className="h-4 w-4" />
+            <Button type="submit" variant="ghost" size="sm" className="text-muted-foreground hover:text-red-500 hover:bg-transparent p-0 h-auto">
+                <Trash2 className="mr-2 h-4 w-4" />
+                Remove
             </Button>
         </form>
-      </TableCell>
-    </TableRow>
+      </div>
+      <div className="flex flex-col items-start sm:items-end justify-between text-right">
+        <div className="text-lg font-bold">
+            GHS {finalPrice.toFixed(2)}
+        </div>
+        {isDiscountActive && (
+            <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground line-through">GHS {item.products.price.toFixed(2)}</span>
+                <Badge variant="destructive">-{item.products.discount_percentage}%</Badge>
+            </div>
+        )}
+        <div className="mt-2">
+          <QuantitySelector item={item} />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -88,7 +109,7 @@ export default function CartPage() {
       if (user) {
         const { data: items, error } = await supabase
           .from('cart_items')
-          .select('*, products(name, price, image_urls, discount_percentage, discount_end_date)')
+          .select('*, products(name, price, image_urls, quantity, discount_percentage, discount_end_date)')
           .eq('user_id', user.id)
           .order('created_at')
           .returns<CartItemWithProduct[]>();
@@ -130,53 +151,36 @@ export default function CartPage() {
       return acc + finalPrice * item.quantity;
   }, 0) ?? 0;
 
+  const totalItems = cartItems?.reduce((acc, item) => acc + item.quantity, 0) ?? 0;
+
   return (
       <main className="flex-1 p-4 md:p-8">
-        <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
         {cartItems && cartItems.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2">
+                <h1 className="text-2xl font-bold mb-4">Cart ({totalItems})</h1>
               <Card>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Quantity</TableHead>
-                        <TableHead>Total</TableHead>
-                        <TableHead><span className="sr-only">Remove</span></TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {cartItems.map(item => <CartItemRow key={item.id} item={item} />)}
-                    </TableBody>
-                  </Table>
+                <CardContent className="divide-y p-0">
+                    {cartItems.map(item => <div key={item.id} className="px-6"><CartItem item={item} /></div>)}
                 </CardContent>
               </Card>
             </div>
             <div>
+              <h2 className="text-lg font-semibold mb-4 uppercase text-muted-foreground">Cart Summary</h2>
               <Card>
-                <CardHeader>
-                  <CardTitle>Order Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between">
+                <CardContent className="space-y-4 pt-6">
+                  <div className="flex justify-between font-semibold text-lg">
                     <span>Subtotal</span>
-                    <span className="font-semibold">GHS {subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Delivery</span>
-                    <span className="font-semibold">Free (Pickup)</span>
-                  </div>
-                   <div className="flex justify-between text-lg font-bold">
-                    <span>Total</span>
                     <span>GHS {subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm flex items-start gap-2">
+                      <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                      <span>Free campus pickup on all your orders!</span>
                   </div>
                 </CardContent>
                 <CardFooter>
-                    <Button asChild className="w-full">
-                        <Link href="/checkout">Proceed to Checkout</Link>
+                    <Button asChild className="w-full mt-4" size="lg">
+                        <Link href="/checkout">Checkout (GHS {subtotal.toFixed(2)})</Link>
                     </Button>
                 </CardFooter>
               </Card>
@@ -185,9 +189,10 @@ export default function CartPage() {
         ) : (
           <div className="text-center text-muted-foreground py-16">
             <ShoppingCart className="mx-auto h-12 w-12 mb-4" />
-            <p>Your cart is currently empty.</p>
+             <h1 className="text-2xl font-bold mb-2">Your cart is empty!</h1>
+            <p className="mb-4">Browse our categories and discover our best deals!</p>
             <Button asChild className="mt-4">
-                <Link href="/">Continue Shopping</Link>
+                <Link href="/">Start Shopping</Link>
             </Button>
           </div>
         )}
