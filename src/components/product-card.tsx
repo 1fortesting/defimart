@@ -22,6 +22,7 @@ type ProductCardProps = {
 export function ProductCard({ product, user, isSaved }: ProductCardProps) {
     const pathname = usePathname();
     const [isClient, setIsClient] = useState(false);
+    const [timeLeft, setTimeLeft] = useState<{ hours: string; minutes: string; seconds: string; } | null>(null);
 
     useEffect(() => {
         setIsClient(true);
@@ -35,18 +36,19 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
 
     useEffect(() => {
         if (!isDiscountActive || !product.discount_end_date) {
+            setTimeLeft(null);
             return;
         }
 
         const endDate = new Date(product.discount_end_date);
-        let timerId: NodeJS.Timeout;
         
         const update = () => {
             const now = new Date();
             const difference = endDate.getTime() - now.getTime();
 
             if (difference <= 0) {
-                clearInterval(timerId);
+                setTimeLeft(null);
+                if (timerId) clearInterval(timerId);
                 return;
             }
 
@@ -54,11 +56,18 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                 const hours = Math.floor(difference / (1000 * 60 * 60));
                 const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+                setTimeLeft({
+                    hours: String(hours).padStart(2, '0'),
+                    minutes: String(minutes).padStart(2, '0'),
+                    seconds: String(seconds).padStart(2, '0'),
+                });
+            } else {
+                setTimeLeft(null);
             }
         };
 
-        update();
-        timerId = setInterval(update, 1000);
+        const timerId = setInterval(update, 1000);
+        update(); // Initial call to set timer immediately
 
         return () => clearInterval(timerId);
     }, [isDiscountActive, product.discount_end_date]);
@@ -126,12 +135,17 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
             </Link>
             <p className="text-sm text-muted-foreground">{product.category}</p>
 
-            <div className="mt-2 h-5 flex items-center">
+            <div className="mt-2 h-5 flex items-center justify-between">
               {isClient && isDiscountActive && (
                   <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
                       <Flame className="mr-1 h-3 w-3" />
                       Limited time
                   </Badge>
+              )}
+              {isClient && timeLeft && (
+                <div className="text-xs font-mono text-red-500">
+                    {timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
+                </div>
               )}
             </div>
 
