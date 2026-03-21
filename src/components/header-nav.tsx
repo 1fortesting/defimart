@@ -4,10 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Home,
-  LayoutGrid,
   User,
   Package,
-  MessageSquare,
   Heart,
   ShoppingCart,
 } from 'lucide-react';
@@ -15,6 +13,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+
 
 const getCartCount = () => {
     if (typeof window === 'undefined') return 0;
@@ -56,7 +57,7 @@ const NavLink = ({ href, icon: Icon, children, active, badgeCount }: { href: str
 
 let isMobile = false;
 
-export function HeaderNav({ cartItemCount: initialCartCount, isMobile: mobileProp }: { cartItemCount: number, isMobile?: boolean }) {
+export function HeaderNav({ user, cartItemCount: initialCartCount, isMobile: mobileProp }: { user: SupabaseUser | null, cartItemCount: number, isMobile?: boolean }) {
   const pathname = usePathname();
   isMobile = mobileProp || false;
   
@@ -90,9 +91,14 @@ export function HeaderNav({ cartItemCount: initialCartCount, isMobile: mobilePro
   
   const mobileLinks = [
       { href: "/", icon: Home, text: "Home" },
-      { href: "/categories", icon: LayoutGrid, text: "Categories" },
-      { href: "/saved", icon: Heart, text: "Wishlist" },
       { href: "/cart", icon: ShoppingCart, text: "Cart", badgeCount: cartCount },
+      { href: "/saved", icon: Heart, text: "Wishlist" },
+      { href: "/profile", icon: user ? (() => (
+          <Avatar className="h-6 w-6">
+              <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
+              <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0]}</AvatarFallback>
+          </Avatar>
+      )) : User, text: "Profile" },
   ];
 
   const navLinks = isMobile ? mobileLinks : desktopLinks;

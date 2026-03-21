@@ -14,6 +14,7 @@ import { ThemeToggle } from './theme-toggle';
 import { logout } from '@/app/auth/actions';
 import { SearchBar } from './search-bar';
 import { Separator } from './ui/separator';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export async function Header() {
   const supabase = createClient();
@@ -131,15 +132,7 @@ export async function Header() {
         
         <div className="flex items-center">
             {user ? (
-                <>
-                    <ThemeToggle />
-                    <Button asChild variant="ghost" size="icon" className="relative">
-                        <Link href="/profile">
-                            <User className="h-6 w-6 text-primary"/>
-                            <span className="sr-only">Profile</span>
-                        </Link>
-                    </Button>
-                </>
+                <ThemeToggle />
             ) : (
                 <Button asChild size="sm">
                     <Link href="/login">Login</Link>
@@ -150,7 +143,7 @@ export async function Header() {
 
       {/* Desktop Nav */}
       <div className="hidden md:flex justify-center">
-        <HeaderNav cartItemCount={cartItemCount} />
+        <HeaderNav user={user} cartItemCount={cartItemCount} />
       </div>
     </header>
   );

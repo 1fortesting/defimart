@@ -1,5 +1,7 @@
+
 import { createClient } from '@/lib/supabase/server';
 import { HeaderNav } from './header-nav';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export async function BottomNav() {
   const supabase = createClient();
@@ -16,7 +18,7 @@ export async function BottomNav() {
 
   return (
     <header className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t p-1 z-50">
-      <HeaderNav cartItemCount={cartItemCount} isMobile={true} />
+      <HeaderNav user={user} cartItemCount={cartItemCount} isMobile={true} />
     </header>
   );
 }
