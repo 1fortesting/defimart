@@ -6,6 +6,7 @@ import { Header } from '@/components/header';
 import { ThemeProvider } from '@/components/theme-provider';
 import { StorefrontShell } from '@/components/storefront-shell';
 import { GlobalToaster } from '@/components/global-toaster';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'DEFIMART',
@@ -38,7 +39,9 @@ export default function RootLayout({
             {children}
           </StorefrontShell>
           <Toaster />
-          <GlobalToaster />
+          <Suspense fallback={null}>
+            <GlobalToaster />
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>

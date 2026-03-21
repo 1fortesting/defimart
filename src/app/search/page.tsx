@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import SearchClientPage from './search-client-page';
+import { Suspense } from 'react';
 
 export default async function SearchPage({
   searchParams,
@@ -22,12 +23,14 @@ export default async function SearchPage({
 
   return (
     <main className="flex-1 p-4 md:p-8">
-      <SearchClientPage
-        initialQuery={query}
-        allProducts={allProducts}
-        user={user}
-        savedProductIds={Array.from(savedProductIds)}
-      />
+      <Suspense fallback={<div>Loading...</div>}>
+        <SearchClientPage
+          initialQuery={query}
+          allProducts={allProducts}
+          user={user}
+          savedProductIds={Array.from(savedProductIds)}
+        />
+      </Suspense>
     </main>
   );
 }

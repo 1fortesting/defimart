@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import type { Database, Tables } from '@/types/supabase';
 import { subDays, startOfDay, endOfDay, eachDayOfInterval, format, isValid, parseISO } from 'date-fns';
 import AnalyticsClientPage from './analytics-client-page';
+import { Suspense } from 'react';
 
 export type ProductWithSalesAndReviews = Tables<'products'> & {
     total_sales: number;
@@ -139,21 +140,23 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
 
     return (
         <div className="flex flex-col gap-6">
-            <AnalyticsClientPage
-                stats={{
-                    totalRevenue,
-                    totalSales,
-                    totalCustomers: totalCustomers ?? 0,
-                    productCount: totalProducts ?? 0
-                }}
-                dailySales={salesChartData}
-                salesChartDescription={salesChartDescription}
-                salesChartTimeUnit={salesChartTimeUnit}
-                productsWithPerf={productsWithPerf.sort((a,b) => b.total_revenue - a.total_revenue)}
-                recentReviews={recentReviews ?? []}
-                allProducts={allProductsForFilter ?? []}
-                currentFilters={{ date: selectedDateStr, productId: selectedProductId }}
-            />
+            <Suspense fallback={<div>Loading analytics...</div>}>
+                <AnalyticsClientPage
+                    stats={{
+                        totalRevenue,
+                        totalSales,
+                        totalCustomers: totalCustomers ?? 0,
+                        productCount: totalProducts ?? 0
+                    }}
+                    dailySales={salesChartData}
+                    salesChartDescription={salesChartDescription}
+                    salesChartTimeUnit={salesChartTimeUnit}
+                    productsWithPerf={productsWithPerf.sort((a,b) => b.total_revenue - a.total_revenue)}
+                    recentReviews={recentReviews ?? []}
+                    allProducts={allProductsForFilter ?? []}
+                    currentFilters={{ date: selectedDateStr, productId: selectedProductId }}
+                />
+            </Suspense>
         </div>
     );
 }
