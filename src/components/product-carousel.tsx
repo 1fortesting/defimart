@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Autoplay from 'embla-carousel-autoplay';
 import { Card } from '@/components/ui/card';
 import {
   Carousel,
@@ -19,6 +20,10 @@ export function ProductCarousel({ products }: ProductCarouselProps) {
   const [api, setApi] = React.useState<CarouselApi>();
   const [current, setCurrent] = React.useState(0);
   const [count, setCount] = React.useState(0);
+
+  const plugin = React.useRef(
+    Autoplay({ delay: 4000, stopOnInteraction: true })
+  );
 
   React.useEffect(() => {
     if (!api) {
@@ -39,7 +44,14 @@ export function ProductCarousel({ products }: ProductCarouselProps) {
 
   return (
     <div className="mb-8 relative">
-      <Carousel setApi={setApi} className="w-full" opts={{ loop: true }}>
+      <Carousel 
+        setApi={setApi} 
+        className="w-full" 
+        opts={{ loop: true }}
+        plugins={[plugin.current]}
+        onMouseEnter={plugin.current.stop}
+        onMouseLeave={plugin.current.reset}
+      >
         <CarouselContent>
           {products.map((product) => (
             <CarouselItem key={product.id}>
