@@ -9,6 +9,7 @@ import { ListFilter } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tables } from '@/types/supabase';
 import { CategorySidebar } from '@/components/category-sidebar';
+import { FlashSaleSection } from '@/components/flash-sale-section';
 
 export default async function Home() {
   const supabase = createClient();
@@ -49,6 +50,8 @@ export default async function Home() {
                 {carouselProducts.length > 0 && <ProductCarousel products={carouselProducts} />}
                 <Filters />
             </div>
+
+            <FlashSaleSection />
             
             <div className="mt-12 lg:mt-0">
               <div className="flex justify-between items-center mb-4">
