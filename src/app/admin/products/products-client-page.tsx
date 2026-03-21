@@ -1,17 +1,17 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Tag, RefreshCw } from 'lucide-react';
+import { PlusCircle, Tag, RefreshCw, Search } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Tables } from '@/types/supabase';
 import { ProductActions } from './product-actions';
 import { Badge } from '@/components/ui/badge';
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
+import { Input } from '@/components/ui/input';
 
 const ProductRow = ({ product }: { product: Tables<'products'> }) => {
   const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
@@ -52,6 +52,11 @@ const ProductRow = ({ product }: { product: Tables<'products'> }) => {
 export default function ProductsClientPage({ products }: { products: Tables<'products'>[] }) {
     const router = useRouter();
     const [isRefreshing, startTransition] = useTransition();
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredProducts = products.filter(product => 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
     <div className="flex flex-col gap-4">
@@ -72,6 +77,17 @@ export default function ProductsClientPage({ products }: { products: Tables<'pro
       <Card>
         <CardHeader>
             <CardTitle>All Products</CardTitle>
+            <div className="pt-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  placeholder="Search products..."
+                  className="pl-10 max-w-sm"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -92,10 +108,10 @@ export default function ProductsClientPage({ products }: { products: Tables<'pro
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products?.map((product) => (
+              {filteredProducts?.map((product) => (
                 <ProductRow key={product.id} product={product} />
               ))}
-               {!products || products.length === 0 && (
+               {(!filteredProducts || filteredProducts.length === 0) && (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center">No products found.</TableCell>
                   </TableRow>

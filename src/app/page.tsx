@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { Filters } from '@/components/filters';
 import { ProductCarousel } from '@/components/product-carousel';
 import { ProductCard } from '@/components/product-card';
-import { Input } from '@/components/ui/input';
-import { Search, ListFilter } from 'lucide-react';
+import { SearchBar } from '@/components/search-bar';
+import { ListFilter } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tables } from '@/types/supabase';
 import { CategorySidebar } from '@/components/category-sidebar';
@@ -34,10 +34,7 @@ export default async function Home() {
     <main className="flex-1">
         {/* Search for mobile */}
         <div className="p-4 md:hidden">
-          <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search for anything..." className="pl-10" />
-          </div>
+          <SearchBar products={allProducts} />
         </div>
 
         <div className="p-4 md:p-8">

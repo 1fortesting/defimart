@@ -1,20 +1,18 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { 
-  Search,
   Menu,
   User,
 } from 'lucide-react';
 import { HeaderNav } from './header-nav';
 import Image from 'next/image';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from './ui/sheet';
-import { Badge } from './ui/badge';
 import { UserMenu } from './user-menu';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ThemeToggle } from './theme-toggle';
 import { logout } from '@/app/auth/actions';
+import { SearchBar } from './search-bar';
 
 export async function Header() {
   const supabase = createClient();
@@ -31,6 +29,9 @@ export async function Header() {
       cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
     }
   }
+  
+  const { data: products } = await supabase.from('products').select('*');
+  const allProducts = products || [];
 
   return (
     <header className="bg-background border-b p-4 flex flex-col gap-2">
@@ -48,10 +49,7 @@ export async function Header() {
           </Link>
         </div>
         <div className="flex-1 max-w-md mx-4">
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search..." className="pl-10" />
-            </div>
+            <SearchBar products={allProducts} />
         </div>
         <div className="flex items-center gap-2">
             <ThemeToggle />
