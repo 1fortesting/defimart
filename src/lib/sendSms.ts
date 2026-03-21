@@ -10,8 +10,9 @@ interface SendSmsParams {
 export async function sendSms({ phoneNumber, message }: SendSmsParams): Promise<void> {
   const apiKey = process.env.SENDEXA_API_KEY;
   const apiSecret = process.env.SENDEXA_SECRET_KEY;
-  const apiUrl = process.env.SENDEXA_BASE_URL;
   const senderId = process.env.SENDEXA_SENDER_ID;
+  
+  const apiUrl = 'https://api.sendexa.co/v1/sms/send';
 
   // Check for placeholder values
   if (apiKey === 'YOUR_API_KEY_HERE' || apiSecret === 'YOUR_API_SECRET_HERE') {
@@ -19,8 +20,8 @@ export async function sendSms({ phoneNumber, message }: SendSmsParams): Promise<
     return;
   }
 
-  if (!apiKey || !apiSecret || !apiUrl || !senderId) {
-    console.error('One or more Sendexa environment variables are not configured: API Key, Secret, URL, or Sender ID.');
+  if (!apiKey || !apiSecret || !senderId) {
+    console.error('One or more Sendexa environment variables are not configured: API Key, Secret, or Sender ID.');
     return;
   }
   
