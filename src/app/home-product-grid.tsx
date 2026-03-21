@@ -5,9 +5,6 @@ import { Tables } from '@/types/supabase';
 import type { User } from '@supabase/supabase-js';
 import { ProductCard } from '@/components/product-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ListFilter } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 
 interface HomeProductGridProps {
     products: Tables<'products'>[];
@@ -59,12 +56,6 @@ export function HomeProductGrid({ products, user, savedProductIds: initialSavedP
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Browse All</h2>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="md:hidden" asChild>
-                      <Link href="/search">
-                        <ListFilter className="mr-2 h-4 w-4" />
-                        Filter
-                      </Link>
-                    </Button>
                     <Select value={sortBy} onValueChange={setSortBy}>
                         <SelectTrigger className="w-auto md:w-[180px]" >
                             <SelectValue placeholder="Sort by" />
