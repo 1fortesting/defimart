@@ -55,13 +55,13 @@ export function ProductCarousel({ products }: ProductCarouselProps) {
         <CarouselContent>
           {products.map((product) => (
             <CarouselItem key={product.id}>
-              <Card className="overflow-hidden relative bg-background border-none rounded-none">
+              <Card className="overflow-hidden relative bg-background rounded-lg">
                 <Image
                   src={product.image_urls?.[0] || 'https://picsum.photos/seed/carousel/1200/500'}
                   alt={product.name}
                   width={1200}
                   height={500}
-                  className="object-cover w-full aspect-[16/7] brightness-50"
+                  className="object-cover w-full aspect-video md:aspect-[21/9] brightness-50"
                   data-ai-hint="hero product"
                 />
                 <div className="absolute inset-0 flex flex-col justify-center items-start p-8 md:p-16 text-foreground">

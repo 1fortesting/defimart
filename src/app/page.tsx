@@ -39,9 +39,9 @@ export default async function Home() {
           </div>
         </div>
 
-        {carouselProducts.length > 0 && <ProductCarousel products={carouselProducts} />}
-        
         <div className="p-4 md:p-8">
+            {carouselProducts.length > 0 && <ProductCarousel products={carouselProducts} />}
+            
             <Filters />
             
             <div className="mt-12">
