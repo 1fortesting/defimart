@@ -33,13 +33,8 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
         ? product.price - (product.price * (product.discount_percentage! / 100))
         : product.price;
 
-    const [timeLeft, setTimeLeft] = useState<{ hours: string; minutes: string; seconds: string } | null>(null);
-    const [showCountdown, setShowCountdown] = useState(false);
-
     useEffect(() => {
         if (!isDiscountActive || !product.discount_end_date) {
-            setShowCountdown(false);
-            setTimeLeft(null);
             return;
         }
 
@@ -51,26 +46,14 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
             const difference = endDate.getTime() - now.getTime();
 
             if (difference <= 0) {
-                setShowCountdown(false);
-                setTimeLeft(null);
                 clearInterval(timerId);
                 return;
             }
 
             if (difference <= 12 * 60 * 60 * 1000) {
-                setShowCountdown(true);
                 const hours = Math.floor(difference / (1000 * 60 * 60));
                 const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                setTimeLeft({
-                    hours: String(hours).padStart(2, '0'),
-                    minutes: String(minutes).padStart(2, '0'),
-                    seconds: String(seconds).padStart(2, '0'),
-                });
-            } else {
-                 setShowCountdown(false);
-                 setTimeLeft(null);
             }
         };
 
@@ -143,29 +126,14 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
             </Link>
             <p className="text-sm text-muted-foreground">{product.category}</p>
 
-            {isClient && isDiscountActive ? (
-                <div className="mt-2 relative h-5 flex items-center justify-between">
-                     <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
-                        <Flame className="mr-1 h-3 w-3" />
-                        Limited time
-                    </Badge>
-                     {user ? (
-                        <form action={toggleSaveProduct} className="absolute right-0 top-[-2px] z-10">
-                            <input type="hidden" name="productId" value={product.id} />
-                            <input type="hidden" name="pathname" value={pathname} />
-                            <Button type="submit" size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-black/10 hover:bg-black/20 text-white transition-all hover:scale-110">
-                                <Heart className={cn("h-5 w-5 text-black/50", isSaved && "fill-red-500 text-red-500")} />
-                            </Button>
-                        </form>
-                    ) : (
-                         <Button asChild size="icon" variant="ghost" className="absolute right-0 top-[-2px] z-10 h-8 w-8 rounded-full bg-black/10 hover:bg-black/20 text-white transition-all hover:scale-110">
-                            <Link href="/login">
-                                <Heart className="h-5 w-5 text-black/50" />
-                            </Link>
-                        </Button>
-                    )}
-                </div>
-            ) : null}
+            <div className="mt-2 h-5 flex items-center">
+              {isClient && isDiscountActive && (
+                  <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
+                      <Flame className="mr-1 h-3 w-3" />
+                      Limited time
+                  </Badge>
+              )}
+            </div>
 
             <div className="flex items-center justify-between mt-2">
                 <div className="flex items-baseline gap-2">
@@ -175,19 +143,21 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                      )}
                 </div>
                 <div className="flex items-center gap-1">
-                    {user && !isDiscountActive ? (
-                        <form action={toggleSaveProduct}>
-                            <input type="hidden" name="productId" value={product.id} />
-                            <input type="hidden" name="pathname" value={pathname} />
-                            <Button type="submit" size="icon" variant="ghost" className="h-9 w-9" aria-label="Save for later">
-                                <Heart className={cn("h-5 w-5", isSaved && "fill-red-500 text-red-500")} />
+                    {isClient && (
+                         user ? (
+                            <form action={toggleSaveProduct}>
+                                <input type="hidden" name="productId" value={product.id} />
+                                <input type="hidden" name="pathname" value={pathname} />
+                                <Button type="submit" size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
+                                    <Heart className={cn("h-5 w-5", isSaved && "fill-red-500 text-red-500")} />
+                                </Button>
+                            </form>
+                        ) : (
+                            <Button asChild size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
+                                <Link href="/login"><Heart className="h-5 w-5" /></Link>
                             </Button>
-                        </form>
-                    ) : !user && !isDiscountActive ? (
-                        <Button asChild size="icon" variant="ghost" className="h-9 w-9" aria-label="Save for later">
-                            <Link href="/login"><Heart className="h-5 w-5" /></Link>
-                        </Button>
-                    ) : null}
+                        )
+                    )}
 
                     {user ? (
                         <form action={addToCart}>
