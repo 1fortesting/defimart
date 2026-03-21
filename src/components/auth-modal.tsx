@@ -28,6 +28,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (loading) return;
         setLoading(true);
         const supabase = createClient();
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -41,6 +42,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
 
     const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (loading) return;
         setLoading(true);
         const supabase = createClient();
 
