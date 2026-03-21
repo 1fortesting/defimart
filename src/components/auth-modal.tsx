@@ -67,7 +67,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
 
 
     return (
-        <div className="flex flex-col bg-background md:justify-center">
+        <div className="flex flex-col bg-background md:justify-center md:rounded-r-2xl">
             {/* Mobile Header */}
             <div className="md:hidden bg-gradient-to-br from-primary via-orange-500 to-amber-600 p-8 text-white shadow-lg">
                  <div className="flex items-center gap-4">
@@ -92,13 +92,13 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
             <div className="p-8 sm:p-12 flex-grow flex flex-col justify-center">
                 <span className="text-sm font-bold text-primary tracking-widest uppercase">{view === 'login' ? 'Customer Sign In' : 'Create Account'}</span>
                 <h1 className="text-3xl font-bold mt-2 text-foreground">{view === 'login' ? 'Sign in to continue' : 'Get started with DEFIMART'}</h1>
-                <p className="text-muted-foreground mt-2 text-sm">
+                <p className="text-muted-foreground mt-4 text-base">
                     {view === 'login' 
                         ? 'Access your saved carts, orders, and delivery updates' 
                         : 'Create an account to enjoy a seamless shopping experience.'}
                 </p>
 
-                <form onSubmit={view === 'login' ? handleLogin : handleSignup} className="mt-8 space-y-4">
+                <form onSubmit={view === 'login' ? handleLogin : handleSignup} className="mt-8 space-y-6">
                     {view === 'signup' && (
                         <div className="space-y-2">
                             <Label htmlFor="displayName">Display Name</Label>
@@ -138,7 +138,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                         </div>
                     </div>
                     
-                    <div className="space-y-3 pt-2">
+                    <div className="space-y-4 pt-4">
                         <Button type="submit" className="w-full" size="lg" disabled={loading}>
                             <ArrowRight className="mr-2 h-4 w-4"/>
                             {loading ? (view === 'login' ? 'Signing in...' : 'Creating Account...') : (view === 'login' ? 'Sign In' : 'Create Account')}
@@ -163,7 +163,7 @@ const LeftPanel = () => {
     ]
 
     return (
-        <div className="hidden md:flex flex-col justify-between p-8 sm:p-12 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-lg">
+        <div className="hidden md:flex flex-col justify-between p-12 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-2xl">
             <div>
                 <Image
                     src="https://iili.io/qO5Jeou.png"
@@ -173,10 +173,10 @@ const LeftPanel = () => {
                     className="object-contain"
                     style={{ filter: 'brightness(0) invert(1)' }}
                 />
-                <h2 className="text-3xl font-bold mt-8">Welcome Back</h2>
-                <p className="mt-2 text-white/80">Access your saved carts, orders, and real-time delivery updates.</p>
+                <h2 className="text-3xl font-bold mt-12">Welcome Back</h2>
+                <p className="mt-4 text-lg text-white/80">Access your saved carts, orders, and real-time delivery updates.</p>
 
-                <ul className="mt-8 space-y-4">
+                <ul className="mt-12 space-y-5">
                     {features.map((feature, i) => (
                         <li key={i} className="flex items-center gap-3">
                             <feature.icon className="h-5 w-5 text-white/80" />
@@ -229,7 +229,7 @@ export function AuthModal({ initialView }: { initialView: 'login' | 'signup' }) 
 
     return (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent className="p-0 gap-0 shadow-2xl rounded-lg overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-auto md:max-w-4xl md:grid md:grid-cols-2">
+            <DialogContent className="p-0 gap-0 shadow-2xl rounded-2xl overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-auto md:max-w-5xl md:grid md:grid-cols-2">
                 <DialogHeader className="sr-only">
                   <DialogTitle>Authentication</DialogTitle>
                 </DialogHeader>
