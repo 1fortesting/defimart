@@ -37,16 +37,28 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
     const [showCountdown, setShowCountdown] = useState(false);
 
     useEffect(() => {
-        if (!isDiscountActive || !product.discount_end_date) return;
+        if (!isDiscountActive || !product.discount_end_date) {
+            setShowCountdown(false);
+            setTimeLeft(null);
+            return;
+        }
 
         const endDate = new Date(product.discount_end_date);
+        let timerId: NodeJS.Timeout;
         
-        const updateCountdown = () => {
+        const update = () => {
             const now = new Date();
             const difference = endDate.getTime() - now.getTime();
 
-            if (difference > 0 && difference <= 12 * 60 * 60 * 1000) {
-                 if (!showCountdown) setShowCountdown(true);
+            if (difference <= 0) {
+                setShowCountdown(false);
+                setTimeLeft(null);
+                clearInterval(timerId);
+                return;
+            }
+
+            if (difference <= 12 * 60 * 60 * 1000) {
+                setShowCountdown(true);
                 const hours = Math.floor(difference / (1000 * 60 * 60));
                 const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((difference % (1000 * 60)) / 1000);
@@ -57,20 +69,16 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                     seconds: String(seconds).padStart(2, '0'),
                 });
             } else {
-                 if (showCountdown) setShowCountdown(false);
-                 if (timeLeft) setTimeLeft(null);
+                 setShowCountdown(false);
+                 setTimeLeft(null);
             }
+        };
 
-            if (difference <= 0) {
-                clearInterval(timer);
-            }
-        }
+        update();
+        timerId = setInterval(update, 1000);
 
-        updateCountdown();
-        const timer = setInterval(updateCountdown, 1000);
-
-        return () => clearInterval(timer);
-    }, [isDiscountActive, product.discount_end_date, showCountdown, timeLeft]);
+        return () => clearInterval(timerId);
+    }, [isDiscountActive, product.discount_end_date]);
 
     const getStockLabel = (className?: string) => {
         if (product.quantity === null || product.quantity === undefined) return null;
