@@ -95,6 +95,11 @@ export function EditProductForm({ product }: { product: Tables<'products'>}) {
                             {state.errors?.name && <p className="text-sm text-red-500">{state.errors.name[0]}</p>}
                         </div>
                         <div className="grid gap-3">
+                            <Label htmlFor="brand">Brand</Label>
+                            <Input id="brand" name="brand" type="text" className="w-full" defaultValue={product.brand || ''} placeholder="e.g. Apple, Samsung" />
+                            {state.errors?.brand && <p className="text-sm text-red-500">{state.errors.brand[0]}</p>}
+                        </div>
+                        <div className="grid gap-3">
                             <Label htmlFor="description">Description</Label>
                             <Textarea id="description" name="description" className="min-h-32" defaultValue={product.description || ''} />
                         </div>

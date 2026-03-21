@@ -52,12 +52,11 @@ export default function SearchClientPage({
   const brands = useMemo(() => {
     const brandSet = new Set<string>();
     allProducts.forEach(p => {
-        if (p.name.toLowerCase().includes('samsung')) brandSet.add('Samsung');
-        if (p.name.toLowerCase().includes('galaxy')) brandSet.add('Samsung');
-        if (p.name.toLowerCase().includes('apple')) brandSet.add('Apple');
-        if (p.name.toLowerCase().includes('iphone')) brandSet.add('Apple');
+        if (p.brand) {
+            brandSet.add(p.brand);
+        }
     });
-    return Array.from(brandSet);
+    return Array.from(brandSet).sort();
   }, [allProducts]);
 
   useEffect(() => {
@@ -86,7 +85,7 @@ export default function SearchClientPage({
 
     // 4. Filter by brand
     if (selectedBrands.length > 0) {
-        results = results.filter(p => selectedBrands.some(brand => p.name.toLowerCase().includes(brand.toLowerCase())));
+        results = results.filter(p => p.brand && selectedBrands.includes(p.brand));
     }
     
     // 5. Filter by discount

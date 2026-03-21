@@ -193,6 +193,7 @@ export type Database = {
       }
       products: {
         Row: {
+          brand: string | null
           created_at: string
           description: string | null
           id: string
@@ -206,6 +207,7 @@ export type Database = {
           discount_end_date: string | null
         }
         Insert: {
+          brand?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -219,6 +221,7 @@ export type Database = {
           discount_end_date?: string | null
         }
         Update: {
+          brand?: string | null
           created_at?: string
           description?: string | null
           id?: string

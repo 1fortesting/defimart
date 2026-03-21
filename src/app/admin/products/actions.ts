@@ -10,6 +10,7 @@ const BaseProductSchema = z.object({
   price: z.coerce.number().min(0, 'Price must be non-negative'),
   quantity: z.coerce.number().int().min(0, 'Quantity must be a non-negative integer'),
   category: z.string().optional(),
+  brand: z.string().optional(),
   discount_percentage: z.coerce.number().min(0).max(100).nullable().optional(),
   discount_end_date: z.string().nullable().optional(),
 });
@@ -60,7 +61,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     };
   }
   
-  const { name, description, price, quantity, category, image, discount_percentage, discount_end_date } = validatedFields.data;
+  const { name, description, price, quantity, category, brand, image, discount_percentage, discount_end_date } = validatedFields.data;
 
   const imageFile = image as File;
   const fileName = `${Date.now()}-${imageFile.name}`;
@@ -88,6 +89,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     price,
     quantity,
     category: category || null,
+    brand: brand || null,
     image_urls: [publicUrl],
     seller_id: sellerId,
     discount_percentage: (discount_percentage && discount_end_date) ? discount_percentage : null,
@@ -126,7 +128,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
         };
     }
 
-    const { id, name, description, price, quantity, category, image, discount_percentage, discount_end_date } = validatedFields.data;
+    const { id, name, description, price, quantity, category, brand, image, discount_percentage, discount_end_date } = validatedFields.data;
 
     const { data: existingProduct, error: fetchError } = await supabase.from('products').select('image_urls').eq('id', id).single();
     if (fetchError || !existingProduct) {
@@ -168,6 +170,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
         price,
         quantity,
         category: category || null,
+        brand: brand || null,
         image_urls: newImageUrls,
         discount_percentage: (discount_percentage && discount_end_date) ? discount_percentage : null,
         discount_end_date: (discount_percentage && discount_end_date) ? new Date(discount_end_date).toISOString() : null,

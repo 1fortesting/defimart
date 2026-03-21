@@ -29,6 +29,7 @@ const ProductRow = ({ product }: { product: Tables<'products'> }) => {
       </TableCell>
       <TableCell className="font-medium">{product.name}</TableCell>
       <TableCell>{product.category ?? 'N/A'}</TableCell>
+      <TableCell>{product.brand ?? 'N/A'}</TableCell>
       <TableCell>GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
       <TableCell>{product.quantity?.toLocaleString('en-US') ?? 'N/A'}</TableCell>
       <TableCell>
@@ -98,6 +99,7 @@ export default function ProductsClientPage({ products }: { products: Tables<'pro
                 </TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Category</TableHead>
+                <TableHead>Brand</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Quantity</TableHead>
                 <TableHead>Discount</TableHead>
@@ -113,7 +115,7 @@ export default function ProductsClientPage({ products }: { products: Tables<'pro
               ))}
                {(!filteredProducts || filteredProducts.length === 0) && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center">No products found.</TableCell>
+                    <TableCell colSpan={9} className="text-center">No products found.</TableCell>
                   </TableRow>
                 )}
             </TableBody>
