@@ -1,9 +1,10 @@
-'use client';
-
 import { AuthModal } from '@/components/auth-modal';
+import { Suspense } from 'react';
 
 export default function SignupPage() {
-  // This page now simply renders the authentication modal.
-  // The modal is configured to show the 'signup' view by default.
-  return <AuthModal initialView="signup" />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AuthModal initialView="signup" />
+    </Suspense>
+  );
 }
