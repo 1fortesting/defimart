@@ -157,7 +157,7 @@ export default function SearchClientPage({
         </Breadcrumb>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         <aside className="hidden lg:block space-y-6">
-          <Accordion type="multiple" defaultValue={['category', 'price']} collapsible className="w-full">
+          <Accordion type="multiple" defaultValue={['category', 'price']} className="w-full">
             <AccordionItem value="category">
                 <AccordionTrigger className="text-lg font-semibold">Category</AccordionTrigger>
                 <AccordionContent className="pt-2 space-y-2">
