@@ -1,16 +1,57 @@
+'use client';
 
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/client';
 import { AuthPrompt } from '@/components/auth-prompt';
 import { ProductCard } from '@/components/product-card';
 import { Tables } from '@/types/supabase';
+import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { Loader2 } from 'lucide-react';
 
 type SavedProductWithDetails = Tables<'saved_products'> & {
   products: Tables<'products'> | null;
 };
 
-export default async function SavedPage() {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+export default function SavedPage() {
+  const [user, setUser] = useState<User | null>(null);
+  const [savedItems, setSavedItems] = useState<SavedProductWithDetails[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const supabase = createClient();
+    const fetchUserAndSavedItems = async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+
+        if (user) {
+            const { data, error } = await supabase
+                .from('saved_products')
+                .select('*, products(*)')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .returns<SavedProductWithDetails[]>();
+            
+            if (data) {
+                setSavedItems(data);
+            }
+        }
+        setLoading(false);
+    };
+
+    fetchUserAndSavedItems();
+  }, []);
+  
+  const handleUnsave = (productId: string) => {
+    setSavedItems(currentItems => currentItems.filter(item => item.product_id !== productId));
+  };
+  
+  if (loading) {
+    return (
+        <main className="flex-1 p-8 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </main>
+    );
+  }
 
   if (!user) {
     return (
@@ -19,15 +60,8 @@ export default async function SavedPage() {
         </main>
     );
   }
-
-  const { data: savedItems, error } = await supabase
-    .from('saved_products')
-    .select('*, products(*)')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .returns<SavedProductWithDetails[]>();
-
-  const savedProductIds = new Set(savedItems?.map(item => item.product_id) || []);
+  
+  const savedProductIds = new Set(savedItems.map(item => item.product_id));
 
   return (
       <main className="flex-1 p-4 md:p-8">
@@ -42,6 +76,7 @@ export default async function SavedPage() {
                     product={item.products} 
                     user={user} 
                     isSaved={savedProductIds.has(item.product_id)} 
+                    onUnsave={handleUnsave}
                   />
                 ) : null
               )}

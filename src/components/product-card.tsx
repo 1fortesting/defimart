@@ -18,30 +18,19 @@ type ProductCardProps = {
   product: Tables<'products'>;
   user: any; // Simplified user object
   isSaved: boolean;
+  onUnsave?: (productId: string) => void;
 };
 
-export function ProductCard({ product, user, isSaved }: ProductCardProps) {
+export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardProps) {
     const pathname = usePathname();
-    const [isClient, setIsClient] = useState(false);
     const [timeLeft, setTimeLeft] = useState<{ hours: string; minutes: string; seconds: string; } | null>(null);
     const [isPending, startTransition] = useTransition();
     const [isSavedState, setIsSavedState] = useState(isSaved);
     const { toast } = useToast();
 
     useEffect(() => {
-        setIsClient(true);
-        // Sync saved state with local storage on mount
-        if (typeof window !== 'undefined' && user) {
-            try {
-                const saved = JSON.parse(localStorage.getItem('saved_products') || '[]');
-                if (Array.isArray(saved)) {
-                    setIsSavedState(saved.includes(product.id));
-                }
-            } catch (e) {
-                console.error("Failed to parse saved products from local storage", e);
-            }
-        }
-    }, [user, product.id]);
+        setIsSavedState(isSaved);
+    }, [isSaved]);
 
     const isDiscountActive = product.discount_percentage && product.discount_percentage > 0 && product.discount_end_date && new Date(product.discount_end_date) > new Date();
 
@@ -50,73 +39,40 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
         : product.price;
 
     const handleAddToCart = () => {
-        try {
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const existingItemIndex = cart.findIndex((item: any) => item.product_id === product.id);
+        const formData = new FormData();
+        formData.append('productId', product.id);
+        
+        toast({
+            title: 'Added to Cart',
+            description: `${product.name} has been added.`,
+            variant: 'success',
+        });
 
-            if (existingItemIndex > -1) {
-                cart[existingItemIndex].quantity += 1;
-            } else {
-                cart.push({ product_id: product.id, quantity: 1, product_details: product });
-            }
-            localStorage.setItem('cart', JSON.stringify(cart));
-            
-            window.dispatchEvent(new CustomEvent('cart-updated'));
-
-            toast({
-                title: 'Added to Cart',
-                description: `${product.name} has been added.`,
-                variant: 'success',
-            });
-
-            startTransition(async () => {
-                const formData = new FormData();
-                formData.append('productId', product.id);
-                await addToCart(formData);
-            });
-        } catch (e) {
-            console.error("Failed to update cart in local storage", e);
-            toast({
-                title: 'Error',
-                description: 'Could not add item to cart.',
-                variant: 'destructive',
-            });
-        }
+        startTransition(async () => {
+            await addToCart(formData);
+        });
     };
 
     const handleToggleSave = () => {
         const newIsSaved = !isSavedState;
         setIsSavedState(newIsSaved);
         
-        try {
-            const saved = JSON.parse(localStorage.getItem('saved_products') || '[]');
-            if (newIsSaved) {
-                if (!saved.includes(product.id)) {
-                    saved.push(product.id);
-                }
-            } else {
-                const index = saved.indexOf(product.id);
-                if (index > -1) {
-                    saved.splice(index, 1);
-                }
-            }
-            localStorage.setItem('saved_products', JSON.stringify(saved));
-            
-            toast({
-                title: newIsSaved ? 'Product Saved' : 'Product Unsaved',
-                description: `${product.name} has been ${newIsSaved ? 'added to' : 'removed from'} your wishlist.`,
-                variant: 'success'
-            });
-
-            startTransition(async () => {
-                const formData = new FormData();
-                formData.append('productId', product.id);
-                formData.append('pathname', pathname);
-                await toggleSaveProduct(formData);
-            });
-        } catch(e) {
-             console.error("Failed to update saved products in local storage", e);
+        if (!newIsSaved && onUnsave) {
+            onUnsave(product.id);
         }
+            
+        toast({
+            title: newIsSaved ? 'Product Saved' : 'Product Unsaved',
+            description: `${product.name} has been ${newIsSaved ? 'added to' : 'removed from'} your wishlist.`,
+            variant: 'success'
+        });
+
+        startTransition(async () => {
+            const formData = new FormData();
+            formData.append('productId', product.id);
+            formData.append('pathname', pathname);
+            await toggleSaveProduct(formData);
+        });
     };
 
 
@@ -227,13 +183,13 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
             <p className="text-sm text-muted-foreground">{product.category}</p>
 
             <div className="mt-2 h-5 flex items-center justify-between">
-              {isClient && isDiscountActive && (
+              {isDiscountActive && (
                   <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
                       <Flame className="mr-1 h-3 w-3" />
                       Limited time
                   </Badge>
               )}
-              {isClient && timeLeft && (
+              {timeLeft && (
                 <div className="text-xs font-mono text-red-500">
                     {timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
                 </div>

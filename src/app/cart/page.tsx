@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Trash2, Minus, Plus, CheckCircle } from 'lucide-react';
+import { ShoppingCart, Trash2, Minus, Plus, CheckCircle, Loader2 } from 'lucide-react';
 import { removeItem, updateItemQuantity } from './actions';
 import { AuthPrompt } from '@/components/auth-prompt';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -19,29 +19,35 @@ type CartItemWithProduct = Tables<'cart_items'> & {
   products: Pick<Tables<'products'>, 'name' | 'price' | 'image_urls' | 'quantity' | 'discount_percentage' | 'discount_end_date'> | null
 };
 
-function QuantitySelector({ item }: { item: CartItemWithProduct }) {
+function QuantitySelector({ item, onQuantityChange, isPending }: { item: CartItemWithProduct, onQuantityChange: (itemId: string, newQuantity: number) => void, isPending: boolean }) {
     return (
         <div className="flex items-center gap-2 border rounded-full p-1">
-            <form action={updateItemQuantity}>
-                <input type="hidden" name="cartItemId" value={item.id} />
-                <input type="hidden" name="quantity" value={item.quantity - 1} />
-                <Button type="submit" size="icon" variant="ghost" className="h-6 w-6 rounded-full" disabled={item.quantity <= 1}>
-                    <Minus className="h-4 w-4" />
-                </Button>
-            </form>
+            <Button
+                onClick={() => onQuantityChange(item.id, item.quantity - 1)}
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6 rounded-full"
+                disabled={isPending || item.quantity <= 1}
+            >
+                <Minus className="h-4 w-4" />
+            </Button>
             <span className="w-8 text-center font-semibold">{item.quantity}</span>
-            <form action={updateItemQuantity}>
-                <input type="hidden" name="cartItemId" value={item.id} />
-                <input type="hidden" name="quantity" value={item.quantity + 1} />
-                <Button type="submit" size="icon" variant="ghost" className="h-6 w-6 rounded-full" disabled={(item.products?.quantity ?? 0) <= item.quantity}>
-                    <Plus className="h-4 w-4" />
-                </Button>
-            </form>
+            <Button
+                onClick={() => onQuantityChange(item.id, item.quantity + 1)}
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6 rounded-full"
+                disabled={isPending || (item.products?.quantity ?? 0) <= item.quantity}
+            >
+                <Plus className="h-4 w-4" />
+            </Button>
         </div>
-    )
+    );
 }
 
-function CartItem({ item }: { item: CartItemWithProduct }) {
+function CartItem({ item, onQuantityChange, onRemove, isPending }: { item: CartItemWithProduct, onQuantityChange: (itemId: string, newQuantity: number) => void, onRemove: (itemId: string) => void, isPending: boolean }) {
   if (!item.products) return null;
 
   const isDiscountActive = item.products.discount_percentage && item.products.discount_end_date && new Date(item.products.discount_end_date) > new Date();
@@ -69,13 +75,10 @@ function CartItem({ item }: { item: CartItemWithProduct }) {
           <h3 className="font-semibold text-base">{item.products.name}</h3>
           {stockStatus}
         </div>
-        <form action={removeItem} className="mt-2">
-            <input type="hidden" name="cartItemId" value={item.id} />
-            <Button type="submit" variant="ghost" size="sm" className="text-muted-foreground hover:text-red-500 hover:bg-transparent p-0 h-auto">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Remove
-            </Button>
-        </form>
+        <Button onClick={() => onRemove(item.id)} type="button" variant="ghost" size="sm" className="text-muted-foreground hover:text-red-500 hover:bg-transparent p-0 h-auto mt-2 self-start" disabled={isPending}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Remove
+        </Button>
       </div>
       <div className="flex flex-col items-start sm:items-end justify-between text-right">
         <div className="text-lg font-bold">
@@ -88,7 +91,7 @@ function CartItem({ item }: { item: CartItemWithProduct }) {
             </div>
         )}
         <div className="mt-2">
-          <QuantitySelector item={item} />
+          <QuantitySelector item={item} onQuantityChange={onQuantityChange} isPending={isPending} />
         </div>
       </div>
     </div>
@@ -99,6 +102,7 @@ export default function CartPage() {
   const [user, setUser] = useState<User | null>(null);
   const [cartItems, setCartItems] = useState<CartItemWithProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     const fetchUserAndCart = async () => {
@@ -125,11 +129,41 @@ export default function CartPage() {
 
     fetchUserAndCart();
   }, []);
+  
+  const handleQuantityChange = (itemId: string, newQuantity: number) => {
+    if (newQuantity < 1) {
+        handleRemoveItem(itemId);
+        return;
+    }
+
+    setCartItems(currentItems =>
+        currentItems.map(item =>
+            item.id === itemId ? { ...item, quantity: newQuantity } : item
+        )
+    );
+
+    startTransition(() => {
+        const formData = new FormData();
+        formData.append('cartItemId', itemId);
+        formData.append('quantity', String(newQuantity));
+        updateItemQuantity(formData);
+    });
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    setCartItems(currentItems => currentItems.filter(item => item.id !== itemId));
+    startTransition(() => {
+        const formData = new FormData();
+        formData.append('cartItemId', itemId);
+        removeItem(formData);
+    });
+  };
+
 
   if (loading) {
     return (
         <main className="flex-1 p-8 flex items-center justify-center">
-          <div>Loading...</div>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </main>
     );
   }
@@ -161,7 +195,14 @@ export default function CartPage() {
                 <h1 className="text-2xl font-bold mb-4">Cart ({totalItems})</h1>
               <Card>
                 <CardContent className="divide-y p-0">
-                    {cartItems.map(item => <div key={item.id} className="px-6"><CartItem item={item} /></div>)}
+                    {cartItems.map(item => <div key={item.id} className="px-6">
+                        <CartItem 
+                            item={item} 
+                            onQuantityChange={handleQuantityChange} 
+                            onRemove={handleRemoveItem}
+                            isPending={isPending}
+                        />
+                    </div>)}
                 </CardContent>
               </Card>
             </div>
@@ -179,7 +220,7 @@ export default function CartPage() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                    <Button asChild className="w-full mt-4" size="lg">
+                    <Button asChild className="w-full mt-4" size="lg" disabled={isPending}>
                         <Link href="/checkout">Checkout (GHS {subtotal.toFixed(2)})</Link>
                     </Button>
                 </CardFooter>
