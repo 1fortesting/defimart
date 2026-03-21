@@ -8,23 +8,12 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-export const AIProductTagsInputSchema = z.object({
-  productName: z.string().describe('The name of the product.'),
-  description: z.string().describe('The description of the product.'),
-  category: z.string().optional().describe('The category of the product.'),
-});
-export type AIProductTagsInput = z.infer<typeof AIProductTagsInputSchema>;
-
-export const AIProductTagsOutputSchema = z.object({
-  tags: z
-    .array(z.string())
-    .describe(
-      'A list of relevant search tags, synonyms, and related terms for the product. Should be in lowercase.'
-    ),
-});
-export type AIProductTagsOutput = z.infer<typeof AIProductTagsOutputSchema>;
+import {
+  AIProductTagsInputSchema,
+  type AIProductTagsInput,
+  AIProductTagsOutputSchema,
+  type AIProductTagsOutput,
+} from '@/ai/schemas';
 
 export async function generateProductTags(input: AIProductTagsInput): Promise<AIProductTagsOutput> {
   return aiProductTagGeneratorFlow(input);
