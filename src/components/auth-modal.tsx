@@ -58,7 +58,15 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
             } }
         });
         if (error) {
-            toast({ variant: 'destructive', title: 'Signup Failed', description: error.message });
+            if (error.message.toLowerCase().includes('email rate limit exceeded')) {
+                toast({ 
+                    variant: 'destructive', 
+                    title: 'Signup Temporarily Unavailable', 
+                    description: 'We\'ve had a lot of new signups recently. Please try again in an hour.' 
+                });
+            } else {
+                toast({ variant: 'destructive', title: 'Signup Failed', description: error.message });
+            }
         } else {
             setShowVerificationMessage(true);
         }
@@ -88,10 +96,10 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                  <div className="text-center">
                     <p className="text-sm font-semibold text-primary uppercase">CREATE ACCOUNT</p>
                     <h1 className="text-3xl font-bold text-foreground mt-1">
-                        Join DEFIMART
+                        Join Our Marketplace
                     </h1>
                     <p className="text-muted-foreground mt-2 text-base">
-                        Complete the steps below to get started.
+                        Create your account to unlock fast checkout, wishlists, and exclusive deals.
                     </p>
                 </div>
 
