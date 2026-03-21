@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 const categories = [
     "Electronics & Gadgets",
@@ -28,7 +29,9 @@ const categories = [
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>{pending ? 'Creating...' : 'Create Product'}</Button>
+    <Button type="submit" disabled={pending}>
+        {pending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</> : 'Create Product'}
+    </Button>
   );
 }
 

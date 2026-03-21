@@ -118,10 +118,7 @@ export async function updateOrderStatus(formData: FormData) {
     }
     // --- End SMS Logic ---
 
-    revalidatePath('/admin/orders');
-    revalidatePath('/admin/products');
-    revalidatePath(`/products/${order.product_id}`);
-    revalidatePath('/');
+    // Revalidation is now handled client-side by router.refresh() if needed
     
     return { success: true };
 }

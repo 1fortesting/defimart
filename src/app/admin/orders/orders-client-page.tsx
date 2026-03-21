@@ -6,23 +6,35 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tables, Database } from '@/types/supabase';
 import { Button } from '@/components/ui/button';
 import { updateOrderStatus } from './actions';
-import { useFormStatus } from 'react-dom';
-import { useState } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, Loader2, RefreshCw } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 type OrderWithDetails = Tables<'orders'> & {
   products: Pick<Tables<'products'>, 'name'> | null;
   profiles: Pick<Tables<'profiles'>, 'display_name' | 'phone_number'> | null;
 };
 
-function StatusSelector({ orderId, currentStatus }: { orderId: string, currentStatus: Database['public']['Enums']['order_status'] }) {
-    const { pending } = useFormStatus();
+function StatusSelector({ orderId, currentStatus, onUpdate, isPending }: { 
+    orderId: string, 
+    currentStatus: Database['public']['Enums']['order_status'],
+    onUpdate: (formData: FormData) => void,
+    isPending: boolean
+}) {
+    const [status, setStatus] = useState(currentStatus);
+
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        formData.set('status', status);
+        onUpdate(formData);
+    }
 
     return (
-        <form action={updateOrderStatus} className="flex items-center gap-2">
-            <Select name="status" defaultValue={currentStatus}>
+        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+            <Select name="status" defaultValue={currentStatus} onValueChange={(value) => setStatus(value as any)}>
                 <SelectTrigger className="w-[140px]">
                     <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -33,18 +45,60 @@ function StatusSelector({ orderId, currentStatus }: { orderId: string, currentSt
                 </SelectContent>
             </Select>
             <input type="hidden" name="orderId" value={orderId} />
-            <Button size="sm" type="submit" disabled={pending}>{pending ? 'Saving...' : 'Save'}</Button>
+            <Button size="sm" type="submit" disabled={isPending} className="w-[60px]">
+                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
+            </Button>
         </form>
     );
 }
 
 export default function AdminOrdersClientPage({ initialOrders }: { initialOrders: OrderWithDetails[] }) {
     const [orders, setOrders] = useState<OrderWithDetails[]>(initialOrders);
+    const [isTransitioning, startTransition] = useTransition();
+    const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+    const { toast } = useToast();
+    const router = useRouter();
+
+    useEffect(() => {
+        setOrders(initialOrders);
+    }, [initialOrders]);
     
+    const handleStatusUpdate = (formData: FormData) => {
+        const orderId = formData.get('orderId') as string;
+        setPendingOrderId(orderId);
+        startTransition(async () => {
+            const result = await updateOrderStatus(formData);
+            if (result.success) {
+                const newStatus = formData.get('status') as Database['public']['Enums']['order_status'];
+                setOrders(prevOrders => 
+                    prevOrders.map(order => 
+                        order.id === orderId ? { ...order, status: newStatus } : order
+                    )
+                );
+                toast({ title: "Success", description: "Order status updated instantly." });
+            } else if (result.error) {
+                toast({ variant: 'destructive', title: "Update Failed", description: result.error });
+            }
+            setPendingOrderId(null);
+        });
+    };
+    
+    const [isRefreshing, startRefreshTransition] = useTransition();
+
+    const handleRefresh = () => {
+        startRefreshTransition(() => {
+            router.refresh();
+        });
+    }
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex-row items-center justify-between">
         <CardTitle>All Orders</CardTitle>
+        <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline" size="sm">
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+        </Button>
       </CardHeader>
       <CardContent>
         <Table>
@@ -95,7 +149,12 @@ export default function AdminOrdersClientPage({ initialOrders }: { initialOrders
                       <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : 'outline'}>{order.status}</Badge>
                     </TableCell>
                     <TableCell>
-                      <StatusSelector orderId={order.id} currentStatus={order.status} />
+                      <StatusSelector 
+                        orderId={order.id} 
+                        currentStatus={order.status}
+                        onUpdate={handleStatusUpdate}
+                        isPending={pendingOrderId === order.id}
+                      />
                     </TableCell>
                 </TableRow>
             )})}
@@ -110,5 +169,3 @@ export default function AdminOrdersClientPage({ initialOrders }: { initialOrders
     </Card>
   );
 }
-
-    
