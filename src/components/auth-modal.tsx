@@ -220,7 +220,7 @@ export function AuthModal({ initialView }: { initialView: 'login' | 'signup' }) 
 
     return (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent className="p-0 gap-0 shadow-2xl rounded-2xl overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-full md:max-w-4xl md:grid md:grid-cols-2 md:min-h-[720px]">
+            <DialogContent className="p-0 gap-0 shadow-2xl rounded-2xl overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-full md:max-w-4xl md:grid md:grid-cols-2 md:min-h-[680px]">
                 <DialogHeader className="sr-only">
                   <DialogTitle>Authentication</DialogTitle>
                 </DialogHeader>
