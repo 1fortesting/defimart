@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 
-import { Zap, PackageCheck, Heart, Award, Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
+import { Zap, PackageCheck, Heart, Award, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 
 const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (view: 'login' | 'signup') => void }) => {
     const router = useRouter();
@@ -88,7 +88,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                         : 'Create an account to enjoy a seamless shopping experience.'}
                 </p>
 
-                <form onSubmit={view === 'login' ? handleLogin : handleSignup} className="mt-8 space-y-6">
+                <form onSubmit={view === 'login' ? handleLogin : handleSignup} className="mt-8 space-y-4">
                     {view === 'signup' && (
                         <div className="space-y-2">
                             <Label htmlFor="displayName">Display Name</Label>
@@ -119,17 +119,16 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                         </div>
                     </div>
                     
-                    <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                        <LogIn className="mr-2 h-4 w-4"/>
-                        {loading ? (view === 'login' ? 'Signing in...' : 'Creating Account...') : (view === 'login' ? 'Sign In' : 'Create Account')}
-                    </Button>
-
-                    <p className="text-center text-sm text-muted-foreground">
-                        {view === 'login' ? "New customer?" : "Already have an account?"}
-                        <Button variant="link" type="button" onClick={() => setView(view === 'login' ? 'signup' : 'login')} className="text-primary">
-                            {view === 'login' ? 'Create Account' : 'Sign In'}
+                    <div className="space-y-3 pt-2">
+                        <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                            <ArrowRight className="mr-2 h-4 w-4"/>
+                            {loading ? (view === 'login' ? 'Signing in...' : 'Creating Account...') : (view === 'login' ? 'Sign In' : 'Create Account')}
                         </Button>
-                    </p>
+
+                         <Button variant="outline" type="button" onClick={() => setView(view === 'login' ? 'signup' : 'login')} className="w-full">
+                            {view === 'login' ? 'New customer? Create Account' : 'Already have an account? Sign In'}
+                        </Button>
+                    </div>
                 </form>
             </div>
         </div>
