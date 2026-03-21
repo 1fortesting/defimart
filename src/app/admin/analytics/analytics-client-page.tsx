@@ -62,9 +62,10 @@ export default function AnalyticsClientPage({
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    // To avoid timezone issues, we add a specific time when parsing the date string from the URL
+    // To avoid timezone issues where a UTC date might be the previous day in a local timezone,
+    // we parse the 'yyyy-mm-dd' string from the URL as a local date by providing a time component.
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-        currentFilters.date ? new Date(`${currentFilters.date}T12:00:00Z`) : undefined
+        currentFilters.date ? new Date(`${currentFilters.date}T12:00:00`) : undefined
     );
     const [selectedProductId, setSelectedProductId] = useState<string | undefined>(
         currentFilters.productId
