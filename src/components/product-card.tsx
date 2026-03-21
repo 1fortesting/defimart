@@ -41,36 +41,41 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
         }
 
         const endDate = new Date(product.discount_end_date);
-        
-        const update = () => {
+
+        const calculateTimeLeft = () => {
             const now = new Date();
             const difference = endDate.getTime() - now.getTime();
 
             if (difference <= 0) {
-                setTimeLeft(null);
-                if (timerId) clearInterval(timerId);
-                return;
+                return null;
             }
 
             if (difference <= 12 * 60 * 60 * 1000) {
                 const hours = Math.floor(difference / (1000 * 60 * 60));
                 const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-                setTimeLeft({
+                return {
                     hours: String(hours).padStart(2, '0'),
                     minutes: String(minutes).padStart(2, '0'),
                     seconds: String(seconds).padStart(2, '0'),
-                });
-            } else {
-                setTimeLeft(null);
+                };
             }
+            return null;
         };
+        
+        setTimeLeft(calculateTimeLeft());
 
-        const timerId = setInterval(update, 1000);
-        update(); // Initial call to set timer immediately
+        const timerId = setInterval(() => {
+            const newTimeLeft = calculateTimeLeft();
+            setTimeLeft(newTimeLeft);
+            if (newTimeLeft === null) {
+                clearInterval(timerId);
+            }
+        }, 1000);
 
         return () => clearInterval(timerId);
     }, [isDiscountActive, product.discount_end_date]);
+
 
     const getStockLabel = (className?: string) => {
         if (product.quantity === null || product.quantity === undefined) return null;
