@@ -145,7 +145,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
     )
 }
 
-const LeftPanel = ({ view }: { view: 'login' | 'signup' }) => {
+const LeftPanel = () => {
     const features = [
         { icon: Zap, text: "Lightning-fast checkout" },
         { icon: PackageCheck, text: "Real-time order tracking" },
@@ -153,10 +153,8 @@ const LeftPanel = ({ view }: { view: 'login' | 'signup' }) => {
         { icon: Award, text: "Exclusive deals & offers" },
     ];
     
-    const title = view === 'login' ? 'Welcome Back' : 'Join DEFIMART Today';
-    const description = view === 'login' 
-        ? 'Access your saved carts, orders, and real-time delivery updates.'
-        : 'Sign up to unlock exclusive features and a seamless shopping experience.';
+    const title = 'Welcome Back';
+    const description = 'Access your saved carts, orders, and real-time delivery updates.';
 
 
     return (
@@ -233,7 +231,7 @@ export function AuthModal({ initialView }: { initialView: 'login' | 'signup' }) 
                 <DialogHeader className="sr-only">
                   <DialogTitle>Authentication</DialogTitle>
                 </DialogHeader>
-                <LeftPanel view={view} />
+                <LeftPanel />
                 <RightPanel view={view} setView={setView} />
             </DialogContent>
         </Dialog>
