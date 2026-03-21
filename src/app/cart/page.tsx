@@ -82,11 +82,11 @@ function CartItem({ item, onQuantityChange, onRemove, isPending }: { item: CartI
       </div>
       <div className="flex flex-col items-start sm:items-end justify-between text-right">
         <div className="text-lg font-bold">
-            GHS {finalPrice.toFixed(2)}
+            GHS {finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
         {isDiscountActive && (
             <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground line-through">GHS {item.products.price.toFixed(2)}</span>
+                <span className="text-sm text-muted-foreground line-through">GHS {item.products.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 <Badge variant="destructive">-{item.products.discount_percentage}%</Badge>
             </div>
         )}
@@ -247,7 +247,7 @@ export default function CartPage() {
                 <CardContent className="space-y-4 pt-6">
                   <div className="flex justify-between font-semibold text-lg">
                     <span>Subtotal</span>
-                    <span>GHS {subtotal.toFixed(2)}</span>
+                    <span>GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                   <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm flex items-start gap-2">
                       <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -256,7 +256,7 @@ export default function CartPage() {
                 </CardContent>
                 <CardFooter>
                     <Button asChild className="w-full mt-4" size="lg" disabled={isPending}>
-                        <Link href="/checkout">Checkout (GHS {subtotal.toFixed(2)})</Link>
+                        <Link href="/checkout">Checkout (GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</Link>
                     </Button>
                 </CardFooter>
               </Card>

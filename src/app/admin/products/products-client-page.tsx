@@ -29,8 +29,8 @@ const ProductRow = ({ product }: { product: Tables<'products'> }) => {
       </TableCell>
       <TableCell className="font-medium">{product.name}</TableCell>
       <TableCell>{product.category ?? 'N/A'}</TableCell>
-      <TableCell>GHS {product.price.toFixed(2)}</TableCell>
-      <TableCell>{product.quantity ?? 'N/A'}</TableCell>
+      <TableCell>GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+      <TableCell>{product.quantity?.toLocaleString('en-US') ?? 'N/A'}</TableCell>
       <TableCell>
         {isDiscountActive ? (
           <Badge variant="secondary" className="flex items-center gap-1">

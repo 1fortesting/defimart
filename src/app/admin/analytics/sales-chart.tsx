@@ -24,12 +24,12 @@ export function SalesChart({ data, timeUnit = 'day' }: { data: { date: string, t
                 tickFormatter={(value) => timeUnit === 'day' ? value.slice(0, 3) : value}
             />
             <YAxis 
-              tickFormatter={(value) => `GHS ${value}`}
+              tickFormatter={(value) => `GHS ${Number(value).toLocaleString('en-US')}`}
             />
             <Tooltip 
                 cursor={false}
                 content={<ChartTooltipContent 
-                    formatter={(value) => `GHS ${Number(value).toFixed(2)}`}
+                    formatter={(value) => `GHS ${Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                     indicator="dot"
                 />} 
             />

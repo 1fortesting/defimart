@@ -132,16 +132,16 @@ export default function AdminOrdersClientPage({ initialOrders }: { initialOrders
                     <TableCell>
                        {wasDiscounted ? (
                          <div className="flex flex-col">
-                            <span className="text-muted-foreground line-through">GHS {originalTotal.toFixed(2)}</span>
+                            <span className="text-muted-foreground line-through">GHS {originalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             <div className="flex items-center gap-2">
-                                <span className="font-bold text-base">GHS {finalTotal.toFixed(2)}</span>
+                                <span className="font-bold text-base">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 <Badge variant="destructive" className="flex items-center gap-1">
                                     <ArrowDown className="h-3 w-3" /> {discountPercentage.toFixed(0)}%
                                 </Badge>
                             </div>
                          </div>
                        ) : (
-                        <span className="font-bold">GHS {finalTotal.toFixed(2)}</span>
+                        <span className="font-bold">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                        )}
                     </TableCell>
                     <TableCell>{new Date(order.created_at).toLocaleString()}</TableCell>

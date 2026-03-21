@@ -96,14 +96,14 @@ export default async function CheckoutPage() {
                             return (
                                 <div key={item.id} className="flex justify-between text-sm">
                                     <span>{item.products?.name} x {item.quantity}</span>
-                                    <span>GHS {(finalPrice * item.quantity).toFixed(2)}</span>
+                                    <span>GHS {(finalPrice * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                             )
                         })}
                         <hr className="my-2" />
                         <div className="flex justify-between font-medium">
                             <span>Subtotal</span>
-                            <span>GHS {subtotal.toFixed(2)}</span>
+                            <span>GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                         <div className="flex justify-between font-medium">
                             <span>Delivery</span>
@@ -112,7 +112,7 @@ export default async function CheckoutPage() {
                         <hr className="my-2" />
                          <div className="flex justify-between text-lg font-bold">
                             <span>Total</span>
-                            <span>GHS {subtotal.toFixed(2)}</span>
+                            <span>GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     </CardContent>
                     <CardFooter>

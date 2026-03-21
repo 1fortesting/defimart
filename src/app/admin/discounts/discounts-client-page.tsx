@@ -31,11 +31,11 @@ const DiscountedProductRow = ({ product }: { product: Tables<'products'> }) => {
         />
       </TableCell>
       <TableCell className="font-medium">{product.name}</TableCell>
-      <TableCell>GHS {product.price.toFixed(2)}</TableCell>
+      <TableCell>GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
       <TableCell>
         <Badge variant="secondary">{product.discount_percentage}%</Badge>
       </TableCell>
-      <TableCell className="font-semibold">GHS {discountedPrice.toFixed(2)}</TableCell>
+      <TableCell className="font-semibold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
       <TableCell className="hidden md:table-cell">{product.discount_end_date ? format(new Date(product.discount_end_date), 'PPpp') : 'N/A'}</TableCell>
       <TableCell>
         <Button asChild variant="ghost" size="icon">

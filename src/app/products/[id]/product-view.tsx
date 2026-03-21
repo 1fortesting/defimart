@@ -157,9 +157,9 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                 </div>
 
                 <div className="flex items-baseline gap-2">
-                     <span className="text-3xl font-bold">GHS {discountedPrice.toFixed(2)}</span>
+                     <span className="text-3xl font-bold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                      {isDiscountActive && (
-                        <span className="text-xl text-muted-foreground line-through">GHS {product.price.toFixed(2)}</span>
+                        <span className="text-xl text-muted-foreground line-through">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                      )}
                      {isDiscountActive && (
                          <Badge variant="destructive">-{product.discount_percentage}%</Badge>

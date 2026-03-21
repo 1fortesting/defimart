@@ -256,9 +256,9 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
 
             <div className="flex items-center justify-between mt-2">
                 <div className="flex items-baseline gap-2">
-                     <span className="text-base font-bold">GHS {discountedPrice.toFixed(2)}</span>
+                     <span className="text-base font-bold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                      {isDiscountActive && (
-                        <span className="text-sm text-muted-foreground line-through">GHS {product.price.toFixed(2)}</span>
+                        <span className="text-sm text-muted-foreground line-through">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                      )}
                 </div>
                 <div className="flex items-center gap-1">

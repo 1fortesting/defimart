@@ -205,10 +205,10 @@ export default function AnalyticsClientPage({
             </Card>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatCard title={hasFilters ? "Filtered Revenue" : "Total Revenue"} value={`GHS ${stats.totalRevenue.toFixed(2)}`} icon={DollarSign} />
-                <StatCard title={hasFilters ? "Filtered Units Sold" : "Total Units Sold"} value={`+${stats.totalSales}`} icon={ShoppingCart} />
-                <StatCard title="Total Customers" value={stats.totalCustomers} icon={Users} />
-                <StatCard title="Total Products" value={stats.productCount} icon={Package} />
+                <StatCard title={hasFilters ? "Filtered Revenue" : "Total Revenue"} value={`GHS ${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={DollarSign} />
+                <StatCard title={hasFilters ? "Filtered Units Sold" : "Total Units Sold"} value={`+${stats.totalSales.toLocaleString('en-US')}`} icon={ShoppingCart} />
+                <StatCard title="Total Customers" value={stats.totalCustomers.toLocaleString('en-US')} icon={Users} />
+                <StatCard title="Total Products" value={stats.productCount.toLocaleString('en-US')} icon={Package} />
             </div>
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
                 <Card className="lg:col-span-4">
@@ -237,7 +237,7 @@ export default function AnalyticsClientPage({
                                 {productsWithPerf.slice(0, 5).map(product => (
                                 <TableRow key={product.id}>
                                     <TableCell>{product.name}</TableCell>
-                                    <TableCell className="text-right">GHS {product.total_revenue.toFixed(2)}</TableCell>
+                                    <TableCell className="text-right">GHS {product.total_revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                 </TableRow>
                                 ))}
                             </TableBody>
@@ -264,8 +264,8 @@ export default function AnalyticsClientPage({
                                 {productsWithPerf.map(product => (
                                     <TableRow key={product.id}>
                                         <TableCell className="font-medium">{product.name}</TableCell>
-                                        <TableCell>{product.total_sales}</TableCell>
-                                        <TableCell>GHS {product.total_revenue.toFixed(2)}</TableCell>
+                                        <TableCell>{product.total_sales.toLocaleString('en-US')}</TableCell>
+                                        <TableCell>GHS {product.total_revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1">
                                                 <Star className="h-4 w-4 text-primary" /> {product.average_rating.toFixed(1)} ({product.review_count})
