@@ -90,9 +90,11 @@ export default function SearchClientPage({
 
     // 1. Filter by search query
     if (query) {
+      const lowercasedQuery = query.toLowerCase();
       results = results.filter(p =>
-        p.name.toLowerCase().includes(query.toLowerCase()) ||
-        (p.description && p.description.toLowerCase().includes(query.toLowerCase()))
+        p.name.toLowerCase().includes(lowercasedQuery) ||
+        (p.description && p.description.toLowerCase().includes(lowercasedQuery)) ||
+        (p.tags && p.tags.some(tag => tag.toLowerCase().includes(lowercasedQuery)))
       );
     }
 

@@ -22,7 +22,8 @@ export function SearchBar({ products, className }: { products: Tables<'products'
       const lowercasedQuery = query.toLowerCase();
       const results = products.filter(product =>
         product.name.toLowerCase().includes(lowercasedQuery) ||
-        (product.category && product.category.toLowerCase().includes(lowercasedQuery))
+        (product.category && product.category.toLowerCase().includes(lowercasedQuery)) ||
+        (product.tags && product.tags.some(tag => tag.toLowerCase().includes(lowercasedQuery)))
       );
       setFilteredProducts(results.slice(0, 10)); // Limit results
     } else {

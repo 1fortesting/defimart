@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
+import { generateProductTags } from '@/ai/flows/ai-product-tag-generator';
 
 const BaseProductSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -82,6 +83,18 @@ export async function createProduct(prevState: any, formData: FormData) {
     return { message: 'Could not get public URL for image.', success: false, errors: {} };
   }
   const publicUrl = urlData.publicUrl;
+
+  let aiTags: string[] = [];
+  try {
+    const tagResponse = await generateProductTags({
+      productName: name,
+      description: description || '',
+      category: category || '',
+    });
+    aiTags = tagResponse.tags;
+  } catch (e) {
+    console.error("AI Tag generation failed:", e);
+  }
   
   const { error } = await supabase.from('products').insert({
     name,
@@ -94,6 +107,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     seller_id: sellerId,
     discount_percentage: (discount_percentage && discount_end_date) ? discount_percentage : null,
     discount_end_date: (discount_percentage && discount_end_date) ? new Date(discount_end_date).toISOString() : null,
+    tags: aiTags,
   });
 
   if (error) {
@@ -163,8 +177,20 @@ export async function updateProduct(prevState: any, formData: FormData) {
             if (oldImageName) await supabase.storage.from('product_images').remove([oldImageName]);
         }
     }
+
+    let aiTags: string[] | null = null;
+    try {
+        const tagResponse = await generateProductTags({
+            productName: name,
+            description: description || '',
+            category: category || '',
+        });
+        aiTags = tagResponse.tags;
+    } catch (e) {
+        console.error("AI tag generation failed during update:", e);
+    }
     
-    const { error: updateError } = await supabase.from('products').update({
+    const updateObject = {
         name,
         description,
         price,
@@ -174,7 +200,11 @@ export async function updateProduct(prevState: any, formData: FormData) {
         image_urls: newImageUrls,
         discount_percentage: (discount_percentage && discount_end_date) ? discount_percentage : null,
         discount_end_date: (discount_percentage && discount_end_date) ? new Date(discount_end_date).toISOString() : null,
-    }).eq('id', id);
+        ...(aiTags && { tags: aiTags }),
+    };
+
+
+    const { error: updateError } = await supabase.from('products').update(updateObject).eq('id', id);
 
 
     if (updateError) {

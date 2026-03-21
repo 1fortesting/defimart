@@ -205,6 +205,7 @@ export type Database = {
           quantity: number | null
           discount_percentage: number | null
           discount_end_date: string | null
+          tags: string[] | null
         }
         Insert: {
           brand?: string | null
@@ -219,6 +220,7 @@ export type Database = {
           quantity?: number | null
           discount_percentage?: number | null
           discount_end_date?: string | null
+          tags?: string[] | null
         }
         Update: {
           brand?: string | null
@@ -233,6 +235,7 @@ export type Database = {
           quantity?: number | null
           discount_percentage?: number | null
           discount_end_date?: string | null
+          tags?: string[] | null
         }
         Relationships: [
           {
