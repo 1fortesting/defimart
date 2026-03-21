@@ -29,7 +29,16 @@ export async function updateUserProfile(prevState: any, formData: FormData) {
     };
   }
   
-  const { display_name, phone_number } = validatedFields.data;
+  let { display_name, phone_number } = validatedFields.data;
+  
+  if (phone_number) {
+    let formattedPhoneNumber = phone_number.trim();
+    if (formattedPhoneNumber.startsWith('0')) {
+        formattedPhoneNumber = '+233' + formattedPhoneNumber.substring(1);
+    }
+    phone_number = formattedPhoneNumber;
+  }
+
   const avatarFile = formData.get('avatar') as File | null;
 
   let avatar_url = user.user_metadata.avatar_url;

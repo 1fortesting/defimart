@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 
-import { Zap, PackageCheck, Heart, Award, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Zap, PackageCheck, Heart, Award, Mail, Lock, Eye, EyeOff, ArrowRight, Phone } from 'lucide-react';
 
 const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (view: 'login' | 'signup') => void }) => {
     const router = useRouter();
@@ -22,6 +22,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
     const [displayName, setDisplayName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
@@ -42,10 +43,19 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
         e.preventDefault();
         setLoading(true);
         const supabase = createClient();
+
+        let formattedPhoneNumber = phoneNumber.trim();
+        if (formattedPhoneNumber.startsWith('0')) {
+            formattedPhoneNumber = '+233' + formattedPhoneNumber.substring(1);
+        }
+
         const { error } = await supabase.auth.signUp({
             email,
             password,
-            options: { data: { display_name: displayName } }
+            options: { data: { 
+                display_name: displayName,
+                phone_number: formattedPhoneNumber
+            } }
         });
         if (error) {
             toast({ variant: 'destructive', title: 'Signup Failed', description: error.message });
@@ -93,6 +103,15 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                         <div className="space-y-2">
                             <Label htmlFor="displayName">Display Name</Label>
                             <Input id="displayName" placeholder="John Doe" value={displayName} onChange={e => setDisplayName(e.target.value)} required />
+                        </div>
+                    )}
+                    {view === 'signup' && (
+                        <div className="space-y-2">
+                            <Label htmlFor="phoneNumber">Phone Number</Label>
+                             <div className="relative">
+                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input id="phoneNumber" type="tel" placeholder="055 123 4567" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} required className="pl-10" />
+                            </div>
                         </div>
                     )}
                     <div className="space-y-2">
