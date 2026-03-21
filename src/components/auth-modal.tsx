@@ -24,6 +24,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
     const [phoneNumber, setPhoneNumber] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [showVerificationMessage, setShowVerificationMessage] = useState(false);
 
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -59,11 +60,28 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
         if (error) {
             toast({ variant: 'destructive', title: 'Signup Failed', description: error.message });
         } else {
-            router.refresh();
+            setShowVerificationMessage(true);
         }
         setLoading(false);
     };
     
+    if (showVerificationMessage) {
+        return (
+            <div className="flex flex-col bg-background p-8 md:p-6 md:rounded-r-2xl justify-center h-full rounded-b-2xl md:rounded-b-none">
+                <div className="text-center space-y-4">
+                    <Mail className="mx-auto h-12 w-12 text-primary" />
+                    <h1 className="text-2xl font-bold mt-4">Verify Your Email</h1>
+                    <p className="text-muted-foreground">
+                        We've sent a confirmation link to <br /> <strong>{email}</strong>.
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                        Please click the link in the email to complete your registration.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     const signupForm = (
         <form onSubmit={handleSignup} className="flex flex-col">
             <div className="space-y-3">
@@ -77,36 +95,36 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                     </p>
                 </div>
 
-                <div className="flex items-center justify-center gap-8 my-4">
+                <div className="flex items-center justify-center gap-4 my-4">
                     <div className="flex flex-col items-center gap-2 text-primary">
                         <div className="bg-primary text-primary-foreground rounded-full h-10 w-10 flex items-center justify-center">
                             <User className="h-5 w-5" />
                         </div>
-                        <span className="text-sm font-semibold">Personal</span>
+                        <span className="text-xs font-semibold">Personal</span>
                     </div>
                      <div className="flex-grow border-t border-dashed"></div>
                      <div className="flex flex-col items-center gap-2 text-muted-foreground">
                         <div className="bg-muted text-muted-foreground rounded-full h-10 w-10 flex items-center justify-center">
                             <Lock className="h-5 w-5" />
                         </div>
-                        <span className="text-sm">Security</span>
+                        <span className="text-xs">Security</span>
                     </div>
                 </div>
 
-                <div className="text-left py-2">
-                     <p className="font-semibold flex items-center gap-2"><User className="text-primary h-5 w-5" /> Personal Information</p>
+                <div className="text-left py-1">
+                     <p className="font-semibold text-sm flex items-center gap-2"><User className="text-primary h-5 w-5" /> Personal Information</p>
                 </div>
 
 
                 <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                         <Label htmlFor="displayName">Full Name</Label>
                         <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input id="displayName" placeholder="Kwame Mensah" value={displayName} onChange={e => setDisplayName(e.target.value)} required  className="pl-10" />
                         </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                         <Label htmlFor="phoneNumber">Phone Number</Label>
                         <div className="relative">
                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -114,14 +132,14 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                         </div>
                     </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                     <Label htmlFor="email">Email Address</Label>
                     <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required className="pl-10" />
                     </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                     <div className="flex items-center justify-between">
                         <Label htmlFor="password">Password</Label>
                     </div>
@@ -152,7 +170,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
             <div className="mb-4 text-center md:text-left">
                 <p className="text-sm font-semibold text-primary uppercase">Customer Sign In</p>
                 <h1 className="text-3xl font-bold text-foreground mt-1">
-                    Sign in to continue
+                    Welcome Back
                 </h1>
                 <p className="text-muted-foreground mt-2 text-base">
                     Access your saved carts, orders, and delivery updates.
@@ -194,8 +212,8 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
     );
 
     return (
-        <div className="flex flex-col bg-background p-8 md:rounded-r-2xl justify-center h-full rounded-b-2xl md:rounded-b-none">
-            <div className="md:hidden bg-gradient-to-br from-primary via-orange-500 to-amber-600 p-8 text-white shadow-lg rounded-t-2xl -m-8 mb-8">
+        <div className="flex flex-col bg-background p-4 md:p-6 md:rounded-r-2xl justify-center h-full rounded-b-2xl md:rounded-b-none">
+            <div className="md:hidden bg-gradient-to-br from-primary via-orange-500 to-amber-600 p-4 text-white shadow-lg rounded-t-2xl -m-4 mb-4">
                  <div className="flex items-center gap-4">
                     <div className="bg-white/20 p-2 rounded-lg">
                          <Image src="https://iili.io/qO5Jeou.png" alt="DEFIMART Logo" width={40} height={40} className="brightness-0 invert" />
@@ -223,9 +241,9 @@ const LeftPanel = () => {
     const description = 'Create your account to unlock fast checkout, wishlists, and exclusive deals.';
 
     return (
-        <div className="hidden md:flex flex-col justify-between p-8 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-2xl">
+        <div className="hidden md:flex flex-col justify-between p-6 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-2xl">
             <div>
-                 <div className="flex items-center gap-4 mb-6">
+                 <div className="flex items-center gap-4 mb-4">
                     <div className="bg-white/20 p-2 rounded-lg">
                         <Image src="https://iili.io/qO5Jeou.png" alt="DEFIMART Logo" width={40} height={40} className="brightness-0 invert" />
                     </div>
@@ -267,13 +285,15 @@ export function AuthModal({ initialView }: { initialView: 'login' | 'signup' }) 
     const router = useRouter();
     const [view, setView] = useState(initialView);
     const [isModalOpen, setIsModalOpen] = useState(true);
+    const searchParams = useSearchParams();
 
     useEffect(() => {
         if (!isModalOpen) {
             // Use a timeout to allow the fade-out animation to finish
-            setTimeout(() => router.back(), 150);
+            const from = searchParams.get('from');
+            router.push(from || '/');
         }
-    }, [isModalOpen, router]);
+    }, [isModalOpen, router, searchParams]);
 
     // When view changes (e.g. from login to signup), update URL without full navigation
     useEffect(() => {
