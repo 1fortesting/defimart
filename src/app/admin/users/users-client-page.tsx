@@ -45,7 +45,7 @@ export default function AdminUsersClientPage({ usersWithProfiles }: { usersWithP
             </TableHeader>
             <TableBody>
                 {usersWithProfiles.map((user) => (
-                    <TableRow key={user.id}>
+                    <TableRow key={user.id} onClick={() => router.push(`/admin/users/${user.id}`)} className="cursor-pointer">
                         <TableCell>
                             <Avatar>
                                 <AvatarImage src={user.avatar_url ?? undefined} />
