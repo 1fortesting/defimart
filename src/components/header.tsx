@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { HeaderNav } from './header-nav';
 import Image from 'next/image';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from './ui/sheet';
 import { Badge } from './ui/badge';
 import { UserMenu } from './user-menu';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -82,14 +82,26 @@ export async function Header() {
                     </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col gap-4 p-4">
-                   <Link className="font-bold text-lg" href="/profile">Profile</Link>
-                   <Link className="font-bold text-lg" href="/orders">Orders</Link>
-                   <Link className="font-bold text-lg" href="/messages">Messages</Link>
-                   <Link className="font-bold text-lg" href="/help">Help</Link>
-                   {user && (
+                   <SheetClose asChild>
+                    <Link className="font-bold text-lg" href="/profile">Profile</Link>
+                   </SheetClose>
+                   <SheetClose asChild>
+                    <Link className="font-bold text-lg" href="/orders">Orders</Link>
+                   </SheetClose>
+                   <SheetClose asChild>
+                    <Link className="font-bold text-lg" href="/messages">Messages</Link>
+                   </SheetClose>
+                   <SheetClose asChild>
+                    <Link className="font-bold text-lg" href="/help">Help</Link>
+                   </SheetClose>
+                   {user ? (
                      <form action={logout}>
                        <Button variant="outline" className="w-full">Logout</Button>
                      </form>
+                   ) : (
+                    <SheetClose asChild>
+                        <Button asChild className="w-full"><Link href="/login">Login / Register</Link></Button>
+                    </SheetClose>
                    )}
                </nav>
             </SheetContent>
@@ -123,7 +135,12 @@ export async function Header() {
                     </Link>
                 </Button>
              ) : (
-                <ThemeToggle />
+                <Button asChild variant="ghost" size="icon" className="relative">
+                    <Link href="/login">
+                        <User className="h-6 w-6 text-primary"/>
+                        <span className="sr-only">Login</span>
+                    </Link>
+                </Button>
              )}
         </div>
       </div>
