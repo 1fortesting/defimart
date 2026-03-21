@@ -41,12 +41,12 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
 
         const endDate = new Date(product.discount_end_date);
         
-        const timer = setInterval(() => {
+        const updateCountdown = () => {
             const now = new Date();
             const difference = endDate.getTime() - now.getTime();
 
             if (difference > 0 && difference <= 12 * 60 * 60 * 1000) {
-                if (!showCountdown) setShowCountdown(true);
+                 if (!showCountdown) setShowCountdown(true);
                 const hours = Math.floor(difference / (1000 * 60 * 60));
                 const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((difference % (1000 * 60)) / 1000);
@@ -57,17 +57,20 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                     seconds: String(seconds).padStart(2, '0'),
                 });
             } else {
-                if (showCountdown) setShowCountdown(false);
-                if (timeLeft) setTimeLeft(null);
-                if (difference <= 0) {
-                    clearInterval(timer);
-                }
+                 if (showCountdown) setShowCountdown(false);
+                 if (timeLeft) setTimeLeft(null);
             }
-        }, 1000);
 
+            if (difference <= 0) {
+                clearInterval(timer);
+            }
+        }
+
+        updateCountdown();
+        const timer = setInterval(updateCountdown, 1000);
 
         return () => clearInterval(timer);
-    }, [isDiscountActive, product.discount_end_date]);
+    }, [isDiscountActive, product.discount_end_date, showCountdown, timeLeft]);
 
     const getStockLabel = (className?: string) => {
         if (product.quantity === null || product.quantity === undefined) return null;
@@ -86,7 +89,7 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
     return (
     <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-primary/50 hover:-translate-y-1">
         <CardHeader className="p-0 relative">
-            <Link href="#">
+            <Link href={`/products/${product.id}`}>
                 <Image
                     src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/600/400'}
                     alt={product.name}
@@ -125,43 +128,36 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
             <div className="absolute top-0 right-0 z-10">
                 {getStockLabel("rounded-none rounded-bl-lg rounded-tr-md")}
             </div>
-            {user ? (
-                <form action={toggleSaveProduct} className="absolute bottom-2 right-2 z-10">
-                    <input type="hidden" name="productId" value={product.id} />
-                    <input type="hidden" name="pathname" value={pathname} />
-                    <Button type="submit" size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-black/20 hover:bg-black/50 text-white transition-all hover:scale-110">
-                        <Heart className={cn("h-4 w-4", isSaved && "fill-red-500 text-red-500")} />
-                    </Button>
-                </form>
-            ) : (
-                 <Button asChild size="icon" variant="ghost" className="absolute bottom-2 right-2 z-10 h-8 w-8 rounded-full bg-black/20 hover:bg-black/50 text-white transition-all hover:scale-110">
-                    <Link href="/login">
-                        <Heart className="h-4 w-4" />
-                    </Link>
-                </Button>
-            )}
         </CardHeader>
         <CardContent className="p-3">
-            <h3 className="font-semibold truncate text-sm">{product.name}</h3>
+            <Link href={`/products/${product.id}`} className="hover:underline">
+                <h3 className="font-semibold truncate text-sm">{product.name}</h3>
+            </Link>
             <p className="text-sm text-muted-foreground">{product.category}</p>
 
-            {isClient && showCountdown && timeLeft ? (
-                <div className="flex items-center justify-between mt-2">
-                    <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
+            {isClient && isDiscountActive ? (
+                <div className="mt-2 relative h-5 flex items-center justify-between">
+                     <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
                         <Flame className="mr-1 h-3 w-3" />
                         Limited time
                     </Badge>
-                    <span className="text-sm font-mono font-medium text-red-500 tabular-nums">
-                        {timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
-                    </span>
+                     {user ? (
+                        <form action={toggleSaveProduct} className="absolute right-0 top-[-2px] z-10">
+                            <input type="hidden" name="productId" value={product.id} />
+                            <input type="hidden" name="pathname" value={pathname} />
+                            <Button type="submit" size="icon" variant="ghost" className="h-8 w-8 rounded-full bg-black/10 hover:bg-black/20 text-white transition-all hover:scale-110">
+                                <Heart className={cn("h-5 w-5 text-black/50", isSaved && "fill-red-500 text-red-500")} />
+                            </Button>
+                        </form>
+                    ) : (
+                         <Button asChild size="icon" variant="ghost" className="absolute right-0 top-[-2px] z-10 h-8 w-8 rounded-full bg-black/10 hover:bg-black/20 text-white transition-all hover:scale-110">
+                            <Link href="/login">
+                                <Heart className="h-5 w-5 text-black/50" />
+                            </Link>
+                        </Button>
+                    )}
                 </div>
-            ) : isClient && isDiscountActive && (
-                 <Badge variant="outline" className="mt-2 text-orange-500 border-orange-500 animate-heartbeat">
-                    <Flame className="mr-1 h-3 w-3" />
-                    Limited time offer
-                </Badge>
-            )}
-
+            ) : null}
 
             <div className="flex items-center justify-between mt-2">
                 <div className="flex items-baseline gap-2">
@@ -170,22 +166,38 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                         <span className="text-sm text-muted-foreground line-through">GHS {product.price.toFixed(2)}</span>
                      )}
                 </div>
-                {user ? (
-                    <form action={addToCart}>
-                        <input type="hidden" name="productId" value={product.id} />
-                        {product.quantity === 0 ? (
-                            <Button size="sm" disabled>Out of Stock</Button>
-                        ) : (
-                            <Button type="submit" size="icon" className="h-9 w-9" aria-label="Add to cart">
-                                <ShoppingCart className="h-4 w-4" />
+                <div className="flex items-center gap-1">
+                    {user && !isDiscountActive ? (
+                        <form action={toggleSaveProduct}>
+                            <input type="hidden" name="productId" value={product.id} />
+                            <input type="hidden" name="pathname" value={pathname} />
+                            <Button type="submit" size="icon" variant="ghost" className="h-9 w-9" aria-label="Save for later">
+                                <Heart className={cn("h-5 w-5", isSaved && "fill-red-500 text-red-500")} />
                             </Button>
-                        )}
-                    </form>
-                ) : (
-                    <Button asChild size="icon" className="h-9 w-9" aria-label="Add to cart">
-                        <Link href="/login"><ShoppingCart className="h-4 w-4" /></Link>
-                    </Button>
-                )}
+                        </form>
+                    ) : !user && !isDiscountActive ? (
+                        <Button asChild size="icon" variant="ghost" className="h-9 w-9" aria-label="Save for later">
+                            <Link href="/login"><Heart className="h-5 w-5" /></Link>
+                        </Button>
+                    ) : null}
+
+                    {user ? (
+                        <form action={addToCart}>
+                            <input type="hidden" name="productId" value={product.id} />
+                            {product.quantity === 0 ? (
+                                <Button size="sm" disabled>Out of Stock</Button>
+                            ) : (
+                                <Button type="submit" size="icon" className="h-9 w-9" aria-label="Add to cart">
+                                    <ShoppingCart className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </form>
+                    ) : (
+                        <Button asChild size="icon" className="h-9 w-9" aria-label="Add to cart">
+                            <Link href="/login"><ShoppingCart className="h-4 w-4" /></Link>
+                        </Button>
+                    )}
+                </div>
             </div>
         </CardContent>
     </Card>
