@@ -118,30 +118,29 @@ export async function Header() {
         </Link>
         
         <div className="flex items-center">
-            <Button asChild variant="ghost" size="icon" className="relative">
-                <Link href="/cart">
-                    <ShoppingCart className="h-6 w-6 text-primary"/>
-                    <span className="sr-only">Cart</span>
-                    {cartItemCount > 0 && (
-                        <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-0 text-xs">{cartItemCount}</Badge>
-                    )}
-                </Link>
-            </Button>
-             {user ? (
-                <Button asChild variant="ghost" size="icon" className="relative">
-                    <Link href="/profile">
-                        <User className="h-6 w-6 text-primary"/>
-                        <span className="sr-only">Profile</span>
-                    </Link>
+            {user ? (
+                <>
+                    <Button asChild variant="ghost" size="icon" className="relative">
+                        <Link href="/cart">
+                            <ShoppingCart className="h-6 w-6 text-primary"/>
+                            <span className="sr-only">Cart</span>
+                            {cartItemCount > 0 && (
+                                <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-0 text-xs">{cartItemCount}</Badge>
+                            )}
+                        </Link>
+                    </Button>
+                    <Button asChild variant="ghost" size="icon" className="relative">
+                        <Link href="/profile">
+                            <User className="h-6 w-6 text-primary"/>
+                            <span className="sr-only">Profile</span>
+                        </Link>
+                    </Button>
+                </>
+            ) : (
+                <Button asChild size="sm">
+                    <Link href="/login">Login</Link>
                 </Button>
-             ) : (
-                <Button asChild variant="ghost" size="icon" className="relative">
-                    <Link href="/login">
-                        <User className="h-6 w-6 text-primary"/>
-                        <span className="sr-only">Login</span>
-                    </Link>
-                </Button>
-             )}
+            )}
         </div>
       </div>
 
