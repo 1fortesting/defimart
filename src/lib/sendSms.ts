@@ -11,10 +11,16 @@ export async function sendSms({ phoneNumber, message }: SendSmsParams): Promise<
   const apiKey = process.env.SENDEXA_API_KEY;
   const apiSecret = process.env.SENDEXA_SECRET_KEY;
   const apiUrl = process.env.SENDEXA_BASE_URL;
-  const senderId = 'Defimart';
+  const senderId = process.env.SENDEXA_SENDER_ID;
 
-  if (!apiKey || !apiSecret || !apiUrl) {
-    console.error('Sendexa API Key, Secret or URL is not configured in environment variables.');
+  // Check for placeholder values
+  if (apiKey === 'YOUR_API_KEY_HERE' || apiSecret === 'YOUR_API_SECRET_HERE') {
+    console.error('Please replace placeholder API credentials in your .env file for Sendexa.');
+    return;
+  }
+
+  if (!apiKey || !apiSecret || !apiUrl || !senderId) {
+    console.error('One or more Sendexa environment variables are not configured: API Key, Secret, URL, or Sender ID.');
     return;
   }
   
