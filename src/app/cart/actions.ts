@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { Tables } from '@/types/supabase';
+import { sendSms } from '@/lib/sendSms';
 
 export async function addToCart(formData: FormData) {
   const supabase = createClient();
@@ -89,6 +90,12 @@ export async function placeOrder() {
         return redirect('/login?message=Please log in to place an order.');
     }
 
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name, phone_number')
+        .eq('id', user.id)
+        .single();
+
     // 1. Get user's cart items with full product details
     const { data: cartItems, error: cartError } = await supabase
         .from('cart_items')
@@ -125,12 +132,48 @@ export async function placeOrder() {
         };
     });
 
-    const { error: orderError } = await supabase.from('orders').insert(newOrders);
+    const { data: createdOrders, error: orderError } = await supabase.from('orders').insert(newOrders).select();
 
     if (orderError) {
         console.error("Order placement error:", orderError);
         return redirect(`/checkout?error=${orderError.message}`);
     }
+
+    // --- SMS Notification Logic ---
+    if (createdOrders) {
+        const buyerPhoneNumber = profile?.phone_number;
+        const buyerName = profile?.display_name || 'Valued Customer';
+        const adminPhoneNumber = process.env.ADMIN_PHONE_NUMBER;
+
+        for (const order of createdOrders) {
+            const cartItem = cartItems.find(item => item.product_id === order.product_id);
+            if (!cartItem || !cartItem.products) continue;
+
+            const productName = cartItem.products.name;
+            const finalPrice = order.price_per_item * order.quantity;
+            
+            // Send SMS to Buyer
+            if (buyerPhoneNumber) {
+                const buyerMessage = `DEFIMART: Your order #${order.id.substring(0, 8)} for '${productName}' (GHS ${finalPrice.toFixed(2)}) has been received successfully. We are processing it and will notify you once it's approved. Thank you for shopping with Defimart.`;
+                try {
+                    await sendSms({ phoneNumber: buyerPhoneNumber, message: buyerMessage });
+                } catch (e) {
+                    console.error("Failed to send order confirmation SMS to buyer:", e);
+                }
+            }
+
+            // Send SMS to Admin
+            if (adminPhoneNumber) {
+                 const adminMessage = `DEFIMART ADMIN ALERT: New order received. Order #${order.id.substring(0, 8)}. Item: ${productName}. Amount: GHS ${finalPrice.toFixed(2)}. Customer: ${buyerName} (${buyerPhoneNumber || 'No Phone'}). Please log in to the dashboard to review and take action.`;
+                 try {
+                    await sendSms({ phoneNumber: adminPhoneNumber, message: adminMessage });
+                } catch(e) {
+                    console.error("Failed to send new order notification SMS to admin:", e);
+                }
+            }
+        }
+    }
+    // --- End SMS Logic ---
 
     // 3. Clear the user's cart
     const { error: deleteError } = await supabase
@@ -150,5 +193,3 @@ export async function placeOrder() {
     revalidatePath('/'); // Revalidate header cart count
     redirect('/orders?success=Order placed successfully!');
 }
-
-    

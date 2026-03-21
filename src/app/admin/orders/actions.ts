@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import type { Database } from '@/types/supabase';
+import { sendSms } from '@/lib/sendSms';
+import { getPickupDateString } from '@/lib/getPickupDate';
 
 export async function updateOrderStatus(formData: FormData) {
     const supabase = createClient();
@@ -16,7 +18,7 @@ export async function updateOrderStatus(formData: FormData) {
     // Get the original order details to know the old status and what to update
     const { data: order, error: fetchError } = await supabase
         .from('orders')
-        .select('status, product_id, quantity')
+        .select('*, products(name), profiles:profiles!orders_buyer_id_fkey(phone_number)')
         .eq('id', orderId)
         .single();
 
@@ -98,6 +100,23 @@ export async function updateOrderStatus(formData: FormData) {
         // Needs manual intervention.
         return { error: 'CRITICAL: Stock was adjusted, but failed to update order status. Please check data for consistency.' };
     }
+
+    // --- SMS Notification on Approval ---
+    if (newStatus === 'ready' && oldStatus !== 'ready') {
+        const buyerPhoneNumber = order.profiles?.phone_number;
+        const productName = order.products?.name;
+
+        if (buyerPhoneNumber && productName) {
+            const pickupDate = getPickupDateString();
+            const message = `DEFIMART: Your order #${order.id.substring(0, 8)} for '${productName}' has been approved. Pickup will be available on ${pickupDate}. Please ensure timely collection. Thank you!`;
+            try {
+                await sendSms({ phoneNumber: buyerPhoneNumber, message });
+            } catch (e) {
+                console.error("Failed to send order approval SMS to buyer:", e);
+            }
+        }
+    }
+    // --- End SMS Logic ---
 
     revalidatePath('/admin/orders');
     revalidatePath('/admin/products');
