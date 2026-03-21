@@ -26,8 +26,8 @@ export async function sendSms({ phoneNumber, message }: SendSmsParams): Promise<
   const base64token = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64');
 
   const payload = {
-    sender_id: senderId,
-    recipient: phoneNumber,
+    to: phoneNumber,
+    from: senderId,
     message: message,
   };
 
@@ -41,11 +41,10 @@ export async function sendSms({ phoneNumber, message }: SendSmsParams): Promise<
       body: JSON.stringify(payload),
     });
 
+    const responseData = await response.json();
     if (!response.ok) {
-        const responseData = await response.json();
         console.error(`Failed to send SMS via Sendexa. Status: ${response.status}`, responseData);
     } else {
-        const responseData = await response.json();
         console.log('SMS sent successfully via Sendexa:', responseData);
     }
   } catch (error) {
