@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { ThemeToggle } from './theme-toggle';
 import { logout } from '@/app/auth/actions';
 import { SearchBar } from './search-bar';
+import { Separator } from './ui/separator';
 
 export async function Header() {
   const supabase = createClient();
@@ -94,6 +95,17 @@ export async function Header() {
                    <SheetClose asChild>
                     <Link className="font-bold text-lg" href="/help">Help</Link>
                    </SheetClose>
+                   <Separator className="my-2" />
+                   <SheetClose asChild>
+                    <Link className="font-bold text-lg" href="/contact">Contact</Link>
+                   </SheetClose>
+                   <SheetClose asChild>
+                    <Link className="font-bold text-lg" href="/terms">Terms</Link>
+                   </SheetClose>
+                   <SheetClose asChild>
+                    <Link className="font-bold text-lg" href="/privacy">Privacy</Link>
+                   </SheetClose>
+                   <Separator className="my-2" />
                    {user ? (
                      <form action={logout}>
                        <Button variant="outline" className="w-full">Logout</Button>
