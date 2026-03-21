@@ -133,15 +133,13 @@ export async function Header() {
         
         <div className="flex items-center gap-1">
             {user ? (
-                <>
-                    <RefreshButton />
-                    <ThemeToggle />
-                </>
+                <RefreshButton />
             ) : (
                 <Button asChild size="sm">
                     <Link href="/login">Login</Link>
                 </Button>
             )}
+            <ThemeToggle />
         </div>
       </div>
 
