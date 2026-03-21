@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import type { User } from '@supabase/supabase-js';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,7 @@ import { StarRating } from '@/components/star-rating';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, ShoppingCart, Star, Calendar, Info, MessageSquare } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Calendar, Info, MessageSquare, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tables } from '@/types/supabase';
 import type { ReviewWithProfile } from './page';
@@ -55,6 +56,23 @@ function getNextPickupInfo() {
     return `Order now for pickup on ${pickupDayString}, ${formattedDate}.`;
 }
 
+function SubmitReviewButton({ userReview, rating }: { userReview: ReviewWithProfile | null, rating: number }) {
+    const { pending } = useFormStatus();
+
+    return (
+        <Button type="submit" disabled={pending || rating === 0}>
+            {pending ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {userReview ? 'Updating Review...' : 'Submitting Review...'}
+                </>
+            ) : (
+                userReview ? 'Update Review' : 'Submit Review'
+            )}
+        </Button>
+    );
+}
+
 function ReviewForm({ productId, userReview }: { productId: string, userReview: ReviewWithProfile | null }) {
     const { toast } = useToast();
     const initialState = { message: null, errors: {}, success: false };
@@ -94,9 +112,7 @@ function ReviewForm({ productId, userReview }: { productId: string, userReview: 
                     <Label htmlFor="comment">Your Review</Label>
                     <Textarea id="comment" name="comment" placeholder="Share your thoughts on the product..." defaultValue={userReview?.comment || ''} />
                 </div>
-                <Button type="submit" disabled={rating === 0}>
-                    {userReview ? 'Update Review' : 'Submit Review'}
-                </Button>
+                <SubmitReviewButton userReview={userReview} rating={rating} />
             </div>
         </form>
     )
