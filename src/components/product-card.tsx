@@ -176,6 +176,7 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                     {user ? (
                         <form action={addToCart}>
                             <input type="hidden" name="productId" value={product.id} />
+                            <input type="hidden" name="pathname" value={pathname} />
                             {product.quantity === 0 ? (
                                 <Button size="sm" disabled>Out of Stock</Button>
                             ) : (

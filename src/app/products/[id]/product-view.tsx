@@ -177,6 +177,7 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                 <div className="space-y-4">
                      <form action={addToCart} className="flex items-center gap-4">
                         <input type="hidden" name="productId" value={product.id} />
+                        <input type="hidden" name="pathname" value={pathname} />
                         {product.quantity === 0 ? (
                             <Button size="lg" disabled>Out of Stock</Button>
                         ) : (

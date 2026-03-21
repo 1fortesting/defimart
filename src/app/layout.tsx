@@ -5,6 +5,7 @@ import { BottomNav } from '@/components/bottom-nav';
 import { Header } from '@/components/header';
 import { ThemeProvider } from '@/components/theme-provider';
 import { StorefrontShell } from '@/components/storefront-shell';
+import { GlobalToaster } from '@/components/global-toaster';
 
 export const metadata: Metadata = {
   title: 'DEFIMART',
@@ -37,6 +38,7 @@ export default function RootLayout({
             {children}
           </StorefrontShell>
           <Toaster />
+          <GlobalToaster />
         </ThemeProvider>
       </body>
     </html>
