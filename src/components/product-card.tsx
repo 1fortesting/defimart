@@ -21,6 +21,11 @@ type ProductCardProps = {
 
 export function ProductCard({ product, user, isSaved }: ProductCardProps) {
     const pathname = usePathname();
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
 
     const isDiscountActive = product.discount_percentage && product.discount_percentage > 0 && product.discount_end_date && new Date(product.discount_end_date) > new Date();
 
@@ -36,7 +41,6 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
 
         const endDate = new Date(product.discount_end_date);
         
-        // This effect should only run on the client
         const timer = setInterval(() => {
             const now = new Date();
             const difference = endDate.getTime() - now.getTime();
@@ -63,7 +67,7 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
 
 
         return () => clearInterval(timer);
-    }, [isDiscountActive, product.discount_end_date, showCountdown, timeLeft]);
+    }, [isDiscountActive, product.discount_end_date]);
 
     const getStockLabel = (className?: string) => {
         if (product.quantity === null || product.quantity === undefined) return null;
@@ -141,9 +145,9 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
             <h3 className="font-semibold truncate text-sm">{product.name}</h3>
             <p className="text-sm text-muted-foreground">{product.category}</p>
 
-            {showCountdown && timeLeft ? (
+            {isClient && showCountdown && timeLeft ? (
                 <div className="flex items-center justify-between mt-2">
-                    <Badge variant="outline" className="text-orange-500 border-orange-500 animate-pulse">
+                    <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
                         <Flame className="mr-1 h-3 w-3" />
                         Limited time
                     </Badge>
@@ -151,8 +155,8 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                         {timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
                     </span>
                 </div>
-            ) : isDiscountActive && (
-                 <Badge variant="outline" className="mt-2 text-orange-500 border-orange-500">
+            ) : isClient && isDiscountActive && (
+                 <Badge variant="outline" className="mt-2 text-orange-500 border-orange-500 animate-heartbeat">
                     <Flame className="mr-1 h-3 w-3" />
                     Limited time offer
                 </Badge>
