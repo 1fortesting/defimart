@@ -83,7 +83,7 @@ export async function removeItem(formData: FormData) {
     revalidatePath('/cart');
 }
 
-export async function placeOrder() {
+export async function placeOrder(formData: FormData) {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -121,6 +121,8 @@ export async function placeOrder() {
         const price_per_item = isDiscountActive
             ? product.price - (product.price * (product.discount_percentage! / 100))
             : product.price;
+            
+        const notes = formData.get(`notes_${item.id}`) as string | null;
 
         return {
             buyer_id: user.id,
@@ -130,6 +132,7 @@ export async function placeOrder() {
             status: 'pending' as const,
             original_price_per_item,
             price_per_item,
+            notes: notes,
         };
     });
 

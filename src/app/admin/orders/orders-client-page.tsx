@@ -8,9 +8,10 @@ import { Button } from '@/components/ui/button';
 import { updateOrderStatus } from './actions';
 import { useState, useTransition, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ArrowDown, Loader2, RefreshCw } from 'lucide-react';
+import { ArrowDown, Eye, Loader2, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 type OrderWithDetails = Tables<'orders'> & {
   products: Pick<Tables<'products'>, 'name'> | null;
@@ -110,6 +111,7 @@ export default function AdminOrdersClientPage({ initialOrders }: { initialOrders
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
+              <TableHead><span className="sr-only">View</span></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -156,11 +158,19 @@ export default function AdminOrdersClientPage({ initialOrders }: { initialOrders
                         isPending={pendingOrderId === order.id}
                       />
                     </TableCell>
+                    <TableCell>
+                      <Button asChild size="icon" variant="outline">
+                        <Link href={`/admin/orders/${order.id}`}>
+                            <Eye className="h-4 w-4" />
+                            <span className="sr-only">View Details</span>
+                        </Link>
+                      </Button>
+                    </TableCell>
                 </TableRow>
             )})}
             {(!orders || orders.length === 0) && (
                 <TableRow>
-                    <TableCell colSpan={6} className="text-center">No orders found.</TableCell>
+                    <TableCell colSpan={7} className="text-center">No orders found.</TableCell>
                 </TableRow>
             )}
           </TableBody>

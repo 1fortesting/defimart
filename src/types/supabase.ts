@@ -138,34 +138,37 @@ export type Database = {
           buyer_id: string
           created_at: string
           id: string
+          notes: string | null
+          original_price_per_item: number
+          price_per_item: number
           product_id: string
           quantity: number
           seller_id: string
           status: Database["public"]["Enums"]["order_status"]
-          price_per_item: number
-          original_price_per_item: number
         }
         Insert: {
           buyer_id: string
           created_at?: string
           id?: string
+          notes?: string | null
+          original_price_per_item: number
+          price_per_item: number
           product_id: string
           quantity: number
           seller_id: string
           status?: Database["public"]["Enums"]["order_status"]
-          price_per_item: number
-          original_price_per_item: number
         }
         Update: {
           buyer_id?: string
           created_at?: string
           id?: string
+          notes?: string | null
+          original_price_per_item?: number
+          price_per_item?: number
           product_id?: string
           quantity?: number
           seller_id?: string
           status?: Database["public"]["Enums"]["order_status"]
-          price_per_item?: number
-          original_price_per_item?: number
         }
         Relationships: [
           {
@@ -194,47 +197,47 @@ export type Database = {
       products: {
         Row: {
           brand: string | null
+          category: string | null
           created_at: string
           description: string | null
+          discount_end_date: string | null
+          discount_percentage: number | null
           id: string
           image_urls: string[] | null
           name: string
           price: number
-          seller_id: string
-          category: string | null
           quantity: number | null
-          discount_percentage: number | null
-          discount_end_date: string | null
+          seller_id: string
           tags: string[] | null
         }
         Insert: {
           brand?: string | null
+          category?: string | null
           created_at?: string
           description?: string | null
+          discount_end_date?: string | null
+          discount_percentage?: number | null
           id?: string
           image_urls?: string[] | null
           name: string
           price: number
-          seller_id: string
-          category?: string | null
           quantity?: number | null
-          discount_percentage?: number | null
-          discount_end_date?: string | null
+          seller_id: string
           tags?: string[] | null
         }
         Update: {
           brand?: string | null
+          category?: string | null
           created_at?: string
           description?: string | null
+          discount_end_date?: string | null
+          discount_percentage?: number | null
           id?: string
           image_urls?: string[] | null
           name?: string
           price?: number
-          seller_id?: string
-          category?: string | null
           quantity?: number | null
-          discount_percentage?: number | null
-          discount_end_date?: string | null
+          seller_id?: string
           tags?: string[] | null
         }
         Relationships: [
@@ -244,7 +247,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       profiles: {
@@ -278,28 +281,28 @@ export type Database = {
       }
       reviews: {
         Row: {
-          id: string
-          created_at: string
-          product_id: string
-          user_id: string
-          rating: number
           comment: string | null
+          created_at: string
+          id: string
+          product_id: string
+          rating: number
+          user_id: string
         }
         Insert: {
-          id?: string
-          created_at?: string
-          product_id: string
-          user_id: string
-          rating: number
           comment?: string | null
+          created_at?: string
+          id?: string
+          product_id: string
+          rating: number
+          user_id: string
         }
         Update: {
-          id?: string
-          created_at?: string
-          product_id?: string
-          user_id?: string
-          rating?: number
           comment?: string | null
+          created_at?: string
+          id?: string
+          product_id?: string
+          rating?: number
+          user_id?: string
         }
         Relationships: [
           {
@@ -315,7 +318,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       saved_products: {
@@ -453,3 +456,4 @@ export type Enums<
     
 
     
+

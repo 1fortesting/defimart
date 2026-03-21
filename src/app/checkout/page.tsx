@@ -7,9 +7,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Calendar, Info } from 'lucide-react';
 import { placeOrder } from '@/app/cart/actions';
 import { AuthPrompt } from '@/components/auth-prompt';
+import Image from 'next/image';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
-  products: Pick<Tables<'products'>, 'name' | 'price' | 'discount_percentage' | 'discount_end_date' > | null
+  products: Pick<Tables<'products'>, 'name' | 'price' | 'discount_percentage' | 'discount_end_date' | 'image_urls'> | null
 };
 
 export default async function CheckoutPage() {
@@ -26,7 +30,7 @@ export default async function CheckoutPage() {
 
   const { data: cartItems, error } = await supabase
     .from('cart_items')
-    .select('*, products(name, price, discount_percentage, discount_end_date)')
+    .select('*, products(name, price, discount_percentage, discount_end_date, image_urls)')
     .eq('user_id', user.id)
     .returns<CartItemWithProduct[]>();
 
@@ -46,7 +50,7 @@ export default async function CheckoutPage() {
   return (
       <main className="flex-1 p-4 md:p-8">
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <form action={placeOrder} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2 space-y-8">
                 <Card>
                     <CardHeader>
@@ -83,9 +87,10 @@ export default async function CheckoutPage() {
             <div>
                  <Card>
                     <CardHeader>
-                    <CardTitle>Order Summary</CardTitle>
+                    <CardTitle>Order Summary & Notes</CardTitle>
+                    <CardDescription>Review your items and add any specific notes.</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-2">
+                    <CardContent className="space-y-4">
                         {cartItems.map(item => {
                              if (!item.products) return null;
                             const isDiscountActive = item.products.discount_percentage && item.products.discount_end_date && new Date(item.products.discount_end_date) > new Date();
@@ -94,39 +99,51 @@ export default async function CheckoutPage() {
                                 : item.products.price;
 
                             return (
-                                <div key={item.id} className="flex justify-between text-sm">
-                                    <span>{item.products?.name} x {item.quantity}</span>
-                                    <span>GHS {(finalPrice * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                <div key={item.id} className="space-y-3">
+                                    <div className="flex justify-between items-start gap-4 text-sm">
+                                       <div className="flex items-start gap-4">
+                                            <Image 
+                                                src={item.products.image_urls?.[0] || 'https://picsum.photos/seed/1/64/64'}
+                                                alt={item.products.name}
+                                                width={64}
+                                                height={64}
+                                                className="rounded-md object-cover aspect-square"
+                                            />
+                                            <div>
+                                                <p className="font-medium">{item.products.name}</p>
+                                                <p className="text-muted-foreground">Qty: {item.quantity}</p>
+                                            </div>
+                                       </div>
+                                        <span className="font-medium">GHS {(finalPrice * item.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    </div>
+                                    <Textarea name={`notes_${item.id}`} placeholder="Add notes (e.g. size, color...)" rows={2} />
+                                    <Separator />
                                 </div>
                             )
                         })}
-                        <hr className="my-2" />
-                        <div className="flex justify-between font-medium">
+                        
+                        <div className="flex justify-between font-medium text-sm">
                             <span>Subtotal</span>
                             <span>GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
-                        <div className="flex justify-between font-medium">
+                        <div className="flex justify-between font-medium text-sm">
                             <span>Delivery</span>
                             <span>Free</span>
                         </div>
-                        <hr className="my-2" />
+                        <Separator />
                          <div className="flex justify-between text-lg font-bold">
                             <span>Total</span>
                             <span>GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <form action={placeOrder} className="w-full">
-                            <Button type="submit" className="w-full">
-                                Place Order
-                            </Button>
-                        </form>
+                        <Button type="submit" className="w-full">
+                            Place Order
+                        </Button>
                     </CardFooter>
                 </Card>
             </div>
-        </div>
+        </form>
       </main>
   );
 }
-
-    
