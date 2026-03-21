@@ -5,10 +5,9 @@ import { Input } from '@/components/ui/input';
 import { 
   Search,
   Menu,
-  ShoppingCart,
   User,
 } from 'lucide-react';
-import { HeaderNav, MobileCartIcon } from './header-nav';
+import { HeaderNav } from './header-nav';
 import Image from 'next/image';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from './ui/sheet';
 import { Badge } from './ui/badge';
@@ -123,7 +122,7 @@ export async function Header() {
         <div className="flex items-center">
             {user ? (
                 <>
-                    <MobileCartIcon initialCount={cartItemCount} />
+                    <ThemeToggle />
                     <Button asChild variant="ghost" size="icon" className="relative">
                         <Link href="/profile">
                             <User className="h-6 w-6 text-primary"/>

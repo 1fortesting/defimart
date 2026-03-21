@@ -9,7 +9,6 @@ import {
   Package,
   MessageSquare,
   Heart,
-  HelpCircle,
   ShoppingCart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -94,7 +93,7 @@ export function HeaderNav({ cartItemCount: initialCartCount, isMobile: mobilePro
       { href: "/", icon: Home, text: "Home" },
       { href: "/categories", icon: LayoutGrid, text: "Categories" },
       { href: "/saved", icon: Heart, text: "Wishlist" },
-      { href: "/help", icon: HelpCircle, text: "Help" },
+      { href: "/cart", icon: ShoppingCart, text: "Cart", badgeCount: cartCount },
   ];
 
   const navLinks = isMobile ? mobileLinks : desktopLinks;
@@ -107,44 +106,11 @@ export function HeaderNav({ cartItemCount: initialCartCount, isMobile: mobilePro
           href={link.href} 
           icon={link.icon} 
           active={pathname === link.href} 
-          badgeCount={isMobile ? undefined : (link as any).badgeCount}
+          badgeCount={(link as any).badgeCount}
         >
           {link.text}
         </NavLink>
       ))}
     </nav>
   );
-}
-
-
-export function MobileCartIcon({ initialCount }: { initialCount: number }) {
-    const [count, setCount] = useState(initialCount);
-
-    useEffect(() => {
-        setCount(getCartCount());
-
-        const handleCartUpdate = () => {
-            setCount(getCartCount());
-        };
-        
-        window.addEventListener('cart-updated', handleCartUpdate);
-        window.addEventListener('storage', handleCartUpdate);
-
-        return () => {
-            window.removeEventListener('cart-updated', handleCartUpdate);
-            window.removeEventListener('storage', handleCartUpdate);
-        };
-    }, []);
-
-    return (
-        <Button asChild variant="ghost" size="icon" className="relative">
-            <Link href="/cart">
-                <ShoppingCart className="h-6 w-6 text-primary"/>
-                <span className="sr-only">Cart</span>
-                {count > 0 && (
-                    <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-0 text-xs">{count}</Badge>
-                )}
-            </Link>
-        </Button>
-    )
 }
