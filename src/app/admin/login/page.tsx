@@ -13,7 +13,6 @@ import { createClient } from '@/lib/supabase/client';
 export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -33,21 +32,17 @@ export default function AdminLoginPage() {
         return;
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ 
+      email: adminEmail, 
+      password: password 
+    });
 
     if (error) {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: error.message,
+        description: 'Incorrect password or admin account not set up.',
       });
-    } else if (data.user?.email !== adminEmail) {
-        toast({
-            variant: 'destructive',
-            title: 'Authorization Failed',
-            description: 'You are not authorized to access the admin panel.',
-        });
-        await supabase.auth.signOut(); // Log out the non-admin user
     } else {
       // Successful admin login
       router.push('/admin');
@@ -70,21 +65,10 @@ export default function AdminLoginPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-center">Admin Panel Access</CardTitle>
-              <CardDescription className="text-center">Enter your admin credentials to manage the store</CardDescription>
+              <CardDescription className="text-center">Enter your admin password to manage the store</CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="grid gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        placeholder="admin@example.com"
-                    />
-                </div>
                 <div className="grid gap-2">
                   <Label htmlFor="password">Password</Label>
                   <Input
