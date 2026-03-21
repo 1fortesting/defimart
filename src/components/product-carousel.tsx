@@ -43,7 +43,7 @@ export function ProductCarousel({ products }: ProductCarouselProps) {
   }
 
   return (
-    <div className="mb-8 relative">
+    <div className="relative">
       <Carousel 
         setApi={setApi} 
         className="w-full" 
@@ -61,10 +61,10 @@ export function ProductCarousel({ products }: ProductCarouselProps) {
                   alt={product.name}
                   width={1200}
                   height={500}
-                  className="object-cover w-full aspect-video md:aspect-[21/9] brightness-50"
+                  className="object-cover w-full aspect-video brightness-50"
                   data-ai-hint="hero product"
                 />
-                <div className="absolute inset-0 flex flex-col justify-center items-start p-8 md:p-16 text-foreground">
+                <div className="absolute inset-0 flex flex-col justify-center items-start p-8 md:p-12 text-foreground">
                     <h2 className="text-3xl md:text-5xl font-bold max-w-lg leading-tight text-white">{product.name}</h2>
                     <p className="mt-2 text-lg max-w-lg hidden md:block text-slate-300">{product.description}</p>
                 </div>

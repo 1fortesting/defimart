@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Search, ListFilter } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tables } from '@/types/supabase';
+import { CategorySidebar } from '@/components/category-sidebar';
 
 export default async function Home() {
   const supabase = createClient();
@@ -40,11 +41,19 @@ export default async function Home() {
         </div>
 
         <div className="p-4 md:p-8">
-            {carouselProducts.length > 0 && <ProductCarousel products={carouselProducts} />}
+            {/* Desktop Hero Section */}
+            <div className="hidden lg:grid lg:grid-cols-[250px_1fr] lg:gap-8 lg:mb-12">
+              <CategorySidebar />
+              {carouselProducts.length > 0 && <ProductCarousel products={carouselProducts} />}
+            </div>
             
-            <Filters />
+            {/* Mobile Hero Section */}
+            <div className="lg:hidden">
+                {carouselProducts.length > 0 && <ProductCarousel products={carouselProducts} />}
+                <Filters />
+            </div>
             
-            <div className="mt-12">
+            <div className="mt-12 lg:mt-0">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">Browse All</h2>
                 <div className="flex items-center gap-2">
