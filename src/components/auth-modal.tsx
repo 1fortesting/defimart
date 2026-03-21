@@ -65,8 +65,8 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
     };
     
     const signupForm = (
-        <form onSubmit={handleSignup} className="flex flex-col h-full">
-            <div className="space-y-4 flex-grow">
+        <form onSubmit={handleSignup} className="flex flex-col">
+            <div className="space-y-3">
                  <div className="text-center">
                     <p className="text-sm font-semibold text-primary uppercase">CREATE ACCOUNT</p>
                     <h1 className="text-3xl font-bold text-foreground mt-1">
@@ -77,7 +77,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                     </p>
                 </div>
 
-                <div className="flex items-center justify-center gap-8 my-6">
+                <div className="flex items-center justify-center gap-8 my-4">
                     <div className="flex flex-col items-center gap-2 text-primary">
                         <div className="bg-primary text-primary-foreground rounded-full h-10 w-10 flex items-center justify-center">
                             <User className="h-5 w-5" />
@@ -93,7 +93,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                     </div>
                 </div>
 
-                <div className="text-left py-4">
+                <div className="text-left py-2">
                      <p className="font-semibold flex items-center gap-2"><User className="text-primary h-5 w-5" /> Personal Information</p>
                 </div>
 
@@ -135,7 +135,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                 </div>
             </div>
             
-            <div className="space-y-4 pt-6">
+            <div className="space-y-3 pt-4">
                 <Button type="submit" className="w-full" size="lg" disabled={loading}>
                     {loading ? 'Creating Account...' : 'Continue'}
                 </Button>
@@ -149,7 +149,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
 
     const loginForm = (
         <form onSubmit={handleLogin}>
-            <div className="mb-6 text-center md:text-left">
+            <div className="mb-4 text-center md:text-left">
                 <p className="text-sm font-semibold text-primary uppercase">Customer Sign In</p>
                 <h1 className="text-3xl font-bold text-foreground mt-1">
                     Sign in to continue
@@ -158,7 +158,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                     Access your saved carts, orders, and delivery updates.
                 </p>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
                 <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
                     <div className="relative">
@@ -181,7 +181,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                 </div>
             </div>
             
-            <div className="space-y-4 pt-6">
+            <div className="space-y-3 pt-4">
                 <Button type="submit" className="w-full" size="lg" disabled={loading}>
                     {loading ? 'Signing in...' : <> <ArrowRight className="mr-2 h-4 w-4"/> Sign In </>}
                 </Button>
@@ -194,7 +194,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
     );
 
     return (
-        <div className="flex flex-col bg-background p-8 sm:p-10 md:rounded-r-2xl justify-center h-full">
+        <div className="flex flex-col bg-background p-8 md:rounded-r-2xl justify-center h-full">
             <div className="md:hidden bg-gradient-to-br from-primary via-orange-500 to-amber-600 p-8 text-white shadow-lg rounded-t-2xl -m-8 mb-8">
                  <div className="flex items-center gap-4">
                     <div className="bg-white/20 p-2 rounded-lg">
@@ -223,9 +223,9 @@ const LeftPanel = () => {
     const description = 'Create your account to unlock fast checkout, wishlists, and exclusive deals.';
 
     return (
-        <div className="hidden md:flex flex-col justify-between p-10 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-2xl min-h-[720px]">
+        <div className="hidden md:flex flex-col justify-between p-8 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-2xl">
             <div>
-                 <div className="flex items-center gap-4 mb-8">
+                 <div className="flex items-center gap-4 mb-6">
                     <div className="bg-white/20 p-2 rounded-lg">
                         <Image src="https://iili.io/qO5Jeou.png" alt="DEFIMART Logo" width={40} height={40} className="brightness-0 invert" />
                     </div>
@@ -237,7 +237,7 @@ const LeftPanel = () => {
                 <h2 className="text-3xl font-bold">{title}</h2>
                 <p className="mt-2 text-base text-white/80">{description}</p>
 
-                <ul className="mt-8 space-y-4">
+                <ul className="mt-6 space-y-3">
                     {features.map((feature, i) => (
                         <li key={i} className="flex items-center gap-4">
                             <div className="bg-white/20 p-2 rounded-lg">
@@ -248,7 +248,7 @@ const LeftPanel = () => {
                     ))}
                 </ul>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 mt-6">
                  <div className="bg-black/20 text-center px-4 py-3 rounded-lg flex-1">
                     <p className="text-xs font-semibold tracking-wider text-white/60">SECURITY</p>
                     <p className="text-sm font-medium">OTP + Email</p>
@@ -282,7 +282,7 @@ export function AuthModal({ initialView }: { initialView: 'login' | 'signup' }) 
 
     return (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent className="p-0 gap-0 shadow-2xl rounded-2xl overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-full md:max-w-5xl md:grid md:grid-cols-2">
+            <DialogContent className="p-0 gap-0 shadow-2xl rounded-2xl overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-full md:max-w-4xl md:grid md:grid-cols-2">
                 <DialogHeader className="sr-only">
                   <DialogTitle>Authentication</DialogTitle>
                 </DialogHeader>
