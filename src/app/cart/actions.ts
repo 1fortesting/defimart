@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { Tables } from '@/types/supabase';
 
 export async function addToCart(formData: FormData) {
   const supabase = createClient();
@@ -88,28 +89,46 @@ export async function placeOrder() {
         return redirect('/login?message=Please log in to place an order.');
     }
 
-    // 1. Get user's cart items
+    // 1. Get user's cart items with full product details
     const { data: cartItems, error: cartError } = await supabase
         .from('cart_items')
-        .select('*, products(seller_id)')
+        .select('*, products(*)')
         .eq('user_id', user.id);
     
     if (cartError || !cartItems || cartItems.length === 0) {
         return redirect('/cart?error=Your cart is empty or there was an error.');
     }
 
-    // 2. Create order records
-    const newOrders = cartItems.map(item => ({
-        buyer_id: user.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        seller_id: item.products!.seller_id, // non-null assertion as we selected it
-        status: 'pending' as const,
-    }));
+    // 2. Create order records with price at time of purchase
+    const newOrders = cartItems.map(item => {
+        const product = item.products as Tables<'products'>;
+        if (!product) {
+            // This case should ideally not happen if DB constraints are set up
+            throw new Error(`Product with ID ${item.product_id} not found for cart item ${item.id}`);
+        }
+
+        const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
+
+        const original_price_per_item = product.price;
+        const price_per_item = isDiscountActive
+            ? product.price - (product.price * (product.discount_percentage! / 100))
+            : product.price;
+
+        return {
+            buyer_id: user.id,
+            product_id: item.product_id,
+            quantity: item.quantity,
+            seller_id: product.seller_id,
+            status: 'pending' as const,
+            original_price_per_item,
+            price_per_item,
+        };
+    });
 
     const { error: orderError } = await supabase.from('orders').insert(newOrders);
 
     if (orderError) {
+        console.error("Order placement error:", orderError);
         return redirect(`/checkout?error=${orderError.message}`);
     }
 
@@ -127,6 +146,9 @@ export async function placeOrder() {
 
     // 4. Redirect to orders page with a success message
     revalidatePath('/orders');
+    revalidatePath('/cart');
     revalidatePath('/'); // Revalidate header cart count
     redirect('/orders?success=Order placed successfully!');
 }
+
+    

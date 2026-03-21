@@ -9,6 +9,8 @@ import { updateOrderStatus } from './actions';
 import { useFormStatus } from 'react-dom';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { ArrowDown } from 'lucide-react';
 
 type OrderWithDetails = Tables<'orders'> & {
   products: Pick<Tables<'products'>, 'name'> | null;
@@ -49,21 +51,45 @@ export default function AdminOrdersClientPage({ initialOrders }: { initialOrders
           <TableHeader>
             <TableRow>
               <TableHead>Customer</TableHead>
-              <TableHead>Phone</TableHead>
               <TableHead>Product</TableHead>
-              <TableHead>Quantity</TableHead>
+              <TableHead>Pricing</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders?.map((order) => (
+            {orders?.map((order) => {
+                const wasDiscounted = order.original_price_per_item > order.price_per_item;
+                const originalTotal = order.original_price_per_item * order.quantity;
+                const finalTotal = order.price_per_item * order.quantity;
+                const discountPercentage = wasDiscounted ? ((originalTotal - finalTotal) / originalTotal) * 100 : 0;
+
+                return (
                 <TableRow key={order.id}>
-                    <TableCell>{order.profiles?.display_name || 'N/A'}</TableCell>
-                    <TableCell>{order.profiles?.phone_number || 'N/A'}</TableCell>
-                    <TableCell>{order.products?.name || 'N/A'}</TableCell>
-                    <TableCell>{order.quantity}</TableCell>
+                    <TableCell>
+                        <div>{order.profiles?.display_name || 'N/A'}</div>
+                        <div className="text-sm text-muted-foreground">{order.profiles?.phone_number || 'No phone'}</div>
+                    </TableCell>
+                    <TableCell>
+                        <div>{order.products?.name || 'N/A'}</div>
+                        <div className="text-sm text-muted-foreground">Qty: {order.quantity}</div>
+                    </TableCell>
+                    <TableCell>
+                       {wasDiscounted ? (
+                         <div className="flex flex-col">
+                            <span className="text-muted-foreground line-through">GHS {originalTotal.toFixed(2)}</span>
+                            <div className="flex items-center gap-2">
+                                <span className="font-bold text-base">GHS {finalTotal.toFixed(2)}</span>
+                                <Badge variant="destructive" className="flex items-center gap-1">
+                                    <ArrowDown className="h-3 w-3" /> {discountPercentage.toFixed(0)}%
+                                </Badge>
+                            </div>
+                         </div>
+                       ) : (
+                        <span className="font-bold">GHS {finalTotal.toFixed(2)}</span>
+                       )}
+                    </TableCell>
                     <TableCell>{new Date(order.created_at).toLocaleString()}</TableCell>
                     <TableCell>
                       <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : 'outline'}>{order.status}</Badge>
@@ -72,10 +98,10 @@ export default function AdminOrdersClientPage({ initialOrders }: { initialOrders
                       <StatusSelector orderId={order.id} currentStatus={order.status} />
                     </TableCell>
                 </TableRow>
-            ))}
+            )})}
             {(!orders || orders.length === 0) && (
                 <TableRow>
-                    <TableCell colSpan={7} className="text-center">No orders found.</TableCell>
+                    <TableCell colSpan={6} className="text-center">No orders found.</TableCell>
                 </TableRow>
             )}
           </TableBody>
@@ -84,3 +110,5 @@ export default function AdminOrdersClientPage({ initialOrders }: { initialOrders
     </Card>
   );
 }
+
+    

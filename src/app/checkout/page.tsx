@@ -1,4 +1,3 @@
-
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Tables } from '@/types/supabase';
@@ -10,7 +9,7 @@ import { placeOrder } from '@/app/cart/actions';
 import { AuthPrompt } from '@/components/auth-prompt';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
-  products: Pick<Tables<'products'>, 'name' | 'price' > | null
+  products: Pick<Tables<'products'>, 'name' | 'price' | 'discount_percentage' | 'discount_end_date' > | null
 };
 
 export default async function CheckoutPage() {
@@ -27,7 +26,7 @@ export default async function CheckoutPage() {
 
   const { data: cartItems, error } = await supabase
     .from('cart_items')
-    .select('*, products(name, price)')
+    .select('*, products(name, price, discount_percentage, discount_end_date)')
     .eq('user_id', user.id)
     .returns<CartItemWithProduct[]>();
 
@@ -35,7 +34,14 @@ export default async function CheckoutPage() {
     return redirect('/cart');
   }
   
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.products?.price ?? 0) * item.quantity, 0);
+  const subtotal = cartItems.reduce((acc, item) => {
+    if (!item.products) return acc;
+    const isDiscountActive = item.products.discount_percentage && item.products.discount_end_date && new Date(item.products.discount_end_date) > new Date();
+    const finalPrice = isDiscountActive
+      ? item.products.price - (item.products.price * (item.products.discount_percentage! / 100))
+      : item.products.price;
+    return acc + finalPrice * item.quantity;
+  }, 0);
 
   return (
       <main className="flex-1 p-4 md:p-8">
@@ -80,12 +86,20 @@ export default async function CheckoutPage() {
                     <CardTitle>Order Summary</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                        {cartItems.map(item => (
-                            <div key={item.id} className="flex justify-between text-sm">
-                                <span>{item.products?.name} x {item.quantity}</span>
-                                <span>GHS {((item.products?.price ?? 0) * item.quantity).toFixed(2)}</span>
-                            </div>
-                        ))}
+                        {cartItems.map(item => {
+                             if (!item.products) return null;
+                            const isDiscountActive = item.products.discount_percentage && item.products.discount_end_date && new Date(item.products.discount_end_date) > new Date();
+                            const finalPrice = isDiscountActive
+                                ? item.products.price - (item.products.price * (item.products.discount_percentage! / 100))
+                                : item.products.price;
+
+                            return (
+                                <div key={item.id} className="flex justify-between text-sm">
+                                    <span>{item.products?.name} x {item.quantity}</span>
+                                    <span>GHS {(finalPrice * item.quantity).toFixed(2)}</span>
+                                </div>
+                            )
+                        })}
                         <hr className="my-2" />
                         <div className="flex justify-between font-medium">
                             <span>Subtotal</span>
@@ -114,3 +128,5 @@ export default async function CheckoutPage() {
       </main>
   );
 }
+
+    

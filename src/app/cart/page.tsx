@@ -13,13 +13,20 @@ import { removeItem, updateItemQuantity } from './actions';
 import { AuthPrompt } from '@/components/auth-prompt';
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
+import { Badge } from '@/components/ui/badge';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
-  products: Pick<Tables<'products'>, 'name' | 'price' | 'image_urls'> | null
+  products: Pick<Tables<'products'>, 'name' | 'price' | 'image_urls' | 'discount_percentage' | 'discount_end_date'> | null
 };
 
 function CartItemRow({ item }: { item: CartItemWithProduct }) {
   if (!item.products) return null;
+
+  const isDiscountActive = item.products.discount_percentage && item.products.discount_end_date && new Date(item.products.discount_end_date) > new Date();
+  const finalPrice = isDiscountActive 
+    ? item.products.price - (item.products.price * (item.products.discount_percentage! / 100))
+    : item.products.price;
+
 
   return (
     <TableRow>
@@ -32,10 +39,20 @@ function CartItemRow({ item }: { item: CartItemWithProduct }) {
             height={60}
             className="rounded-md object-cover"
           />
-          <span className="font-medium">{item.products.name}</span>
+          <div className="flex flex-col">
+            <span className="font-medium">{item.products.name}</span>
+             {isDiscountActive && <Badge variant="destructive" className="w-fit">-{item.products.discount_percentage}%</Badge>}
+          </div>
         </div>
       </TableCell>
-      <TableCell>GHS {item.products.price.toFixed(2)}</TableCell>
+      <TableCell>
+         <div className="flex flex-col">
+            <span className={cn('font-semibold', { 'line-through text-muted-foreground': isDiscountActive })}>
+              GHS {item.products.price.toFixed(2)}
+            </span>
+            {isDiscountActive && <span className="font-bold text-primary">GHS {finalPrice.toFixed(2)}</span>}
+          </div>
+      </TableCell>
       <TableCell>
         <form action={updateItemQuantity} className="flex items-center gap-2">
           <input type="hidden" name="cartItemId" value={item.id} />
@@ -43,7 +60,7 @@ function CartItemRow({ item }: { item: CartItemWithProduct }) {
           <Button type="submit" variant="outline" size="sm">Update</Button>
         </form>
       </TableCell>
-      <TableCell>GHS {(item.products.price * item.quantity).toFixed(2)}</TableCell>
+      <TableCell className="font-semibold">GHS {(finalPrice * item.quantity).toFixed(2)}</TableCell>
       <TableCell>
         <form action={removeItem}>
             <input type="hidden" name="cartItemId" value={item.id} />
@@ -70,7 +87,7 @@ export default function CartPage() {
       if (user) {
         const { data: items, error } = await supabase
           .from('cart_items')
-          .select('*, products(name, price, image_urls)')
+          .select('*, products(name, price, image_urls, discount_percentage, discount_end_date)')
           .eq('user_id', user.id)
           .order('created_at')
           .returns<CartItemWithProduct[]>();
@@ -103,7 +120,14 @@ export default function CartPage() {
     );
   }
 
-  const subtotal = cartItems?.reduce((acc, item) => acc + (item.products?.price ?? 0) * item.quantity, 0) ?? 0;
+  const subtotal = cartItems?.reduce((acc, item) => {
+      if (!item.products) return acc;
+      const isDiscountActive = item.products.discount_percentage && item.products.discount_end_date && new Date(item.products.discount_end_date) > new Date();
+      const finalPrice = isDiscountActive
+        ? item.products.price - (item.products.price * (item.products.discount_percentage! / 100))
+        : item.products.price;
+      return acc + finalPrice * item.quantity;
+  }, 0) ?? 0;
 
   return (
       <main className="flex-1 p-4 md:p-8">
@@ -169,3 +193,5 @@ export default function CartPage() {
       </main>
   );
 }
+
+    

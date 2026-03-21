@@ -142,6 +142,8 @@ export type Database = {
           quantity: number
           seller_id: string
           status: Database["public"]["Enums"]["order_status"]
+          price_per_item: number
+          original_price_per_item: number
         }
         Insert: {
           buyer_id: string
@@ -151,6 +153,8 @@ export type Database = {
           quantity: number
           seller_id: string
           status?: Database["public"]["Enums"]["order_status"]
+          price_per_item: number
+          original_price_per_item: number
         }
         Update: {
           buyer_id?: string
@@ -160,6 +164,8 @@ export type Database = {
           quantity?: number
           seller_id?: string
           status?: Database["public"]["Enums"]["order_status"]
+          price_per_item?: number
+          original_price_per_item?: number
         }
         Relationships: [
           {
@@ -437,5 +443,7 @@ export type Enums<
   : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
     ? Database["public"]["Enums"][PublicEnumNameOrOptions]
     : never
+
+    
 
     
