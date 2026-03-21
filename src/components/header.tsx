@@ -8,7 +8,7 @@ import {
   ShoppingCart,
   User,
 } from 'lucide-react';
-import { HeaderNav } from './header-nav';
+import { HeaderNav, MobileCartIcon } from './header-nav';
 import Image from 'next/image';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from './ui/sheet';
 import { Badge } from './ui/badge';
@@ -23,11 +23,14 @@ export async function Header() {
 
   let cartItemCount = 0;
   if (user) {
-    const { count } = await supabase
+    const { data: cartItems, error } = await supabase
       .from('cart_items')
-      .select('*', { count: 'exact', head: true })
+      .select('quantity')
       .eq('user_id', user.id);
-    cartItemCount = count ?? 0;
+
+    if (cartItems) {
+      cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    }
   }
 
   return (
@@ -120,15 +123,7 @@ export async function Header() {
         <div className="flex items-center">
             {user ? (
                 <>
-                    <Button asChild variant="ghost" size="icon" className="relative">
-                        <Link href="/cart">
-                            <ShoppingCart className="h-6 w-6 text-primary"/>
-                            <span className="sr-only">Cart</span>
-                            {cartItemCount > 0 && (
-                                <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-0 text-xs">{cartItemCount}</Badge>
-                            )}
-                        </Link>
-                    </Button>
+                    <MobileCartIcon initialCount={cartItemCount} />
                     <Button asChild variant="ghost" size="icon" className="relative">
                         <Link href="/profile">
                             <User className="h-6 w-6 text-primary"/>

@@ -9,16 +9,15 @@ import { sendSms } from '@/lib/sendSms';
 export async function addToCart(formData: FormData) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const pathname = formData.get('pathname') as string || '/';
 
   if (!user) {
-    return redirect('/login?message=You must be logged in to add items to your cart.');
+    return { error: 'You must be logged in to add items to your cart.' };
   }
 
   const productId = formData.get('productId') as string;
 
   if (!productId) {
-    return redirect(`${pathname}?error=Product not found`);
+    return { error: 'Product not found' };
   }
 
   // Check if item already in cart
@@ -36,7 +35,7 @@ export async function addToCart(formData: FormData) {
       .update({ quantity: existingItem.quantity + 1 })
       .eq('id', existingItem.id);
     
-    if (updateError) return redirect(`${pathname}?error=${updateError.message}`);
+    if (updateError) return { error: updateError.message };
 
   } else {
     // Add new item to cart
@@ -44,12 +43,13 @@ export async function addToCart(formData: FormData) {
       .from('cart_items')
       .insert({ product_id: productId, user_id: user.id, quantity: 1 });
 
-    if (insertError) return redirect(`${pathname}?error=${insertError.message}`);
+    if (insertError) return { error: insertError.message };
   }
 
   revalidatePath('/cart');
   revalidatePath('/'); // To update cart count in header
-  redirect(`${pathname}?success=Cart updated`);
+  
+  return { success: true };
 }
 
 export async function updateItemQuantity(formData: FormData) {

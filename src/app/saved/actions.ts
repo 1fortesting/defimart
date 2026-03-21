@@ -2,14 +2,13 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 
 export async function toggleSaveProduct(formData: FormData) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return redirect('/login?message=You must be logged in to save items.');
+    return { error: 'You must be logged in to save items.' };
   }
 
   const productId = formData.get('productId') as string;
@@ -32,7 +31,7 @@ export async function toggleSaveProduct(formData: FormData) {
 
     if (deleteError) {
       console.error("Failed to unsave product:", deleteError);
-      // optional: redirect with error
+      return { error: "Failed to unsave product" };
     }
   } else {
     // Save it
@@ -42,9 +41,11 @@ export async function toggleSaveProduct(formData: FormData) {
     
     if (insertError) {
       console.error("Failed to save product:", insertError);
-      // optional: redirect with error
+       return { error: "Failed to save product" };
     }
   }
 
   revalidatePath(pathname);
+  revalidatePath('/saved');
+  return { success: true };
 }

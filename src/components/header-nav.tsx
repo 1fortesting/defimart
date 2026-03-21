@@ -15,6 +15,25 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
+import { useState, useEffect } from 'react';
+
+const getCartCount = () => {
+    if (typeof window === 'undefined') return 0;
+    try {
+        const cart = localStorage.getItem('cart');
+        if (!cart) return 0;
+        const cartItems = JSON.parse(cart);
+        // Ensure cartItems is an array and sum quantities
+        if (Array.isArray(cartItems)) {
+            return cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
+        }
+    } catch (error) {
+        console.error("Failed to parse cart from local storage", error);
+        return 0;
+    }
+    return 0;
+};
+
 
 const NavLink = ({ href, icon: Icon, children, active, badgeCount }: { href: string, icon: React.ElementType, children: React.ReactNode, active?: boolean, badgeCount?: number }) => (
   <Button 
@@ -38,16 +57,37 @@ const NavLink = ({ href, icon: Icon, children, active, badgeCount }: { href: str
 
 let isMobile = false;
 
-export function HeaderNav({ cartItemCount, isMobile: mobileProp }: { cartItemCount: number, isMobile?: boolean }) {
+export function HeaderNav({ cartItemCount: initialCartCount, isMobile: mobileProp }: { cartItemCount: number, isMobile?: boolean }) {
   const pathname = usePathname();
   isMobile = mobileProp || false;
+  
+  const [cartCount, setCartCount] = useState(initialCartCount);
+
+  useEffect(() => {
+    // On mount, sync with local storage
+    setCartCount(getCartCount());
+
+    const handleCartUpdate = () => {
+        setCartCount(getCartCount());
+    };
+    
+    // Listen for custom event
+    window.addEventListener('cart-updated', handleCartUpdate);
+    // Listen for storage changes to sync across tabs
+    window.addEventListener('storage', handleCartUpdate);
+
+    return () => {
+        window.removeEventListener('cart-updated', handleCartUpdate);
+        window.removeEventListener('storage', handleCartUpdate);
+    };
+  }, []);
 
   const desktopLinks = [
     { href: "/", icon: Home, text: "Home" },
     { href: "/categories", icon: LayoutGrid, text: "Categories" },
     { href: "/orders", icon: Package, text: "Orders" },
     { href: "/saved", icon: Heart, text: "Wishlist" },
-    { href: "/cart", icon: ShoppingCart, text: "Cart", badgeCount: cartItemCount },
+    { href: "/cart", icon: ShoppingCart, text: "Cart", badgeCount: cartCount },
   ];
   
   const mobileLinks = [
@@ -74,4 +114,37 @@ export function HeaderNav({ cartItemCount, isMobile: mobileProp }: { cartItemCou
       ))}
     </nav>
   );
+}
+
+
+export function MobileCartIcon({ initialCount }: { initialCount: number }) {
+    const [count, setCount] = useState(initialCount);
+
+    useEffect(() => {
+        setCount(getCartCount());
+
+        const handleCartUpdate = () => {
+            setCount(getCartCount());
+        };
+        
+        window.addEventListener('cart-updated', handleCartUpdate);
+        window.addEventListener('storage', handleCartUpdate);
+
+        return () => {
+            window.removeEventListener('cart-updated', handleCartUpdate);
+            window.removeEventListener('storage', handleCartUpdate);
+        };
+    }, []);
+
+    return (
+        <Button asChild variant="ghost" size="icon" className="relative">
+            <Link href="/cart">
+                <ShoppingCart className="h-6 w-6 text-primary"/>
+                <span className="sr-only">Cart</span>
+                {count > 0 && (
+                    <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center p-0 text-xs">{count}</Badge>
+                )}
+            </Link>
+        </Button>
+    )
 }

@@ -11,7 +11,8 @@ import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { toggleSaveProduct } from '@/app/saved/actions';
 import { addToCart } from '@/app/cart/actions';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 type ProductCardProps = {
   product: Tables<'products'>;
@@ -23,16 +24,101 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
     const pathname = usePathname();
     const [isClient, setIsClient] = useState(false);
     const [timeLeft, setTimeLeft] = useState<{ hours: string; minutes: string; seconds: string; } | null>(null);
+    const [isPending, startTransition] = useTransition();
+    const [isSavedState, setIsSavedState] = useState(isSaved);
+    const { toast } = useToast();
 
     useEffect(() => {
         setIsClient(true);
-    }, []);
+        // Sync saved state with local storage on mount
+        if (typeof window !== 'undefined' && user) {
+            try {
+                const saved = JSON.parse(localStorage.getItem('saved_products') || '[]');
+                if (Array.isArray(saved)) {
+                    setIsSavedState(saved.includes(product.id));
+                }
+            } catch (e) {
+                console.error("Failed to parse saved products from local storage", e);
+            }
+        }
+    }, [user, product.id]);
 
     const isDiscountActive = product.discount_percentage && product.discount_percentage > 0 && product.discount_end_date && new Date(product.discount_end_date) > new Date();
 
     const discountedPrice = isDiscountActive
         ? product.price - (product.price * (product.discount_percentage! / 100))
         : product.price;
+
+    const handleAddToCart = () => {
+        try {
+            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const existingItemIndex = cart.findIndex((item: any) => item.product_id === product.id);
+
+            if (existingItemIndex > -1) {
+                cart[existingItemIndex].quantity += 1;
+            } else {
+                cart.push({ product_id: product.id, quantity: 1, product_details: product });
+            }
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            window.dispatchEvent(new CustomEvent('cart-updated'));
+
+            toast({
+                title: 'Added to Cart',
+                description: `${product.name} has been added.`,
+                variant: 'success',
+            });
+
+            startTransition(async () => {
+                const formData = new FormData();
+                formData.append('productId', product.id);
+                await addToCart(formData);
+            });
+        } catch (e) {
+            console.error("Failed to update cart in local storage", e);
+            toast({
+                title: 'Error',
+                description: 'Could not add item to cart.',
+                variant: 'destructive',
+            });
+        }
+    };
+
+    const handleToggleSave = () => {
+        const newIsSaved = !isSavedState;
+        setIsSavedState(newIsSaved);
+        
+        try {
+            const saved = JSON.parse(localStorage.getItem('saved_products') || '[]');
+            if (newIsSaved) {
+                if (!saved.includes(product.id)) {
+                    saved.push(product.id);
+                }
+            } else {
+                const index = saved.indexOf(product.id);
+                if (index > -1) {
+                    saved.splice(index, 1);
+                }
+            }
+            localStorage.setItem('saved_products', JSON.stringify(saved));
+            
+            toast({
+                title: newIsSaved ? 'Product Saved' : 'Product Unsaved',
+                description: `${product.name} has been ${newIsSaved ? 'added to' : 'removed from'} your wishlist.`,
+                variant: 'success'
+            });
+
+            startTransition(async () => {
+                const formData = new FormData();
+                formData.append('productId', product.id);
+                formData.append('pathname', pathname);
+                await toggleSaveProduct(formData);
+            });
+        } catch(e) {
+             console.error("Failed to update saved products in local storage", e);
+        }
+    };
+
 
     useEffect(() => {
         if (!isDiscountActive || !product.discount_end_date) {
@@ -163,35 +249,29 @@ export function ProductCard({ product, user, isSaved }: ProductCardProps) {
                 </div>
                 <div className="flex items-center gap-1">
                     {user ? (
-                        <form action={toggleSaveProduct}>
-                            <input type="hidden" name="productId" value={product.id} />
-                            <input type="hidden" name="pathname" value={pathname} />
-                            <Button type="submit" size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
-                                <Heart className={cn("h-5 w-5", isSaved && "fill-red-500 text-red-500")} />
+                        <>
+                            <Button onClick={handleToggleSave} disabled={isPending} size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
+                                <Heart className={cn("h-5 w-5", isSavedState && "fill-red-500 text-red-500")} />
                             </Button>
-                        </form>
-                    ) : (
-                        <Button asChild size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
-                            <Link href="/login"><Heart className="h-5 w-5" /></Link>
-                        </Button>
-                    )}
-
-                    {user ? (
-                        <form action={addToCart}>
-                            <input type="hidden" name="productId" value={product.id} />
-                            <input type="hidden" name="pathname" value={pathname} />
                             {product.quantity === 0 ? (
-                                <Button size="sm" disabled>Out of Stock</Button>
+                                <Button size="icon" className="h-9 w-9" disabled>
+                                    <ShoppingCart className="h-4 w-4" />
+                                </Button>
                             ) : (
-                                <Button type="submit" size="icon" className="h-9 w-9" aria-label="Add to cart">
+                                <Button onClick={handleAddToCart} disabled={isPending} size="icon" className="h-9 w-9" aria-label="Add to cart">
                                     <ShoppingCart className="h-4 w-4" />
                                 </Button>
                             )}
-                        </form>
+                        </>
                     ) : (
-                        <Button asChild size="icon" className="h-9 w-9" aria-label="Add to cart">
-                            <Link href="/login"><ShoppingCart className="h-4 w-4" /></Link>
-                        </Button>
+                       <>
+                            <Button asChild size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
+                                <Link href="/login"><Heart className="h-5 w-5" /></Link>
+                            </Button>
+                            <Button asChild size="icon" className="h-9 w-9" aria-label="Add to cart">
+                                <Link href="/login"><ShoppingCart className="h-4 w-4" /></Link>
+                            </Button>
+                        </>
                     )}
                 </div>
             </div>
