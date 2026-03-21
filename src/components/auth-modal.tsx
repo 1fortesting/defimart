@@ -63,10 +63,139 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
         }
         setLoading(false);
     };
+    
+    const signupForm = (
+        <form onSubmit={handleSignup} className="flex flex-col h-full">
+            <div className="space-y-4 flex-grow">
+                 <div className="text-center">
+                    <p className="text-sm font-semibold text-primary uppercase">CREATE ACCOUNT</p>
+                    <h1 className="text-3xl font-bold text-foreground mt-1">
+                        Join DEFIMART
+                    </h1>
+                    <p className="text-muted-foreground mt-2 text-base">
+                        Complete the steps below to get started.
+                    </p>
+                </div>
+
+                <div className="flex items-center justify-center gap-8 my-6">
+                    <div className="flex flex-col items-center gap-2 text-primary">
+                        <div className="bg-primary text-primary-foreground rounded-full h-10 w-10 flex items-center justify-center">
+                            <User className="h-5 w-5" />
+                        </div>
+                        <span className="text-sm font-semibold">Personal</span>
+                    </div>
+                     <div className="flex-grow border-t border-dashed"></div>
+                     <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                        <div className="bg-muted text-muted-foreground rounded-full h-10 w-10 flex items-center justify-center">
+                            <Lock className="h-5 w-5" />
+                        </div>
+                        <span className="text-sm">Security</span>
+                    </div>
+                </div>
+
+                <div className="text-left py-4">
+                     <p className="font-semibold flex items-center gap-2"><User className="text-primary h-5 w-5" /> Personal Information</p>
+                </div>
+
+
+                <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="displayName">Full Name</Label>
+                        <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input id="displayName" placeholder="Kwame Mensah" value={displayName} onChange={e => setDisplayName(e.target.value)} required  className="pl-10" />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="phoneNumber">Phone Number</Label>
+                        <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input id="phoneNumber" type="tel" placeholder="+233 XX XXX XXXX" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} required className="pl-10" />
+                        </div>
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required className="pl-10" />
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="password">Password</Label>
+                    </div>
+                    <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required className="pl-10 pr-10" />
+                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+            
+            <div className="space-y-4 pt-6">
+                <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                    {loading ? 'Creating Account...' : 'Continue'}
+                </Button>
+
+                <Button variant="outline" type="button" onClick={() => setView('login')} className="w-full">
+                    Already have an account? Sign In
+                </Button>
+            </div>
+        </form>
+    );
+
+    const loginForm = (
+        <form onSubmit={handleLogin}>
+            <div className="mb-6 text-center md:text-left">
+                <p className="text-sm font-semibold text-primary uppercase">Customer Sign In</p>
+                <h1 className="text-3xl font-bold text-foreground mt-1">
+                    Sign in to continue
+                </h1>
+                <p className="text-muted-foreground mt-2 text-base">
+                    Access your saved carts, orders, and delivery updates.
+                </p>
+            </div>
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required className="pl-10" />
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="password">Password</Label>
+                        <Link href="/auth/forgot-password" tabIndex={-1} className="text-sm text-primary hover:underline">Forgot Password?</Link>
+                    </div>
+                    <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required className="pl-10 pr-10" />
+                        <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+            
+            <div className="space-y-4 pt-6">
+                <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                    {loading ? 'Signing in...' : <> <ArrowRight className="mr-2 h-4 w-4"/> Sign In </>}
+                </Button>
+
+                <Button variant="outline" type="button" onClick={() => setView('signup')} className="w-full">
+                    New customer? Create Account
+                </Button>
+            </div>
+        </form>
+    );
 
     return (
-        <div className="flex flex-col bg-background p-8 sm:p-10 md:rounded-r-2xl justify-center">
-             <div className="md:hidden bg-gradient-to-br from-primary via-orange-500 to-amber-600 p-8 text-white shadow-lg rounded-t-2xl -m-8 mb-8">
+        <div className="flex flex-col bg-background p-8 sm:p-10 md:rounded-r-2xl justify-center h-full">
+            <div className="md:hidden bg-gradient-to-br from-primary via-orange-500 to-amber-600 p-8 text-white shadow-lg rounded-t-2xl -m-8 mb-8">
                  <div className="flex items-center gap-4">
                     <div className="bg-white/20 p-2 rounded-lg">
                          <div className="w-10 h-10 flex items-center justify-center font-bold text-white text-2xl">D</div>
@@ -77,72 +206,7 @@ const RightPanel = ({ view, setView }: { view: 'login' | 'signup', setView: (vie
                     </div>
                  </div>
             </div>
-            
-            <div className="mb-6">
-                <p className="text-sm font-semibold text-primary uppercase">{view === 'login' ? 'Customer Sign In' : 'Create Account'}</p>
-                <h1 className="text-3xl font-bold text-foreground mt-1">
-                    {view === 'login' ? 'Sign in to continue' : 'Get started with DEFIMART'}
-                </h1>
-                <p className="text-muted-foreground mt-2 text-base">
-                    Access your saved carts, orders, and delivery updates.
-                </p>
-            </div>
-
-            <form onSubmit={view === 'login' ? handleLogin : handleSignup}>
-                <div className="space-y-4">
-                    {view === 'signup' && (
-                        <div className="space-y-2">
-                            <Label htmlFor="displayName">Display Name</Label>
-                            <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input id="displayName" placeholder="John Doe" value={displayName} onChange={e => setDisplayName(e.target.value)} required  className="pl-10" />
-                            </div>
-                        </div>
-                    )}
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email Address</Label>
-                        <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} required className="pl-10" />
-                        </div>
-                    </div>
-                    {view === 'signup' && (
-                        <div className="space-y-2">
-                            <Label htmlFor="phoneNumber">Phone Number</Label>
-                            <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input id="phoneNumber" type="tel" placeholder="055 123 4567" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} required className="pl-10" />
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <Label htmlFor="password">Password</Label>
-                            {view === 'login' && (
-                                <Link href="/auth/forgot-password" tabIndex={-1} className="text-sm text-primary hover:underline">Forgot Password?</Link>
-                            )}
-                        </div>
-                        <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required className="pl-10 pr-10" />
-                            <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 text-muted-foreground" onClick={() => setShowPassword(!showPassword)}>
-                                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div className="space-y-4 pt-6">
-                    <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                        {loading ? (view === 'login' ? 'Signing in...' : 'Creating Account...') : (view === 'login' ? <> <ArrowRight className="mr-2 h-4 w-4"/> Sign In </> : 'Create Account')}
-                    </Button>
-
-                    <Button variant="outline" type="button" onClick={() => setView(view === 'login' ? 'signup' : 'login')} className="w-full">
-                        {view === 'login' ? 'New customer? Create Account' : 'Already have an account? Sign In'}
-                    </Button>
-                </div>
-            </form>
+            {view === 'login' ? loginForm : signupForm}
         </div>
     )
 }
@@ -158,9 +222,8 @@ const LeftPanel = () => {
     const title = 'Join Our Marketplace';
     const description = 'Create your account to unlock fast checkout, wishlists, and exclusive deals.';
 
-
     return (
-        <div className="hidden md:flex flex-col justify-between p-10 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-2xl">
+        <div className="hidden md:flex flex-col justify-between p-10 text-white bg-gradient-to-br from-primary via-orange-500 to-amber-600 rounded-l-2xl min-h-[720px]">
             <div>
                  <div className="flex items-center gap-4 mb-8">
                     <div className="bg-white/20 p-2 rounded-lg">
@@ -219,7 +282,7 @@ export function AuthModal({ initialView }: { initialView: 'login' | 'signup' }) 
 
     return (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent className="p-0 gap-0 shadow-2xl rounded-2xl overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-full md:max-w-4xl md:grid md:grid-cols-2">
+            <DialogContent className="p-0 gap-0 shadow-2xl rounded-2xl overflow-hidden w-[calc(100%-2rem)] max-w-sm md:w-full md:max-w-5xl md:grid md:grid-cols-2">
                 <DialogHeader className="sr-only">
                   <DialogTitle>Authentication</DialogTitle>
                 </DialogHeader>
