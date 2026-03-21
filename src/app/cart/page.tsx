@@ -14,6 +14,7 @@ import { AuthPrompt } from '@/components/auth-prompt';
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
   products: Pick<Tables<'products'>, 'name' | 'price' | 'image_urls' | 'discount_percentage' | 'discount_end_date'> | null
@@ -193,5 +194,3 @@ export default function CartPage() {
       </main>
   );
 }
-
-    
