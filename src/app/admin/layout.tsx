@@ -5,17 +5,17 @@ import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Bell, Home, Package, ShoppingCart, Users, Tag } from 'lucide-react';
+import { Bell, Home, Package, ShoppingCart, Users, Tag, LineChart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 
 const AdminSidebar = () => {
     const pathname = usePathname();
     const navLinks = [
         { href: "/admin", text: "Dashboard", icon: Home },
+        { href: "/admin/analytics", text: "Analytics", icon: LineChart },
+        { href: "/admin/orders", text: "Orders", icon: Package },
         { href: "/admin/products", text: "Products", icon: ShoppingCart },
         { href: "/admin/discounts", text: "Discounts", icon: Tag },
-        { href: "/admin/orders", text: "Orders", icon: Package },
         { href: "/admin/users", text: "Customers", icon: Users },
     ];
 
