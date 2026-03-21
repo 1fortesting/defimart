@@ -1,14 +1,14 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
-import { Laptop, Shirt, Briefcase, Package } from 'lucide-react';
+import { Tv, Shirt, Home, Apple } from 'lucide-react';
 import Link from 'next/link';
 
 const categories = [
-  { name: 'Electronics', icon: Laptop, href: '#' },
+  { name: 'Electronics', icon: Tv, href: '#' },
   { name: 'Fashion', icon: Shirt, href: '#' },
-  { name: 'Services', icon: Briefcase, href: '#' },
-  { name: 'Other', icon: Package, href: '#' },
+  { name: 'Home & Kitchen', icon: Home, href: '#' },
+  { name: 'Groceries', icon: Apple, href: '#' },
 ];
 
 function CategoryCard({ name, icon: Icon, href }: { name: string, icon: React.ElementType, href: string }) {

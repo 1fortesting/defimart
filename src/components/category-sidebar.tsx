@@ -2,34 +2,26 @@
 
 import {
   Apple,
-  Smartphone,
+  BookOpen,
+  Dumbbell,
   Heart,
   Home,
-  WashingMachine,
-  Tv,
-  Computer,
-  Shirt,
-  Dumbbell,
-  Baby,
-  Gamepad2,
   MoreHorizontal,
+  Shirt,
+  Tv,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 
 const categories = [
-    { name: 'Supermarket', icon: Apple, href: '#' },
-    { name: 'Phones & Tablets', icon: Smartphone, href: '#' },
+    { name: 'Electronics & Gadgets', icon: Tv, href: '#' },
+    { name: 'Fashion & Apparel', icon: Shirt, href: '#' },
+    { name: 'Home & Kitchen', icon: Home, href: '#' },
     { name: 'Health & Beauty', icon: Heart, href: '#' },
-    { name: 'Home & Office', icon: Home, href: '#' },
-    { name: 'Appliances', icon: WashingMachine, href: '#' },
-    { name: 'Electronics', icon: Tv, href: '#' },
-    { name: 'Computing', icon: Computer, href: '#' },
-    { name: 'Fashion', icon: Shirt, href: '#' },
-    { name: 'Sporting Goods', icon: Dumbbell, href: '#' },
-    { name: 'Baby Products', icon: Baby, href: '#' },
-    { name: 'Gaming', icon: Gamepad2, href: '#' },
-    { name: 'Other categories', icon: MoreHorizontal, href: '#' },
+    { name: 'Sports & Fitness', icon: Dumbbell, href: '#' },
+    { name: 'Books & Stationery', icon: BookOpen, href: '#' },
+    { name: 'Groceries & Food', icon: Apple, href: '#' },
+    { name: 'Other', icon: MoreHorizontal, href: '#' },
 ];
 
 export function CategorySidebar() {

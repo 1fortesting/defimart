@@ -15,15 +15,13 @@ import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
 const categories = [
-    "Electronics",
-    "Fashion",
+    "Electronics & Gadgets",
+    "Fashion & Apparel",
     "Home & Kitchen",
-    "Books",
-    "Sports & Outdoors",
     "Health & Beauty",
-    "Toys & Games",
-    "Automotive",
-    "Services",
+    "Sports & Fitness",
+    "Books & Stationery",
+    "Groceries & Food",
     "Other"
 ];
 
