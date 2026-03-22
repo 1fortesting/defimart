@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Tag, RefreshCw, Search, BadgeCheck, PackageWarning } from 'lucide-react';
+import { PlusCircle, Tag, RefreshCw, Search, Package, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Tables } from '@/types/supabase';
@@ -210,7 +210,7 @@ export default function LogisticsClientPage({ products }: { products: Tables<'pr
                         <Tag className="mr-2 h-4 w-4" />On Sale
                     </TabsTrigger>
                     <TabsTrigger value="low-stock">
-                       <PackageWarning className="mr-2 h-4 w-4" /> Low Stock
+                       <AlertCircle className="mr-2 h-4 w-4" /> Low Stock
                     </TabsTrigger>
                 </TabsList>
                 <TabsContent value="all" className="mt-4">
