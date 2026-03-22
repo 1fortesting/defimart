@@ -289,7 +289,7 @@ export default function AdminSalesOrdersClientPage({ initialOrders, stats }: {
                 `"${order.id}"`,
                 `"${format(new Date(order.created_at), 'yyyy-MM-dd HH:mm:ss')}"`,
                 `"${order.profiles?.display_name || 'N/A'}"`,
-                `"${order.profiles?.phone_number || 'N/A'}"`,
+                `="\\"${order.profiles?.phone_number || ''}\\""`,
                 `"${order.products?.name || 'N/A'}"`,
                 order.quantity,
                 order.price_per_item,
