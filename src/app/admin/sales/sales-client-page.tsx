@@ -165,6 +165,7 @@ export default function AdminSalesClientPage({ initialOrders, stats }: { initial
     const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
     const { toast } = useToast();
     const router = useRouter();
+    const [isRefreshing, startRefreshTransition] = useTransition();
 
     useEffect(() => {
         if (sessionStorage.getItem('defimart-dept-auth-sales') === 'true') {
@@ -200,8 +201,6 @@ export default function AdminSalesClientPage({ initialOrders, stats }: { initial
         });
     };
     
-    const [isRefreshing, startRefreshTransition] = useTransition();
-
     const handleRefresh = () => {
         startRefreshTransition(() => {
             router.refresh();
