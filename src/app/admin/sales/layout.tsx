@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, Home, Package, ShoppingCart, Users, Tag, LineChart, Menu, LogOut, User as UserIcon, Building, Briefcase, Warehouse, DoorOpen } from 'lucide-react';
+import { Bell, Home, Package, ShoppingCart, Users, Tag, LineChart, Menu, LogOut, User as UserIcon, Building, Briefcase, Warehouse, DoorOpen, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 const navLinks = [
     { href: "/admin/sales/orders", text: "Orders", icon: Package },
     { href: "/admin/sales/customers", text: "Customers", icon: Users },
+    { href: "/admin/sales/search-orders", text: "Search Orders", icon: Search },
 ];
 
 const AdminNav = ({ isMobile = false }: { isMobile?: boolean }) => {
