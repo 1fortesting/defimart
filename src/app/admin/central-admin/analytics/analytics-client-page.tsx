@@ -7,6 +7,14 @@ import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from '@
 import { Button } from '@/components/ui/button';
 import { ProductWithSalesAndReviews } from './page';
 import { format } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -76,12 +84,67 @@ export default function AnalyticsClientPage({
         router.push(pathname);
     }
     
+    const downloadCSV = (data: any[], filename: string) => {
+        if (data.length === 0) return;
+        const headers = Object.keys(data[0]);
+        const csvContent = [
+            headers.join(','),
+            ...data.map(row => headers.map(header => {
+                const cell = row[header];
+                const stringCell = (cell === null || cell === undefined) ? '' : String(cell);
+                return `"${stringCell.replace(/"/g, '""')}"`;
+            }).join(','))
+        ].join('\n');
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.href) {
+            URL.revokeObjectURL(link.href);
+        }
+        link.href = URL.createObjectURL(blob);
+        link.download = `${filename}_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+    
+    const handleDownloadAllProducts = () => {
+        const dataToDownload = productsWithPerf.map(p => ({
+            id: p.id,
+            name: p.name,
+            category: p.category,
+            price: p.price,
+            quantity_on_hand: p.quantity,
+            total_sales_units: p.total_sales,
+            total_revenue: p.total_revenue.toFixed(2),
+            average_rating: p.average_rating.toFixed(2),
+            review_count: p.review_count,
+            created_at: format(new Date(p.created_at), 'yyyy-MM-dd'),
+        }));
+        downloadCSV(dataToDownload, 'product_performance_report');
+    }
+    
     const hasFilters = currentFilters.date || currentFilters.productId;
 
     return (
         <>
             <div className="flex items-center justify-between">
                 <h1 className="text-lg font-semibold md:text-2xl">Analytics</h1>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                       <Button>
+                          <Download className="mr-2 h-4 w-4" />
+                          Download Reports
+                       </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Performance Reports</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={handleDownloadAllProducts}>
+                            Product Performance (.csv)
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
             <Card>
                 <CardHeader>
