@@ -45,6 +45,11 @@ export async function createProduct(prevState: any, formData: FormData) {
   const sellerId = user.id;
 
   const rawFormData = Object.fromEntries(formData.entries());
+  
+  if (rawFormData.category === 'Other') {
+    const customCategory = (rawFormData.custom_category as string)?.trim();
+    rawFormData.category = customCategory || null;
+  }
 
   const validatedFields = CreateProductSchema.safeParse({
     ...rawFormData,
@@ -125,6 +130,11 @@ export async function updateProduct(prevState: any, formData: FormData) {
     const supabase = createClient();
 
     const rawFormData = Object.fromEntries(formData.entries());
+
+    if (rawFormData.category === 'Other') {
+        const customCategory = (rawFormData.custom_category as string)?.trim();
+        rawFormData.category = customCategory || null;
+    }
 
      const validatedFields = UpdateProductSchema.safeParse({
         ...rawFormData,

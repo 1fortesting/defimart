@@ -46,6 +46,11 @@ export async function createProduct(prevState: any, formData: FormData) {
 
   const rawFormData = Object.fromEntries(formData.entries());
 
+  if (rawFormData.category === 'Other') {
+    const customCategory = (rawFormData.custom_category as string)?.trim();
+    rawFormData.category = customCategory || null;
+  }
+
   const validatedFields = CreateProductSchema.safeParse({
     ...rawFormData,
     price: parseFloat(rawFormData.price as string),
@@ -125,6 +130,11 @@ export async function updateProduct(prevState: any, formData: FormData) {
     const supabase = createClient();
 
     const rawFormData = Object.fromEntries(formData.entries());
+
+    if (rawFormData.category === 'Other') {
+        const customCategory = (rawFormData.custom_category as string)?.trim();
+        rawFormData.category = customCategory || null;
+    }
 
      const validatedFields = UpdateProductSchema.safeParse({
         ...rawFormData,

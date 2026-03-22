@@ -44,6 +44,9 @@ export function EditProductForm({ product }: { product: Tables<'products'>}) {
     const router = useRouter();
     const { toast } = useToast();
 
+    const isCustomCategory = !categories.includes(product.category || '');
+    const [selectedCategory, setSelectedCategory] = useState(isCustomCategory ? 'Other' : product.category || '');
+
     useEffect(() => {
       if (state.success) {
         toast({ title: 'Success', description: 'Product updated successfully.' });
@@ -149,7 +152,7 @@ export function EditProductForm({ product }: { product: Tables<'products'>}) {
                         <CardTitle>Category</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Select name="category" defaultValue={product.category || undefined}>
+                        <Select name="category" value={selectedCategory} onValueChange={setSelectedCategory}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select Category" />
                             </SelectTrigger>
@@ -159,7 +162,13 @@ export function EditProductForm({ product }: { product: Tables<'products'>}) {
                                 ))}
                             </SelectContent>
                         </Select>
-                        {state.errors?.category && <p className="text-sm text-red-500">{state.errors.category[0]}</p>}
+                        {state.errors?.category && <p className="text-sm text-red-500 mt-2">{state.errors.category[0]}</p>}
+                        {selectedCategory === 'Other' && (
+                            <div className="grid gap-3 mt-4">
+                                <Label htmlFor="custom_category">Custom Category Name</Label>
+                                <Input id="custom_category" name="custom_category" type="text" placeholder="e.g. Pet Supplies" defaultValue={isCustomCategory ? product.category || '' : ''} required />
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
                 <Card>

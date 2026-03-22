@@ -39,6 +39,7 @@ export default function NewProductPage() {
     const initialState = { message: null, errors: {}, success: false };
     const [state, dispatch] = useActionState(createProduct, initialState);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState('');
     const router = useRouter();
     const { toast } = useToast();
 
@@ -144,7 +145,7 @@ export default function NewProductPage() {
                         <CardTitle>Category</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Select name="category">
+                        <Select name="category" onValueChange={setSelectedCategory}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select Category" />
                             </SelectTrigger>
@@ -154,7 +155,13 @@ export default function NewProductPage() {
                                 ))}
                             </SelectContent>
                         </Select>
-                        {state.errors?.category && <p className="text-sm text-red-500">{state.errors.category[0]}</p>}
+                        {state.errors?.category && <p className="text-sm text-red-500 mt-2">{state.errors.category[0]}</p>}
+                        {selectedCategory === 'Other' && (
+                            <div className="grid gap-3 mt-4">
+                                <Label htmlFor="custom_category">Custom Category Name</Label>
+                                <Input id="custom_category" name="custom_category" type="text" placeholder="e.g. Pet Supplies" required />
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
                 <Card>
