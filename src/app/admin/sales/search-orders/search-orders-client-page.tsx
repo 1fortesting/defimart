@@ -136,12 +136,11 @@ export default function SearchOrdersClientPage({ orders, currentDate }: { orders
                                     <TableHead>Total Price</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Time</TableHead>
-                                    <TableHead><span className="sr-only">View</span></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {orders.map(order => (
-                                    <TableRow key={order.id}>
+                                    <TableRow key={order.id} onClick={() => router.push(`/admin/sales/${order.id}`)} className="cursor-pointer">
                                         <TableCell>
                                             <div className="font-medium">{order.profiles?.display_name || 'N/A'}</div>
                                             <div className="text-sm text-muted-foreground">{order.profiles?.phone_number || 'No phone'}</div>
@@ -158,19 +157,11 @@ export default function SearchOrdersClientPage({ orders, currentDate }: { orders
                                         <TableCell>GHS {(order.price_per_item * order.quantity).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                         <TableCell><Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : 'outline'}>{order.status}</Badge></TableCell>
                                         <TableCell>{format(new Date(order.created_at), 'p')}</TableCell>
-                                        <TableCell>
-                                             <Button asChild size="icon" variant="outline">
-                                                <Link href={`/admin/sales/${order.id}`}>
-                                                    <Eye className="h-4 w-4" />
-                                                    <span className="sr-only">View Details</span>
-                                                </Link>
-                                            </Button>
-                                        </TableCell>
                                     </TableRow>
                                 ))}
                                 {orders.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center h-24">No orders found for this date.</TableCell>
+                                        <TableCell colSpan={5} className="text-center h-24">No orders found for this date.</TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>

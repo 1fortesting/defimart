@@ -75,6 +75,7 @@ function StatusSelector({ orderId, currentStatus, onUpdate, isPending }: {
 }
 
 const OrderDailyGroup = ({ date, orders, handleStatusUpdate, pendingOrderId }: { date: string, orders: OrderWithDetails[], handleStatusUpdate: (fd: FormData) => void, pendingOrderId: string | null }) => {
+    const router = useRouter();
     const totalSales = orders.reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0);
     return (
         <AccordionItem value={date}>
@@ -98,7 +99,6 @@ const OrderDailyGroup = ({ date, orders, handleStatusUpdate, pendingOrderId }: {
                                 <TableHead className="hidden lg:table-cell">Time</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead>Actions</TableHead>
-                                <TableHead><span className="sr-only">View</span></TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -106,7 +106,7 @@ const OrderDailyGroup = ({ date, orders, handleStatusUpdate, pendingOrderId }: {
                                 const wasDiscounted = order.original_price_per_item > order.price_per_item;
                                 const finalTotal = order.price_per_item * order.quantity;
                                 return (
-                                    <TableRow key={order.id}>
+                                    <TableRow key={order.id} onClick={() => router.push(`/admin/sales/${order.id}`)} className="cursor-pointer">
                                         <TableCell>
                                             <Link href={`/admin/sales/customers/${order.profiles?.id}`} className="hover:underline font-medium">{order.profiles?.display_name || 'N/A'}</Link>
                                             <div className="text-sm text-muted-foreground hidden lg:block">{order.profiles?.phone_number || 'No phone'}</div>
@@ -132,11 +132,8 @@ const OrderDailyGroup = ({ date, orders, handleStatusUpdate, pendingOrderId }: {
                                         </TableCell>
                                         <TableCell className="hidden lg:table-cell">{new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</TableCell>
                                         <TableCell><Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : 'outline'}>{order.status}</Badge></TableCell>
-                                        <TableCell>
+                                        <TableCell onClick={(e) => e.stopPropagation()}>
                                             <StatusSelector orderId={order.id} currentStatus={order.status} onUpdate={handleStatusUpdate} isPending={pendingOrderId === order.id} />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Button asChild size="icon" variant="outline"><Link href={`/admin/sales/${order.id}`}><Eye className="h-4 w-4" /><span className="sr-only">View</span></Link></Button>
                                         </TableCell>
                                     </TableRow>
                                 );
@@ -153,9 +150,10 @@ const OrderDailyGroup = ({ date, orders, handleStatusUpdate, pendingOrderId }: {
 };
 
 const OrderCard = ({ order, handleStatusUpdate, pendingOrderId }: { order: OrderWithDetails, handleStatusUpdate: (fd: FormData) => void, pendingOrderId: string | null }) => {
+    const router = useRouter();
     const finalTotal = order.price_per_item * order.quantity;
     return (
-        <Card>
+        <Card onClick={() => router.push(`/admin/sales/${order.id}`)} className="cursor-pointer">
             <CardHeader>
                 <div className="flex justify-between items-start">
                     <div>
@@ -174,15 +172,14 @@ const OrderCard = ({ order, handleStatusUpdate, pendingOrderId }: { order: Order
                 </div>
             </CardContent>
             <CardFooter className="flex-col items-stretch gap-2">
-                 <StatusSelector 
-                    orderId={order.id} 
-                    currentStatus={order.status}
-                    onUpdate={handleStatusUpdate}
-                    isPending={pendingOrderId === order.id}
-                  />
-                  <Button asChild variant="outline">
-                        <Link href={`/admin/sales/${order.id}`}><Eye className="mr-2 h-4 w-4" />View Details</Link>
-                  </Button>
+                 <div onClick={(e) => e.stopPropagation()}>
+                     <StatusSelector 
+                        orderId={order.id} 
+                        currentStatus={order.status}
+                        onUpdate={handleStatusUpdate}
+                        isPending={pendingOrderId === order.id}
+                      />
+                 </div>
             </CardFooter>
         </Card>
     )
