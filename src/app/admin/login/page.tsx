@@ -65,7 +65,7 @@ export default function AdminLoginPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-center">Admin Panel Access</CardTitle>
-              <CardDescription className="text-center">Enter your admin password to manage the store</CardDescription>
+              <CardDescription className="text-center">Enter the developer-provided password to access the admin panel.</CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent className="grid gap-4">

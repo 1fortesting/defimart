@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Bell, Home, Package, ShoppingCart, Users, Tag, LineChart, Menu, LogOut, User as UserIcon } from 'lucide-react';
+import { Bell, Home, Package, ShoppingCart, Users, Tag, LineChart, Menu, LogOut, User as UserIcon, Building, Briefcase, Warehouse } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -15,19 +15,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 const navLinks = [
-    { href: "/admin", text: "Dashboard", icon: Home },
-    { href: "/admin/analytics", text: "Analytics", icon: LineChart },
-    { href: "/admin/orders", text: "Orders", icon: Package },
-    { href: "/admin/products", text: "Products", icon: ShoppingCart },
-    { href: "/admin/discounts", text: "Discounts", icon: Tag },
-    { href: "/admin/users", text: "Customers", icon: Users },
+    { href: "/admin/central-admin", text: "Central Admin", icon: Building },
+    { href: "/admin/sales", text: "Sales", icon: Briefcase },
+    { href: "/admin/logistics", text: "Logistics", icon: Warehouse },
 ];
 
 const AdminNav = ({ isMobile = false }: { isMobile?: boolean }) => {
     const pathname = usePathname();
 
     const renderLink = (link: typeof navLinks[0]) => {
-      const isActive = pathname === link.href || (pathname.startsWith(link.href) && link.href !== '/admin');
+      const isActive = pathname.startsWith(link.href);
       return (
         <Link
           key={link.href}
@@ -202,6 +199,12 @@ export default function AdminLayout({
   
   const handleLogout = async () => {
     const supabase = createClient();
+    // Clear departmental auth on main logout
+    Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('defimart-dept-auth-')) {
+            sessionStorage.removeItem(key);
+        }
+    });
     await supabase.auth.signOut();
     router.push('/admin/login');
   };
