@@ -47,6 +47,15 @@ const departments = [
     href: '/admin/procurement',
     image: 'https://picsum.photos/seed/procurement-dept/600/400',
     aiHint: 'warehouse boxes'
+  },
+  {
+    name: 'Logistics',
+    description: 'Manage product inventory, stock levels, and discounts.',
+    icon: '🚚',
+    passwordEnvVar: 'NEXT_PUBLIC_LOGISTICS_PASSWORD',
+    href: '/admin/logistics',
+    image: 'https://picsum.photos/seed/logistics/600/400',
+    aiHint: 'delivery truck'
   }
 ];
 
@@ -74,6 +83,8 @@ export default function DepartmentsClientPage({ user, handleLogout }: { user: Us
     if (dept.passwordEnvVar === 'NEXT_PUBLIC_CEO_PASSWORD') correctPassword = process.env.NEXT_PUBLIC_CEO_PASSWORD;
     if (dept.passwordEnvVar === 'NEXT_PUBLIC_SALES_PASSWORD') correctPassword = process.env.NEXT_PUBLIC_SALES_PASSWORD;
     if (dept.passwordEnvVar === 'NEXT_PUBLIC_PROCUREMENT_PASSWORD') correctPassword = process.env.NEXT_PUBLIC_PROCUREMENT_PASSWORD;
+    if (dept.passwordEnvVar === 'NEXT_PUBLIC_LOGISTICS_PASSWORD') correctPassword = process.env.NEXT_PUBLIC_LOGISTICS_PASSWORD;
+
 
     if (password === correctPassword) {
       sessionStorage.setItem(`defimart-dept-auth-${dept.name.toLowerCase().replace(' ', '-')}`, 'true');
@@ -119,7 +130,7 @@ export default function DepartmentsClientPage({ user, handleLogout }: { user: Us
         <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">Select your department to access specialized tools and manage your operations.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full max-w-7xl">
         {departments.map((dept) => {
           const isSelected = selectedDept === dept.name;
           return (
