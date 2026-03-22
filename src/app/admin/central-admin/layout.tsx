@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, Home, Package, ShoppingCart, Users, Tag, LineChart, Menu, LogOut, User as UserIcon, Building, Briefcase, Warehouse, DoorOpen } from 'lucide-react';
+import { Bell, Home, Package, ShoppingCart, Users, Tag, LineChart, Menu, LogOut, User as UserIcon, Building, Briefcase, Warehouse, DoorOpen, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -18,6 +18,8 @@ import { cn } from "@/lib/utils";
 const navLinks = [
     { href: "/admin/central-admin/dashboard", text: "Dashboard", icon: Home },
     { href: "/admin/central-admin/analytics", text: "Analytics", icon: LineChart },
+    { href: "/admin/central-admin/product-performance", text: "Performance", icon: Package },
+    { href: "/admin/central-admin/reviews", text: "Reviews", icon: Star },
     { href: "/admin/central-admin/customers", text: "Customers", icon: Users },
 ];
 

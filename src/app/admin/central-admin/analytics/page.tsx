@@ -100,6 +100,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
 
     // --- Product Performance Table ---
     let productsQuery = supabaseAdmin.from('products').select('*');
+    // We only need product performance for the selected product if one is selected for the top products card.
     if (selectedProductId) {
         productsQuery = productsQuery.eq('id', selectedProductId);
     }
@@ -118,21 +119,6 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
         return { ...p, total_sales, total_revenue, average_rating, review_count };
     }) ?? [];
 
-    // --- Recent Reviews Card ---
-    let recentReviewsQuery = supabaseAdmin
-        .from('reviews')
-        .select('*, products(name), profiles(display_name)')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-    if (selectedDate) {
-        recentReviewsQuery = recentReviewsQuery.gte('created_at', startDate.toISOString()).lte('created_at', endDate.toISOString());
-    }
-    if (selectedProductId) {
-        recentReviewsQuery = recentReviewsQuery.eq('product_id', selectedProductId);
-    }
-    const { data: recentReviews, error: recentReviewsError } = await recentReviewsQuery.returns<ReviewWithProductAndProfile[]>();
-    if (recentReviewsError) console.error("Error fetching recent reviews:", recentReviewsError.message);
 
     // --- Data for Filters ---
     const { data: allProductsForFilter, error: allProductsError } = await supabaseAdmin.from('products').select('id, name');
@@ -151,7 +137,6 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
                 salesChartDescription={salesChartDescription}
                 salesChartTimeUnit={salesChartTimeUnit}
                 productsWithPerf={productsWithPerf.sort((a,b) => b.total_revenue - a.total_revenue)}
-                recentReviews={recentReviews ?? []}
                 allProducts={allProductsForFilter ?? []}
                 currentFilters={{ date: selectedDateStr, productId: selectedProductId }}
             />
