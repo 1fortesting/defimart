@@ -18,6 +18,7 @@ const navLinks = [
     { href: "/admin/central-admin", text: "Central Admin", icon: Building },
     { href: "/admin/sales", text: "Sales", icon: Briefcase },
     { href: "/admin/logistics", text: "Logistics", icon: Warehouse },
+    { href: "/admin/customers", text: "Customers", icon: Users },
 ];
 
 const AdminNav = ({ isMobile = false }: { isMobile?: boolean }) => {
