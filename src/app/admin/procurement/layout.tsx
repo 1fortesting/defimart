@@ -50,7 +50,7 @@ const AdminNav = ({ isMobile = false }: { isMobile?: boolean }) => {
     )
 }
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ onExit }: { onExit: () => void }) => {
     return (
         <aside className="hidden border-r bg-muted/40 md:block">
             <div className="flex h-full max-h-screen flex-col gap-2">
@@ -64,7 +64,11 @@ const AdminSidebar = () => {
                 <div className="flex-1 overflow-auto py-2">
                     <AdminNav />
                 </div>
-                <div className="mt-auto p-4">
+                <div className="mt-auto p-4 space-y-2">
+                     <Button onClick={onExit} variant="secondary" className="w-full">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Exit Department
+                    </Button>
                     <Button size="sm" className="w-full" asChild>
                         <Link href="/">View Storefront</Link>
                     </Button>
@@ -74,7 +78,7 @@ const AdminSidebar = () => {
     );
 };
 
-const AdminHeader = ({ user, handleLogout }: { user: User | null; handleLogout: () => void }) => {
+const AdminHeader = ({ user, handleLogout, onExit }: { user: User | null; handleLogout: () => void; onExit: () => void; }) => {
     const displayName = user?.user_metadata.display_name || user?.email;
     return (
         <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
@@ -96,7 +100,12 @@ const AdminHeader = ({ user, handleLogout }: { user: User | null; handleLogout: 
                         <div className="flex-1 overflow-auto py-2">
                             <AdminNav isMobile />
                         </div>
-                         <div className="mt-auto p-4 border-t">
+                         <div className="mt-auto p-4 border-t space-y-2">
+                             <SheetClose asChild>
+                                <Button onClick={onExit} variant="secondary" className="w-full">
+                                    <LogOut className="mr-2 h-4 w-4" />Exit Department
+                                </Button>
+                            </SheetClose>
                             <Button size="sm" className="w-full" asChild>
                                 <SheetClose asChild><Link href="/">View Storefront</Link></SheetClose>
                             </Button>
@@ -171,11 +180,16 @@ export default function ProcurementLayout({ children }: { children: React.ReactN
         router.push('/admin/login');
     };
 
+    const handleExitDepartment = () => {
+        sessionStorage.removeItem('defimart-dept-auth-procurement');
+        router.push('/admin/departments');
+    };
+
     return (
         <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-            <AdminSidebar />
+            <AdminSidebar onExit={handleExitDepartment} />
             <div className="flex flex-col">
-                <AdminHeader user={user} handleLogout={handleLogout} />
+                <AdminHeader user={user} handleLogout={handleLogout} onExit={handleExitDepartment} />
                 <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
                 {children}
                 </main>
