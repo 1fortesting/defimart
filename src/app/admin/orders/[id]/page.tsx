@@ -99,6 +99,17 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                     </CardContent>
                 </Card>
 
+                {order.notes && (
+                     <Card className="lg:col-span-3">
+                        <CardHeader>
+                            <CardTitle>Order Notes</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm whitespace-pre-wrap">{order.notes}</p>
+                        </CardContent>
+                    </Card>
+                )}
+
                  <Card className="lg:col-span-3">
                     <CardHeader>
                         <CardTitle>Product Details</CardTitle>
@@ -138,17 +149,6 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                          </div>
                     </CardContent>
                 </Card>
-
-                {order.notes && (
-                     <Card className="lg:col-span-3">
-                        <CardHeader>
-                            <CardTitle>Order Notes</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-sm whitespace-pre-wrap">{order.notes}</p>
-                        </CardContent>
-                    </Card>
-                )}
             </div>
         </div>
     )
