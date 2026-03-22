@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
       });
     } else {
       // Successful admin login
-      router.push('/admin');
+      router.push('/admin/departments');
     }
     setLoading(false);
   };
@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
                 alt="DEFIMART Logo"
                 width={200}
                 height={40}
-                className="object-contain mx-auto"
+                className="object-contain"
             />
          </div>
           <Card>
