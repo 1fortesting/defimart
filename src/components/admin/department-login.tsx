@@ -31,9 +31,14 @@ export function DepartmentLogin({ departmentName, passwordEnvVar, sessionKey, on
         e.preventDefault();
         setIsLoading(true);
 
-        // This is a simple client-side check against an env var.
-        // This is NOT secure for production but fits the user's request for a simple password gate.
-        const correctPassword = process.env[passwordEnvVar];
+        let correctPassword;
+        if (passwordEnvVar === 'NEXT_PUBLIC_CEO_PASSWORD') {
+            correctPassword = process.env.NEXT_PUBLIC_CEO_PASSWORD;
+        } else if (passwordEnvVar === 'NEXT_PUBLIC_SALES_PASSWORD') {
+            correctPassword = process.env.NEXT_PUBLIC_SALES_PASSWORD;
+        } else if (passwordEnvVar === 'NEXT_PUBLIC_LOGISTICS_PASSWORD') {
+            correctPassword = process.env.NEXT_PUBLIC_LOGISTICS_PASSWORD;
+        }
 
         if (!correctPassword) {
             toast({
