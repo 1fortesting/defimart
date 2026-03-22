@@ -7,6 +7,7 @@ export default async function AdminProcurementDiscountsPage() {
 
   const { data: products } = await supabase
     .from('products')
+    .select('*')
     .gt('discount_percentage', 0)
     .gt('discount_end_date', new Date().toISOString())
     .order('created_at', { ascending: false })
