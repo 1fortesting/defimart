@@ -41,20 +41,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSearchParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 
-const categories = [
-    "Electronics & Gadgets",
-    "Fashion & Apparel",
-    "Home & Kitchen",
-    "Health & Beauty",
-    "Sports & Fitness",
-    "Books & Stationery",
-    "Groceries & Food",
-    "Other"
-];
-
 interface SearchClientPageProps {
   initialQuery: string;
   allProducts: Tables<'products'>[];
+  allCategories: string[];
   user: User | null;
   savedProductIds: string[];
 }
@@ -62,6 +52,7 @@ interface SearchClientPageProps {
 export default function SearchClientPage({
   initialQuery,
   allProducts,
+  allCategories,
   user,
   savedProductIds: initialSavedIds,
 }: SearchClientPageProps) {
@@ -183,7 +174,7 @@ export default function SearchClientPage({
         <AccordionItem value="category">
             <AccordionTrigger className="text-lg font-semibold">Category</AccordionTrigger>
             <AccordionContent className="pt-2 space-y-2">
-                {categories.map(cat => (
+                {allCategories.map(cat => (
                     <div key={cat} className="flex items-center space-x-2">
                         <Checkbox id={`cat-mob-${cat}`} checked={selectedCategories.includes(cat)} onCheckedChange={() => handleCategoryToggle(cat)} />
                         <Label htmlFor={`cat-mob-${cat}`} className="font-normal cursor-pointer">{cat}</Label>

@@ -20,15 +20,19 @@ export default async function SearchPage({
   const savedProductIds = new Set(savedProducts?.map(p => p.product_id) || []);
 
   const allProducts = products || [];
+  const allCategories = [...new Set(allProducts?.map(p => p.category).filter(Boolean) as string[])].sort();
 
   return (
     <main className="flex-1 p-4 md:p-8">
-      <SearchClientPage
-        initialQuery={query}
-        allProducts={allProducts}
-        user={user}
-        savedProductIds={Array.from(savedProductIds)}
-      />
+      <Suspense fallback={<div>Loading...</div>}>
+        <SearchClientPage
+          initialQuery={query}
+          allProducts={allProducts}
+          allCategories={allCategories}
+          user={user}
+          savedProductIds={Array.from(savedProductIds)}
+        />
+      </Suspense>
     </main>
   );
 }
