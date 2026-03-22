@@ -4,8 +4,8 @@ import type { Database, Tables } from '@/types/supabase';
 import AdminSalesOrdersClientPage from './orders-client-page';
 import { startOfToday } from 'date-fns';
 
-type OrderWithDetails = Tables<'orders'> & {
-  products: Pick<Tables<'products'>, 'name'> | null;
+export type OrderWithDetails = Tables<'orders'> & {
+  products: Pick<Tables<'products'>, 'name' | 'image_urls'> | null;
   profiles: Pick<Tables<'profiles'>, 'id' | 'display_name' | 'phone_number'> | null;
 };
 
@@ -26,30 +26,30 @@ export default async function AdminSalesOrdersPage() {
 
     const { data: orders, error } = await supabaseAdmin
         .from('orders')
-        .select('*, products(name), profiles:profiles!orders_buyer_id_fkey(id, display_name, phone_number)')
+        .select('*, products(name, image_urls), profiles:profiles!orders_buyer_id_fkey(id, display_name, phone_number)')
         .order('created_at', { ascending: false })
         .returns<OrderWithDetails[]>();
 
-    const { data: todaysOrders, error: todaysOrdersError } = await supabaseAdmin
-        .from('orders')
-        .select('price_per_item, quantity')
-        .gte('created_at', startOfToday().toISOString());
-        
-    const { count: pendingOrdersCount, error: pendingOrdersError } = await supabaseAdmin
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
-
     if (error) console.error("Error fetching orders from server:", error);
-    if (todaysOrdersError) console.error("Error fetching today's orders:", todaysOrdersError);
-    if (pendingOrdersError) console.error("Error fetching pending orders count:", pendingOrdersError);
 
-    const todaysRevenue = todaysOrders?.reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0) ?? 0;
+    const allOrders = orders || [];
+    
+    const todaysRevenue = allOrders
+        .filter(order => new Date(order.created_at) >= startOfToday())
+        .reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0);
+    
+    const pendingOrdersCount = allOrders.filter(o => o.status === 'pending').length;
+    const readyForPickupCount = allOrders.filter(o => o.status === 'ready').length;
     
     return (
         <AdminSalesOrdersClientPage 
-            initialOrders={orders || []} 
-            stats={{ todaysRevenue, pendingOrdersCount: pendingOrdersCount ?? 0 }}
+            initialOrders={allOrders} 
+            stats={{ 
+                todaysRevenue, 
+                pendingOrdersCount,
+                readyForPickupCount,
+                totalOrdersCount: allOrders.length,
+             }}
         />
     );
 }
