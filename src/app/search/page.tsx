@@ -23,14 +23,12 @@ export default async function SearchPage({
 
   return (
     <main className="flex-1 p-4 md:p-8">
-      <Suspense fallback={<div>Loading...</div>}>
-        <SearchClientPage
-          initialQuery={query}
-          allProducts={allProducts}
-          user={user}
-          savedProductIds={Array.from(savedProductIds)}
-        />
-      </Suspense>
+      <SearchClientPage
+        initialQuery={query}
+        allProducts={allProducts}
+        user={user}
+        savedProductIds={Array.from(savedProductIds)}
+      />
     </main>
   );
 }

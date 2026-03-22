@@ -140,23 +140,21 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
 
     return (
         <div className="flex flex-col gap-6">
-            <Suspense fallback={<div>Loading analytics...</div>}>
-                <AnalyticsClientPage
-                    stats={{
-                        totalRevenue,
-                        totalSales,
-                        totalCustomers: totalCustomers ?? 0,
-                        productCount: totalProducts ?? 0
-                    }}
-                    dailySales={salesChartData}
-                    salesChartDescription={salesChartDescription}
-                    salesChartTimeUnit={salesChartTimeUnit}
-                    productsWithPerf={productsWithPerf.sort((a,b) => b.total_revenue - a.total_revenue)}
-                    recentReviews={recentReviews ?? []}
-                    allProducts={allProductsForFilter ?? []}
-                    currentFilters={{ date: selectedDateStr, productId: selectedProductId }}
-                />
-            </Suspense>
+            <AnalyticsClientPage
+                stats={{
+                    totalRevenue,
+                    totalSales,
+                    totalCustomers: totalCustomers ?? 0,
+                    productCount: totalProducts ?? 0
+                }}
+                dailySales={salesChartData}
+                salesChartDescription={salesChartDescription}
+                salesChartTimeUnit={salesChartTimeUnit}
+                productsWithPerf={productsWithPerf.sort((a,b) => b.total_revenue - a.total_revenue)}
+                recentReviews={recentReviews ?? []}
+                allProducts={allProductsForFilter ?? []}
+                currentFilters={{ date: selectedDateStr, productId: selectedProductId }}
+            />
         </div>
     );
 }
