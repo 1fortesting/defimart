@@ -36,26 +36,26 @@ export default function AdminUsersClientPage({ usersWithProfiles }: { usersWithP
             <Table>
             <TableHeader>
                 <TableRow>
-                <TableHead>Avatar</TableHead>
+                <TableHead className="hidden sm:table-cell">Avatar</TableHead>
                 <TableHead>Display Name</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Joined</TableHead>
+                <TableHead className="hidden md:table-cell">Phone</TableHead>
+                <TableHead className="hidden lg:table-cell">Joined</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 {usersWithProfiles.map((user) => (
                     <TableRow key={user.id} onClick={() => router.push(`/admin/users/${user.id}`)} className="cursor-pointer">
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                             <Avatar>
                                 <AvatarImage src={user.avatar_url ?? undefined} />
                                 <AvatarFallback>{user.display_name?.charAt(0) || user.email?.charAt(0)}</AvatarFallback>
                             </Avatar>
                         </TableCell>
-                        <TableCell>{user.display_name || 'N/A'}</TableCell>
+                        <TableCell className="font-medium">{user.display_name || 'N/A'}</TableCell>
                         <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.phone_number || 'N/A'}</TableCell>
-                        <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="hidden md:table-cell">{user.phone_number || 'N/A'}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{new Date(user.created_at).toLocaleDateString()}</TableCell>
                     </TableRow>
                 ))}
                 {(!usersWithProfiles || usersWithProfiles.length === 0) && (

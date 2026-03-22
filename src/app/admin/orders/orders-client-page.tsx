@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tables, Database } from '@/types/supabase';
@@ -53,6 +53,97 @@ function StatusSelector({ orderId, currentStatus, onUpdate, isPending }: {
     );
 }
 
+const OrderTableRow = ({ order, handleStatusUpdate, pendingOrderId }: { order: OrderWithDetails, handleStatusUpdate: (fd: FormData) => void, pendingOrderId: string | null }) => {
+    const wasDiscounted = order.original_price_per_item > order.price_per_item;
+    const originalTotal = order.original_price_per_item * order.quantity;
+    const finalTotal = order.price_per_item * order.quantity;
+    const discountPercentage = wasDiscounted ? ((originalTotal - finalTotal) / originalTotal) * 100 : 0;
+
+    return (
+        <TableRow>
+            <TableCell>
+                <div>{order.profiles?.display_name || 'N/A'}</div>
+                <div className="text-sm text-muted-foreground hidden lg:block">{order.profiles?.phone_number || 'No phone'}</div>
+            </TableCell>
+            <TableCell>
+                <div>{order.products?.name || 'N/A'}</div>
+                <div className="text-sm text-muted-foreground">Qty: {order.quantity}</div>
+            </TableCell>
+            <TableCell className="hidden sm:table-cell">
+                {wasDiscounted ? (
+                <div className="flex flex-col">
+                    <span className="text-muted-foreground line-through">GHS {originalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <div className="flex items-center gap-2">
+                        <span className="font-bold text-base">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <Badge variant="destructive" className="flex items-center gap-1">
+                            <ArrowDown className="h-3 w-3" /> {discountPercentage.toFixed(0)}%
+                        </Badge>
+                    </div>
+                </div>
+                ) : (
+                <span className="font-bold">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                )}
+            </TableCell>
+            <TableCell className="hidden lg:table-cell">{new Date(order.created_at).toLocaleString()}</TableCell>
+            <TableCell>
+                <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : 'outline'}>{order.status}</Badge>
+            </TableCell>
+            <TableCell className="hidden md:table-cell">
+                <StatusSelector 
+                orderId={order.id} 
+                currentStatus={order.status}
+                onUpdate={handleStatusUpdate}
+                isPending={pendingOrderId === order.id}
+                />
+            </TableCell>
+            <TableCell>
+                <Button asChild size="icon" variant="outline">
+                <Link href={`/admin/orders/${order.id}`}>
+                    <Eye className="h-4 w-4" />
+                    <span className="sr-only">View Details</span>
+                </Link>
+                </Button>
+            </TableCell>
+        </TableRow>
+    )
+}
+
+const OrderCard = ({ order, handleStatusUpdate, pendingOrderId }: { order: OrderWithDetails, handleStatusUpdate: (fd: FormData) => void, pendingOrderId: string | null }) => {
+    const finalTotal = order.price_per_item * order.quantity;
+    return (
+        <Card>
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle className="text-base">{order.products?.name || 'N/A'}</CardTitle>
+                        <CardDescription>
+                            by {order.profiles?.display_name || 'N/A'} &bull; Qty: {order.quantity}
+                        </CardDescription>
+                    </div>
+                     <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : 'outline'}>{order.status}</Badge>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="flex justify-between items-center">
+                    <div className="font-bold">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</p>
+                </div>
+            </CardContent>
+            <CardFooter className="flex-col items-stretch gap-2">
+                 <StatusSelector 
+                    orderId={order.id} 
+                    currentStatus={order.status}
+                    onUpdate={handleStatusUpdate}
+                    isPending={pendingOrderId === order.id}
+                  />
+                  <Button asChild variant="outline">
+                        <Link href={`/admin/orders/${order.id}`}><Eye className="mr-2 h-4 w-4" />View Details</Link>
+                  </Button>
+            </CardFooter>
+        </Card>
+    )
+}
+
 export default function AdminOrdersClientPage({ initialOrders }: { initialOrders: OrderWithDetails[] }) {
     const [orders, setOrders] = useState<OrderWithDetails[]>(initialOrders);
     const [isTransitioning, startTransition] = useTransition();
@@ -102,79 +193,41 @@ export default function AdminOrdersClientPage({ initialOrders }: { initialOrders
         </Button>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Customer</TableHead>
-              <TableHead>Product</TableHead>
-              <TableHead>Pricing</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-              <TableHead><span className="sr-only">View</span></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders?.map((order) => {
-                const wasDiscounted = order.original_price_per_item > order.price_per_item;
-                const originalTotal = order.original_price_per_item * order.quantity;
-                const finalTotal = order.price_per_item * order.quantity;
-                const discountPercentage = wasDiscounted ? ((originalTotal - finalTotal) / originalTotal) * 100 : 0;
-
-                return (
-                <TableRow key={order.id}>
-                    <TableCell>
-                        <div>{order.profiles?.display_name || 'N/A'}</div>
-                        <div className="text-sm text-muted-foreground">{order.profiles?.phone_number || 'No phone'}</div>
-                    </TableCell>
-                    <TableCell>
-                        <div>{order.products?.name || 'N/A'}</div>
-                        <div className="text-sm text-muted-foreground">Qty: {order.quantity}</div>
-                    </TableCell>
-                    <TableCell>
-                       {wasDiscounted ? (
-                         <div className="flex flex-col">
-                            <span className="text-muted-foreground line-through">GHS {originalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                            <div className="flex items-center gap-2">
-                                <span className="font-bold text-base">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                <Badge variant="destructive" className="flex items-center gap-1">
-                                    <ArrowDown className="h-3 w-3" /> {discountPercentage.toFixed(0)}%
-                                </Badge>
-                            </div>
-                         </div>
-                       ) : (
-                        <span className="font-bold">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                       )}
-                    </TableCell>
-                    <TableCell>{new Date(order.created_at).toLocaleString()}</TableCell>
-                    <TableCell>
-                      <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : 'outline'}>{order.status}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <StatusSelector 
-                        orderId={order.id} 
-                        currentStatus={order.status}
-                        onUpdate={handleStatusUpdate}
-                        isPending={pendingOrderId === order.id}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Button asChild size="icon" variant="outline">
-                        <Link href={`/admin/orders/${order.id}`}>
-                            <Eye className="h-4 w-4" />
-                            <span className="sr-only">View Details</span>
-                        </Link>
-                      </Button>
-                    </TableCell>
-                </TableRow>
-            )})}
-            {(!orders || orders.length === 0) && (
+        {/* Desktop Table */}
+        <div className="hidden md:block">
+            <Table>
+            <TableHeader>
                 <TableRow>
-                    <TableCell colSpan={7} className="text-center">No orders found.</TableCell>
+                <TableHead>Customer</TableHead>
+                <TableHead>Product</TableHead>
+                <TableHead className="hidden sm:table-cell">Pricing</TableHead>
+                <TableHead className="hidden lg:table-cell">Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="hidden md:table-cell">Actions</TableHead>
+                <TableHead><span className="sr-only">View</span></TableHead>
                 </TableRow>
+            </TableHeader>
+            <TableBody>
+                {orders?.map((order) => (
+                    <OrderTableRow key={order.id} order={order} handleStatusUpdate={handleStatusUpdate} pendingOrderId={pendingOrderId} />
+                ))}
+                {(!orders || orders.length === 0) && (
+                    <TableRow>
+                        <TableCell colSpan={7} className="text-center">No orders found.</TableCell>
+                    </TableRow>
+                )}
+            </TableBody>
+            </Table>
+        </div>
+        {/* Mobile View */}
+        <div className="grid gap-4 md:hidden">
+            {orders?.map((order) => (
+                <OrderCard key={order.id} order={order} handleStatusUpdate={handleStatusUpdate} pendingOrderId={pendingOrderId} />
+            ))}
+            {(!orders || orders.length === 0) && (
+                <p className="text-center text-muted-foreground py-8">No orders found.</p>
             )}
-          </TableBody>
-        </Table>
+        </div>
       </CardContent>
     </Card>
   );

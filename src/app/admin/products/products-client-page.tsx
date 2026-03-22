@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PlusCircle, Tag, RefreshCw, Search } from 'lucide-react';
 import Link from 'next/link';
@@ -28,10 +28,10 @@ const ProductRow = ({ product }: { product: Tables<'products'> }) => {
         />
       </TableCell>
       <TableCell className="font-medium">{product.name}</TableCell>
-      <TableCell>{product.category ?? 'N/A'}</TableCell>
-      <TableCell>{product.brand ?? 'N/A'}</TableCell>
+      <TableCell className="hidden md:table-cell">{product.category ?? 'N/A'}</TableCell>
+      <TableCell className="hidden lg:table-cell">{product.brand ?? 'N/A'}</TableCell>
       <TableCell>GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-      <TableCell>{product.quantity?.toLocaleString('en-US') ?? 'N/A'}</TableCell>
+      <TableCell className="hidden sm:table-cell">{product.quantity?.toLocaleString('en-US') ?? 'N/A'}</TableCell>
       <TableCell>
         {isDiscountActive ? (
           <Badge variant="secondary" className="flex items-center gap-1">
@@ -48,6 +48,56 @@ const ProductRow = ({ product }: { product: Tables<'products'> }) => {
       </TableCell>
     </TableRow>
   )
+}
+
+const ProductCard = ({ product }: { product: Tables<'products'> }) => {
+    const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
+    return (
+        <Card>
+            <CardContent className="p-4">
+                <div className="flex gap-4">
+                    <Image
+                        src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/100/100'}
+                        alt={product.name}
+                        width={80}
+                        height={80}
+                        className="aspect-square rounded-md object-cover"
+                    />
+                    <div className="flex-1 space-y-1">
+                        <div className="flex justify-between">
+                            <p className="font-medium">{product.name}</p>
+                            <ProductActions product={product} />
+                        </div>
+                        <p className="text-sm text-muted-foreground">{product.category ?? 'N/A'}</p>
+                        <p className="text-sm font-bold">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    </div>
+                </div>
+                <div className="mt-4 grid grid-cols-3 gap-2 text-center text-sm">
+                    <div>
+                        <p className="font-semibold">{product.quantity?.toLocaleString('en-US') ?? 'N/A'}</p>
+                        <p className="text-xs text-muted-foreground">Quantity</p>
+                    </div>
+                    <div>
+                         {isDiscountActive ? (
+                            <>
+                                <p className="font-semibold">{product.discount_percentage}%</p>
+                                <p className="text-xs text-muted-foreground">Discount</p>
+                            </>
+                        ) : (
+                             <>
+                                <p className="font-semibold">-</p>
+                                <p className="text-xs text-muted-foreground">Discount</p>
+                            </>
+                        )}
+                    </div>
+                    <div>
+                        <p className="font-semibold">{new Date(product.created_at).toLocaleDateString()}</p>
+                        <p className="text-xs text-muted-foreground">Created</p>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
 }
 
 export default function ProductsClientPage({ products }: { products: Tables<'products'>[] }) {
@@ -91,35 +141,47 @@ export default function ProductsClientPage({ products }: { products: Tables<'pro
             </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="hidden w-[100px] sm:table-cell">
-                  <span className="sr-only">Image</span>
-                </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Brand</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>Discount</TableHead>
-                <TableHead className="hidden md:table-cell">Created at</TableHead>
-                <TableHead>
-                  <span className="sr-only">Actions</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+            {/* Desktop Table */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="hidden w-[100px] sm:table-cell">
+                      <span className="sr-only">Image</span>
+                    </TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead className="hidden md:table-cell">Category</TableHead>
+                    <TableHead className="hidden lg:table-cell">Brand</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead className="hidden sm:table-cell">Quantity</TableHead>
+                    <TableHead>Discount</TableHead>
+                    <TableHead className="hidden md:table-cell">Created at</TableHead>
+                    <TableHead>
+                      <span className="sr-only">Actions</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredProducts?.map((product) => (
+                    <ProductRow key={product.id} product={product} />
+                  ))}
+                   {(!filteredProducts || filteredProducts.length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={9} className="text-center">No products found.</TableCell>
+                      </TableRow>
+                    )}
+                </TableBody>
+              </Table>
+            </div>
+             {/* Mobile Card List */}
+            <div className="grid gap-4 md:hidden">
               {filteredProducts?.map((product) => (
-                <ProductRow key={product.id} product={product} />
+                <ProductCard key={product.id} product={product} />
               ))}
                {(!filteredProducts || filteredProducts.length === 0) && (
-                  <TableRow>
-                    <TableCell colSpan={9} className="text-center">No products found.</TableCell>
-                  </TableRow>
+                  <p className="text-center text-muted-foreground py-8">No products found.</p>
                 )}
-            </TableBody>
-          </Table>
+            </div>
         </CardContent>
       </Card>
     </div>
