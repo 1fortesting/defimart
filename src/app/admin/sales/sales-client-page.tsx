@@ -19,7 +19,7 @@ type OrderWithDetails = Tables<'orders'> & {
   profiles: Pick<Tables<'profiles'>, 'id' | 'display_name' | 'phone_number'> | null;
 };
 
-const StatCard = ({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType, change?: string }) => (
+const StatCard = ({ title, value, icon: Icon, change }: { title: string, value: string | number, icon: React.ElementType, change?: string }) => (
     <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{title}</CardTitle>
