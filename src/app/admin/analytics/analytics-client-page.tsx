@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Package, Users, Star, ShoppingCart, Download, FilterX, Calendar as CalendarIcon } from 'lucide-react';
+import { DollarSign, Package, Users, Star, ShoppingCart, Download, FilterX } from 'lucide-react';
 import { SalesChart } from './sales-chart';
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -20,10 +20,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 
 const StatCard = ({ title, value, icon: Icon, change }: { title: string, value: string | number, icon: React.ElementType, change?: string }) => (
     <Card>
@@ -62,9 +60,7 @@ export default function AnalyticsClientPage({
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-        currentFilters.date ? new Date(`${currentFilters.date}T12:00:00`) : undefined
-    );
+    const [selectedDate, setSelectedDate] = useState<string>(currentFilters.date || '');
     const [selectedProductId, setSelectedProductId] = useState<string | undefined>(
         currentFilters.productId
     );
@@ -72,7 +68,7 @@ export default function AnalyticsClientPage({
     const handleApplyFilters = () => {
         const params = new URLSearchParams(searchParams.toString());
         if (selectedDate) {
-            params.set('date', format(selectedDate, 'yyyy-MM-dd'));
+            params.set('date', selectedDate);
         } else {
             params.delete('date');
         }
@@ -156,30 +152,14 @@ export default function AnalyticsClientPage({
                     <CardDescription>Filter analytics data by date and/or product.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row flex-wrap items-start gap-4">
-                    <Collapsible className="w-full sm:w-auto">
-                        <CollapsibleTrigger asChild>
-                            <Button
-                            variant={"outline"}
-                            className={cn(
-                                "w-full sm:w-[240px] justify-start text-left font-normal",
-                                !selectedDate && "text-muted-foreground"
-                            )}
-                            >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {selectedDate ? format(selectedDate, "PPP") : <span>Filter by date</span>}
-                            </Button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                            <Calendar
-                                mode="single"
-                                selected={selectedDate}
-                                onSelect={setSelectedDate}
-                                initialFocus
-                                disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                                className="rounded-md border mt-2"
-                            />
-                        </CollapsibleContent>
-                    </Collapsible>
+                    <Input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="w-full sm:w-[240px]"
+                        placeholder="Filter by date"
+                        max={format(new Date(), 'yyyy-MM-dd')}
+                    />
 
                     <Select value={selectedProductId} onValueChange={setSelectedProductId}>
                         <SelectTrigger className="w-full sm:w-[240px]">

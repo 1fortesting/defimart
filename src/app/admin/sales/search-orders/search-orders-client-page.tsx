@@ -4,17 +4,15 @@ import { useState } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import Image from 'next/image';
-import { cn } from '@/lib/utils';
-import { Calendar as CalendarIcon, Download, Search as SearchIcon, Eye } from 'lucide-react';
+import { Download, Search as SearchIcon } from 'lucide-react';
 import type { OrderWithDetails } from './page';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
 
 export default function SearchOrdersClientPage({ orders, currentDate }: { orders: OrderWithDetails[], currentDate?: string }) {
     const router = useRouter();
@@ -22,13 +20,11 @@ export default function SearchOrdersClientPage({ orders, currentDate }: { orders
     const searchParams = useSearchParams();
     const { toast } = useToast();
 
-    const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-        currentDate ? new Date(`${currentDate}T12:00:00`) : undefined
-    );
+    const [selectedDate, setSelectedDate] = useState<string>(currentDate || '');
     
     const handleSearch = () => {
         if (selectedDate) {
-            router.push(`${pathname}?date=${format(selectedDate, 'yyyy-MM-dd')}`);
+            router.push(`${pathname}?date=${selectedDate}`);
         }
     };
 
@@ -89,30 +85,14 @@ export default function SearchOrdersClientPage({ orders, currentDate }: { orders
                     <CardDescription>Choose a specific date to view all orders placed on that day.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row items-start gap-4">
-                    <Collapsible className="w-full sm:w-auto">
-                        <CollapsibleTrigger asChild>
-                            <Button
-                            variant={"outline"}
-                            className={cn(
-                                "w-full sm:w-[280px] justify-start text-left font-normal",
-                                !selectedDate && "text-muted-foreground"
-                            )}
-                            >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
-                            </Button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                            <Calendar
-                                mode="single"
-                                selected={selectedDate}
-                                onSelect={setSelectedDate}
-                                initialFocus
-                                disabled={(date) => date > new Date()}
-                                className="rounded-md border mt-2"
-                            />
-                        </CollapsibleContent>
-                    </Collapsible>
+                     <Input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="w-full sm:w-[280px]"
+                        placeholder="Pick a date"
+                        max={format(new Date(), 'yyyy-MM-dd')}
+                    />
 
                     <Button onClick={handleSearch} disabled={!selectedDate}>
                         <SearchIcon className="mr-2 h-4 w-4" />

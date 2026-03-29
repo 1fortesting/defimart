@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Package, Users, Star, ShoppingCart, Download, FilterX, Calendar as CalendarIcon, RefreshCw } from 'lucide-react';
+import { DollarSign, Package, Users, Star, ShoppingCart, Download, FilterX, RefreshCw } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { StarRating } from '@/components/star-rating';
@@ -18,13 +18,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState, useTransition, useEffect } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
 import { type ProductWithSalesAndReviews, type ReviewWithProductAndProfile } from './page';
 import { type Tables } from '@/types/supabase';
 import { DepartmentLogin } from '@/components/admin/department-login';
+import { Input } from '@/components/ui/input';
 
 type OrderWithProductAndBuyer = Tables<'orders'> & {
   products: Pick<Tables<'products'>, 'name'> | null;
@@ -88,13 +86,10 @@ export default function CentralAdminClientPage({
     const searchParams = useSearchParams();
     const [isRefreshing, startTransition] = useTransition();
 
-    const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-        currentFilters.date ? new Date(`${currentFilters.date}T12:00:00`) : undefined
-    );
+    const [selectedDate, setSelectedDate] = useState<string>(currentFilters.date || '');
     const [selectedProductId, setSelectedProductId] = useState<string | undefined>(
         currentFilters.productId
     );
-    const [isPickerOpen, setIsPickerOpen] = useState(false);
 
     useEffect(() => {
         if (sessionStorage.getItem('defimart-dept-auth-central-admin') === 'true') {
@@ -114,7 +109,7 @@ export default function CentralAdminClientPage({
     const handleApplyFilters = () => {
         const params = new URLSearchParams(searchParams.toString());
         if (selectedDate) {
-            params.set('date', format(selectedDate, 'yyyy-MM-dd'));
+            params.set('date', selectedDate);
         } else {
             params.delete('date');
         }
@@ -212,32 +207,14 @@ export default function CentralAdminClientPage({
                     <CardDescription>Filter sales overview, top products, and performance data.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row flex-wrap items-center gap-4">
-                     <Popover open={isPickerOpen} onOpenChange={setIsPickerOpen}>
-                        <PopoverTrigger asChild>
-                            <Button
-                            variant={"outline"}
-                            className={cn(
-                                "w-full sm:w-[240px] justify-start text-left font-normal",
-                                !selectedDate && "text-muted-foreground"
-                            )}
-                            >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {selectedDate ? format(selectedDate, "PPP") : <span>Filter by date</span>}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                            <Calendar
-                                mode="single"
-                                selected={selectedDate}
-                                onSelect={(date) => {
-                                    setSelectedDate(date);
-                                    setIsPickerOpen(false);
-                                }}
-                                initialFocus
-                                disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                            />
-                        </PopoverContent>
-                    </Popover>
+                     <Input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="w-full sm:w-[240px]"
+                        placeholder="Filter by date"
+                        max={format(new Date(), 'yyyy-MM-dd')}
+                    />
 
                     <Select value={selectedProductId} onValueChange={setSelectedProductId}>
                         <SelectTrigger className="w-full sm:w-[240px]">
