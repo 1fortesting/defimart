@@ -42,6 +42,26 @@ export async function createProduct(prevState: any, formData: FormData) {
   if (!user || !adminEmail || user.email !== adminEmail) {
       return { message: 'Unauthorized action. Only the designated admin can create products.', success: false, errors: {} };
   }
+
+  // Ensure a profile exists for the admin user to satisfy the foreign key constraint.
+  const { data: profile, error: getProfileError } = await supabase.from('profiles').select('id').eq('id', user.id).maybeSingle();
+  if (getProfileError) {
+      console.error('Error checking for admin profile:', getProfileError);
+      return { message: `Database error: ${getProfileError.message}`, success: false, errors: {} };
+  }
+  if (!profile) {
+      const { error: createProfileError } = await supabase.from('profiles').insert({ 
+          id: user.id, 
+          display_name: user.user_metadata.display_name || user.email,
+          avatar_url: user.user_metadata.avatar_url,
+          phone_number: user.user_metadata.phone_number
+      });
+      if (createProfileError) {
+          console.error('Error creating admin profile:', createProfileError);
+          return { message: `Failed to create required seller profile: ${createProfileError.message}`, success: false, errors: {} };
+      }
+  }
+
   const sellerId = user.id;
 
   const rawFormData = Object.fromEntries(formData.entries());
