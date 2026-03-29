@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
@@ -43,7 +43,6 @@ export default function ReviewsClientPage({
         currentFilters.productId
     );
     const [searchQuery, setSearchQuery] = useState('');
-    const [isPickerOpen, setIsPickerOpen] = useState(false);
 
     const handleApplyFilters = () => {
         const params = new URLSearchParams(searchParams.toString());
@@ -136,9 +135,9 @@ export default function ReviewsClientPage({
                     <CardTitle>Filters</CardTitle>
                     <CardDescription>Filter reviews by date and/or product.</CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-col sm:flex-row flex-wrap items-center gap-4">
-                     <Popover open={isPickerOpen} onOpenChange={setIsPickerOpen}>
-                        <PopoverTrigger asChild>
+                <CardContent className="flex flex-col sm:flex-row flex-wrap items-start gap-4">
+                    <Collapsible className="w-full sm:w-auto">
+                        <CollapsibleTrigger asChild>
                             <Button
                             variant={"outline"}
                             className={cn(
@@ -149,20 +148,18 @@ export default function ReviewsClientPage({
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {selectedDate ? format(selectedDate, "PPP") : <span>Filter by date</span>}
                             </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
                             <Calendar
                                 mode="single"
                                 selected={selectedDate}
-                                onSelect={(date) => {
-                                    setSelectedDate(date);
-                                    setIsPickerOpen(false);
-                                }}
+                                onSelect={setSelectedDate}
                                 initialFocus
                                 disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
+                                className="rounded-md border mt-2"
                             />
-                        </PopoverContent>
-                    </Popover>
+                        </CollapsibleContent>
+                    </Collapsible>
 
                     <Select value={selectedProductId} onValueChange={setSelectedProductId}>
                         <SelectTrigger className="w-full sm:w-[240px]">

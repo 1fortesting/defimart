@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
@@ -25,7 +25,6 @@ export default function SearchOrdersClientPage({ orders, currentDate }: { orders
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(
         currentDate ? new Date(`${currentDate}T12:00:00`) : undefined
     );
-    const [isPickerOpen, setIsPickerOpen] = useState(false);
     
     const handleSearch = () => {
         if (selectedDate) {
@@ -89,9 +88,9 @@ export default function SearchOrdersClientPage({ orders, currentDate }: { orders
                     <CardTitle>Select a Date</CardTitle>
                     <CardDescription>Choose a specific date to view all orders placed on that day.</CardDescription>
                 </CardHeader>
-                <CardContent className="flex flex-col sm:flex-row items-center gap-4">
-                    <Popover open={isPickerOpen} onOpenChange={setIsPickerOpen}>
-                        <PopoverTrigger asChild>
+                <CardContent className="flex flex-col sm:flex-row items-start gap-4">
+                    <Collapsible className="w-full sm:w-auto">
+                        <CollapsibleTrigger asChild>
                             <Button
                             variant={"outline"}
                             className={cn(
@@ -102,20 +101,19 @@ export default function SearchOrdersClientPage({ orders, currentDate }: { orders
                             <CalendarIcon className="mr-2 h-4 w-4" />
                             {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
                             </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
                             <Calendar
                                 mode="single"
                                 selected={selectedDate}
-                                onSelect={(date) => {
-                                    setSelectedDate(date);
-                                    setIsPickerOpen(false);
-                                }}
+                                onSelect={setSelectedDate}
                                 initialFocus
                                 disabled={(date) => date > new Date()}
+                                className="rounded-md border mt-2"
                             />
-                        </PopoverContent>
-                    </Popover>
+                        </CollapsibleContent>
+                    </Collapsible>
+
                     <Button onClick={handleSearch} disabled={!selectedDate}>
                         <SearchIcon className="mr-2 h-4 w-4" />
                         Search
