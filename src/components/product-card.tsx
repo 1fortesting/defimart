@@ -193,7 +193,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
     };
     
     return (
-    <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-primary/50 hover:-translate-y-1">
+    <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-primary/50 hover:-translate-y-1 h-full flex flex-col">
         <CardHeader className="p-0 relative">
             <Link href={`/products/${product.id}`}>
                 <Image
@@ -235,41 +235,43 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                 {getStockLabel("rounded-none rounded-bl-lg rounded-tr-md")}
             </div>
         </CardHeader>
-        <CardContent className="p-3">
-            <Link href={`/products/${product.id}`} className="hover:underline">
-                <h3 className="font-semibold truncate text-sm">{product.name}</h3>
-            </Link>
-            {product.review_count !== undefined && product.review_count > 0 ? (
-                <div className="hidden md:flex items-center gap-1 mt-1">
-                    <StarRating rating={product.average_rating || 0} size={14} showText={false} />
-                    <span className="text-xs text-muted-foreground">({product.review_count})</span>
-                </div>
-            ) : (
-                 <p className="text-sm text-muted-foreground">{product.category}</p>
-            )}
+        <CardContent className="p-3 flex flex-col justify-between flex-grow">
+            <div>
+                <Link href={`/products/${product.id}`} className="hover:underline">
+                    <h3 className="font-semibold truncate text-sm">{product.name}</h3>
+                </Link>
+                {product.review_count !== undefined && product.review_count > 0 ? (
+                    <div className="hidden md:flex items-center gap-1 mt-1">
+                        <StarRating rating={product.average_rating || 0} size={14} showText={false} />
+                        <span className="text-xs text-muted-foreground">({product.review_count})</span>
+                    </div>
+                ) : (
+                    <p className="text-sm text-muted-foreground">{product.category}</p>
+                )}
 
-            <div className="mt-2 h-5 flex items-center justify-between">
-              {isDiscountActive && (
-                  <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
-                      <Flame className="mr-1 h-3 w-3" />
-                      Limited time
-                  </Badge>
-              )}
-              {timeLeft && (
-                <div className="text-xs font-mono text-red-500">
-                    {timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
+                <div className="mt-2 h-5 flex items-center justify-between">
+                {isDiscountActive && (
+                    <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
+                        <Flame className="mr-1 h-3 w-3" />
+                        Limited time
+                    </Badge>
+                )}
+                {timeLeft && (
+                    <div className="text-xs font-mono text-red-500">
+                        {timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
+                    </div>
+                )}
                 </div>
-              )}
             </div>
 
-            <div className="flex items-end justify-between mt-2">
+            <div className="flex flex-col items-start gap-2 mt-2 sm:flex-row sm:items-end sm:justify-between">
                 <div className="grid">
                      <span className="text-base font-bold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                      {isDiscountActive && (
                         <span className="text-sm text-muted-foreground line-through">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                      )}
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center self-end gap-1 sm:self-auto">
                     {user ? (
                         <>
                             <Button onClick={handleToggleSave} disabled={isPending} size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
@@ -277,11 +279,11 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                             </Button>
                             {product.quantity === 0 ? (
                                 <Button size="icon" className="h-9 w-9" disabled>
-                                    <ShoppingCart className="h-4 w-4" />
+                                    <ShoppingCart className="h-5 w-5" />
                                 </Button>
                             ) : (
                                 <Button onClick={handleAddToCart} disabled={isPending} size="icon" className="h-9 w-9" aria-label="Add to cart">
-                                    <ShoppingCart className="h-4 w-4" />
+                                    <ShoppingCart className="h-5 w-5" />
                                 </Button>
                             )}
                         </>
@@ -291,7 +293,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                                 <Link href="/login"><Heart className="h-5 w-5" /></Link>
                             </Button>
                             <Button asChild size="icon" className="h-9 w-9" aria-label="Add to cart">
-                                <Link href="/login"><ShoppingCart className="h-4 w-4" /></Link>
+                                <Link href="/login"><ShoppingCart className="h-5 w-5" /></Link>
                             </Button>
                         </>
                     )}
