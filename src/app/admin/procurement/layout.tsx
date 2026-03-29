@@ -21,6 +21,31 @@ const navLinks = [
     { href: "/admin/procurement/inventory", text: "Inventory", icon: AlertCircle },
 ];
 
+const teamMembers = [
+    { name: 'Joseph Kwame Junior', role: 'Assistant Procurement', fallback: 'J' },
+    { name: 'Samuel Twum Ampofo', role: 'Assistant Procurement', fallback: 'S' },
+];
+
+const TeamList = () => (
+    <div className="px-4 mt-6">
+        <h3 className="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Team</h3>
+        <div className="grid gap-3 px-3 py-2 text-sm">
+            {teamMembers.map(member => (
+                 <div key={member.name} className="flex items-center gap-3">
+                    <Avatar className="h-8 w-8">
+                        <AvatarFallback>{member.fallback}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <p className="font-semibold">{member.name}</p>
+                        <p className="text-xs text-muted-foreground">{member.role}</p>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+);
+
+
 const AdminNav = ({ isMobile = false }: { isMobile?: boolean }) => {
     const pathname = usePathname();
 
@@ -63,6 +88,7 @@ const AdminSidebar = ({ onExit }: { onExit: () => void }) => {
                 </div>
                 <div className="flex-1 overflow-auto py-2">
                     <AdminNav />
+                    <TeamList />
                 </div>
                 <div className="mt-auto p-4 space-y-2">
                      <Button onClick={onExit} variant="secondary" className="w-full">
@@ -99,6 +125,7 @@ const AdminHeader = ({ user, handleLogout, onExit }: { user: User | null; handle
                         </div>
                         <div className="flex-1 overflow-auto py-2">
                             <AdminNav isMobile />
+                            <TeamList />
                         </div>
                          <div className="mt-auto p-4 border-t space-y-2">
                              <SheetClose asChild>
