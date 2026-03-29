@@ -94,6 +94,7 @@ export default function CentralAdminClientPage({
     const [selectedProductId, setSelectedProductId] = useState<string | undefined>(
         currentFilters.productId
     );
+    const [isPickerOpen, setIsPickerOpen] = useState(false);
 
     useEffect(() => {
         if (sessionStorage.getItem('defimart-dept-auth-central-admin') === 'true') {
@@ -211,7 +212,7 @@ export default function CentralAdminClientPage({
                     <CardDescription>Filter sales overview, top products, and performance data.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row flex-wrap items-center gap-4">
-                     <Popover>
+                     <Popover open={isPickerOpen} onOpenChange={setIsPickerOpen}>
                         <PopoverTrigger asChild>
                             <Button
                             variant={"outline"}
@@ -228,7 +229,10 @@ export default function CentralAdminClientPage({
                             <Calendar
                                 mode="single"
                                 selected={selectedDate}
-                                onSelect={setSelectedDate}
+                                onSelect={(date) => {
+                                    setSelectedDate(date);
+                                    setIsPickerOpen(false);
+                                }}
                                 initialFocus
                                 disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                             />

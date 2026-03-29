@@ -61,6 +61,7 @@ export default function ProductPerformanceClientPage({
     const [isSummaryLoading, setIsSummaryLoading] = useState(false);
     const [selectedProductForSummary, setSelectedProductForSummary] = useState<ProductWithSalesAndReviews | null>(null);
     const [summaryResult, setSummaryResult] = useState<{ summary: string; sentiment: string; error?: string } | null>(null);
+    const [isPickerOpen, setIsPickerOpen] = useState(false);
 
     const filteredProducts = productsWithPerf.filter(product => 
         product.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -170,7 +171,7 @@ export default function ProductPerformanceClientPage({
                     <CardDescription>Filter performance data by date and/or product.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row flex-wrap items-center gap-4">
-                     <Popover>
+                     <Popover open={isPickerOpen} onOpenChange={setIsPickerOpen}>
                         <PopoverTrigger asChild>
                             <Button
                             variant={"outline"}
@@ -187,7 +188,10 @@ export default function ProductPerformanceClientPage({
                             <Calendar
                                 mode="single"
                                 selected={selectedDate}
-                                onSelect={setSelectedDate}
+                                onSelect={(date) => {
+                                    setSelectedDate(date);
+                                    setIsPickerOpen(false);
+                                }}
                                 initialFocus
                                 disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                             />

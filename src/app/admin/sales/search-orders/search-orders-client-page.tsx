@@ -25,6 +25,7 @@ export default function SearchOrdersClientPage({ orders, currentDate }: { orders
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(
         currentDate ? new Date(`${currentDate}T12:00:00`) : undefined
     );
+    const [isPickerOpen, setIsPickerOpen] = useState(false);
     
     const handleSearch = () => {
         if (selectedDate) {
@@ -89,7 +90,7 @@ export default function SearchOrdersClientPage({ orders, currentDate }: { orders
                     <CardDescription>Choose a specific date to view all orders placed on that day.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row items-center gap-4">
-                    <Popover>
+                    <Popover open={isPickerOpen} onOpenChange={setIsPickerOpen}>
                         <PopoverTrigger asChild>
                             <Button
                             variant={"outline"}
@@ -106,7 +107,10 @@ export default function SearchOrdersClientPage({ orders, currentDate }: { orders
                             <Calendar
                                 mode="single"
                                 selected={selectedDate}
-                                onSelect={setSelectedDate}
+                                onSelect={(date) => {
+                                    setSelectedDate(date);
+                                    setIsPickerOpen(false);
+                                }}
                                 initialFocus
                                 disabled={(date) => date > new Date()}
                             />

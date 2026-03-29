@@ -198,6 +198,7 @@ export default function AdminSalesOrdersClientPage({ initialOrders, stats }: {
     const [statusFilter, setStatusFilter] = useState('all');
     const [sortOrder, setSortOrder] = useState('newest-first');
     const [downloadDate, setDownloadDate] = useState<Date|undefined>();
+    const [isDownloadPickerOpen, setIsDownloadPickerOpen] = useState(false);
 
     const filteredOrders = useMemo(() => {
         let filtered = [...initialOrders];
@@ -340,7 +341,7 @@ export default function AdminSalesOrdersClientPage({ initialOrders, stats }: {
                             <DropdownMenuSubTrigger>Download by Date</DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
                                 <DropdownMenuSubContent>
-                                    <Popover>
+                                    <Popover open={isDownloadPickerOpen} onOpenChange={setIsDownloadPickerOpen}>
                                         <PopoverTrigger asChild>
                                             <Button variant="ghost" className="w-full justify-start font-normal">
                                                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -348,7 +349,15 @@ export default function AdminSalesOrdersClientPage({ initialOrders, stats }: {
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
-                                            <Calendar mode="single" selected={downloadDate} onSelect={setDownloadDate} disabled={(date) => date > new Date()} />
+                                            <Calendar 
+                                                mode="single" 
+                                                selected={downloadDate} 
+                                                onSelect={(date) => {
+                                                    setDownloadDate(date);
+                                                    setIsDownloadPickerOpen(false);
+                                                }} 
+                                                disabled={(date) => date > new Date()} 
+                                            />
                                         </PopoverContent>
                                     </Popover>
                                      <Button disabled={!downloadDate} onClick={() => handleDownloadForDate(downloadDate)} className="w-full mt-2">Download for Selected Date</Button>

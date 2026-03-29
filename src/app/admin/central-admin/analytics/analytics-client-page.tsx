@@ -64,6 +64,7 @@ export default function AnalyticsClientPage({
     const [selectedProductId, setSelectedProductId] = useState<string | undefined>(
         currentFilters.productId
     );
+    const [isPickerOpen, setIsPickerOpen] = useState(false);
 
     const handleApplyFilters = () => {
         const params = new URLSearchParams(searchParams.toString());
@@ -152,7 +153,7 @@ export default function AnalyticsClientPage({
                     <CardDescription>Filter analytics data by date and/or product.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row flex-wrap items-center gap-4">
-                     <Popover>
+                     <Popover open={isPickerOpen} onOpenChange={setIsPickerOpen}>
                         <PopoverTrigger asChild>
                             <Button
                             variant={"outline"}
@@ -169,7 +170,10 @@ export default function AnalyticsClientPage({
                             <Calendar
                                 mode="single"
                                 selected={selectedDate}
-                                onSelect={setSelectedDate}
+                                onSelect={(date) => {
+                                    setSelectedDate(date);
+                                    setIsPickerOpen(false);
+                                }}
                                 initialFocus
                                 disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                             />

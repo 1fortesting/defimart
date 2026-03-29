@@ -43,6 +43,7 @@ export default function ReviewsClientPage({
         currentFilters.productId
     );
     const [searchQuery, setSearchQuery] = useState('');
+    const [isPickerOpen, setIsPickerOpen] = useState(false);
 
     const handleApplyFilters = () => {
         const params = new URLSearchParams(searchParams.toString());
@@ -136,7 +137,7 @@ export default function ReviewsClientPage({
                     <CardDescription>Filter reviews by date and/or product.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row flex-wrap items-center gap-4">
-                     <Popover>
+                     <Popover open={isPickerOpen} onOpenChange={setIsPickerOpen}>
                         <PopoverTrigger asChild>
                             <Button
                             variant={"outline"}
@@ -153,7 +154,10 @@ export default function ReviewsClientPage({
                             <Calendar
                                 mode="single"
                                 selected={selectedDate}
-                                onSelect={setSelectedDate}
+                                onSelect={(date) => {
+                                    setSelectedDate(date);
+                                    setIsPickerOpen(false);
+                                }}
                                 initialFocus
                                 disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                             />
