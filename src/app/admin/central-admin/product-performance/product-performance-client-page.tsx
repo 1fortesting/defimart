@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { FilterX, Calendar as CalendarIcon, Star, Download, Search } from 'lucide-react';
+import { FilterX, Calendar as CalendarIcon, Star, Download, Search, Bot, Loader2 } from 'lucide-react';
 import { ProductWithSalesAndReviews } from './page';
 import {
   DropdownMenu,
@@ -21,13 +21,28 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from '@/components/ui/input';
+import { 
+  AlertDialog, 
+  AlertDialogContent, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogDescription, 
+  AlertDialogFooter,
+  AlertDialogCancel
+} from '@/components/ui/alert-dialog';
+import { getReviewSummaryForProduct } from './actions';
+import { Badge } from '@/components/ui/badge';
+import { OutstandingProductsCard } from '@/components/admin/outstanding-products-card';
+
 
 export default function ProductPerformanceClientPage({
     productsWithPerf,
+    outstandingProducts,
     allProducts,
     currentFilters
 }: {
     productsWithPerf: ProductWithSalesAndReviews[],
+    outstandingProducts: ProductWithSalesAndReviews[],
     allProducts: { id: string, name: string }[],
     currentFilters: { date?: string, productId?: string }
 }) {
@@ -42,6 +57,24 @@ export default function ProductPerformanceClientPage({
         currentFilters.productId
     );
     const [searchQuery, setSearchQuery] = useState('');
+
+    const [isSummaryLoading, setIsSummaryLoading] = useState(false);
+    const [selectedProductForSummary, setSelectedProductForSummary] = useState<ProductWithSalesAndReviews | null>(null);
+    const [summaryResult, setSummaryResult] = useState<{ summary: string; sentiment: string; error?: string } | null>(null);
+
+    const handleGenerateSummary = async (product: ProductWithSalesAndReviews) => {
+        setSelectedProductForSummary(product);
+        setIsSummaryLoading(true);
+        setSummaryResult(null);
+
+        const result = await getReviewSummaryForProduct(product.id);
+        if ('error' in result) {
+            setSummaryResult({ summary: '', sentiment: 'Neutral', error: result.error as string });
+        } else {
+            setSummaryResult(result as { summary: string; sentiment: string; });
+        }
+        setIsSummaryLoading(false);
+    };
 
     const handleApplyFilters = () => {
         const params = new URLSearchParams(searchParams.toString());
@@ -128,6 +161,9 @@ export default function ProductPerformanceClientPage({
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
+            
+            <OutstandingProductsCard products={outstandingProducts} />
+
             <Card>
                 <CardHeader>
                     <CardTitle>Filters</CardTitle>
@@ -203,6 +239,7 @@ export default function ProductPerformanceClientPage({
                                 <TableHead>Sales</TableHead>
                                 <TableHead>Revenue</TableHead>
                                 <TableHead>Rating</TableHead>
+                                <TableHead>AI Insights</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -216,17 +253,50 @@ export default function ProductPerformanceClientPage({
                                             <Star className="h-4 w-4 text-primary" /> {product.average_rating.toFixed(1)} ({product.review_count})
                                         </div>
                                     </TableCell>
+                                    <TableCell>
+                                        <Button variant="ghost" size="icon" onClick={() => handleGenerateSummary(product)} disabled={isSummaryLoading && selectedProductForSummary?.id === product.id}>
+                                            {isSummaryLoading && selectedProductForSummary?.id === product.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
+                                            <span className="sr-only">Generate AI Summary</span>
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                             {filteredProducts.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="text-center h-24">No data for the selected filters.</TableCell>
+                                    <TableCell colSpan={5} className="text-center h-24">No data for the selected filters.</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>
                     </Table>
                 </CardContent>
             </Card>
+
+            <AlertDialog open={!!selectedProductForSummary} onOpenChange={(open) => !open && setSelectedProductForSummary(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>AI Review Summary for {selectedProductForSummary?.name}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            An AI-generated summary of the most recent customer reviews.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    {isSummaryLoading && <div className="flex justify-center items-center h-24"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}
+                    {summaryResult && (
+                        <div>
+                            {summaryResult.error ? (
+                                <p className="text-red-500">{summaryResult.error}</p>
+                            ) : (
+                                <>
+                                    <p className="mb-4">{summaryResult.summary}</p>
+                                    <p><strong>Overall Sentiment:</strong> <Badge variant={summaryResult.sentiment === 'Positive' ? 'default' : summaryResult.sentiment === 'Negative' ? 'destructive' : 'secondary'}>{summaryResult.sentiment}</Badge></p>
+                                </>
+                            )}
+                        </div>
+                    )}
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Close</AlertDialogCancel>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     )
 }

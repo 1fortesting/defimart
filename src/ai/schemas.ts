@@ -32,3 +32,19 @@ export const AIProductTagsOutputSchema = z.object({
     ),
 });
 export type AIProductTagsOutput = z.infer<typeof AIProductTagsOutputSchema>;
+
+// Schemas from ai-review-summarizer.ts
+export const AIReviewSummarizerInputSchema = z.object({
+    productName: z.string().describe("The name of the product being reviewed."),
+    reviews: z.array(z.object({
+        rating: z.number().describe("The star rating (1-5)."),
+        comment: z.string().optional().describe("The text content of the review."),
+    })).describe("An array of customer reviews.")
+});
+export type AIReviewSummarizerInput = z.infer<typeof AIReviewSummarizerInputSchema>;
+
+export const AIReviewSummarizerOutputSchema = z.object({
+    summary: z.string().describe("A 2-3 sentence summary of the reviews."),
+    sentiment: z.enum(['Positive', 'Neutral', 'Negative']).describe("The overall sentiment of the reviews."),
+});
+export type AIReviewSummarizerOutput = z.infer<typeof AIReviewSummarizerOutputSchema>;

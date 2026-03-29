@@ -13,6 +13,9 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { OutstandingProductsCard } from '@/components/admin/outstanding-products-card';
+import type { ProductWithSalesAndReviews } from '@/app/admin/central-admin/product-performance/page';
+
 
 const ProductRow = ({ product }: { product: Tables<'products'> }) => {
   const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
@@ -141,7 +144,7 @@ const ProductTable = ({ products }: { products: Tables<'products'>[] }) => {
     </>
 }
 
-export default function ProcurementProductsClientPage({ products }: { products: Tables<'products'>[] }) {
+export default function ProcurementProductsClientPage({ products, outstandingProducts }: { products: Tables<'products'>[], outstandingProducts: ProductWithSalesAndReviews[] }) {
     const router = useRouter();
     const [isRefreshing, startTransition] = useTransition();
     const [searchQuery, setSearchQuery] = useState('');
@@ -168,6 +171,7 @@ export default function ProcurementProductsClientPage({ products }: { products: 
             </Button>
         </div>
       </div>
+      <OutstandingProductsCard products={outstandingProducts} />
       <Card>
         <CardHeader>
             <CardTitle>Product Management</CardTitle>
