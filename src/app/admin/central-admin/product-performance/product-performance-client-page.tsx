@@ -62,6 +62,10 @@ export default function ProductPerformanceClientPage({
     const [selectedProductForSummary, setSelectedProductForSummary] = useState<ProductWithSalesAndReviews | null>(null);
     const [summaryResult, setSummaryResult] = useState<{ summary: string; sentiment: string; error?: string } | null>(null);
 
+    const filteredProducts = productsWithPerf.filter(product => 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     const handleGenerateSummary = async (product: ProductWithSalesAndReviews) => {
         setSelectedProductForSummary(product);
         setIsSummaryLoading(true);
@@ -136,10 +140,6 @@ export default function ProductPerformanceClientPage({
     };
     
     const hasFilters = currentFilters.date || currentFilters.productId;
-
-    const filteredProducts = productsWithPerf.filter(product => 
-        product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
 
     return (
         <>
@@ -218,7 +218,21 @@ export default function ProductPerformanceClientPage({
 
             <Card>
                 <CardHeader>
-                    <CardTitle>All Product Performance</CardTitle>
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                        <div>
+                            <CardTitle>All Product Performance</CardTitle>
+                            <CardDescription className="mt-1">
+                                View performance metrics for all products. Sorted by revenue by default.
+                            </CardDescription>
+                        </div>
+                         <Button 
+                            onClick={() => filteredProducts.length > 0 && handleGenerateSummary(filteredProducts[0])} 
+                            disabled={isSummaryLoading || filteredProducts.length === 0}
+                        >
+                            {isSummaryLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
+                            AI Summary for Top Result
+                        </Button>
+                    </div>
                     <div className="pt-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -239,7 +253,6 @@ export default function ProductPerformanceClientPage({
                                 <TableHead>Sales</TableHead>
                                 <TableHead>Revenue</TableHead>
                                 <TableHead>Rating</TableHead>
-                                <TableHead>AI Insights</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -253,17 +266,11 @@ export default function ProductPerformanceClientPage({
                                             <Star className="h-4 w-4 text-primary" /> {product.average_rating.toFixed(1)} ({product.review_count})
                                         </div>
                                     </TableCell>
-                                    <TableCell>
-                                        <Button variant="outline" size="sm" onClick={() => handleGenerateSummary(product)} disabled={isSummaryLoading && selectedProductForSummary?.id === product.id}>
-                                            {isSummaryLoading && selectedProductForSummary?.id === product.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
-                                            AI Summary
-                                        </Button>
-                                    </TableCell>
                                 </TableRow>
                             ))}
                             {filteredProducts.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center h-24">No data for the selected filters.</TableCell>
+                                    <TableCell colSpan={4} className="text-center h-24">No data for the selected filters.</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>
