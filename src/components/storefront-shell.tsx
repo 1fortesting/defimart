@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { InstallPrompt } from './install-prompt';
 
 export function StorefrontShell({
   header,
@@ -61,6 +62,7 @@ export function StorefrontShell({
   return (
     <>
       <div className="pb-20 md:pb-0 min-h-screen flex flex-col">
+        <InstallPrompt />
         {header}
         {children}
       </div>
