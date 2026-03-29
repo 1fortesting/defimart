@@ -1,16 +1,15 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Tables } from '@/types/supabase';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Calendar, Info } from 'lucide-react';
 import { placeOrder } from '@/app/cart/actions';
 import { AuthPrompt } from '@/components/auth-prompt';
 import Image from 'next/image';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
+import { CheckoutButton } from './checkout-button';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
   products: Pick<Tables<'products'>, 'name' | 'price' | 'discount_percentage' | 'discount_end_date' | 'image_urls'> | null
@@ -137,9 +136,7 @@ export default async function CheckoutPage() {
                         </div>
                     </CardContent>
                     <CardFooter>
-                        <Button type="submit" className="w-full">
-                            Place Order
-                        </Button>
+                        <CheckoutButton />
                     </CardFooter>
                 </Card>
             </div>
