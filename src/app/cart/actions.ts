@@ -147,7 +147,12 @@ export async function placeOrder(formData: FormData) {
     if (createdOrders && createdOrders.length > 0) {
         const buyerPhoneNumber = profile?.phone_number;
         const buyerName = profile?.display_name || 'Valued Customer';
-        const adminPhoneNumber = process.env.ADMIN_PHONE_NUMBER;
+        
+        const adminPhoneNumbers = [
+            process.env.SALES_ADMIN_PHONE_1,
+            process.env.SALES_ADMIN_PHONE_2,
+            process.env.SALES_ADMIN_PHONE_3,
+        ].filter(Boolean) as string[];
 
         const totalAmount = createdOrders.reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0);
         
@@ -168,13 +173,15 @@ export async function placeOrder(formData: FormData) {
             }
         }
 
-        // Send SMS to Admin
-        if (adminPhoneNumber) {
+        // Send SMS to all Sales Admins
+        if (adminPhoneNumbers.length > 0) {
              const adminMessage = `DEFIMART ADMIN ALERT: New order #${firstOrderId}. Item: ${productNameDisplay}. Amount: GHS ${totalAmount.toFixed(2)}. Customer: ${buyerName} (${buyerPhoneNumber || 'No Phone'}). Please review in dashboard.`;
              try {
-                await sendSms({ phoneNumber: adminPhoneNumber, message: adminMessage });
+                await Promise.all(
+                    adminPhoneNumbers.map(number => sendSms({ phoneNumber: number, message: adminMessage }))
+                );
             } catch(e) {
-                console.error("Failed to send new order notification SMS to admin:", e);
+                console.error("Failed to send new order notification SMS to admins:", e);
             }
         }
     }
