@@ -254,9 +254,9 @@ export default function ProductPerformanceClientPage({
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Button variant="ghost" size="icon" onClick={() => handleGenerateSummary(product)} disabled={isSummaryLoading && selectedProductForSummary?.id === product.id}>
-                                            {isSummaryLoading && selectedProductForSummary?.id === product.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Bot className="h-4 w-4" />}
-                                            <span className="sr-only">Generate AI Summary</span>
+                                        <Button variant="outline" size="sm" onClick={() => handleGenerateSummary(product)} disabled={isSummaryLoading && selectedProductForSummary?.id === product.id}>
+                                            {isSummaryLoading && selectedProductForSummary?.id === product.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
+                                            AI Summary
                                         </Button>
                                     </TableCell>
                                 </TableRow>
