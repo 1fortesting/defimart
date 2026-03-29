@@ -14,6 +14,7 @@ export default async function Home() {
   } = await supabase.auth.getUser();
 
   const { data: products } = await supabase.from('products').select('*');
+  const { data: reviews } = await supabase.from('reviews').select('product_id, rating');
   
   const { data: savedProducts } = user 
       ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 
@@ -22,8 +23,23 @@ export default async function Home() {
 
   const allProducts = products || [];
 
+  const reviewsByProduct = (reviews || []).reduce((acc, review) => {
+    if (!acc[review.product_id]) {
+        acc[review.product_id] = [];
+    }
+    acc[review.product_id].push(review.rating);
+    return acc;
+  }, {} as Record<string, number[]>);
+
+  const productsWithRatings = allProducts.map(p => {
+    const ratings = reviewsByProduct[p.id] || [];
+    const review_count = ratings.length;
+    const average_rating = review_count > 0 ? ratings.reduce((sum, r) => sum + r, 0) / review_count : 0;
+    return { ...p, average_rating, review_count };
+  });
+
   // Select 5 random products for the carousel
-  const shuffledProducts = [...allProducts].sort(() => 0.5 - Math.random());
+  const shuffledProducts = [...productsWithRatings].sort(() => 0.5 - Math.random());
   const carouselProducts = shuffledProducts.slice(0, 5);
 
   return (
@@ -50,7 +66,7 @@ export default async function Home() {
             
             <div className="mt-12 lg:mt-0">
               <HomeProductGrid 
-                products={allProducts}
+                products={productsWithRatings}
                 user={user}
                 savedProductIds={savedProductIds}
               />

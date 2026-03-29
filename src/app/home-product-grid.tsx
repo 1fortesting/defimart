@@ -7,7 +7,7 @@ import { ProductCard } from '@/components/product-card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface HomeProductGridProps {
-    products: Tables<'products'>[];
+    products: (Tables<'products'> & { average_rating: number, review_count: number })[];
     user: User | null;
     savedProductIds: Set<string>;
 }

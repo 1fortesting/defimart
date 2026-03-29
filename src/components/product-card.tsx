@@ -13,9 +13,10 @@ import { toggleSaveProduct } from '@/app/saved/actions';
 import { addToCart } from '@/app/cart/actions';
 import { useState, useEffect, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { StarRating } from './star-rating';
 
 type ProductCardProps = {
-  product: Tables<'products'>;
+  product: Tables<'products'> & { average_rating?: number; review_count?: number };
   user: any; // Simplified user object
   isSaved: boolean;
   onUnsave?: (productId: string) => void;
@@ -238,7 +239,14 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
             <Link href={`/products/${product.id}`} className="hover:underline">
                 <h3 className="font-semibold truncate text-sm">{product.name}</h3>
             </Link>
-            <p className="text-sm text-muted-foreground">{product.category}</p>
+            {product.review_count !== undefined && product.review_count > 0 ? (
+                <div className="hidden md:flex items-center gap-1 mt-1">
+                    <StarRating rating={product.average_rating || 0} size={14} showText={false} />
+                    <span className="text-xs text-muted-foreground">({product.review_count})</span>
+                </div>
+            ) : (
+                 <p className="text-sm text-muted-foreground">{product.category}</p>
+            )}
 
             <div className="mt-2 h-5 flex items-center justify-between">
               {isDiscountActive && (
