@@ -1,6 +1,7 @@
 'use server';
 
-import { createServerClient } from '@/lib/supabase/server';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import type { Database } from '@/types/supabase';
 import { generateReviewSummary } from '@/ai/flows/ai-review-summarizer';
 
@@ -9,9 +10,32 @@ export async function getReviewSummaryForProduct(productId: string) {
         return { error: 'Product ID is required.' };
     }
 
+    const cookieStore = cookies();
+
     const supabaseAdmin = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+          cookies: {
+            get(name: string) {
+              return cookieStore.get(name)?.value;
+            },
+            set(name: string, value: string, options: CookieOptions) {
+              try {
+                cookieStore.set({ name, value, ...options });
+              } catch (error) {
+                // In a Server Action, this can be ignored.
+              }
+            },
+            remove(name: string, options: CookieOptions) {
+              try {
+                cookieStore.set({ name, value: '', ...options });
+              } catch (error) {
+                // In a Server Action, this can be ignored.
+              }
+            },
+          },
+        }
     );
     
     const { data: product, error: productError } = await supabaseAdmin.from('products').select('name').eq('id', productId).single();
