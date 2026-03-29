@@ -27,26 +27,11 @@ export default function ContactPage() {
                     <CardTitle className="flex items-center gap-2 text-xl"><Phone className="h-5 w-5 text-primary" /> Phone Support</CardTitle>
                      <CardDescription>Our team is available to take your calls.</CardDescription>
                 </CardHeader>
-                <CardContent className="grid sm:grid-cols-2 gap-4">
-                     <a href={`tel:${customerServiceNumber}`} className="group p-4 flex flex-col items-center text-center rounded-lg border hover:bg-accent transition-colors">
+                <CardContent className="flex justify-center">
+                     <a href={`tel:${customerServiceNumber}`} className="group p-4 flex flex-col items-center text-center rounded-lg border hover:bg-accent transition-colors w-full max-w-xs">
                         <p className="font-semibold text-base">Bill Math</p>
                         <p className="text-sm text-muted-foreground">Customer Service</p>
                         <p className="font-mono mt-1 text-primary group-hover:underline">+233 24 706 7327</p>
-                    </a>
-                     <a href="tel:+233597204494" className="group p-4 flex flex-col items-center text-center rounded-lg border hover:bg-accent transition-colors">
-                        <p className="font-semibold text-base">Sales Lead</p>
-                         <p className="text-sm text-muted-foreground">General Inquiries</p>
-                        <p className="font-mono mt-1 text-primary group-hover:underline">+233 59 720 4494</p>
-                    </a>
-                     <a href="tel:+233535548945" className="group p-4 flex flex-col items-center text-center rounded-lg border hover:bg-accent transition-colors">
-                        <p className="font-semibold text-base">Agbeke Bridget Enam</p>
-                         <p className="text-sm text-muted-foreground">Senior Sales</p>
-                        <p className="font-mono mt-1 text-primary group-hover:underline">+233 53 554 8945</p>
-                    </a>
-                     <a href="tel:+233598560612" className="group p-4 flex flex-col items-center text-center rounded-lg border hover:bg-accent transition-colors">
-                        <p className="font-semibold text-base">Anthony</p>
-                         <p className="text-sm text-muted-foreground">Assistant Sales</p>
-                        <p className="font-mono mt-1 text-primary group-hover:underline">+233 59 856 0612</p>
                     </a>
                 </CardContent>
             </Card>
