@@ -14,6 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import type { User } from '@supabase/supabase-js';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from "@/lib/utils";
+import { WelcomeSplash } from "@/components/admin/welcome-splash";
 
 const navLinks = [
     { href: "/admin/central-admin/dashboard", text: "Dashboard", icon: Home },
@@ -149,12 +150,15 @@ const AdminHeader = ({ user, handleLogout, onExit }: { user: User | null; handle
 
 export default function CentralAdminLayout({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [showSplash, setShowSplash] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
     useEffect(() => {
-        if (sessionStorage.getItem('defimart-dept-auth-central-admin') === 'true') {
+        const isAuthed = sessionStorage.getItem('defimart-dept-auth-central-admin') === 'true';
+        if (isAuthed) {
             setIsAuthenticated(true);
+            setShowSplash(true);
         }
         const supabase = createClient();
         supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -167,9 +171,23 @@ export default function CentralAdminLayout({ children }: { children: React.React
                     departmentName="Central Admin"
                     passwordEnvVar="NEXT_PUBLIC_CEO_PASSWORD"
                     sessionKey="defimart-dept-auth-central-admin"
-                    onSuccess={() => setIsAuthenticated(true)}
+                    onSuccess={() => {
+                        setIsAuthenticated(true);
+                        setShowSplash(true);
+                    }}
                 />
             </div>
+        )
+    }
+
+    if (showSplash) {
+        return (
+            <WelcomeSplash 
+                departmentName="Central Admin"
+                roleName="Chief"
+                message="The command center is ready for your overview."
+                onFinished={() => setShowSplash(false)}
+            />
         )
     }
 

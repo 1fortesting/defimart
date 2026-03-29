@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import type { User } from '@supabase/supabase-js';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from "@/lib/utils";
+import { WelcomeSplash } from "@/components/admin/welcome-splash";
 
 const navLinks = [
     { href: "/admin/sales/orders", text: "Orders", icon: Package },
@@ -171,12 +172,15 @@ const AdminHeader = ({ user, handleLogout, onExit }: { user: User | null; handle
 
 export default function SalesLayout({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [showSplash, setShowSplash] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
     useEffect(() => {
-        if (sessionStorage.getItem('defimart-dept-auth-sales-department') === 'true') {
+        const isAuthed = sessionStorage.getItem('defimart-dept-auth-sales-department') === 'true';
+        if (isAuthed) {
             setIsAuthenticated(true);
+            setShowSplash(true);
         }
         const supabase = createClient();
         supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -189,9 +193,23 @@ export default function SalesLayout({ children }: { children: React.ReactNode })
                     departmentName="Sales Department"
                     passwordEnvVar="NEXT_PUBLIC_SALES_PASSWORD"
                     sessionKey="defimart-dept-auth-sales-department"
-                    onSuccess={() => setIsAuthenticated(true)}
+                    onSuccess={() => {
+                        setIsAuthenticated(true);
+                        setShowSplash(true);
+                    }}
                 />
             </div>
+        )
+    }
+
+    if (showSplash) {
+        return (
+            <WelcomeSplash 
+                departmentName="Sales Department"
+                roleName="Sales Manager"
+                message="Welcome to the Sales Deck. Let's close some deals and track our success."
+                onFinished={() => setShowSplash(false)}
+            />
         )
     }
 

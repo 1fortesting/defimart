@@ -13,6 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import type { User } from '@supabase/supabase-js';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from "@/lib/utils";
+import { WelcomeSplash } from "@/components/admin/welcome-splash";
 
 const navLinks = [
     { href: "/admin/procurement/products", text: "Products", icon: Package },
@@ -172,12 +173,15 @@ const AdminHeader = ({ user, handleLogout, onExit }: { user: User | null; handle
 
 export default function ProcurementLayout({ children }: { children: React.ReactNode }) {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [showSplash, setShowSplash] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
     useEffect(() => {
-        if (sessionStorage.getItem('defimart-dept-auth-procurement') === 'true') {
+        const isAuthed = sessionStorage.getItem('defimart-dept-auth-procurement') === 'true';
+        if (isAuthed) {
             setIsAuthenticated(true);
+            setShowSplash(true);
         }
         const supabase = createClient();
         supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -190,9 +194,23 @@ export default function ProcurementLayout({ children }: { children: React.ReactN
                     departmentName="Procurement"
                     passwordEnvVar="NEXT_PUBLIC_PROCUREMENT_PASSWORD"
                     sessionKey="defimart-dept-auth-procurement"
-                    onSuccess={() => setIsAuthenticated(true)}
+                    onSuccess={() => {
+                        setIsAuthenticated(true);
+                        setShowSplash(true);
+                    }}
                 />
             </div>
+        )
+    }
+
+    if (showSplash) {
+        return (
+            <WelcomeSplash 
+                departmentName="Procurement"
+                roleName="Procurement Officer"
+                message="Welcome to Procurement. Let's source the best products for our customers."
+                onFinished={() => setShowSplash(false)}
+            />
         )
     }
 

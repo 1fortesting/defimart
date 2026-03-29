@@ -18,8 +18,9 @@ interface DepartmentLoginProps {
 
 const welcomeMessages: { [key: string]: string } = {
     'Central Admin': 'Welcome, Chief. The command center is ready for your overview.',
-    'Sales': 'Welcome to the Sales Deck. Let\'s close some deals and track our success.',
+    'Sales Department': 'Welcome to the Sales Deck. Let\'s close some deals and track our success.',
     'Logistics': 'Welcome to the Warehouse. Time to manage our inventory and product flow.',
+    'Procurement': 'Welcome to Procurement. Let\'s source the best products for our customers.',
 }
 
 export function DepartmentLogin({ departmentName, passwordEnvVar, sessionKey, onSuccess }: DepartmentLoginProps) {
@@ -36,6 +37,8 @@ export function DepartmentLogin({ departmentName, passwordEnvVar, sessionKey, on
             correctPassword = process.env.NEXT_PUBLIC_CEO_PASSWORD;
         } else if (passwordEnvVar === 'NEXT_PUBLIC_SALES_PASSWORD') {
             correctPassword = process.env.NEXT_PUBLIC_SALES_PASSWORD;
+        } else if (passwordEnvVar === 'NEXT_PUBLIC_PROCUREMENT_PASSWORD') {
+            correctPassword = process.env.NEXT_PUBLIC_PROCUREMENT_PASSWORD;
         } else if (passwordEnvVar === 'NEXT_PUBLIC_LOGISTICS_PASSWORD') {
             correctPassword = process.env.NEXT_PUBLIC_LOGISTICS_PASSWORD;
         }
