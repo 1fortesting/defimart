@@ -8,20 +8,18 @@ interface SendSmsParams {
 }
 
 export async function sendSms({ phoneNumber, message }: SendSmsParams): Promise<void> {
-  const apiKey = process.env.SENDEXA_API_KEY;
-  const apiSecret = process.env.SENDEXA_SECRET_KEY;
-  const senderId = process.env.SENDEXA_SENDER_ID;
+  const apiKey = process.env.ARKESEL_API_KEY;
+  const senderId = process.env.ARKESEL_SENDER_ID;
   
-  const apiUrl = 'https://api.sendexa.co/v1/sms/send';
+  const apiUrl = 'https://sms.arkesel.com/api/v2/sms/send';
 
-  // Check for placeholder values
-  if (apiKey === 'YOUR_API_KEY_HERE' || apiSecret === 'YOUR_API_SECRET_HERE') {
-    console.error('Please replace placeholder API credentials in your .env file for Sendexa.');
+  if (!apiKey) {
+    console.error('Arkesel API Key is not configured in environment variables (ARKESEL_API_KEY).');
     return;
   }
-
-  if (!apiKey || !apiSecret || !senderId) {
-    console.error('One or more Sendexa environment variables are not configured: API Key, Secret, or Sender ID.');
+  
+  if (!senderId) {
+    console.error('Arkesel Sender ID is not configured in environment variables (ARKESEL_SENDER_ID).');
     return;
   }
   
@@ -30,12 +28,12 @@ export async function sendSms({ phoneNumber, message }: SendSmsParams): Promise<
     return;
   }
   
-  const base64token = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64');
-
   const payload = {
-    to: phoneNumber,
-    from: senderId,
-    message: message,
+    "action": "send-sms",
+    "api_key": apiKey,
+    "to": phoneNumber,
+    "from": senderId,
+    "sms": message
   };
 
   try {
@@ -43,18 +41,17 @@ export async function sendSms({ phoneNumber, message }: SendSmsParams): Promise<
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${base64token}`,
       },
       body: JSON.stringify(payload),
     });
 
     const responseData = await response.json();
-    if (!response.ok) {
-        console.error(`Failed to send SMS via Sendexa. Status: ${response.status}`, responseData);
+    if (responseData.code === "ok" || response.ok) {
+        console.log('SMS sent successfully via Arkesel:', responseData);
     } else {
-        console.log('SMS sent successfully via Sendexa:', responseData);
+        console.error(`Failed to send SMS via Arkesel. Status: ${response.status}`, responseData);
     }
   } catch (error) {
-    console.error('An error occurred while sending SMS:', error);
+    console.error('An error occurred while sending SMS via Arkesel:', error);
   }
 }
