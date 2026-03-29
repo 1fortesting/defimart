@@ -48,3 +48,24 @@ export const AIReviewSummarizerOutputSchema = z.object({
     sentiment: z.enum(['Positive', 'Neutral', 'Negative']).describe("The overall sentiment of the reviews."),
 });
 export type AIReviewSummarizerOutput = z.infer<typeof AIReviewSummarizerOutputSchema>;
+
+
+// Schemas for ai-product-recommender.ts
+export const AIProductRecommenderInputSchema = z.object({
+  userHistory: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    category: z.string().nullable().optional(),
+  })).describe("A list of products the user has previously interacted with (saved, reviewed, purchased)."),
+  allProducts: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    category: z.string().nullable().optional(),
+  })).describe("The full catalog of products available for recommendation."),
+});
+export type AIProductRecommenderInput = z.infer<typeof AIProductRecommenderInputSchema>;
+
+export const AIProductRecommenderOutputSchema = z.object({
+  recommendations: z.array(z.string()).describe("An array of product IDs to recommend to the user. Should contain 5 IDs."),
+});
+export type AIProductRecommenderOutput = z.infer<typeof AIProductRecommenderOutputSchema>;

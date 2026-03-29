@@ -5,6 +5,7 @@ import { SearchBar } from '@/components/search-bar';
 import { CategorySidebar } from '@/components/category-sidebar';
 import { FlashSaleSection } from '@/components/flash-sale-section';
 import { HomeProductGrid } from './home-product-grid';
+import { RecommendedForYouSection } from '@/components/recommended-for-you-section';
 
 export default async function Home() {
   const supabase = createClient();
@@ -64,6 +65,8 @@ export default async function Home() {
 
             <FlashSaleSection />
             
+            <RecommendedForYouSection user={user} allProductsWithRatings={productsWithRatings} />
+
             <div className="mt-12 lg:mt-0">
               <HomeProductGrid 
                 products={productsWithRatings}
