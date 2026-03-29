@@ -64,8 +64,8 @@ export function InstallPrompt() {
         <AnimatePresence>
             {isVisible && (
                 <motion.div
-                    className="fixed top-16 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-50"
-                    initial={{ opacity: 0, y: -20 }}
+                    className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-50"
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -200 }}
                     drag="x"
