@@ -77,7 +77,6 @@ export function RequestProductForm() {
                     id="description"
                     name="description"
                     placeholder="Please be as descriptive as possible. Include brand, model, size, color, etc."
-                    required
                     rows={3}
                 />
                  {state.errors?.description && <p className="text-sm text-red-500 mt-1">{state.errors.description[0]}</p>}

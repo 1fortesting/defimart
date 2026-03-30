@@ -10,7 +10,7 @@ const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/web
 
 const RequestSchema = z.object({
   product_name: z.string().min(3, 'Please provide a product name.'),
-  description: z.string().min(10, 'Please provide a more detailed description.'),
+  description: z.string().optional(),
   image: z
     .any()
     .optional()
@@ -67,7 +67,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
 
   const { error: insertError } = await supabase.from('product_requests').insert({
     product_name,
-    description,
+    description: description || '',
     user_id: user.id,
     image_url: imageUrl,
   });
@@ -86,7 +86,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   ].filter(Boolean) as string[];
 
   if (adminPhoneNumbers.length > 0) {
-    const adminMessage = `DEFIMART ADMIN: New product request from ${profile?.display_name || 'a user'}. Product: ${product_name}. Description: "${description.substring(0, 50)}...". Please review in the admin dashboard.`;
+    const adminMessage = `DEFIMART ADMIN: New product request from ${profile?.display_name || 'a user'}. Product: ${product_name}. Description: "${(description || '').substring(0, 50)}...". Please review in the admin dashboard.`;
     try {
       await Promise.all(
         adminPhoneNumbers.map(number => sendSms({ phoneNumber: number, message: adminMessage }))
