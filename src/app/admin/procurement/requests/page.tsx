@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { Tables } from '@/types/supabase';
 import ProductRequestsClientPage from './requests-client-page';
 
@@ -7,7 +7,7 @@ export type ProductRequestWithUser = Tables<'product_requests'> & {
 };
 
 export default async function ProductRequestsPage() {
-    const supabase = createServerClient();
+    const supabase = createClient();
     const { data, error } = await supabase
         .from('product_requests')
         .select('*, profiles(display_name, phone_number)')
