@@ -8,18 +8,9 @@ import { sendSms } from '@/lib/sendSms';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-const RequestSchema = z.object({
+const TextFieldsSchema = z.object({
   product_name: z.string().min(3, 'Please provide a product name.'),
   description: z.string().optional(),
-  image: z
-    .instanceof(File)
-    .optional()
-    .refine((file) => !file || file.size <= MAX_FILE_SIZE, {
-      message: 'Max image size is 5MB.',
-    })
-    .refine((file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type), {
-      message: 'Only .jpg, .jpeg, .png and .webp formats are supported.',
-    }),
 });
 
 
@@ -31,32 +22,40 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     return { error: 'You must be logged in to submit a request.', success: false };
   }
 
-  const imageFile = formData.get('image') as File;
-
-  const validatedFields = RequestSchema.safeParse({
+  const validatedTextFields = TextFieldsSchema.safeParse({
     product_name: formData.get('product_name'),
     description: formData.get('description'),
-    image: imageFile && imageFile.size > 0 ? imageFile : undefined,
   });
 
-  if (!validatedFields.success) {
+  if (!validatedTextFields.success) {
     return {
-      errors: validatedFields.error.flatten().fieldErrors,
+      errors: validatedTextFields.error.flatten().fieldErrors,
       error: 'Invalid fields provided.',
       success: false,
     };
   }
-
-  const { product_name, description, image } = validatedFields.data;
+  
+  const { product_name, description } = validatedTextFields.data;
+  const imageFile = formData.get('image') as File | null;
   let imageUrl: string | null = null;
-
-  if (image) {
-    const fileName = `${user.id}/${Date.now()}-${image.name}`;
+  
+  if (imageFile && imageFile.size > 0) {
+    // Manual validation for the file
+    if (imageFile.size > MAX_FILE_SIZE) {
+      return { error: 'Max image size is 5MB.', success: false };
+    }
+    if (!ACCEPTED_IMAGE_TYPES.includes(imageFile.type)) {
+      return { error: 'Only .jpg, .jpeg, .png and .webp formats are supported.', success: false };
+    }
+    
+    // Upload logic
+    const fileName = `${user.id}/${Date.now()}-${imageFile.name}`;
     const { error: uploadError } = await supabase.storage
       .from('requested_product_images')
-      .upload(fileName, image);
+      .upload(fileName, imageFile);
     
     if (uploadError) {
+      console.error('UPLOAD ERROR:', uploadError);
       return { error: `Storage Error: ${uploadError.message}`, success: false };
     }
 
