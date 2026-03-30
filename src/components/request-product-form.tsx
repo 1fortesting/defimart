@@ -62,13 +62,23 @@ export function RequestProductForm() {
     return (
         <form ref={formRef} action={dispatch} className="space-y-4">
             <div className="space-y-2">
+                <Label htmlFor="product_name">Product Name</Label>
+                <Input
+                    id="product_name"
+                    name="product_name"
+                    placeholder="e.g., Anker Power Bank 20000mAh"
+                    required
+                />
+                {state.errors?.product_name && <p className="text-sm text-red-500 mt-1">{state.errors.product_name[0]}</p>}
+            </div>
+            <div className="space-y-2">
                 <Label htmlFor="description">Product Description</Label>
                 <Textarea
                     id="description"
                     name="description"
                     placeholder="Please be as descriptive as possible. Include brand, model, size, color, etc."
                     required
-                    rows={5}
+                    rows={3}
                 />
                  {state.errors?.description && <p className="text-sm text-red-500 mt-1">{state.errors.description[0]}</p>}
             </div>

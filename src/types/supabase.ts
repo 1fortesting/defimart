@@ -204,12 +204,12 @@ export type Database = {
           discount_percentage: number | null
           id: string
           image_urls: string[] | null
+          is_featured: boolean | null
           name: string
           price: number
           quantity: number | null
           seller_id: string
           tags: string[] | null
-          is_featured: boolean | null
         }
         Insert: {
           brand?: string | null
@@ -220,12 +220,12 @@ export type Database = {
           discount_percentage?: number | null
           id?: string
           image_urls?: string[] | null
+          is_featured?: boolean | null
           name: string
           price: number
           quantity?: number | null
           seller_id: string
           tags?: string[] | null
-          is_featured?: boolean | null
         }
         Update: {
           brand?: string | null
@@ -236,12 +236,12 @@ export type Database = {
           discount_percentage?: number | null
           id?: string
           image_urls?: string[] | null
+          is_featured?: boolean | null
           name?: string
           price?: number
           quantity?: number | null
           seller_id?: string
           tags?: string[] | null
-          is_featured?: boolean | null
         }
         Relationships: [
           {
@@ -255,31 +255,34 @@ export type Database = {
       }
       product_requests: {
         Row: {
-          id: string
-          created_at: string
-          user_id: string
-          description: string
-          image_url: string | null
-          status: string
           admin_notes: string | null
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          product_name: string
+          status: string
+          user_id: string
         }
         Insert: {
-          id?: string
-          created_at?: string
-          user_id: string
-          description: string
-          image_url?: string | null
-          status?: string
           admin_notes?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          product_name: string
+          status?: string
+          user_id: string
         }
         Update: {
-          id?: string
-          created_at?: string
-          user_id?: string
-          description?: string
-          image_url?: string | null
-          status?: string
           admin_notes?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          product_name?: string
+          status?: string
+          user_id?: string
         }
         Relationships: [
           {
@@ -288,7 +291,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       profiles: {
@@ -497,6 +500,7 @@ export type Enums<
     
 
     
+
 
 
 

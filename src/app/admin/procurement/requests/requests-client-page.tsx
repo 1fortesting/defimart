@@ -131,7 +131,7 @@ export default function ProductRequestsClientPage({ initialRequests }: { initial
                                                     <div className="flex items-center gap-4 text-left">
                                                         {request.image_url && <Image src={request.image_url} alt="Product request" width={40} height={40} className="rounded-md object-cover" />}
                                                         <div className="truncate">
-                                                            <p className="font-semibold truncate">{request.description.substring(0, 80)}{request.description.length > 80 ? '...' : ''}</p>
+                                                            <p className="font-semibold truncate">{request.product_name}</p>
                                                             <p className="text-sm text-muted-foreground">from {request.profiles?.display_name || 'Anonymous'}</p>
                                                         </div>
                                                     </div>
@@ -141,6 +141,8 @@ export default function ProductRequestsClientPage({ initialRequests }: { initial
                                             <AccordionContent className="space-y-4">
                                                 <div className="grid md:grid-cols-3 gap-6">
                                                     <div className="md:col-span-2 space-y-4">
+                                                        <h4 className="font-semibold">Product Name</h4>
+                                                        <p className="text-muted-foreground">{request.product_name}</p>
                                                         <h4 className="font-semibold">Full Description</h4>
                                                         <p className="text-muted-foreground whitespace-pre-wrap">{request.description}</p>
                                                         <h4 className="font-semibold">Customer Details</h4>

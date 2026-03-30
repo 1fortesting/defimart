@@ -9,6 +9,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 const RequestSchema = z.object({
+  product_name: z.string().min(3, 'Please provide a product name.'),
   description: z.string().min(10, 'Please provide a more detailed description.'),
   image: z
     .any()
@@ -29,6 +30,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   }
 
   const validatedFields = RequestSchema.safeParse({
+    product_name: formData.get('product_name'),
     description: formData.get('description'),
     image: formData.get('image'),
   });
@@ -41,7 +43,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     };
   }
 
-  const { description, image } = validatedFields.data;
+  const { product_name, description, image } = validatedFields.data;
   let imageUrl: string | null = null;
 
   if (image && image.size > 0) {
@@ -63,6 +65,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   }
 
   const { error: insertError } = await supabase.from('product_requests').insert({
+    product_name,
     description,
     user_id: user.id,
     image_url: imageUrl,
@@ -82,7 +85,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   ].filter(Boolean) as string[];
 
   if (adminPhoneNumbers.length > 0) {
-    const adminMessage = `DEFIMART ADMIN: New product request from ${profile?.display_name || 'a user'}. Description: "${description.substring(0, 50)}...". Please review in the admin dashboard.`;
+    const adminMessage = `DEFIMART ADMIN: New product request from ${profile?.display_name || 'a user'}. Product: ${product_name}. Description: "${description.substring(0, 50)}...". Please review in the admin dashboard.`;
     try {
       await Promise.all(
         adminPhoneNumbers.map(number => sendSms({ phoneNumber: number, message: adminMessage }))
@@ -94,7 +97,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   
   // Notify User
   if (profile?.phone_number) {
-    const userMessage = `DEFIMART: Your product request has been received! Our team will review it and notify you of any updates. Thank you!`;
+    const userMessage = `DEFIMART: Your product request for "${product_name}" has been received! Our team will review it and notify you of any updates. Thank you!`;
      try {
         await sendSms({ phoneNumber: profile.phone_number, message: userMessage });
     } catch (e) {
