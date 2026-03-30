@@ -8,10 +8,10 @@ import { sendSms } from '@/lib/sendSms';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-const RequestProductSchema = z.object({
+// Schema for text fields
+const RequestProductTextSchema = z.object({
   product_name: z.string().min(1, 'Please provide a product name.'),
   description: z.string().optional(),
-  image: z.any().optional(),
 });
 
 
@@ -23,19 +23,24 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     return { error: 'You must be logged in to submit a request.', success: false, errors: {} };
   }
 
-  const rawFormData = Object.fromEntries(formData.entries());
-  const validatedFields = RequestProductSchema.safeParse(rawFormData);
+  // Validate text fields first
+  const validatedTextFields = RequestProductTextSchema.safeParse({
+      product_name: formData.get('product_name'),
+      description: formData.get('description'),
+  });
 
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      error: 'Invalid fields provided.',
-      success: false,
-    };
+  if (!validatedTextFields.success) {
+      return {
+          errors: validatedTextFields.error.flatten().fieldErrors,
+          error: 'Invalid fields provided.',
+          success: false,
+      };
   }
-  
-  const { product_name, description } = validatedFields.data;
-  const imageFile = validatedFields.data.image as File | null;
+
+  const { product_name, description } = validatedTextFields.data;
+
+  // Handle file upload
+  const imageFile = formData.get('image') as File | null;
   let imageUrl: string | null = null;
   let storageFilePath: string | null = null;
   
@@ -52,7 +57,9 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     storageFilePath = `${user.id}/${Date.now()}-${imageFile.name}`;
     const { error: uploadError } = await supabase.storage
       .from('requested_product_images')
-      .upload(storageFilePath, imageFile);
+      .upload(storageFilePath, imageFile, {
+          contentType: imageFile.type,
+      });
     
     if (uploadError) {
       console.error('UPLOAD ERROR:', uploadError);
