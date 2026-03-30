@@ -9,7 +9,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 const TextFieldsSchema = z.object({
-  product_name: z.string().min(3, 'Please provide a product name.'),
+  product_name: z.string().min(1, 'Please provide a product name.'),
   description: z.string().optional(),
 });
 
@@ -42,10 +42,10 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   if (imageFile && imageFile.size > 0) {
     // Manual validation for the file
     if (imageFile.size > MAX_FILE_SIZE) {
-      return { error: 'Max image size is 5MB.', success: false };
+      return { error: 'Max image size is 5MB.', success: false, errors: { image: ['Max image size is 5MB.'] } };
     }
     if (!ACCEPTED_IMAGE_TYPES.includes(imageFile.type)) {
-      return { error: 'Only .jpg, .jpeg, .png and .webp formats are supported.', success: false };
+      return { error: 'Only .jpg, .jpeg, .png and .webp formats are supported.', success: false, errors: { image: ['Invalid file type.'] } };
     }
     
     // Upload logic
