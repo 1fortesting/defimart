@@ -60,7 +60,7 @@ export function RequestProductForm() {
     }
 
     return (
-        <form ref={formRef} action={dispatch} className="space-y-4" encType="multipart/form-data">
+        <form ref={formRef} action={dispatch} className="space-y-4">
             <div className="space-y-2">
                 <Label htmlFor="product_name">Product Name</Label>
                 <Input
