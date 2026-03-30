@@ -1,11 +1,11 @@
 'use server';
 
-import { createServerClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { sendSms } from '@/lib/sendSms';
 
 export async function updateRequestStatus(formData: FormData) {
-    const supabase = createServerClient();
+    const supabase = createClient();
     const requestId = formData.get('requestId') as string;
     const newStatus = formData.get('status') as string;
 
