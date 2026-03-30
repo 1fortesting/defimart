@@ -8,9 +8,10 @@ import { sendSms } from '@/lib/sendSms';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-const TextFieldsSchema = z.object({
+const RequestProductSchema = z.object({
   product_name: z.string().min(1, 'Please provide a product name.'),
   description: z.string().optional(),
+  image: z.any().optional(),
 });
 
 
@@ -19,25 +20,24 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return { error: 'You must be logged in to submit a request.', success: false };
+    return { error: 'You must be logged in to submit a request.', success: false, errors: {} };
   }
 
-  const validatedTextFields = TextFieldsSchema.safeParse({
-    product_name: formData.get('product_name'),
-    description: formData.get('description'),
-  });
+  const rawFormData = Object.fromEntries(formData.entries());
+  const validatedFields = RequestProductSchema.safeParse(rawFormData);
 
-  if (!validatedTextFields.success) {
+  if (!validatedFields.success) {
     return {
-      errors: validatedTextFields.error.flatten().fieldErrors,
+      errors: validatedFields.error.flatten().fieldErrors,
       error: 'Invalid fields provided.',
       success: false,
     };
   }
   
-  const { product_name, description } = validatedTextFields.data;
-  const imageFile = formData.get('image') as File | null;
+  const { product_name, description } = validatedFields.data;
+  const imageFile = validatedFields.data.image as File | null;
   let imageUrl: string | null = null;
+  let storageFilePath: string | null = null;
   
   if (imageFile && imageFile.size > 0) {
     // Manual validation for the file
@@ -49,19 +49,19 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     }
     
     // Upload logic
-    const fileName = `${user.id}/${Date.now()}-${imageFile.name}`;
+    storageFilePath = `${user.id}/${Date.now()}-${imageFile.name}`;
     const { error: uploadError } = await supabase.storage
       .from('requested_product_images')
-      .upload(fileName, imageFile);
+      .upload(storageFilePath, imageFile);
     
     if (uploadError) {
       console.error('UPLOAD ERROR:', uploadError);
-      return { error: `Storage Error: ${uploadError.message}`, success: false };
+      return { error: `Storage Error: ${uploadError.message}`, success: false, errors: {} };
     }
 
     const { data: urlData } = supabase.storage
       .from('requested_product_images')
-      .getPublicUrl(fileName);
+      .getPublicUrl(storageFilePath);
     
     imageUrl = urlData?.publicUrl || null;
   }
@@ -74,7 +74,11 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   });
 
   if (insertError) {
-    return { error: `Database Error: ${insertError.message}`, success: false };
+    // If DB insert fails, try to remove the uploaded image
+    if (storageFilePath) {
+        await supabase.storage.from('requested_product_images').remove([storageFilePath]);
+    }
+    return { error: `Database Error: ${insertError.message}`, success: false, errors: {} };
   }
   
   // --- SMS Notifications ---

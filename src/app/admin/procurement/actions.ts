@@ -91,10 +91,10 @@ export async function createProduct(prevState: any, formData: FormData) {
   const { name, description, price, quantity, category, brand, image, discount_percentage, discount_end_date, is_featured } = validatedFields.data;
 
   const imageFile = image as File;
-  const fileName = `${Date.now()}-${imageFile.name}`;
+  const storageFilePath = `${user.id}/${Date.now()}-${imageFile.name}`;
   const { error: uploadError } = await supabase.storage
     .from('product_images')
-    .upload(fileName, imageFile);
+    .upload(storageFilePath, imageFile);
   
   if (uploadError) {
     return { message: `Storage Error: ${uploadError.message}`, success: false, errors: {} };
@@ -102,10 +102,10 @@ export async function createProduct(prevState: any, formData: FormData) {
 
   const { data: urlData } = supabase.storage
     .from('product_images')
-    .getPublicUrl(fileName);
+    .getPublicUrl(storageFilePath);
 
   if (!urlData?.publicUrl) {
-    await supabase.storage.from('product_images').remove([fileName]);
+    await supabase.storage.from('product_images').remove([storageFilePath]);
     return { message: 'Could not get public URL for image.', success: false, errors: {} };
   }
   const publicUrl = urlData.publicUrl;
@@ -139,7 +139,7 @@ export async function createProduct(prevState: any, formData: FormData) {
 
   if (error) {
     // Attempt to delete the uploaded image if the DB insert fails
-    await supabase.storage.from('product_images').remove([fileName]);
+    await supabase.storage.from('product_images').remove([storageFilePath]);
     return { message: error.message, success: false, errors: {} };
   }
   
@@ -150,6 +150,8 @@ export async function createProduct(prevState: any, formData: FormData) {
 
 export async function updateProduct(prevState: any, formData: FormData) {
     const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { message: 'Unauthorized.', success: false, errors: {} };
 
     const rawFormData = Object.fromEntries(formData.entries());
 
@@ -189,15 +191,15 @@ export async function updateProduct(prevState: any, formData: FormData) {
         if (imageFile.size > 5 * 1024 * 1024) return { message: 'Max image size is 5MB.', success: false, errors: {} };
         if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(imageFile.type)) return { message: 'Only .jpg, .jpeg, .png and .webp formats are supported.', success: false, errors: {} };
 
-        const fileName = `${Date.now()}-${imageFile.name}`;
-        const { error: uploadError } = await supabase.storage.from('product_images').upload(fileName, imageFile);
+        const storageFilePath = `${user.id}/${Date.now()}-${imageFile.name}`;
+        const { error: uploadError } = await supabase.storage.from('product_images').upload(storageFilePath, imageFile);
 
         if (uploadError) return { message: `Storage Error: ${uploadError.message}`, success: false, errors: {} };
 
-        const { data: urlData } = supabase.storage.from('product_images').getPublicUrl(fileName);
+        const { data: urlData } = supabase.storage.from('product_images').getPublicUrl(storageFilePath);
         
         if (!urlData?.publicUrl) {
-            await supabase.storage.from('product_images').remove([fileName]);
+            await supabase.storage.from('product_images').remove([storageFilePath]);
             return { message: 'Could not get public URL for image.', success: false, errors: {} };
         }
         const publicUrl = urlData.publicUrl;
@@ -205,8 +207,13 @@ export async function updateProduct(prevState: any, formData: FormData) {
 
         // Delete old image if it exists
         if (existingProduct.image_urls && existingProduct.image_urls[0]) {
-            const oldImageName = existingProduct.image_urls[0].split('/').pop();
-            if (oldImageName) await supabase.storage.from('product_images').remove([oldImageName]);
+            try {
+                const oldImageUrl = new URL(existingProduct.image_urls[0]);
+                const oldImageKey = oldImageUrl.pathname.split('/product_images/')[1];
+                if (oldImageKey) await supabase.storage.from('product_images').remove([oldImageKey]);
+            } catch (e) {
+                console.error("Failed to parse or delete old image:", e);
+            }
         }
     }
 
