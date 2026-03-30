@@ -1,10 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { RequestProductForm } from './request-product-form';
-import { AuthPrompt } from './auth-prompt';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PackagePlus } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from './ui/button';
 
 export async function RequestProductSection() {
     const supabase = createClient();
@@ -12,31 +11,39 @@ export async function RequestProductSection() {
 
     return (
         <div className="my-8">
-            <Card className="bg-muted/30">
-                <CardHeader className="text-center">
-                     <div className="mx-auto bg-background p-3 rounded-full w-fit">
-                        <PackagePlus className="h-8 w-8 text-primary" />
+             <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="item-1" className="border-none">
+                    <div className="rounded-lg bg-muted/30">
+                        <AccordionTrigger className="p-6 text-left hover:no-underline rounded-lg hover:bg-muted/50 transition-colors w-full">
+                            <div className="flex w-full items-center gap-4">
+                                <div className="bg-background p-3 rounded-full">
+                                    <PackagePlus className="h-8 w-8 text-primary" />
+                                </div>
+                                <div className="flex-1">
+                                    <h2 className="text-lg font-bold text-foreground">Can't Find It? Request It!</h2>
+                                    <p className="text-sm text-muted-foreground">
+                                        Click here and let us know what you need. We'll do our best to source it.
+                                    </p>
+                                </div>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="p-6 pt-2">
+                             {user ? (
+                                <div className="max-w-xl mx-auto border-t pt-6">
+                                    <RequestProductForm />
+                                </div>
+                            ) : (
+                                <div className="text-center border-t py-8">
+                                    <p className="mb-4 text-muted-foreground">You need to be logged in to request a product.</p>
+                                    <Button asChild>
+                                        <Link href="/login">Login to Make a Request</Link>
+                                    </Button>
+                                </div>
+                            )}
+                        </AccordionContent>
                     </div>
-                    <CardTitle className="text-2xl font-bold">Can't Find What You're Looking For?</CardTitle>
-                    <CardDescription className="max-w-2xl mx-auto">
-                        Let us know what product you need, and our procurement team will do their best to source it for you.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {user ? (
-                        <div className="max-w-xl mx-auto">
-                            <RequestProductForm />
-                        </div>
-                    ) : (
-                        <div className="text-center">
-                            <p className="mb-4 text-muted-foreground">You need to be logged in to request a product.</p>
-                            <Button asChild>
-                                <Link href="/login">Login to Make a Request</Link>
-                            </Button>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                </AccordionItem>
+            </Accordion>
         </div>
     );
 }
