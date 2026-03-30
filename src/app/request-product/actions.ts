@@ -8,19 +8,20 @@ import { sendSms } from '@/lib/sendSms';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
-const imageSchema = z
-  .any()
-  .refine((file) => file.size <= MAX_FILE_SIZE, `Max image size is 5MB.`)
-  .refine(
-    (file) => ACCEPTED_IMAGE_TYPES.includes(file.type),
-    'Only .jpg, .jpeg, .png and .webp formats are supported.'
-  );
-
 const RequestSchema = z.object({
   product_name: z.string().min(3, 'Please provide a product name.'),
   description: z.string().optional(),
-  image: imageSchema.optional(),
+  image: z
+    .instanceof(File)
+    .optional()
+    .refine((file) => !file || file.size <= MAX_FILE_SIZE, {
+      message: 'Max image size is 5MB.',
+    })
+    .refine((file) => !file || ACCEPTED_IMAGE_TYPES.includes(file.type), {
+      message: 'Only .jpg, .jpeg, .png and .webp formats are supported.',
+    }),
 });
+
 
 export async function createProductRequest(prevState: any, formData: FormData) {
   const supabase = createClient();
@@ -50,11 +51,10 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   let imageUrl: string | null = null;
 
   if (image) {
-    const uploadedFile = image as File;
-    const fileName = `${user.id}/${Date.now()}-${uploadedFile.name}`;
+    const fileName = `${user.id}/${Date.now()}-${image.name}`;
     const { error: uploadError } = await supabase.storage
       .from('requested_product_images')
-      .upload(fileName, uploadedFile);
+      .upload(fileName, image);
     
     if (uploadError) {
       return { error: `Storage Error: ${uploadError.message}`, success: false };
