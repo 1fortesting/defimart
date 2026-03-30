@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { sendSms } from '@/lib/sendSms';
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 export async function createProductRequest(prevState: any, formData: FormData) {
@@ -27,34 +27,43 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   let storageFilePath: string | null = null;
 
   if (imageFile && imageFile.size > 0) {
-    if (imageFile.size > MAX_FILE_SIZE) {
-      return { error: 'Image is too large. Max size is 5MB.', success: false };
-    }
-    if (!ACCEPTED_IMAGE_TYPES.includes(imageFile.type)) {
-      return { error: 'Invalid image format. Only JPG, PNG, and WEBP are accepted.', success: false };
-    }
+    try {
+      if (imageFile.size > MAX_FILE_SIZE) {
+        return { error: 'Image is too large. Max size is 5MB.', success: false };
+      }
 
-    storageFilePath = `${user.id}/${Date.now()}-${imageFile.name}`;
-    const { error: uploadError } = await supabase.storage
-      .from('requested_product_images')
-      .upload(storageFilePath, imageFile, {
-        contentType: imageFile.type,
-      });
+      if (!ACCEPTED_IMAGE_TYPES.includes(imageFile.type)) {
+        return { error: 'Invalid image format.', success: false };
+      }
 
-    if (uploadError) {
-      console.error('Storage Upload Error:', uploadError);
-      return { error: `Failed to upload image: ${uploadError.message}`, success: false };
+      const fileExt = imageFile.name.split('.').pop();
+      storageFilePath = `${user.id}/${Date.now()}-${Math.random()}.${fileExt}`;
+
+      const arrayBuffer = await imageFile.arrayBuffer();
+      const fileBuffer = new Uint8Array(arrayBuffer);
+
+      const { error: uploadError } = await supabase.storage
+        .from('requested_product_images')
+        .upload(storageFilePath, fileBuffer, {
+          contentType: imageFile.type,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('UPLOAD ERROR:', uploadError);
+        return { error: uploadError.message, success: false };
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('requested_product_images')
+        .getPublicUrl(storageFilePath);
+
+      imageUrl = urlData?.publicUrl || null;
+
+    } catch (err) {
+      console.error('UPLOAD FAILED:', err);
+      return { error: 'Image upload failed unexpectedly.', success: false };
     }
-
-    const { data: urlData } = supabase.storage
-      .from('requested_product_images')
-      .getPublicUrl(storageFilePath);
-
-    if (!urlData || !urlData.publicUrl) {
-      console.error('Failed to get public URL for uploaded image.');
-      return { error: 'Image uploaded but failed to retrieve URL.', success: false };
-    }
-    imageUrl = urlData.publicUrl;
   }
 
   const { error: insertError } = await supabase.from('product_requests').insert({
@@ -65,14 +74,15 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   });
 
   if (insertError) {
-    console.error('Database Insert Error:', insertError);
-    // If DB insert fails, try to remove the uploaded image
+    console.error('DB ERROR:', insertError);
+
     if (storageFilePath) {
       await supabase.storage.from('requested_product_images').remove([storageFilePath]);
     }
-    return { error: `Failed to save request: ${insertError.message}`, success: false };
-  }
 
+    return { error: insertError.message, success: false };
+  }
+  
   // --- SMS Notifications ---
   const sendNotifications = async () => {
       const { data: profile } = await supabase.from('profiles').select('display_name, phone_number').eq('id', user.id).single();
@@ -105,5 +115,6 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   // --- End SMS ---
 
   revalidatePath('/admin/procurement/requests');
-  return { success: true, message: 'Your request has been submitted successfully.' };
+
+  return { success: true, message: 'Request submitted successfully' };
 }
