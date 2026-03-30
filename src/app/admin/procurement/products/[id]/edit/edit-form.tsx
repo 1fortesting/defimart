@@ -16,6 +16,7 @@ import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 const categories = [
     "Electronics & Gadgets",
@@ -147,6 +148,18 @@ export function EditProductForm({ product }: { product: Tables<'products'>}) {
                 </Card>
             </div>
              <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Product Status</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex items-center space-x-2">
+                            <Switch id="is_featured" name="is_featured" defaultChecked={product.is_featured || false} />
+                            <Label htmlFor="is_featured">Featured Product</Label>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">Featured products appear in the main carousel on the homepage.</p>
+                    </CardContent>
+                </Card>
                 <Card>
                     <CardHeader>
                         <CardTitle>Category</CardTitle>

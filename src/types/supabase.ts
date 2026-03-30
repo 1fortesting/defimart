@@ -209,6 +209,7 @@ export type Database = {
           quantity: number | null
           seller_id: string
           tags: string[] | null
+          is_featured: boolean | null
         }
         Insert: {
           brand?: string | null
@@ -224,6 +225,7 @@ export type Database = {
           quantity?: number | null
           seller_id: string
           tags?: string[] | null
+          is_featured?: boolean | null
         }
         Update: {
           brand?: string | null
@@ -239,6 +241,7 @@ export type Database = {
           quantity?: number | null
           seller_id?: string
           tags?: string[] | null
+          is_featured?: boolean | null
         }
         Relationships: [
           {
@@ -494,5 +497,6 @@ export type Enums<
     
 
     
+
 
 

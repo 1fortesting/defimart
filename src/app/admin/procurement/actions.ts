@@ -14,6 +14,7 @@ const BaseProductSchema = z.object({
   brand: z.string().optional(),
   discount_percentage: z.coerce.number().min(0).max(100).nullable().optional(),
   discount_end_date: z.string().nullable().optional(),
+  is_featured: z.preprocess((val) => val === 'on', z.boolean()).optional(),
 });
 
 const CreateProductSchema = BaseProductSchema.extend({
@@ -87,7 +88,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     };
   }
   
-  const { name, description, price, quantity, category, brand, image, discount_percentage, discount_end_date } = validatedFields.data;
+  const { name, description, price, quantity, category, brand, image, discount_percentage, discount_end_date, is_featured } = validatedFields.data;
 
   const imageFile = image as File;
   const fileName = `${Date.now()}-${imageFile.name}`;
@@ -133,6 +134,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     discount_percentage: (discount_percentage && discount_end_date) ? discount_percentage : null,
     discount_end_date: (discount_percentage && discount_end_date) ? new Date(discount_end_date).toISOString() : null,
     tags: aiTags,
+    is_featured: is_featured || false,
   });
 
   if (error) {
@@ -172,7 +174,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
         };
     }
 
-    const { id, name, description, price, quantity, category, brand, image, discount_percentage, discount_end_date } = validatedFields.data;
+    const { id, name, description, price, quantity, category, brand, image, discount_percentage, discount_end_date, is_featured } = validatedFields.data;
 
     const { data: existingProduct, error: fetchError } = await supabase.from('products').select('image_urls').eq('id', id).single();
     if (fetchError || !existingProduct) {
@@ -230,6 +232,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
         image_urls: newImageUrls,
         discount_percentage: (discount_percentage && discount_end_date) ? discount_percentage : null,
         discount_end_date: (discount_percentage && discount_end_date) ? new Date(discount_end_date).toISOString() : null,
+        is_featured: is_featured || false,
         ...(aiTags && { tags: aiTags }),
     };
 

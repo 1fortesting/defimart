@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Tables } from '@/types/supabase';
 import { Badge } from '@/components/ui/badge';
-import { Heart, Flame, ShoppingCart } from 'lucide-react';
+import { Heart, Flame, ShoppingCart, Star as StarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { toggleSaveProduct } from '@/app/saved/actions';
@@ -205,7 +205,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                     data-ai-hint="product image"
                 />
             </Link>
-            {isDiscountActive && (
+            {isDiscountActive && !product.is_featured && (
                  <div className="absolute top-0 left-0 w-16 h-28 animate-swing origin-top z-10 -translate-x-2 -translate-y-2">
                     <svg
                         viewBox="0 0 64 120"
@@ -231,17 +231,23 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                     </div>
                 </div>
             )}
+             {product.is_featured && (
+                <Badge className="absolute top-2 left-2 z-10 bg-primary text-primary-foreground border-2 border-background shadow-lg">
+                    <StarIcon className="mr-1 h-3 w-3" />
+                    Featured
+                </Badge>
+            )}
             <div className="absolute top-0 right-0 z-10">
                 {getStockLabel("rounded-none rounded-bl-lg rounded-tr-md")}
             </div>
         </CardHeader>
         <CardContent className="p-3 flex flex-col justify-between flex-grow">
-            <div>
+            <div className="flex-grow">
                 <Link href={`/products/${product.id}`} className="hover:underline">
                     <h3 className="font-semibold truncate text-sm">{product.name}</h3>
                 </Link>
                 {product.review_count !== undefined && product.review_count > 0 ? (
-                    <div className="hidden md:flex items-center gap-1 mt-1">
+                    <div className="flex items-center gap-1 mt-1">
                         <StarRating rating={product.average_rating || 0} size={14} showText={false} />
                         <span className="text-xs text-muted-foreground">({product.review_count})</span>
                     </div>

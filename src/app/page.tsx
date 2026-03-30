@@ -40,9 +40,14 @@ export default async function Home() {
     return { ...p, average_rating, review_count };
   });
 
-  // Select 5 random products for the carousel
+  const featuredProducts = productsWithRatings.filter(p => p.is_featured);
   const shuffledProducts = [...productsWithRatings].sort(() => 0.5 - Math.random());
-  const carouselProducts = shuffledProducts.slice(0, 5);
+  
+  // Prioritize featured products for the carousel, but fall back to random if not enough.
+  const carouselProducts = featuredProducts.length >= 5 
+    ? featuredProducts.slice(0, 5) 
+    : shuffledProducts.slice(0, 5);
+
 
   return (
     <main className="flex-1">
