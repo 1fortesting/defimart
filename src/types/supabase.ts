@@ -250,6 +250,44 @@ export type Database = {
           },
         ]
       }
+      product_requests: {
+        Row: {
+          id: string
+          created_at: string
+          user_id: string
+          description: string
+          image_url: string | null
+          status: string
+          admin_notes: string | null
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          user_id: string
+          description: string
+          image_url?: string | null
+          status?: string
+          admin_notes?: string | null
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          user_id?: string
+          description?: string
+          image_url?: string | null
+          status?: string
+          admin_notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -456,4 +494,5 @@ export type Enums<
     
 
     
+
 

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { 
   Menu,
   User,
+  PackagePlus,
 } from 'lucide-react';
 import { HeaderNav } from './header-nav';
 import Image from 'next/image';
@@ -93,6 +94,11 @@ export async function Header() {
                    </SheetClose>
                    <SheetClose asChild>
                     <Link className="font-bold text-lg" href="/messages">Messages</Link>
+                   </SheetClose>
+                   <SheetClose asChild>
+                        <Link href="/request-product" className="font-bold text-lg flex items-center gap-2">
+                            <PackagePlus className="h-5 w-5" /> Request a Product
+                        </Link>
                    </SheetClose>
                    <SheetClose asChild>
                     <Link className="font-bold text-lg" href="/faq">FAQ</Link>

@@ -13,7 +13,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { logout } from '@/app/auth/actions';
 import type { User } from '@supabase/supabase-js';
-import { User as UserIcon, LogOut, MessageSquare, HelpCircle, Phone, FileText, Shield } from 'lucide-react';
+import { User as UserIcon, LogOut, MessageSquare, HelpCircle, Phone, FileText, Shield, PackagePlus } from 'lucide-react';
 
 export function UserMenu({ user }: { user: User | null }) {
   if (!user) {
@@ -66,6 +66,9 @@ export function UserMenu({ user }: { user: User | null }) {
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
             <Link href="/messages"><MessageSquare className="mr-2 h-4 w-4" />Messages</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+                <Link href="/request-product"><PackagePlus className="mr-2 h-4 w-4" />Request a Product</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
             <Link href="/faq"><HelpCircle className="mr-2 h-4 w-4" />FAQ</Link>

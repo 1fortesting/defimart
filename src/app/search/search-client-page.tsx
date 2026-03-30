@@ -40,6 +40,8 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSearchParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { RequestProductForm } from '@/components/request-product-form';
 
 interface SearchClientPageProps {
   initialQuery: string;
@@ -106,7 +108,7 @@ export default function SearchClientPage({
     // 3. Filter by price
     results = results.filter(p => {
         const discountedPrice = p.discount_percentage && p.discount_end_date && new Date(p.discount_end_date) > new Date()
-            ? p.price - (p.price * (p.discount_percentage / 100))
+            ? p.price - (p.price * (p.price * (p.discount_percentage / 100)))
             : p.price;
         return discountedPrice >= priceRange[0] && discountedPrice <= priceRange[1];
     });
@@ -348,10 +350,15 @@ export default function SearchClientPage({
             ))}
           </div>
           {filteredProducts.length === 0 && (
-            <div className="text-center text-muted-foreground py-16">
-              <h2 className="text-2xl font-bold">No products found</h2>
-              <p>Try adjusting your search or filters.</p>
-            </div>
+            <Card className="col-span-full">
+                <CardHeader>
+                    <CardTitle>No Products Found for "{query}"</CardTitle>
+                    <CardDescription>We couldn't find any items matching your search. Why not request it?</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <RequestProductForm />
+                </CardContent>
+            </Card>
           )}
         </main>
       </div>
