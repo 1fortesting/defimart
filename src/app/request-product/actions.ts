@@ -29,10 +29,11 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     return { error: 'You must be logged in to submit a request.', success: false };
   }
 
+  const imageFile = formData.get('image') as File | null;
   const validatedFields = RequestSchema.safeParse({
     product_name: formData.get('product_name'),
     description: formData.get('description'),
-    image: formData.get('image'),
+    image: imageFile && imageFile.size > 0 ? imageFile : undefined,
   });
 
   if (!validatedFields.success) {
@@ -47,11 +48,11 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   let imageUrl: string | null = null;
 
   if (image && image.size > 0) {
-    const imageFile = image as File;
-    const fileName = `${user.id}/${Date.now()}-${imageFile.name}`;
+    const uploadedFile = image as File;
+    const fileName = `${user.id}/${Date.now()}-${uploadedFile.name}`;
     const { error: uploadError } = await supabase.storage
       .from('requested_product_images')
-      .upload(fileName, imageFile);
+      .upload(fileName, uploadedFile);
     
     if (uploadError) {
       return { error: `Storage Error: ${uploadError.message}`, success: false };
