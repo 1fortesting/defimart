@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Image as ImageIcon, X } from 'lucide-react';
-import Image from 'next/image';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -29,7 +28,7 @@ function SubmitButton() {
 
 export function RequestProductForm() {
     const { toast } = useToast();
-    const initialState = { message: null, errors: {}, success: false };
+    const initialState = { message: null, error: null, errors: {}, success: false };
     const [state, dispatch] = useActionState(createProductRequest, initialState);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const formRef = useRef<HTMLFormElement>(null);
@@ -85,7 +84,7 @@ export function RequestProductForm() {
                 <Label htmlFor="image">Product Image (Optional)</Label>
                 {imagePreview ? (
                     <div className="relative w-32 h-32">
-                        <Image src={imagePreview} alt="Image Preview" layout="fill" className="rounded-md object-cover" />
+                        <img src={imagePreview} alt="Image Preview" className="rounded-md object-cover w-full h-full" />
                         <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full" onClick={handleRemoveImage}>
                             <X className="h-4 w-4" />
                         </Button>
