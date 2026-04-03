@@ -3,18 +3,18 @@ import { cookies } from 'next/headers';
 import type { Database } from '@/types/supabase';
 
 export function createClient() {
-  const cookieStore = cookies();
-
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: async (name: string) => {
+        get(name: string) {
+          const cookieStore = cookies();
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
           try {
+            const cookieStore = cookies();
             cookieStore.set({ name, value, ...options });
           } catch (error) {
             // The `set` method was called from a Server Component.
@@ -24,6 +24,7 @@ export function createClient() {
         },
         remove(name: string, options: CookieOptions) {
           try {
+            const cookieStore = cookies();
             cookieStore.set({ name, value: '', ...options });
           } catch (error) {
             // The `delete` method was called from a Server Component.
