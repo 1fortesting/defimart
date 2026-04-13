@@ -13,6 +13,7 @@ import type { Tables } from '@/types/supabase';
 import { updateFeatureStatus } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
 
 function FeatureSwitch({ productId, initialIsFeatured, initialIsOutstanding, onUpdate, isPending }: {
     productId: string;
