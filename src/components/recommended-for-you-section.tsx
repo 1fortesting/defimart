@@ -93,10 +93,10 @@ export async function RecommendedForYouSection({ user, allProductsWithRatings }:
 
     return (
         <div className="bg-card rounded-lg my-8">
-             <div className="p-4 flex justify-between items-center">
+             <div className="bg-accent text-accent-foreground p-3 flex justify-center items-center rounded-t-lg">
                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-6 w-6 text-primary" />
-                    <h2 className="text-xl font-bold">{title}</h2>
+                    <Sparkles className="h-6 w-6" />
+                    <h2 className="text-xl font-bold text-center">{title}</h2>
                 </div>
             </div>
             <div className="p-4 pt-0">
