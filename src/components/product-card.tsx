@@ -24,7 +24,6 @@ type ProductCardProps = {
 
 export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardProps) {
     const pathname = usePathname();
-    const [timeLeft, setTimeLeft] = useState<{ hours: string; minutes: string; seconds: string; } | null>(null);
     const [isPending, startTransition] = useTransition();
     const [isSavedState, setIsSavedState] = useState(isSaved);
     const { toast } = useToast();
@@ -40,14 +39,12 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         : product.price;
 
     const handleAddToCart = () => {
-        // 1. Show toast immediately
         toast({
             title: 'Added to Cart',
             description: `${product.name} has been added.`,
             variant: 'success',
         });
         
-        // 2. Update local storage
         try {
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
             const existingItemIndex = cart.findIndex((item: any) => item.product_id === product.id);
@@ -56,31 +53,20 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                 cart[existingItemIndex].quantity += 1;
             } else {
                  const cartItem = {
-                    id: `local-${product.id}-${Date.now()}`, // a temporary unique ID for the cart item
+                    id: `local-${product.id}-${Date.now()}`,
                     user_id: user?.id,
                     product_id: product.id,
                     quantity: 1,
                     created_at: new Date().toISOString(),
-                    products: { // embed product data for the cart page
-                        name: product.name,
-                        price: product.price,
-                        image_urls: product.image_urls,
-                        quantity: product.quantity,
-                        discount_percentage: product.discount_percentage,
-                        discount_end_date: product.discount_end_date
-                    }
+                    products: { ...product }
                 };
                 cart.push(cartItem);
             }
             localStorage.setItem('cart', JSON.stringify(cart));
-        } catch (e) {
-            console.error('Failed to update cart in local storage', e);
-        }
+        } catch (e) { console.error('Failed to update cart in local storage', e); }
 
-        // 3. Dispatch event to update header
         window.dispatchEvent(new Event('cart-updated'));
         
-        // 4. Silently sync with DB if user is logged in
         if (user) {
             startTransition(async () => {
                 const formData = new FormData();
@@ -95,9 +81,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         const newIsSaved = !isSavedState;
         setIsSavedState(newIsSaved);
         
-        if (onUnsave && !newIsSaved) {
-            onUnsave(product.id);
-        }
+        if (onUnsave && !newIsSaved) onUnsave(product.id);
 
         toast({
             title: newIsSaved ? 'Product Saved' : 'Product Unsaved',
@@ -108,20 +92,12 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         try {
             let saved = JSON.parse(localStorage.getItem('saved') || '[]');
             if (newIsSaved) {
-                if (!saved.some((item: any) => item.product_id === product.id)) {
-                    saved.push({ 
-                        id: `local-${product.id}-${Date.now()}`,
-                        product_id: product.id, 
-                        products: product 
-                    });
-                }
+                if (!saved.some((item: any) => item.product_id === product.id)) saved.push({ id: `local-${product.id}`, product_id: product.id, products: product });
             } else {
                 saved = saved.filter((item: any) => item.product_id !== product.id);
             }
             localStorage.setItem('saved', JSON.stringify(saved));
-        } catch(e) {
-            console.error('Failed to update saved items in local storage', e);
-        }
+        } catch(e) { console.error('Failed to update saved items in local storage', e); }
 
         window.dispatchEvent(new Event('saved-updated'));
             
@@ -135,182 +111,61 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         }
     };
 
-
-    useEffect(() => {
-        if (!isDiscountActive || !product.discount_end_date) {
-            setTimeLeft(null);
-            return;
-        }
-
-        const endDate = new Date(product.discount_end_date);
-
-        const calculateTimeLeft = () => {
-            const now = new Date();
-            const difference = endDate.getTime() - now.getTime();
-
-            if (difference <= 0) {
-                return null;
-            }
-
-            if (difference <= 12 * 60 * 60 * 1000) {
-                const hours = Math.floor(difference / (1000 * 60 * 60));
-                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-                return {
-                    hours: String(hours).padStart(2, '0'),
-                    minutes: String(minutes).padStart(2, '0'),
-                    seconds: String(seconds).padStart(2, '0'),
-                };
-            }
-            return null;
-        };
-        
-        setTimeLeft(calculateTimeLeft());
-
-        const timerId = setInterval(() => {
-            const newTimeLeft = calculateTimeLeft();
-            setTimeLeft(newTimeLeft);
-            if (newTimeLeft === null) {
-                clearInterval(timerId);
-            }
-        }, 1000);
-
-        return () => clearInterval(timerId);
-    }, [isDiscountActive, product.discount_end_date]);
-
-
-    const getStockLabel = (className?: string) => {
-        if (product.quantity === null || product.quantity === undefined) return null;
-        if (product.quantity > 5) {
-            return <Badge className={cn("border-transparent bg-green-600 text-white hover:bg-green-700", className)}>In Stock</Badge>;
-        }
-        if (product.quantity > 0 && product.quantity <= 5) {
-            return <Badge className={cn("border-transparent bg-red-600 text-white hover:bg-red-700", className)}>Few left</Badge>;
-        }
-        if (product.quantity === 0) {
-            return <Badge variant="destructive" className={cn(className)}>Out of Stock</Badge>;
-        }
-        return null;
-    };
+    const colorVariant = parseInt(product.id.replace(/[^0-9]/g, '').slice(-2) || '0', 10) % 3;
+    const glowColors = [
+        'from-primary/20 via-accent/20 to-transparent', // Defimart Theme
+        'from-blue-500/20 via-purple-500/20 to-transparent', // Cool Tone
+        'from-orange-500/20 via-red-500/20 to-transparent' // Warm Tone
+    ];
     
     return (
-    <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-primary/50 hover:-translate-y-1 flex flex-col">
-        <CardHeader className="p-0 relative">
-            <Link href={`/products/${product.id}`}>
+    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-slate-900 border-slate-800 hover:border-primary/50 text-white flex flex-col shadow-lg hover:shadow-primary/20">
+        {/* Image Section */}
+        <div className="relative overflow-hidden bg-slate-800">
+            <div className={cn("absolute inset-0 bg-gradient-to-t blur-2xl", glowColors[colorVariant])} />
+            <div className="absolute top-2 right-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-full z-10">GHS {discountedPrice.toLocaleString()}</div>
+            <div className="absolute -bottom-4 -left-4 w-12 h-12 border-2 border-white/10 rounded-full" />
+            <div className="absolute -top-2 -right-6 w-16 h-16 border-2 border-white/10 rounded-full rotate-45" />
+
+            <Link href={`/products/${product.id}`} className="block p-4">
                 <Image
                     src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/600/400'}
                     alt={product.name}
-                    width={600}
+                    width={400}
                     height={400}
-                    className="object-cover w-full aspect-square group-hover:scale-105 transition-transform duration-300"
+                    className="object-contain w-full aspect-square group-hover:scale-105 transition-transform duration-300"
                     data-ai-hint="product image"
                 />
             </Link>
-            {isDiscountActive && !product.is_featured && (
-                 <div className="absolute top-0 left-0 w-16 h-28 animate-swing origin-top z-10 -translate-x-2 -translate-y-2">
-                    <svg
-                        viewBox="0 0 64 120"
-                        className="w-full h-full"
-                        style={{ filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.2))' }}
-                    >
-                        <path
-                            d="M 14 55 L 50 55 L 62 70 L 62 115 L 2 115 L 2 70 Z"
-                            fill="#991B1B" // darker red
-                        />
-                        <path d="M 32 0 L 32 58" stroke="#888" strokeWidth="1.5" />
-                        <path
-                            d="M 12 50 L 48 50 L 59 65 L 59 110 L 0 110 L 0 65 Z"
-                            fill="#EF4444" // red-500
-                        />
-                        <circle cx="32" cy="58" r="3.5" fill="white" />
-                    </svg>
-                     <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold pt-16">
-                        <span className="text-sm leading-none">
-                            -{product.discount_percentage}%
-                        </span>
-                        <span className="text-[10px] leading-tight">OFF</span>
-                    </div>
-                </div>
-            )}
-             {product.is_featured && (
-                <Badge className="absolute top-2 left-2 z-10 bg-primary text-primary-foreground border-2 border-background shadow-lg">
-                    <StarIcon className="mr-1 h-3 w-3" />
-                    Featured
-                </Badge>
-            )}
-            <div className="absolute top-0 right-0 z-10">
-                {getStockLabel("rounded-none rounded-bl-lg rounded-tr-md")}
-            </div>
-        </CardHeader>
-        <CardContent className="relative p-3 flex flex-col justify-between flex-grow overflow-hidden">
-            <div className="absolute -bottom-10 -right-10 w-28 h-28 bg-primary/10 rounded-full blur-2xl" />
-            <div className="absolute -top-12 -left-12 w-32 h-32 bg-accent/10 rounded-full blur-2xl" />
-            <div className="relative z-10 flex flex-col justify-between flex-grow h-full">
-                <div className="flex-grow">
-                    <Link href={`/products/${product.id}`} className="hover:underline">
-                        <h3 className="font-semibold text-sm leading-snug">{product.name}</h3>
-                    </Link>
-                    {product.review_count !== undefined && product.review_count > 0 ? (
-                        <div className="flex items-center gap-1 mt-1">
-                            <StarRating rating={product.average_rating || 0} size={14} showText={false} />
-                            <span className="text-xs text-muted-foreground">({product.review_count})</span>
-                        </div>
-                    ) : (
-                        <p className="text-sm text-muted-foreground">{product.category}</p>
-                    )}
-
-                    <div className="mt-2 min-h-[20px] flex items-center justify-between">
-                    {isDiscountActive && (
-                        <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
-                            <Flame className="mr-1 h-3 w-3" />
-                            Limited time
-                        </Badge>
-                    )}
-                    {timeLeft && (
-                        <div className="text-xs font-mono text-red-500">
-                            {timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
-                        </div>
-                    )}
-                    </div>
-                </div>
-
-                <div className="flex flex-col items-start gap-2 mt-2 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="grid">
-                        <span className="text-base font-bold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        {isDiscountActive && (
-                            <span className="text-sm text-muted-foreground line-through">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        )}
-                    </div>
-                    <div className="flex items-center self-end gap-1 sm:self-auto">
-                        {user ? (
-                            <>
-                                <Button onClick={handleToggleSave} disabled={isPending} size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
-                                    <Heart className={cn("h-5 w-5", isSavedState && "fill-red-500 text-red-500")} />
-                                </Button>
-                                {product.quantity === 0 ? (
-                                    <Button size="icon" className="h-9 w-9" disabled>
-                                        <ShoppingCart className="h-5 w-5" />
-                                    </Button>
-                                ) : (
-                                    <Button onClick={handleAddToCart} disabled={isPending} size="icon" className="h-9 w-9" aria-label="Add to cart">
-                                        <ShoppingCart className="h-5 w-5" />
-                                    </Button>
-                                )}
-                            </>
-                        ) : (
-                        <>
-                                <Button asChild size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
-                                    <Link href="/login"><Heart className="h-5 w-5" /></Link>
-                                </Button>
-                                <Button asChild size="icon" className="h-9 w-9" aria-label="Add to cart">
-                                    <Link href="/login"><ShoppingCart className="h-5 w-5" /></Link>
-                                </Button>
-                            </>
-                        )}
-                    </div>
+        </div>
+        
+        {/* Content Section */}
+        <div className="p-4 bg-slate-900/80 backdrop-blur-sm flex flex-col justify-between flex-grow">
+            <div>
+                <h3 className="font-bold text-base leading-tight truncate text-white">{product.name}</h3>
+                 <p className="text-xs text-slate-400 mt-1 h-8 overflow-hidden">
+                    {product.description ? `${product.description.substring(0, 50)}...` : (product.category || '')}
+                </p>
+                <div className="flex items-center gap-2 mt-2">
+                    <StarRating rating={product.average_rating || 0} size={16} showText={false} />
+                    {product.review_count !== undefined && product.review_count > 0 && <span className="text-xs text-slate-400">({product.review_count})</span>}
                 </div>
             </div>
-        </CardContent>
+            
+            <div className="flex items-center justify-between mt-4">
+                 <Button 
+                    onClick={handleAddToCart}
+                    disabled={isPending || product.quantity === 0} 
+                    className="bg-primary/90 hover:bg-primary text-primary-foreground font-bold text-xs rounded-full h-8 px-4 w-full"
+                >
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                </Button>
+                 <Button onClick={handleToggleSave} disabled={isPending} size="icon" variant="ghost" className="h-8 w-8 rounded-full text-slate-400 hover:text-white" aria-label="Save for later">
+                    <Heart className={cn("h-5 w-5", isSavedState && "fill-red-500 text-red-500")} />
+                </Button>
+            </div>
+        </div>
     </Card>
     )
 }

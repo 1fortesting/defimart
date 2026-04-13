@@ -19,7 +19,7 @@ export function HorizontalProductCard({ product }: HorizontalProductCardProps) {
 
     return (
         <Link href={`/products/${product.id}`} className="block w-32 md:w-40 flex-shrink-0">
-            <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-md h-full flex flex-col">
+            <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-slate-900 border-slate-800 hover:border-primary/50 text-white h-full flex flex-col shadow-lg hover:shadow-primary/20">
                 <div className="relative">
                     <Image
                         src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'}

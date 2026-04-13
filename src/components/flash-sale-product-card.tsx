@@ -78,7 +78,7 @@ export function FlashSaleProductCard({ product }: FlashSaleProductCardProps) {
 
     return (
     <Link href={`/products/${product.id}`} className="block w-40 md:w-48 flex-shrink-0">
-        <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-lg hover:border-primary/30 h-full flex flex-col">
+        <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-slate-900 border-slate-800 hover:border-primary/50 text-white h-full flex flex-col shadow-lg hover:shadow-primary/20">
             <div className="relative">
                 <Image
                     src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'}
@@ -104,12 +104,12 @@ export function FlashSaleProductCard({ product }: FlashSaleProductCardProps) {
                 <div className="mt-2">
                     {product.quantity !== null && product.quantity > 0 && (
                         <div>
-                             <p className="text-xs text-muted-foreground">{product.quantity.toLocaleString('en-US')} items left</p>
-                             <Progress value={getProgressValue(product.quantity)} className="h-1 mt-1 bg-orange-200 [&>div]:bg-orange-500"/>
+                             <p className="text-xs text-slate-400">{product.quantity.toLocaleString('en-US')} items left</p>
+                             <Progress value={getProgressValue(product.quantity)} className="h-1 mt-1 bg-orange-200/20 [&>div]:bg-orange-500"/>
                         </div>
                     )}
                     {timeLeft && (
-                         <div className="text-xs font-mono text-red-600 mt-2">
+                         <div className="text-xs font-mono text-red-500 mt-2">
                             {timeLeft.days !== '0' && `${timeLeft.days}d `}{timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
                         </div>
                     )}
