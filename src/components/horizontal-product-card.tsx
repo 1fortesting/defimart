@@ -19,7 +19,7 @@ export function HorizontalProductCard({ product }: HorizontalProductCardProps) {
 
     return (
         <Link href={`/products/${product.id}`} className="block w-32 md:w-40 flex-shrink-0">
-            <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-slate-900 border-slate-800 hover:border-primary/50 text-white h-full flex flex-col shadow-lg hover:shadow-primary/20">
+            <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-muted hover:bg-muted/80 border text-card-foreground h-full flex flex-col shadow-md hover:shadow-lg">
                 <div className="relative">
                     <Image
                         src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'}
@@ -34,9 +34,9 @@ export function HorizontalProductCard({ product }: HorizontalProductCardProps) {
                 </div>
                 <CardContent className="p-2 flex-grow flex flex-col justify-between">
                     <div>
-                        <h3 className="font-medium truncate text-sm leading-tight">{product.name}</h3>
+                        <h3 className="font-medium truncate text-sm leading-tight text-foreground">{product.name}</h3>
                         <div className="mt-1">
-                            <span className="text-base font-bold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span className="text-base font-bold text-foreground">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             {isDiscountActive && (
                                 <span className="text-xs text-muted-foreground line-through ml-1">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             )}

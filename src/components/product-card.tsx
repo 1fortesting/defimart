@@ -1,12 +1,11 @@
 'use client';
 
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Tables } from '@/types/supabase';
-import { Badge } from '@/components/ui/badge';
-import { Heart, Flame, ShoppingCart, Star as StarIcon } from 'lucide-react';
+import { Heart, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { toggleSaveProduct } from '@/app/saved/actions';
@@ -110,59 +109,59 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
             });
         }
     };
-
-    const colorVariant = parseInt(product.id.replace(/[^0-9]/g, '').slice(-2) || '0', 10) % 3;
-    const glowColors = [
-        'from-primary/20 via-accent/20 to-transparent', // Defimart Theme
-        'from-blue-500/20 via-purple-500/20 to-transparent', // Cool Tone
-        'from-orange-500/20 via-red-500/20 to-transparent' // Warm Tone
-    ];
     
     return (
-    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-slate-900 border-slate-800 hover:border-primary/50 text-white flex flex-col shadow-lg hover:shadow-primary/20">
-        {/* Image Section */}
-        <div className="relative overflow-hidden bg-slate-800">
-            <div className={cn("absolute inset-0 bg-gradient-to-t blur-2xl", glowColors[colorVariant])} />
-            <div className="absolute top-2 right-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-full z-10">GHS {discountedPrice.toLocaleString()}</div>
-            <div className="absolute -bottom-4 -left-4 w-12 h-12 border-2 border-white/10 rounded-full" />
-            <div className="absolute -top-2 -right-6 w-16 h-16 border-2 border-white/10 rounded-full rotate-45" />
-
-            <Link href={`/products/${product.id}`} className="block p-4">
-                <Image
-                    src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/600/400'}
-                    alt={product.name}
-                    width={400}
-                    height={400}
-                    className="object-contain w-full aspect-square group-hover:scale-105 transition-transform duration-300"
-                    data-ai-hint="product image"
-                />
-            </Link>
-        </div>
+    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-white/60 dark:bg-slate-800/20 backdrop-blur-lg border border-white/30 dark:border-slate-700/20 shadow-lg hover:shadow-primary/10 flex flex-col">
+        {/* Decorative elements */}
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl transition-all duration-500 group-hover:scale-150" />
+        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-accent/10 rounded-full blur-2xl transition-all duration-500 group-hover:scale-150" />
         
-        {/* Content Section */}
-        <div className="p-4 bg-slate-900/80 backdrop-blur-sm flex flex-col justify-between flex-grow">
-            <div>
-                <h3 className="font-bold text-base leading-tight truncate text-white">{product.name}</h3>
-                 <p className="text-xs text-slate-400 mt-1 h-8 overflow-hidden">
-                    {product.description ? `${product.description.substring(0, 50)}...` : (product.category || '')}
-                </p>
-                <div className="flex items-center gap-2 mt-2">
-                    <StarRating rating={product.average_rating || 0} size={16} showText={false} />
-                    {product.review_count !== undefined && product.review_count > 0 && <span className="text-xs text-slate-400">({product.review_count})</span>}
-                </div>
+        <div className="relative z-10 flex flex-col h-full">
+            {/* Image Section */}
+            <div className="p-4">
+                <Link href={`/products/${product.id}`} className="block">
+                    <Image
+                        src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/600/400'}
+                        alt={product.name}
+                        width={400}
+                        height={400}
+                        className="object-contain w-full aspect-square group-hover:scale-105 transition-transform duration-300"
+                        data-ai-hint="product image"
+                    />
+                </Link>
             </div>
             
-            <div className="flex items-center justify-between mt-4">
-                 <Button 
+            {/* Content Section */}
+            <div className="p-4 pt-0 flex flex-col justify-between flex-grow">
+                <div>
+                    <h3 className="font-bold text-base leading-tight truncate text-foreground">{product.name}</h3>
+                     <div className="text-xs text-muted-foreground mt-1 h-8 overflow-hidden">
+                        {product.description ? `${product.description.substring(0, 50)}...` : (product.category || '')}
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                        <StarRating rating={product.average_rating || 0} size={16} showText={false} />
+                        {product.review_count !== undefined && product.review_count > 0 && <span className="text-xs text-muted-foreground">({product.review_count})</span>}
+                    </div>
+                </div>
+                
+                <div className="flex items-center justify-between mt-4">
+                     <div className="text-left">
+                        {isDiscountActive && (
+                            <p className="text-xs text-muted-foreground line-through">GHS {product.price.toLocaleString()}</p>
+                        )}
+                        <p className="font-bold text-lg text-foreground">GHS {discountedPrice.toLocaleString()}</p>
+                    </div>
+                     <Button onClick={handleToggleSave} disabled={isPending} size="icon" variant="ghost" className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary" aria-label="Save for later">
+                        <Heart className={cn("h-5 w-5", isSavedState && "fill-red-500 text-red-500")} />
+                    </Button>
+                </div>
+                <Button 
                     onClick={handleAddToCart}
                     disabled={isPending || product.quantity === 0} 
-                    className="bg-primary/90 hover:bg-primary text-primary-foreground font-bold text-xs rounded-full h-8 px-4 w-full"
+                    className="w-full mt-2"
                 >
                     <ShoppingCart className="mr-2 h-4 w-4" />
                     {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
-                </Button>
-                 <Button onClick={handleToggleSave} disabled={isPending} size="icon" variant="ghost" className="h-8 w-8 rounded-full text-slate-400 hover:text-white" aria-label="Save for later">
-                    <Heart className={cn("h-5 w-5", isSavedState && "fill-red-500 text-red-500")} />
                 </Button>
             </div>
         </div>

@@ -78,7 +78,7 @@ export function FlashSaleProductCard({ product }: FlashSaleProductCardProps) {
 
     return (
     <Link href={`/products/${product.id}`} className="block w-40 md:w-48 flex-shrink-0">
-        <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-slate-900 border-slate-800 hover:border-primary/50 text-white h-full flex flex-col shadow-lg hover:shadow-primary/20">
+        <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-card border hover:border-primary/50 text-card-foreground h-full flex flex-col shadow-lg hover:shadow-primary/20">
             <div className="relative">
                 <Image
                     src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'}
@@ -93,7 +93,7 @@ export function FlashSaleProductCard({ product }: FlashSaleProductCardProps) {
             </div>
             <CardContent className="p-2 flex-grow flex flex-col justify-between">
                 <div>
-                    <h3 className="font-medium truncate text-sm leading-tight">{product.name}</h3>
+                    <h3 className="font-medium truncate text-sm leading-tight text-foreground">{product.name}</h3>
                     <div className="mt-1">
                         <span className="text-base font-bold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         {isDiscountActive && (
@@ -104,7 +104,7 @@ export function FlashSaleProductCard({ product }: FlashSaleProductCardProps) {
                 <div className="mt-2">
                     {product.quantity !== null && product.quantity > 0 && (
                         <div>
-                             <p className="text-xs text-slate-400">{product.quantity.toLocaleString('en-US')} items left</p>
+                             <p className="text-xs text-muted-foreground">{product.quantity.toLocaleString('en-US')} items left</p>
                              <Progress value={getProgressValue(product.quantity)} className="h-1 mt-1 bg-orange-200/20 [&>div]:bg-orange-500"/>
                         </div>
                     )}
