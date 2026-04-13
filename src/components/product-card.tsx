@@ -242,68 +242,72 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                 {getStockLabel("rounded-none rounded-bl-lg rounded-tr-md")}
             </div>
         </CardHeader>
-        <CardContent className="p-3 flex flex-col justify-between flex-grow">
-            <div className="flex-grow">
-                <Link href={`/products/${product.id}`} className="hover:underline">
-                    <h3 className="font-semibold text-sm leading-snug">{product.name}</h3>
-                </Link>
-                {product.review_count !== undefined && product.review_count > 0 ? (
-                    <div className="flex items-center gap-1 mt-1">
-                        <StarRating rating={product.average_rating || 0} size={14} showText={false} />
-                        <span className="text-xs text-muted-foreground">({product.review_count})</span>
-                    </div>
-                ) : (
-                    <p className="text-sm text-muted-foreground">{product.category}</p>
-                )}
-
-                <div className="mt-2 min-h-[20px] flex items-center justify-between">
-                {isDiscountActive && (
-                    <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
-                        <Flame className="mr-1 h-3 w-3" />
-                        Limited time
-                    </Badge>
-                )}
-                {timeLeft && (
-                    <div className="text-xs font-mono text-red-500">
-                        {timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
-                    </div>
-                )}
-                </div>
-            </div>
-
-            <div className="flex flex-col items-start gap-2 mt-2 sm:flex-row sm:items-end sm:justify-between">
-                <div className="grid">
-                     <span className="text-base font-bold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                     {isDiscountActive && (
-                        <span className="text-sm text-muted-foreground line-through">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                     )}
-                </div>
-                <div className="flex items-center self-end gap-1 sm:self-auto">
-                    {user ? (
-                        <>
-                            <Button onClick={handleToggleSave} disabled={isPending} size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
-                                <Heart className={cn("h-5 w-5", isSavedState && "fill-red-500 text-red-500")} />
-                            </Button>
-                            {product.quantity === 0 ? (
-                                <Button size="icon" className="h-9 w-9" disabled>
-                                    <ShoppingCart className="h-5 w-5" />
-                                </Button>
-                            ) : (
-                                <Button onClick={handleAddToCart} disabled={isPending} size="icon" className="h-9 w-9" aria-label="Add to cart">
-                                    <ShoppingCart className="h-5 w-5" />
-                                </Button>
-                            )}
-                        </>
+        <CardContent className="relative p-3 flex flex-col justify-between flex-grow overflow-hidden">
+            <div className="absolute -bottom-10 -right-10 w-28 h-28 bg-primary/5 rounded-full" />
+            <div className="absolute -top-12 -left-12 w-32 h-32 bg-accent/5 rounded-full" />
+            <div className="relative z-10 flex flex-col justify-between flex-grow h-full">
+                <div className="flex-grow">
+                    <Link href={`/products/${product.id}`} className="hover:underline">
+                        <h3 className="font-semibold text-sm leading-snug">{product.name}</h3>
+                    </Link>
+                    {product.review_count !== undefined && product.review_count > 0 ? (
+                        <div className="flex items-center gap-1 mt-1">
+                            <StarRating rating={product.average_rating || 0} size={14} showText={false} />
+                            <span className="text-xs text-muted-foreground">({product.review_count})</span>
+                        </div>
                     ) : (
-                       <>
-                            <Button asChild size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
-                                <Link href="/login"><Heart className="h-5 w-5" /></Link>
-                            </Button>
-                            <Button asChild size="icon" className="h-9 w-9" aria-label="Add to cart">
-                                <Link href="/login"><ShoppingCart className="h-5 w-5" /></Link>
-                            </Button>
-                        </>
+                        <p className="text-sm text-muted-foreground">{product.category}</p>
                     )}
+
+                    <div className="mt-2 min-h-[20px] flex items-center justify-between">
+                    {isDiscountActive && (
+                        <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
+                            <Flame className="mr-1 h-3 w-3" />
+                            Limited time
+                        </Badge>
+                    )}
+                    {timeLeft && (
+                        <div className="text-xs font-mono text-red-500">
+                            {timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
+                        </div>
+                    )}
+                    </div>
+                </div>
+
+                <div className="flex flex-col items-start gap-2 mt-2 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="grid">
+                        <span className="text-base font-bold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        {isDiscountActive && (
+                            <span className="text-sm text-muted-foreground line-through">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        )}
+                    </div>
+                    <div className="flex items-center self-end gap-1 sm:self-auto">
+                        {user ? (
+                            <>
+                                <Button onClick={handleToggleSave} disabled={isPending} size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
+                                    <Heart className={cn("h-5 w-5", isSavedState && "fill-red-500 text-red-500")} />
+                                </Button>
+                                {product.quantity === 0 ? (
+                                    <Button size="icon" className="h-9 w-9" disabled>
+                                        <ShoppingCart className="h-5 w-5" />
+                                    </Button>
+                                ) : (
+                                    <Button onClick={handleAddToCart} disabled={isPending} size="icon" className="h-9 w-9" aria-label="Add to cart">
+                                        <ShoppingCart className="h-5 w-5" />
+                                    </Button>
+                                )}
+                            </>
+                        ) : (
+                        <>
+                                <Button asChild size="icon" variant="ghost" className="h-9 w-9 rounded-full" aria-label="Save for later">
+                                    <Link href="/login"><Heart className="h-5 w-5" /></Link>
+                                </Button>
+                                <Button asChild size="icon" className="h-9 w-9" aria-label="Add to cart">
+                                    <Link href="/login"><ShoppingCart className="h-5 w-5" /></Link>
+                                </Button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
         </CardContent>
