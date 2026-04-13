@@ -4,9 +4,10 @@ import { ProductCarousel } from '@/components/product-carousel';
 import { SearchBar } from '@/components/search-bar';
 import { CategorySidebar } from '@/components/category-sidebar';
 import { FlashSaleSection } from '@/components/flash-sale-section';
-import { HomeProductGrid } from './home-product-grid';
 import { RecommendedForYouSection } from '@/components/recommended-for-you-section';
 import { RequestProductSection } from '@/components/request-product-section';
+import { CategoryProductRow } from '@/components/category-product-row';
+import type { Tables } from '@/types/supabase';
 
 export default async function Home() {
   const supabase = createClient();
@@ -48,6 +49,18 @@ export default async function Home() {
     ? featuredProducts.slice(0, 5) 
     : shuffledProducts.slice(0, 5);
 
+  const productsByCategory: { [key: string]: Tables<'products'>[] } = allProducts.reduce((acc, product) => {
+    const category = product.category || 'Other';
+    if (!acc[category]) {
+        acc[category] = [];
+    }
+    acc[category].push(product);
+    return acc;
+  }, {} as { [key: string]: Tables<'products'>[] });
+
+  const categoriesToShow = Object.keys(productsByCategory)
+    .sort((a, b) => productsByCategory[b].length - productsByCategory[a].length) // Sort by most products
+    .slice(0, 5); // Take top 5 categories
 
   return (
     <main className="flex-1">
@@ -66,22 +79,23 @@ export default async function Home() {
             {/* Mobile Hero Section */}
             <div className="lg:hidden">
                 {carouselProducts.length > 0 && <ProductCarousel products={carouselProducts} />}
-                <Filters />
             </div>
 
             <FlashSaleSection />
+            
+            {/* New Category Rows */}
+            {categoriesToShow.map(category => (
+                <CategoryProductRow
+                    key={category}
+                    title={category}
+                    category={category}
+                    products={productsByCategory[category].slice(0, 10)}
+                />
+            ))}
 
             <RequestProductSection />
             
             <RecommendedForYouSection user={user} allProductsWithRatings={productsWithRatings} />
-
-            <div className="mt-12 lg:mt-0">
-              <HomeProductGrid 
-                products={productsWithRatings}
-                user={user}
-                savedProductIds={savedProductIds}
-              />
-            </div>
         </div>
       </main>
   );
