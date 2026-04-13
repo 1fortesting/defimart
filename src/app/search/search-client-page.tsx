@@ -349,17 +349,25 @@ export default function SearchClientPage({
               />
             ))}
           </div>
+
           {filteredProducts.length === 0 && (
-            <Card className="col-span-full">
+            <div className="col-span-full text-center py-16">
+              <p className="text-lg font-semibold">No products found for "{query}"</p>
+              <p className="text-muted-foreground mt-1">Try a different search term or check your spelling.</p>
+            </div>
+          )}
+
+          <div className="col-span-full mt-12">
+             <Card>
                 <CardHeader>
-                    <CardTitle>No Products Found for "{query}"</CardTitle>
-                    <CardDescription>We couldn't find any items matching your search. Why not request it?</CardDescription>
+                    <CardTitle>Can't find what you're looking for?</CardTitle>
+                    <CardDescription>Let us know, and we'll do our best to source it for you.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <RequestProductForm />
                 </CardContent>
             </Card>
-          )}
+          </div>
         </main>
       </div>
 
