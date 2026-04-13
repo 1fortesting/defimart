@@ -34,7 +34,7 @@ export default async function AdminSalesOrdersPage() {
 
     const allOrders = orders || [];
     
-    const todaysOrders = allOrders.filter(order => new Date(order.created_at) >= startOfToday());
+    const todaysOrders = allOrders.filter(order => new Date(order.created_at) >= startOfToday() && order.status === 'completed');
     
     const todaysRevenue = todaysOrders.reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0);
     const todaysCost = todaysOrders.reduce((sum, order) => sum + ((order.cost_price_per_item ?? 0) * order.quantity), 0);

@@ -41,6 +41,7 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
     let ordersQuery = supabaseAdmin
         .from('orders')
         .select('created_at, price_per_item, cost_price_per_item, quantity, product_id')
+        .eq('status', 'completed')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
 
@@ -101,7 +102,8 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
 
     const { data: allOrders, error: allOrdersError } = await supabaseAdmin
         .from('orders')
-        .select('price_per_item, cost_price_per_item, quantity');
+        .select('price_per_item, cost_price_per_item, quantity')
+        .eq('status', 'completed');
 
     if (allOrdersError) console.error("Error fetching all orders for total profit:", allOrdersError.message);
 

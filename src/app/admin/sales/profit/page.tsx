@@ -41,6 +41,7 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
     let ordersQuery = supabaseAdmin
         .from('orders')
         .select('created_at, price_per_item, cost_price_per_item, quantity, product_id')
+        .eq('status', 'completed')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
 
