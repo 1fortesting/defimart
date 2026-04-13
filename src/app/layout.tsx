@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { StorefrontShell } from '@/components/storefront-shell';
 import { GlobalToaster } from '@/components/global-toaster';
 import { Suspense } from 'react';
+import { TawkToManager } from '@/components/tawk-to-manager';
 
 export const metadata: Metadata = {
   title: 'DEFIMART',
@@ -45,12 +46,7 @@ export default function RootLayout({
             <GlobalToaster />
           </Suspense>
         </ThemeProvider>
-        <script
-          type="text/javascript"
-          dangerouslySetInnerHTML={{
-            __html: `var Tawk_API=Tawk_API||{}; if(window.innerWidth < 768){Tawk_API.customStyle={visibility:{mobile:{position:'br',yOffset:90}}}};var Tawk_LoadStart=new Date();(function(){var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];s1.async=true;s1.src='https://embed.tawk.to/69bf2d332273861c39a78f91/1jk9ch58q';s1.charset='UTF-8';s1.setAttribute('crossorigin','*');s0.parentNode.insertBefore(s1,s0);})();`,
-          }}
-        />
+        <TawkToManager />
       </body>
     </html>
   );
