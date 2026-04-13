@@ -77,44 +77,50 @@ export function FlashSaleProductCard({ product }: FlashSaleProductCardProps) {
     }, [isDiscountActive, product.discount_end_date]);
 
     return (
-    <Link href={`/products/${product.id}`} className="block w-36 md:w-44 flex-shrink-0">
-        <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-card border hover:border-primary/50 text-card-foreground flex flex-col shadow-lg hover:shadow-primary/20">
-            <div className="relative">
-                <Image
-                    src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'}
-                    alt={product.name}
-                    width={200}
-                    height={200}
-                    className="object-cover w-full aspect-square group-hover:scale-105 transition-transform duration-300"
-                />
-                {isDiscountActive && (
-                    <Badge variant="destructive" className="absolute top-2 left-2">-{product.discount_percentage}%</Badge>
-                )}
-            </div>
-            <CardContent className="p-2 flex-grow flex flex-col justify-between">
-                <div>
-                    <h3 className="font-medium truncate text-sm leading-tight text-foreground">{product.name}</h3>
-                    <div className="mt-1">
-                        <span className="text-base font-bold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                        {isDiscountActive && (
-                            <span className="text-xs text-muted-foreground line-through ml-2">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+    <Link href={`/products/${product.id}`} className="block w-40 md:w-48 flex-shrink-0">
+        <Card className="relative overflow-hidden group transition-all duration-300 ease-in-out bg-white/60 dark:bg-slate-900/50 backdrop-blur-lg border border-white/20 dark:border-slate-800/50 shadow-lg hover:shadow-primary/20 flex flex-col h-full">
+            {/* Decorative elements */}
+            <div className="absolute -top-12 -left-12 w-32 h-32 bg-red-500/20 rounded-full blur-2xl transition-all duration-700 opacity-70 group-hover:opacity-100 group-hover:w-40 group-hover:h-40" />
+            <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-primary/20 rounded-full blur-2xl transition-all duration-700 opacity-70 group-hover:opacity-100 group-hover:w-40 group-hover:h-40" />
+
+            <div className="relative z-10 flex flex-col h-full">
+                <div className="relative p-2">
+                    <Image
+                        src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'}
+                        alt={product.name}
+                        width={200}
+                        height={200}
+                        className="object-cover w-full rounded-md aspect-[4/3] group-hover:scale-105 transition-transform duration-300"
+                    />
+                    {isDiscountActive && (
+                        <Badge variant="destructive" className="absolute top-3 left-3">-{product.discount_percentage}%</Badge>
+                    )}
+                </div>
+                <CardContent className="p-2 pt-0 flex-grow flex flex-col justify-between">
+                    <div>
+                        <h3 className="font-medium truncate text-sm leading-tight text-foreground">{product.name}</h3>
+                        <div className="mt-1">
+                            <span className="text-base font-bold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            {isDiscountActive && (
+                                <span className="text-xs text-muted-foreground line-through ml-2">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            )}
+                        </div>
+                    </div>
+                    <div className="mt-2">
+                        {product.quantity !== null && product.quantity > 0 && (
+                            <div>
+                                 <p className="text-xs text-muted-foreground">{product.quantity.toLocaleString('en-US')} items left</p>
+                                 <Progress value={getProgressValue(product.quantity)} className="h-1 mt-1 bg-orange-200/20 [&>div]:bg-orange-500"/>
+                            </div>
+                        )}
+                        {timeLeft && (
+                             <div className="text-xs font-mono text-red-500 mt-2">
+                                {timeLeft.days !== '0' && `${timeLeft.days}d `}{timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
+                            </div>
                         )}
                     </div>
-                </div>
-                <div className="mt-2">
-                    {product.quantity !== null && product.quantity > 0 && (
-                        <div>
-                             <p className="text-xs text-muted-foreground">{product.quantity.toLocaleString('en-US')} items left</p>
-                             <Progress value={getProgressValue(product.quantity)} className="h-1 mt-1 bg-orange-200/20 [&>div]:bg-orange-500"/>
-                        </div>
-                    )}
-                    {timeLeft && (
-                         <div className="text-xs font-mono text-red-500 mt-2">
-                            {timeLeft.days !== '0' && `${timeLeft.days}d `}{timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}
-                        </div>
-                    )}
-                </div>
-            </CardContent>
+                </CardContent>
+            </div>
         </Card>
     </Link>
     )
