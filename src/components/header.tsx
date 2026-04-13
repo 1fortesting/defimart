@@ -14,6 +14,7 @@ import {
   Shield,
   LogOut,
   LogIn,
+  Info,
 } from 'lucide-react';
 import { HeaderNav } from './header-nav';
 import Image from 'next/image';
@@ -48,7 +49,7 @@ export async function Header() {
 
   const MobileNavLink = ({ href, icon: Icon, children }: { href: string; icon: React.ElementType; children: React.ReactNode }) => (
     <SheetClose asChild>
-        <Link href={href} className="flex items-center gap-4 rounded-xl px-3 py-3 text-lg font-medium text-primary-foreground transition-colors bg-white/10 hover:bg-white/20 border border-white/20">
+        <Link href={href} className="flex items-center gap-4 rounded-xl px-3 py-3 text-lg font-medium text-black transition-colors bg-white/20 hover:bg-white/30 border border-white/40">
             <Icon className="h-5 w-5" />
             <span>{children}</span>
         </Link>
@@ -89,27 +90,27 @@ export async function Header() {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[85%] max-w-sm p-0 flex flex-col bg-primary">
-                <SheetHeader className="p-4 border-b border-primary-foreground/20">
+                <SheetHeader className="p-4 border-b border-black/20">
                     <SheetTitle>
                         {user ? (
                             <Link href="/profile" className="flex items-center gap-4">
-                                <Avatar className="h-12 w-12 border-2 border-primary-foreground/50">
+                                <Avatar className="h-12 w-12 border-2 border-black/30">
                                     <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
                                     <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0] || 'D'}</AvatarFallback>
                                 </Avatar>
-                                <div className="flex flex-col overflow-hidden text-primary-foreground">
+                                <div className="flex flex-col overflow-hidden text-black">
                                     <span className="font-bold text-lg leading-tight truncate">{user.user_metadata.display_name || 'My Profile'}</span>
-                                    <span className="text-xs text-primary-foreground/80 truncate">{user.email}</span>
+                                    <span className="text-xs text-black/80 truncate">{user.email}</span>
                                 </div>
                             </Link>
                         ) : (
                             <div className="flex items-center gap-4">
-                                <Avatar className="h-12 w-12 border-2 border-primary-foreground/50">
-                                    <AvatarFallback><UserIcon className="text-primary-foreground" /></AvatarFallback>
+                                <Avatar className="h-12 w-12 border-2 border-black/30">
+                                    <AvatarFallback><UserIcon className="text-black" /></AvatarFallback>
                                 </Avatar>
-                                <div className="flex flex-col text-primary-foreground">
+                                <div className="flex flex-col text-black">
                                     <span className="font-bold text-lg">Welcome</span>
-                                    <span className="text-xs text-primary-foreground/80">Please log in to continue</span>
+                                    <span className="text-xs text-black/80">Please log in to continue</span>
                                 </div>
                             </div>
                         )}
@@ -123,34 +124,38 @@ export async function Header() {
                                 <MobileNavLink href="/orders" icon={Package}>My Orders</MobileNavLink>
                                 <MobileNavLink href="/saved" icon={Heart}>Wishlist</MobileNavLink>
                                 <MobileNavLink href="/messages" icon={MessageSquare}>Messages</MobileNavLink>
-                                <Separator className="my-2 bg-primary-foreground/20" />
+                                <Separator className="my-2 bg-black/20" />
                             </>
                         )}
                         <MobileNavLink href="/request-product" icon={PackagePlus}>Request a Product</MobileNavLink>
-                        <Separator className="my-2 bg-primary-foreground/20" />
+                        <Separator className="my-2 bg-black/20" />
+                        <MobileNavLink href="/about" icon={Info}>About Us</MobileNavLink>
                         <MobileNavLink href="/faq" icon={HelpCircle}>FAQ</MobileNavLink>
                         <MobileNavLink href="/contact" icon={Phone}>Contact</MobileNavLink>
-                        <Separator className="my-2 bg-primary-foreground/20" />
+                        <Separator className="my-2 bg-black/20" />
                         <MobileNavLink href="/terms" icon={FileText}>Terms of Service</MobileNavLink>
                         <MobileNavLink href="/privacy" icon={Shield}>Privacy Policy</MobileNavLink>
                     </nav>
                 </div>
-                <div className="p-4 mt-auto border-t border-primary-foreground/20">
+                <div className="p-4 mt-auto border-t border-black/20 space-y-2">
                     {user ? (
                         <form action={logout}>
-                             <Button className="w-full text-base py-6 bg-white/20 text-primary-foreground hover:bg-white/30 border-white/30 border">
+                             <Button className="w-full text-base py-6 bg-white/20 text-black hover:bg-white/30 border-black/30 border">
                                 <LogOut className="mr-2 h-5 w-5" /> Logout
                             </Button>
                         </form>
                     ) : (
                         <SheetClose asChild>
-                             <Button asChild className="w-full text-base py-6 bg-white/20 text-primary-foreground hover:bg-white/30 border-white/30 border">
+                             <Button asChild className="w-full text-base py-6 bg-white/20 text-black hover:bg-white/30 border-black/30 border">
                                 <Link href="/login">
                                     <LogIn className="mr-2 h-5 w-5" /> Login / Register
                                 </Link>
                             </Button>
                         </SheetClose>
                     )}
+                     <p className="text-xs text-center text-black/60 pt-2">
+                        &copy; {new Date().getFullYear()} DEFIMART. All Rights Reserved.
+                    </p>
                 </div>
             </SheetContent>
          </Sheet>

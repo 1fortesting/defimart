@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { format } from 'date-fns';
 
 export default function TermsAndConditionsPage() {
@@ -54,6 +54,11 @@ export default function TermsAndConditionsPage() {
               <p>If you have any questions about these Terms, please contact us through the information provided on our Contact page.</p>
             </Section>
           </CardContent>
+           <CardFooter>
+            <p className="text-xs text-muted-foreground mx-auto">
+                &copy; {new Date().getFullYear()} DEFIMART. All Rights Reserved.
+            </p>
+          </CardFooter>
         </Card>
       </div>
     </main>
