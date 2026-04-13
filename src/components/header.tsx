@@ -47,11 +47,35 @@ export async function Header() {
   const { data: products } = await supabase.from('products').select('*');
   const allProducts = products || [];
 
-  const MobileNavLink = ({ href, icon: Icon, children }: { href: string; icon: React.ElementType; children: React.ReactNode }) => (
+  const userLinks = [
+    { title: "Profile", description: "View and edit your profile", href: "/profile", icon: UserIcon },
+    { title: "My Orders", description: "Track your past and current orders", href: "/orders", icon: Package },
+    { title: "Wishlist", description: "View your saved products", href: "/saved", icon: Heart },
+    { title: "Messages", description: "Your conversations with sellers", href: "/messages", icon: MessageSquare },
+  ];
+
+  const generalLinks = [
+    { title: "Request a Product", description: "Tell us what you want to see", href: "/request-product", icon: PackagePlus },
+  ];
+
+  const infoLinks = [
+    { title: "About Us", description: "Learn more about DEFIMART", href: "/about", icon: Info },
+    { title: "FAQ", description: "Find answers to common questions", href: "/faq", icon: HelpCircle },
+    { title: "Contact", description: "Get in touch with our team", href: "/contact", icon: Phone },
+    { title: "Terms of Service", description: "Read our terms of use", href: "/terms", icon: FileText },
+    { title: "Privacy Policy", description: "How we handle your data", href: "/privacy", icon: Shield },
+  ];
+
+  const MobileNavLink = ({ href, icon: Icon, title, description }: { href: string; icon: React.ElementType; title: string, description: string }) => (
     <SheetClose asChild>
-        <Link href={href} className="flex items-center gap-4 rounded-xl px-3 py-3 text-lg font-medium text-black transition-colors bg-white/20 hover:bg-white/30 border border-white/40">
-            <Icon className="h-5 w-5" />
-            <span>{children}</span>
+        <Link href={href} className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted">
+            <div className="p-2 bg-muted rounded-md">
+                <Icon className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+                <p className="font-semibold text-foreground">{title}</p>
+                <p className="text-sm text-muted-foreground">{description}</p>
+            </div>
         </Link>
     </SheetClose>
   );
@@ -89,71 +113,48 @@ export async function Header() {
                     <span className="sr-only">Open menu</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[85%] max-w-sm p-0 flex flex-col bg-primary">
-                <SheetHeader className="p-4 border-b border-black/20">
-                    <SheetTitle>
-                        {user ? (
-                            <Link href="/profile" className="flex items-center gap-4">
-                                <Avatar className="h-12 w-12 border-2 border-black/30">
-                                    <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
-                                    <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0] || 'D'}</AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col overflow-hidden text-black">
-                                    <span className="font-bold text-lg leading-tight truncate">{user.user_metadata.display_name || 'My Profile'}</span>
-                                    <span className="text-xs text-black/80 truncate">{user.email}</span>
-                                </div>
-                            </Link>
-                        ) : (
-                            <div className="flex items-center gap-4">
-                                <Avatar className="h-12 w-12 border-2 border-black/30">
-                                    <AvatarFallback><UserIcon className="text-black" /></AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col text-black">
-                                    <span className="font-bold text-lg">Welcome</span>
-                                    <span className="text-xs text-black/80">Please log in to continue</span>
-                                </div>
-                            </div>
-                        )}
-                    </SheetTitle>
-                </SheetHeader>
+            <SheetContent side="left" className="w-[85%] max-w-sm p-0 flex flex-col bg-background">
+                <div className="p-4 bg-primary text-primary-foreground">
+                  <SheetHeader>
+                      <SheetTitle>
+                          <Link href="/" className="flex items-center gap-2 font-semibold">
+                              <Image src="https://iili.io/qO5Jeou.png" alt="DEFIMART Logo" width={150} height={32} className="brightness-0 invert" />
+                          </Link>
+                      </SheetTitle>
+                  </SheetHeader>
+                </div>
+
                 <div className="flex-1 overflow-y-auto">
-                    <nav className="flex flex-col gap-2 p-4">
+                    <nav className="flex flex-col gap-1 p-2">
                         {user && (
                             <>
-                                <MobileNavLink href="/profile" icon={UserIcon}>Profile</MobileNavLink>
-                                <MobileNavLink href="/orders" icon={Package}>My Orders</MobileNavLink>
-                                <MobileNavLink href="/saved" icon={Heart}>Wishlist</MobileNavLink>
-                                <MobileNavLink href="/messages" icon={MessageSquare}>Messages</MobileNavLink>
-                                <Separator className="my-2 bg-black/20" />
+                                {userLinks.map(link => <MobileNavLink key={link.href} {...link} />)}
+                                <Separator className="my-2" />
                             </>
                         )}
-                        <MobileNavLink href="/request-product" icon={PackagePlus}>Request a Product</MobileNavLink>
-                        <Separator className="my-2 bg-black/20" />
-                        <MobileNavLink href="/about" icon={Info}>About Us</MobileNavLink>
-                        <MobileNavLink href="/faq" icon={HelpCircle}>FAQ</MobileNavLink>
-                        <MobileNavLink href="/contact" icon={Phone}>Contact</MobileNavLink>
-                        <Separator className="my-2 bg-black/20" />
-                        <MobileNavLink href="/terms" icon={FileText}>Terms of Service</MobileNavLink>
-                        <MobileNavLink href="/privacy" icon={Shield}>Privacy Policy</MobileNavLink>
+                        {generalLinks.map(link => <MobileNavLink key={link.href} {...link} />)}
+                        <Separator className="my-2" />
+                        {infoLinks.map(link => <MobileNavLink key={link.href} {...link} />)}
                     </nav>
                 </div>
-                <div className="p-4 mt-auto border-t border-black/20 space-y-2">
+
+                <div className="p-4 mt-auto border-t space-y-4">
                     {user ? (
                         <form action={logout}>
-                             <Button className="w-full text-base py-6 bg-white/20 text-black hover:bg-white/30 border-black/30 border">
+                             <Button className="w-full text-base py-6">
                                 <LogOut className="mr-2 h-5 w-5" /> Logout
                             </Button>
                         </form>
                     ) : (
                         <SheetClose asChild>
-                             <Button asChild className="w-full text-base py-6 bg-white/20 text-black hover:bg-white/30 border-black/30 border">
+                             <Button asChild className="w-full text-base py-6">
                                 <Link href="/login">
                                     <LogIn className="mr-2 h-5 w-5" /> Login / Register
                                 </Link>
                             </Button>
                         </SheetClose>
                     )}
-                     <p className="text-xs text-center text-black/60 pt-2">
+                     <p className="text-xs text-center text-muted-foreground pt-2">
                         &copy; {new Date().getFullYear()} DEFIMART. All Rights Reserved.
                     </p>
                 </div>
