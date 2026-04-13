@@ -77,8 +77,8 @@ export function FlashSaleProductCard({ product }: FlashSaleProductCardProps) {
     }, [isDiscountActive, product.discount_end_date]);
 
     return (
-    <Link href={`/products/${product.id}`} className="block w-40 md:w-48 flex-shrink-0">
-        <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-card border hover:border-primary/50 text-card-foreground h-full flex flex-col shadow-lg hover:shadow-primary/20">
+    <Link href={`/products/${product.id}`} className="block w-36 md:w-44 flex-shrink-0">
+        <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-card border hover:border-primary/50 text-card-foreground flex flex-col shadow-lg hover:shadow-primary/20">
             <div className="relative">
                 <Image
                     src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'}
