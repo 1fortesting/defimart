@@ -6,6 +6,7 @@ import { FlashSaleSection } from '@/components/flash-sale-section';
 import { RecommendedForYouSection } from '@/components/recommended-for-you-section';
 import type { Tables } from '@/types/supabase';
 import { HomePageContent } from './home-page-content';
+import { OutstandingProducts } from '@/components/outstanding-products';
 
 export default async function Home() {
   const supabase = createClient();
@@ -14,7 +15,7 @@ export default async function Home() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { data: products } = await supabase.from('products').select('*');
+  const { data: productsData } = await supabase.from('products').select('*');
   const { data: reviews } = await supabase.from('reviews').select('product_id, rating');
   
   const { data: savedProducts } = user 
@@ -22,7 +23,35 @@ export default async function Home() {
       : { data: null };
   const savedProductIds = savedProducts?.map(p => p.product_id) || [];
 
-  const allProducts = products || [];
+  const allProducts = productsData || [];
+
+  // --- Outstanding Products Logic ---
+  const { data: ordersData } = await supabase.from('orders').select('product_id, quantity');
+  const orders = ordersData || [];
+
+  const salesByProduct: { [key: string]: number } = orders.reduce((acc, order) => {
+    if (!acc[order.product_id]) {
+      acc[order.product_id] = 0;
+    }
+    acc[order.product_id] += order.quantity;
+    return acc;
+  }, {} as { [key: string]: number });
+
+  const productsWithSales = allProducts
+    .map(p => ({ ...p, total_sales: salesByProduct[p.id] || 0 }))
+    .sort((a, b) => b.total_sales - a.total_sales);
+
+  const topSellers = productsWithSales.slice(0, 10);
+  const shuffledTopSellers = topSellers.sort(() => 0.5 - Math.random());
+
+  let outstandingProducts = shuffledTopSellers.slice(0, 4);
+
+  if (outstandingProducts.length < 4) {
+      const existingIds = new Set(outstandingProducts.map(p => p.id));
+      const otherProducts = allProducts.filter(p => !existingIds.has(p.id)).sort(() => 0.5 - Math.random());
+      outstandingProducts.push(...otherProducts.slice(0, 4 - outstandingProducts.length));
+  }
+  // --- End Outstanding Products ---
 
   const reviewsByProduct = (reviews || []).reduce((acc, review) => {
     if (!acc[review.product_id]) {
@@ -60,9 +89,9 @@ export default async function Home() {
     .slice(0, 3);
   
   const categoryColors = [
-    'bg-slate-800',
-    'bg-cyan-700',
-    'bg-emerald-600',
+    'bg-slate-800 text-white',
+    'bg-cyan-700 text-white',
+    'bg-emerald-600 text-white',
   ];
 
   const categoriesData = categoriesToShow.map((category, index) => ({
@@ -90,6 +119,8 @@ export default async function Home() {
             <div className="lg:hidden">
                 {carouselProducts.length > 0 && <ProductCarousel products={carouselProducts} />}
             </div>
+
+            <OutstandingProducts products={outstandingProducts} />
 
             <FlashSaleSection />
             
