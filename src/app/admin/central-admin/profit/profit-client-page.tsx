@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Package, ShoppingCart, Download, FilterX, TrendingUp } from 'lucide-react';
+import { DollarSign, Package, ShoppingCart, Download, FilterX, TrendingUp, Search } from 'lucide-react';
 import { ProfitChart } from './profit-chart';
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -59,6 +59,7 @@ export default function ProfitClientPage({
     const [selectedProductId, setSelectedProductId] = useState<string | undefined>(
         currentFilters.productId
     );
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleApplyFilters = () => {
         const params = new URLSearchParams(searchParams.toString());
@@ -104,7 +105,7 @@ export default function ProfitClientPage({
     }
     
     const handleDownloadAllProducts = () => {
-        const dataToDownload = productsWithPerf.map(p => ({
+        const dataToDownload = filteredProducts.map(p => ({
             id: p.id,
             name: p.name,
             category: p.category,
@@ -122,6 +123,10 @@ export default function ProfitClientPage({
     }
     
     const hasFilters = currentFilters.date || currentFilters.productId;
+
+    const filteredProducts = productsWithPerf.filter(product => 
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
     return (
         <>
@@ -224,6 +229,17 @@ export default function ProfitClientPage({
             <Card>
                 <CardHeader>
                     <CardTitle>All Product Profit Performance</CardTitle>
+                    <div className="pt-4">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                            <Input
+                                placeholder="Search products..."
+                                className="pl-10 max-w-sm"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent>
                      <Table>
@@ -237,7 +253,7 @@ export default function ProfitClientPage({
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {productsWithPerf.map(product => (
+                            {filteredProducts.map(product => (
                                 <TableRow key={product.id}>
                                     <TableCell className="font-medium">{product.name}</TableCell>
                                     <TableCell>GHS {product.total_profit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
@@ -250,7 +266,7 @@ export default function ProfitClientPage({
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {productsWithPerf.length === 0 && (
+                            {filteredProducts.length === 0 && (
                                 <TableRow>
                                     <TableCell colSpan={5} className="text-center h-24">No data for the selected filters.</TableCell>
                                 </TableRow>
