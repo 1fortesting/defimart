@@ -8,6 +8,7 @@ import { RecommendedForYouSection } from '@/components/recommended-for-you-secti
 import { RequestProductSection } from '@/components/request-product-section';
 import { CategoryProductRow } from '@/components/category-product-row';
 import type { Tables } from '@/types/supabase';
+import { HomeProductGrid } from './home-product-grid';
 
 export default async function Home() {
   const supabase = createClient();
@@ -96,6 +97,8 @@ export default async function Home() {
             <RequestProductSection />
             
             <RecommendedForYouSection user={user} allProductsWithRatings={productsWithRatings} />
+            
+            <HomeProductGrid products={productsWithRatings} user={user} savedProductIds={savedProductIds} />
         </div>
       </main>
   );
