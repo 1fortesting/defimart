@@ -90,6 +90,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         }
     };
 
+
     const handleToggleSave = () => {
         const newIsSaved = !isSavedState;
         setIsSavedState(newIsSaved);
@@ -193,7 +194,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
     };
     
     return (
-    <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-primary/50 hover:-translate-y-1 h-full flex flex-col">
+    <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-2xl hover:border-primary/50 hover:-translate-y-1 flex flex-col">
         <CardHeader className="p-0 relative">
             <Link href={`/products/${product.id}`}>
                 <Image
@@ -244,7 +245,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         <CardContent className="p-3 flex flex-col justify-between flex-grow">
             <div className="flex-grow">
                 <Link href={`/products/${product.id}`} className="hover:underline">
-                    <h3 className="font-semibold truncate text-sm">{product.name}</h3>
+                    <h3 className="font-semibold text-sm leading-snug">{product.name}</h3>
                 </Link>
                 {product.review_count !== undefined && product.review_count > 0 ? (
                     <div className="flex items-center gap-1 mt-1">
@@ -255,7 +256,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                     <p className="text-sm text-muted-foreground">{product.category}</p>
                 )}
 
-                <div className="mt-2 h-5 flex items-center justify-between">
+                <div className="mt-2 min-h-[20px] flex items-center justify-between">
                 {isDiscountActive && (
                     <Badge variant="outline" className="text-orange-500 border-orange-500 animate-heartbeat">
                         <Flame className="mr-1 h-3 w-3" />
