@@ -117,9 +117,24 @@ export async function Header() {
                 <div className="p-4 bg-primary text-primary-foreground">
                   <SheetHeader>
                       <SheetTitle>
+                        <div className="flex justify-between items-center">
                           <Link href="/" className="flex items-center gap-2 font-semibold">
-                              <Image src="https://iili.io/qO5Jeou.png" alt="DEFIMART Logo" width={150} height={32} className="brightness-0 invert" />
+                              <Image src="https://iili.io/qO5Jeou.png" alt="DEFIMART Logo" width={120} height={28} className="brightness-0 invert" />
                           </Link>
+                           {user && (
+                              <div className="flex items-center gap-2 text-right">
+                                  <div>
+                                      <p className="font-semibold text-sm leading-tight truncate max-w-28">{user.user_metadata.display_name}</p>
+                                  </div>
+                                  <Avatar className="h-9 w-9 border-2 border-primary-foreground/50">
+                                      <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
+                                      <AvatarFallback className="bg-primary-foreground text-primary">
+                                          {user.user_metadata.display_name?.[0] || user.email?.[0]}
+                                      </AvatarFallback>
+                                  </Avatar>
+                              </div>
+                          )}
+                        </div>
                       </SheetTitle>
                   </SheetHeader>
                 </div>
