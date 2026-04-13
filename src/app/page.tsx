@@ -59,10 +59,17 @@ export default async function Home() {
     .sort((a, b) => productsByCategory[b].length - productsByCategory[a].length)
     .slice(0, 3);
   
-  const categoriesData = categoriesToShow.map(category => ({
+  const categoryColors = [
+    'bg-slate-800',
+    'bg-cyan-700',
+    'bg-emerald-600',
+  ];
+
+  const categoriesData = categoriesToShow.map((category, index) => ({
       title: category,
       category: category,
-      products: productsByCategory[category].slice(0, 10)
+      products: productsByCategory[category].slice(0, 10),
+      color: categoryColors[index % categoryColors.length]
   }));
 
   return (

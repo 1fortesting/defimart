@@ -14,6 +14,7 @@ interface CategoryData {
     title: string;
     category: string;
     products: Tables<'products'>[];
+    color?: string;
 }
 
 interface HomePageContentProps {
