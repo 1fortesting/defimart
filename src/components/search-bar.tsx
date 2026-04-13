@@ -64,7 +64,7 @@ export function SearchBar({ products, className }: { products: Tables<'products'
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
                 placeholder="Search for anything..."
-                className="pl-10 pr-10 w-full"
+                className="pl-10 pr-10 w-full md:text-left text-center"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setIsFocused(true)}
