@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Tables } from '@/types/supabase';
-import { Heart, ShoppingCart } from 'lucide-react';
+import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { toggleSaveProduct } from '@/app/saved/actions';
@@ -111,11 +111,18 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
     };
     
     return (
-    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white/20 dark:border-slate-800/50 shadow-lg hover:shadow-primary/20 flex flex-col">
+    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white/20 dark:border-slate-800/50 shadow-lg hover:shadow-primary/20 flex flex-col relative">
         {/* Decorative elements */}
         <div className="absolute -top-16 -left-16 w-48 h-48 bg-primary/30 rounded-full blur-3xl transition-all duration-700 opacity-70 group-hover:opacity-100 group-hover:w-56 group-hover:h-56" />
         <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-accent/30 rounded-full blur-3xl transition-all duration-700 opacity-70 group-hover:opacity-100 group-hover:w-56 group-hover:h-56" />
         
+        {/* Featured Badge */}
+        {product.is_featured && (
+            <div className="absolute top-2 right-2 z-20 bg-primary/80 text-primary-foreground rounded-full p-1.5 shadow-md backdrop-blur-sm">
+                <Star className="h-4 w-4" />
+            </div>
+        )}
+
         <div className="relative z-10 flex flex-col h-full">
             {/* Image Section */}
             <div className="p-4">
