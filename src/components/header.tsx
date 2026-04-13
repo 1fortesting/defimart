@@ -3,8 +3,17 @@ import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { 
   Menu,
-  User,
+  User as UserIcon,
   PackagePlus,
+  Package,
+  Heart,
+  MessageSquare,
+  HelpCircle,
+  Phone,
+  FileText,
+  Shield,
+  LogOut,
+  LogIn,
 } from 'lucide-react';
 import { HeaderNav } from './header-nav';
 import Image from 'next/image';
@@ -36,6 +45,15 @@ export async function Header() {
   
   const { data: products } = await supabase.from('products').select('*');
   const allProducts = products || [];
+
+  const MobileNavLink = ({ href, icon: Icon, children }: { href: string; icon: React.ElementType; children: React.ReactNode }) => (
+    <SheetClose asChild>
+        <Link href={href} className="flex items-center gap-4 rounded-lg px-3 py-3 text-lg font-medium text-foreground transition-colors hover:bg-primary/10">
+            <Icon className="h-5 w-5" />
+            <span>{children}</span>
+        </Link>
+    </SheetClose>
+  );
 
   return (
     <header className="bg-background border-b p-4 flex flex-col gap-2">
@@ -70,60 +88,70 @@ export async function Header() {
                     <span className="sr-only">Open menu</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-3/4 p-0">
-                <SheetHeader className="p-4 border-b">
+            <SheetContent side="left" className="w-[85%] max-w-sm p-0 flex flex-col bg-background/80 backdrop-blur-lg">
+                <SheetHeader className="p-4 border-b bg-background/50">
                     <SheetTitle>
-                      <div className="flex items-center gap-4">
-                            <Avatar>
-                                <AvatarImage src={user?.user_metadata.avatar_url ?? undefined} />
-                                <AvatarFallback>{user?.user_metadata.display_name?.[0] || user?.email?.[0] || 'D'}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col">
-                                <span className="font-semibold leading-none">{user ? `Welcome, ${user.user_metadata.display_name}` : 'Menu'}</span>
-                                {user && <span className="text-xs text-muted-foreground">{user.email}</span>}
+                        {user ? (
+                            <Link href="/profile" className="flex items-center gap-4">
+                                <Avatar className="h-12 w-12 border-2 border-primary">
+                                    <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
+                                    <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0] || 'D'}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col overflow-hidden">
+                                    <span className="font-bold text-lg leading-tight truncate">{user.user_metadata.display_name || 'My Profile'}</span>
+                                    <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+                                </div>
+                            </Link>
+                        ) : (
+                            <div className="flex items-center gap-4">
+                                <Avatar className="h-12 w-12 border-2">
+                                    <AvatarFallback><UserIcon /></AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col">
+                                    <span className="font-bold text-lg">Welcome</span>
+                                    <span className="text-xs text-muted-foreground">Please log in to continue</span>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </SheetTitle>
                 </SheetHeader>
-                <nav className="flex flex-col gap-4 p-4">
-                   <SheetClose asChild>
-                    <Link className="font-bold text-lg" href="/profile">Profile</Link>
-                   </SheetClose>
-                   <SheetClose asChild>
-                    <Link className="font-bold text-lg" href="/orders">Orders</Link>
-                   </SheetClose>
-                   <SheetClose asChild>
-                    <Link className="font-bold text-lg" href="/messages">Messages</Link>
-                   </SheetClose>
-                   <SheetClose asChild>
-                        <Link href="/request-product" className="font-bold text-lg flex items-center gap-2">
-                            <PackagePlus className="h-5 w-5" /> Request a Product
-                        </Link>
-                   </SheetClose>
-                   <SheetClose asChild>
-                    <Link className="font-bold text-lg" href="/faq">FAQ</Link>
-                   </SheetClose>
-                   <Separator className="my-2" />
-                   <SheetClose asChild>
-                    <Link className="font-bold text-lg" href="/contact">Contact</Link>
-                   </SheetClose>
-                   <SheetClose asChild>
-                    <Link className="font-bold text-lg" href="/terms">Terms</Link>
-                   </SheetClose>
-                   <SheetClose asChild>
-                    <Link className="font-bold text-lg" href="/privacy">Privacy</Link>
-                   </SheetClose>
-                   <Separator className="my-2" />
-                   {user ? (
-                     <form action={logout}>
-                       <Button variant="outline" className="w-full">Logout</Button>
-                     </form>
-                   ) : (
-                    <SheetClose asChild>
-                        <Button asChild className="w-full"><Link href="/login">Login / Register</Link></Button>
-                    </SheetClose>
-                   )}
-               </nav>
+                <div className="flex-1 overflow-y-auto">
+                    <nav className="flex flex-col gap-1 p-4">
+                        {user && (
+                            <>
+                                <MobileNavLink href="/profile" icon={UserIcon}>Profile</MobileNavLink>
+                                <MobileNavLink href="/orders" icon={Package}>My Orders</MobileNavLink>
+                                <MobileNavLink href="/saved" icon={Heart}>Wishlist</MobileNavLink>
+                                <MobileNavLink href="/messages" icon={MessageSquare}>Messages</MobileNavLink>
+                                <Separator className="my-2" />
+                            </>
+                        )}
+                        <MobileNavLink href="/request-product" icon={PackagePlus}>Request a Product</MobileNavLink>
+                        <Separator className="my-2" />
+                        <MobileNavLink href="/faq" icon={HelpCircle}>FAQ</MobileNavLink>
+                        <MobileNavLink href="/contact" icon={Phone}>Contact</MobileNavLink>
+                        <Separator className="my-2" />
+                        <MobileNavLink href="/terms" icon={FileText}>Terms of Service</MobileNavLink>
+                        <MobileNavLink href="/privacy" icon={Shield}>Privacy Policy</MobileNavLink>
+                    </nav>
+                </div>
+                <div className="p-4 mt-auto border-t bg-background/50">
+                    {user ? (
+                        <form action={logout}>
+                            <Button variant="outline" className="w-full text-base py-6">
+                                <LogOut className="mr-2 h-5 w-5" /> Logout
+                            </Button>
+                        </form>
+                    ) : (
+                        <SheetClose asChild>
+                            <Button asChild className="w-full text-base py-6">
+                                <Link href="/login">
+                                    <LogIn className="mr-2 h-5 w-5" /> Login / Register
+                                </Link>
+                            </Button>
+                        </SheetClose>
+                    )}
+                </div>
             </SheetContent>
          </Sheet>
 
