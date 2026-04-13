@@ -63,19 +63,22 @@ export function HomePageContent({ products, user, savedProductIds, categoriesDat
         });
     };
 
-    const renderProductGrid = (productsToRender: ProductWithRating[]) => (
-        <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {productsToRender.map((product) => (
-                <ProductCard 
-                    key={product.id} 
-                    product={product} 
-                    user={user} 
-                    isSaved={localSavedIds.has(product.id)}
-                    onUnsave={handleUnsave}
-                />
-            ))}
-        </div>
-    );
+    const renderProductGrid = (productsToRender: ProductWithRating[]) => {
+        if (!productsToRender || productsToRender.length === 0) return null;
+        return (
+            <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 my-8">
+                {productsToRender.map((product) => (
+                    <ProductCard 
+                        key={product.id} 
+                        product={product} 
+                        user={user} 
+                        isSaved={localSavedIds.has(product.id)}
+                        onUnsave={handleUnsave}
+                    />
+                ))}
+            </div>
+        );
+    };
 
     const productsPerSection = 8;
     const category1 = categoriesData[0];
@@ -84,7 +87,8 @@ export function HomePageContent({ products, user, savedProductIds, categoriesDat
 
     const section1Products = sortedProducts.slice(0, productsPerSection);
     const section2Products = sortedProducts.slice(productsPerSection, productsPerSection * 2);
-    const section3Products = sortedProducts.slice(productsPerSection * 2);
+    const section3Products = sortedProducts.slice(productsPerSection * 2, productsPerSection * 3);
+    const section4Products = sortedProducts.slice(productsPerSection * 3);
 
 
     return (
@@ -106,19 +110,21 @@ export function HomePageContent({ products, user, savedProductIds, categoriesDat
                 </div>
             </div>
 
-            {section1Products.length > 0 && renderProductGrid(section1Products)}
+            {renderProductGrid(section1Products)}
 
             {category1 && <CategoryProductRow {...category1} />}
 
-            {section2Products.length > 0 && renderProductGrid(section2Products)}
+            {renderProductGrid(section2Products)}
             
             {category2 && <CategoryProductRow {...category2} />}
+            
+            {renderProductGrid(section3Products)}
 
             <RequestProductSection user={user} />
+            
+            {renderProductGrid(section4Products)}
 
             {category3 && <CategoryProductRow {...category3} />}
-            
-            {section3Products.length > 0 && renderProductGrid(section3Products)}
 
         </div>
     );
