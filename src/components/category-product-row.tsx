@@ -20,7 +20,7 @@ export function CategoryProductRow({ title, products, category, color = 'bg-prim
 
     return (
         <div className="my-10">
-            <div className={cn("p-3 flex justify-between items-center rounded-t-lg text-primary-foreground", color)}>
+            <div className={cn("p-3 flex justify-between items-center rounded-t-lg text-white", color)}>
                 <h2 className="text-xl font-bold">{title}</h2>
                 <Link href={`/search?category=${encodeURIComponent(category)}`}>
                     <div className="flex items-center text-sm font-semibold hover:underline">
