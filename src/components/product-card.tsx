@@ -125,7 +125,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                         alt={product.name}
                         width={400}
                         height={400}
-                        className="object-cover w-full aspect-square group-hover:scale-105 transition-transform duration-300"
+                        className="object-cover w-full aspect-square group-hover:scale-105 transition-transform duration-300 rounded-md"
                         data-ai-hint="product image"
                     />
                 </Link>

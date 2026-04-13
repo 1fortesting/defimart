@@ -18,7 +18,7 @@ export function HorizontalProductCard({ product }: HorizontalProductCardProps) {
         : product.price;
 
     return (
-        <Link href={`/products/${product.id}`} className="block w-32 md:w-40 flex-shrink-0">
+        <Link href={`/products/${product.id}`} className="block w-36 md:w-40 flex-shrink-0">
             <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-muted hover:bg-muted/80 border text-card-foreground flex flex-col shadow-md hover:shadow-lg">
                 <div className="relative">
                     <Image
@@ -26,7 +26,7 @@ export function HorizontalProductCard({ product }: HorizontalProductCardProps) {
                         alt={product.name}
                         width={200}
                         height={200}
-                        className="object-cover w-full aspect-square group-hover:scale-105 transition-transform duration-300"
+                        className="object-cover w-full aspect-square group-hover:scale-105 transition-transform duration-300 rounded-t-lg"
                     />
                     {isDiscountActive && (
                         <Badge variant="destructive" className="absolute top-2 right-2">-{product.discount_percentage}%</Badge>
