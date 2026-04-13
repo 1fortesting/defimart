@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { InstallPrompt } from './install-prompt';
+import { ScrollToTopButton } from './scroll-to-top-button';
 
 export function StorefrontShell({
   header,
@@ -67,6 +68,7 @@ export function StorefrontShell({
         {children}
       </div>
       {bottomNav}
+      <ScrollToTopButton />
     </>
   );
 }
