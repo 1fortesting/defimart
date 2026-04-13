@@ -1,11 +1,14 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, Package, Users, ShoppingCart, Download, FilterX } from 'lucide-react';
+import { DollarSign, Package, Users, Star, ShoppingCart, Download, FilterX, TrendingUp } from 'lucide-react';
 import { SalesChart } from './sales-chart';
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { StarRating } from '@/components/star-rating';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { ProductWithSalesAndReviews } from './page';
+import { ProductWithSalesAndReviews, ReviewWithProductAndProfile } from './page';
 import { format } from 'date-fns';
 import {
   DropdownMenu,
@@ -20,7 +23,7 @@ import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 
-const StatCard = ({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) => (
+const StatCard = ({ title, value, icon: Icon, change }: { title: string, value: string | number, icon: React.ElementType, change?: string }) => (
     <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{title}</CardTitle>
@@ -28,6 +31,7 @@ const StatCard = ({ title, value, icon: Icon }: { title: string, value: string |
         </CardHeader>
         <CardContent>
             <div className="text-2xl font-bold">{value}</div>
+            {change && <p className="text-xs text-muted-foreground">{change}</p>}
         </CardContent>
     </Card>
 );
@@ -39,14 +43,16 @@ export default function AnalyticsClientPage({
     salesChartDescription,
     salesChartTimeUnit,
     productsWithPerf,
+    recentReviews,
     allProducts,
     currentFilters
 }: {
-    stats: { totalRevenue: number, totalSales: number, totalCustomers: number, productCount: number },
+    stats: { totalRevenue: number, totalProfit: number, totalSales: number, totalCustomers: number, productCount: number },
     dailySales: { date: string, total: number }[],
     salesChartDescription: string,
     salesChartTimeUnit: 'day' | 'hour',
     productsWithPerf: ProductWithSalesAndReviews[],
+    recentReviews: ReviewWithProductAndProfile[],
     allProducts: { id: string, name: string }[],
     currentFilters: { date?: string, productId?: string }
 }) {
@@ -77,7 +83,7 @@ export default function AnalyticsClientPage({
     const handleClearFilters = () => {
         router.push(pathname);
     }
-    
+
     const downloadCSV = (data: any[], filename: string) => {
         if (data.length === 0) return;
         const headers = Object.keys(data[0]);
@@ -108,9 +114,11 @@ export default function AnalyticsClientPage({
             name: p.name,
             category: p.category,
             price: p.price,
+            cost_price: p.cost_price,
             quantity_on_hand: p.quantity,
             total_sales_units: p.total_sales,
             total_revenue: p.total_revenue.toFixed(2),
+            total_profit: p.total_profit.toFixed(2),
             average_rating: p.average_rating.toFixed(2),
             review_count: p.review_count,
             created_at: format(new Date(p.created_at), 'yyyy-MM-dd'),
@@ -124,7 +132,7 @@ export default function AnalyticsClientPage({
         <>
             <div className="flex items-center justify-between">
                 <h1 className="text-lg font-semibold md:text-2xl">Analytics</h1>
-                <DropdownMenu>
+                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                        <Button>
                           <Download className="mr-2 h-4 w-4" />
@@ -143,7 +151,7 @@ export default function AnalyticsClientPage({
             <Card>
                 <CardHeader>
                     <CardTitle>Filters</CardTitle>
-                    <CardDescription>Filter analytics data by date and/or product.</CardDescription>
+                    <CardDescription>Filter analytics data by date and/or product. Defaults to today's data.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row flex-wrap items-start gap-4">
                     <Input
@@ -178,9 +186,9 @@ export default function AnalyticsClientPage({
             </Card>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatCard title={hasFilters ? "Filtered Revenue" : "Total Revenue"} value={`GHS ${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={DollarSign} />
-                <StatCard title={hasFilters ? "Filtered Units Sold" : "Total Units Sold"} value={`+${stats.totalSales.toLocaleString('en-US')}`} icon={ShoppingCart} />
-                <StatCard title="Total Customers" value={stats.totalCustomers.toLocaleString('en-US')} icon={Users} />
+                <StatCard title={hasFilters ? "Filtered Revenue" : "Today's Revenue"} value={`GHS ${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={DollarSign} />
+                <StatCard title={hasFilters ? "Filtered Profit" : "Today's Profit"} value={`GHS ${stats.totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={TrendingUp} />
+                <StatCard title={hasFilters ? "Filtered Units Sold" : "Today's Units Sold"} value={`+${stats.totalSales.toLocaleString('en-US')}`} icon={ShoppingCart} />
                 <StatCard title="Total Products" value={stats.productCount.toLocaleString('en-US')} icon={Package} />
             </div>
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
@@ -196,25 +204,88 @@ export default function AnalyticsClientPage({
                 <Card className="lg:col-span-3">
                     <CardHeader>
                         <CardTitle>Top Products</CardTitle>
-                        <CardDescription>Your best-selling products by revenue.</CardDescription>
+                        <CardDescription>Your best-selling products by profit.</CardDescription>
                     </CardHeader>
                     <CardContent>
                          <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Product</TableHead>
-                                    <TableHead className="text-right">Revenue</TableHead>
+                                    <TableHead className="text-right">Profit</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {productsWithPerf.slice(0, 5).map(product => (
+                                {productsWithPerf.sort((a,b) => b.total_profit - a.total_profit).slice(0, 5).map(product => (
                                 <TableRow key={product.id}>
                                     <TableCell>{product.name}</TableCell>
-                                    <TableCell className="text-right">GHS {product.total_revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                    <TableCell className="text-right">GHS {product.total_profit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                 </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>All Product Performance</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                         <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Product</TableHead>
+                                    <TableHead>Profit</TableHead>
+                                    <TableHead>Revenue</TableHead>
+                                    <TableHead>Sales</TableHead>
+                                    <TableHead>Rating</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {productsWithPerf.map(product => (
+                                    <TableRow key={product.id}>
+                                        <TableCell className="font-medium">{product.name}</TableCell>
+                                        <TableCell>GHS {product.total_profit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                        <TableCell>GHS {product.total_revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                                        <TableCell>{product.total_sales.toLocaleString('en-US')}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-1">
+                                                <Star className="h-4 w-4 text-primary" /> {product.average_rating.toFixed(1)} ({product.review_count})
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                {productsWithPerf.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="text-center h-24">No data for the selected filters.</TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Recent Reviews</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {recentReviews.map(review => (
+                            <div key={review.id} className="flex items-start gap-4">
+                               <Avatar>
+                                    <AvatarFallback>{review.profiles?.display_name?.charAt(0) || 'U'}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                    <div className="flex justify-between items-center">
+                                        <p className="font-semibold">{review.profiles?.display_name || 'Anonymous'}</p>
+                                        <StarRating rating={review.rating} size={14} showText={false} />
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">on <span className="font-medium">{review.products?.name || 'a product'}</span></p>
+                                    <p className="text-sm mt-1">{review.comment}</p>
+                                </div>
+                            </div>
+                        ))}
+                         {recentReviews.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No recent reviews for the selected filters.</p>}
                     </CardContent>
                 </Card>
             </div>

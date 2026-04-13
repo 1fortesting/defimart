@@ -132,6 +132,7 @@ export async function placeOrder(formData: FormData) {
             status: 'pending' as const,
             original_price_per_item,
             price_per_item,
+            cost_price_per_item: product.cost_price ?? 0,
             notes: notes,
         };
     });

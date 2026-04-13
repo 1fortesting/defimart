@@ -34,10 +34,12 @@ export default async function AdminSalesOrdersPage() {
 
     const allOrders = orders || [];
     
-    const todaysRevenue = allOrders
-        .filter(order => new Date(order.created_at) >= startOfToday())
-        .reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0);
+    const todaysOrders = allOrders.filter(order => new Date(order.created_at) >= startOfToday());
     
+    const todaysRevenue = todaysOrders.reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0);
+    const todaysCost = todaysOrders.reduce((sum, order) => sum + ((order.cost_price_per_item ?? 0) * order.quantity), 0);
+    const todaysProfit = todaysRevenue - todaysCost;
+
     const pendingOrdersCount = allOrders.filter(o => o.status === 'pending').length;
     const readyForPickupCount = allOrders.filter(o => o.status === 'ready').length;
     
@@ -45,7 +47,8 @@ export default async function AdminSalesOrdersPage() {
         <AdminSalesOrdersClientPage 
             initialOrders={allOrders} 
             stats={{ 
-                todaysRevenue, 
+                todaysRevenue,
+                todaysProfit,
                 pendingOrdersCount,
                 readyForPickupCount,
                 totalOrdersCount: allOrders.length,

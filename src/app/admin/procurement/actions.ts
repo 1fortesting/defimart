@@ -9,6 +9,7 @@ const BaseProductSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   description: z.string().optional(),
   price: z.coerce.number().min(0, 'Price must be non-negative'),
+  cost_price: z.coerce.number().min(0, 'Cost price must be non-negative').optional(),
   quantity: z.coerce.number().int().min(0, 'Quantity must be a non-negative integer'),
   category: z.string().optional(),
   brand: z.string().optional(),
@@ -75,6 +76,7 @@ export async function createProduct(prevState: any, formData: FormData) {
   const validatedFields = CreateProductSchema.safeParse({
     ...rawFormData,
     price: parseFloat(rawFormData.price as string),
+    cost_price: rawFormData.cost_price ? parseFloat(rawFormData.cost_price as string) : 0,
     quantity: parseInt(rawFormData.quantity as string, 10),
     discount_percentage: rawFormData.discount_percentage ? parseFloat(rawFormData.discount_percentage as string) : null,
     discount_end_date: rawFormData.discount_end_date || null
@@ -88,7 +90,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     };
   }
   
-  const { name, description, price, quantity, category, brand, image, discount_percentage, discount_end_date, is_featured } = validatedFields.data;
+  const { name, description, price, cost_price, quantity, category, brand, image, discount_percentage, discount_end_date, is_featured } = validatedFields.data;
 
   const imageFile = image as File;
   const storageFilePath = `${user.id}/${Date.now()}-${imageFile.name}`;
@@ -126,6 +128,7 @@ export async function createProduct(prevState: any, formData: FormData) {
     name,
     description,
     price,
+    cost_price: cost_price || 0,
     quantity,
     category: category || null,
     brand: brand || null,
@@ -163,6 +166,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
      const validatedFields = UpdateProductSchema.safeParse({
         ...rawFormData,
         price: parseFloat(rawFormData.price as string),
+        cost_price: rawFormData.cost_price ? parseFloat(rawFormData.cost_price as string) : 0,
         quantity: parseInt(rawFormData.quantity as string, 10),
         discount_percentage: rawFormData.discount_percentage ? parseFloat(rawFormData.discount_percentage as string) : null,
         discount_end_date: rawFormData.discount_end_date || null
@@ -176,7 +180,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
         };
     }
 
-    const { id, name, description, price, quantity, category, brand, image, discount_percentage, discount_end_date, is_featured } = validatedFields.data;
+    const { id, name, description, price, cost_price, quantity, category, brand, image, discount_percentage, discount_end_date, is_featured } = validatedFields.data;
 
     const { data: existingProduct, error: fetchError } = await supabase.from('products').select('image_urls').eq('id', id).single();
     if (fetchError || !existingProduct) {
@@ -233,6 +237,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
         name,
         description,
         price,
+        cost_price: cost_price || 0,
         quantity,
         category: category || null,
         brand: brand || null,

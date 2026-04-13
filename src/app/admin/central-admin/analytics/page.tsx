@@ -1,13 +1,14 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database, Tables } from '@/types/supabase';
-import { subDays, startOfDay, endOfDay, eachDayOfInterval, format, isValid, parseISO } from 'date-fns';
+import { subDays, startOfDay, endOfDay, eachDayOfInterval, format, isValid, parseISO, startOfToday, endOfToday } from 'date-fns';
 import AnalyticsClientPage from './analytics-client-page';
 import { Suspense } from 'react';
 
 export type ProductWithSalesAndReviews = Tables<'products'> & {
     total_sales: number;
     total_revenue: number;
+    total_profit: number;
     average_rating: number;
     review_count: number;
 };
@@ -37,14 +38,16 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
 
     const selectedDate = selectedDateStr && isValid(parseISO(selectedDateStr)) ? parseISO(selectedDateStr) : null;
 
-    const startDate = selectedDate ? startOfDay(selectedDate) : startOfDay(subDays(new Date(), 6));
-    const endDate = selectedDate ? endOfDay(selectedDate) : new Date();
+    const isDefaultView = !selectedDate && !selectedProductId;
+
+    const startDate = selectedDate ? startOfDay(selectedDate) : startOfToday();
+    const endDate = selectedDate ? endOfDay(selectedDate) : endOfToday();
     
     // --- Data Fetching ---
     
     let ordersQuery = supabaseAdmin
         .from('orders')
-        .select('created_at, price_per_item, quantity, product_id')
+        .select('created_at, price_per_item, cost_price_per_item, quantity, product_id')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
 
@@ -81,26 +84,29 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
             const hour = new Date(order.created_at).getHours();
             salesChartData[hour].total += order.price_per_item * order.quantity;
         });
-    } else {
-        salesChartDescription = 'Total revenue for the last 7 days.';
-        salesChartData = eachDayOfInterval({ start: startDate, end: endDate }).map(day => {
-            const dateString = format(day, 'MMM d');
-            const total = orders
-                ?.filter(order => format(new Date(order.created_at), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'))
-                .reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0) ?? 0;
-            return { date: dateString, total };
+    } else { // Default view (today)
+        salesChartTimeUnit = 'hour';
+        salesChartDescription = 'Total revenue for today.';
+        salesChartData = Array.from({ length: 24 }, (_, i) => ({
+            date: `${String(i).padStart(2, '0')}:00`,
+            total: 0
+        }));
+        orders?.forEach(order => {
+            const hour = new Date(order.created_at).getHours();
+            salesChartData[hour].total += order.price_per_item * order.quantity;
         });
     }
     
     // --- Stats Cards ---
     const totalRevenue = orders?.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0) ?? 0;
+    const totalCost = orders?.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0) ?? 0;
+    const totalProfit = totalRevenue - totalCost;
     const totalSales = orders?.reduce((sum, o) => sum + o.quantity, 0) ?? 0; // Total units sold
     const { count: totalCustomers } = await supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true });
     const { count: totalProducts } = await supabaseAdmin.from('products').select('id', { count: 'exact', head: true });
 
     // --- Product Performance Table ---
     let productsQuery = supabaseAdmin.from('products').select('*');
-    // We only need product performance for the selected product if one is selected for the top products card.
     if (selectedProductId) {
         productsQuery = productsQuery.eq('id', selectedProductId);
     }
@@ -113,12 +119,29 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
 
         const total_sales = productOrders.reduce((sum, o) => sum + o.quantity, 0);
         const total_revenue = productOrders.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
+        const total_cost = productOrders.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0);
+        const total_profit = total_revenue - total_cost;
         const review_count = productReviews.length;
         const average_rating = review_count > 0 ? productReviews.reduce((sum, r) => sum + r.rating, 0) / review_count : 0;
         
-        return { ...p, total_sales, total_revenue, average_rating, review_count };
+        return { ...p, total_sales, total_revenue, total_profit, average_rating, review_count };
     }) ?? [];
 
+    // --- Recent Reviews Card ---
+    let recentReviewsQuery = supabaseAdmin
+        .from('reviews')
+        .select('*, products(name), profiles(display_name)')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+    if (selectedDate) {
+        recentReviewsQuery = recentReviewsQuery.gte('created_at', startDate.toISOString()).lte('created_at', endDate.toISOString());
+    }
+    if (selectedProductId) {
+        recentReviewsQuery = recentReviewsQuery.eq('product_id', selectedProductId);
+    }
+    const { data: recentReviews, error: recentReviewsError } = await recentReviewsQuery.returns<ReviewWithProductAndProfile[]>();
+    if (recentReviewsError) console.error("Error fetching recent reviews:", recentReviewsError.message);
 
     // --- Data for Filters ---
     const { data: allProductsForFilter, error: allProductsError } = await supabaseAdmin.from('products').select('id, name');
@@ -129,6 +152,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
             <AnalyticsClientPage
                 stats={{
                     totalRevenue,
+                    totalProfit,
                     totalSales,
                     totalCustomers: totalCustomers ?? 0,
                     productCount: totalProducts ?? 0
@@ -137,6 +161,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
                 salesChartDescription={salesChartDescription}
                 salesChartTimeUnit={salesChartTimeUnit}
                 productsWithPerf={productsWithPerf.sort((a,b) => b.total_revenue - a.total_revenue)}
+                recentReviews={recentReviews ?? []}
                 allProducts={allProductsForFilter ?? []}
                 currentFilters={{ date: selectedDateStr, productId: selectedProductId }}
             />

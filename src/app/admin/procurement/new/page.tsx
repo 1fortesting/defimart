@@ -106,11 +106,16 @@ export default function NewProductPage() {
                     <CardHeader>
                         <CardTitle>Pricing & Stock</CardTitle>
                     </CardHeader>
-                    <CardContent className="grid gap-6 md:grid-cols-2">
+                    <CardContent className="grid gap-6 md:grid-cols-3">
                         <div className="grid gap-3">
-                            <Label htmlFor="price">Price (GHS)</Label>
+                            <Label htmlFor="price">Selling Price (GHS)</Label>
                             <Input id="price" name="price" type="number" step="0.01" required />
                             {state.errors?.price && <p className="text-sm text-red-500">{state.errors.price[0]}</p>}
+                        </div>
+                        <div className="grid gap-3">
+                            <Label htmlFor="cost_price">Cost Price (GHS)</Label>
+                            <Input id="cost_price" name="cost_price" type="number" step="0.01" />
+                            {state.errors?.cost_price && <p className="text-sm text-red-500">{state.errors.cost_price[0]}</p>}
                         </div>
                         <div className="grid gap-3">
                             <Label htmlFor="quantity">Quantity</Label>

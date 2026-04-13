@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { updateOrderStatus } from '../actions';
 import { useState, useTransition, useEffect, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ArrowDown, Eye, Loader2, RefreshCw, DollarSign, Package, AlertCircle, Calendar as CalendarIcon, Download, FilterX, Search, ChevronRight } from 'lucide-react';
+import { ArrowDown, Eye, Loader2, RefreshCw, DollarSign, Package, AlertCircle, Calendar as CalendarIcon, Download, FilterX, Search, ChevronRight, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -187,7 +187,7 @@ const OrderCard = ({ order, handleStatusUpdate, pendingOrderId }: { order: Order
 
 export default function AdminSalesOrdersClientPage({ initialOrders, stats }: { 
     initialOrders: OrderWithDetails[], 
-    stats: { todaysRevenue: number, pendingOrdersCount: number, readyForPickupCount: number, totalOrdersCount: number } 
+    stats: { todaysRevenue: number, todaysProfit: number, pendingOrdersCount: number, readyForPickupCount: number, totalOrdersCount: number } 
 }) {
     const [isRefreshing, startRefreshTransition] = useTransition();
     const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
@@ -283,21 +283,28 @@ export default function AdminSalesOrdersClientPage({ initialOrders, stats }: {
             return;
         }
 
-        const headers = ['Order ID', 'Date', 'Customer Name', 'Customer Phone', 'Product Name', 'Quantity', 'Price Per Item', 'Total Price', 'Status', 'Notes'];
+        const headers = ['Order ID', 'Date', 'Customer Name', 'Customer Phone', 'Product Name', 'Quantity', 'Price Per Item', 'Cost Per Item', 'Total Price', 'Total Cost', 'Profit', 'Status', 'Notes'];
         const csvContent = [
             headers.join(','),
-            ...data.map(order => [
-                `"${order.id}"`,
-                `"${format(new Date(order.created_at), 'yyyy-MM-dd HH:mm:ss')}"`,
-                `"${order.profiles?.display_name || 'N/A'}"`,
-                `="\\"${order.profiles?.phone_number || ''}\\""`,
-                `"${order.products?.name || 'N/A'}"`,
-                order.quantity,
-                order.price_per_item,
-                (order.price_per_item * order.quantity),
-                order.status,
-                `"${(order.notes || '').replace(/"/g, '""')}"`,
-            ].join(','))
+            ...data.map((order: OrderWithDetails) => {
+                const total_price = order.price_per_item * order.quantity;
+                const total_cost = (order.cost_price_per_item ?? 0) * order.quantity;
+                return [
+                    `"${order.id}"`,
+                    `"${format(new Date(order.created_at), 'yyyy-MM-dd HH:mm:ss')}"`,
+                    `"${order.profiles?.display_name || 'N/A'}"`,
+                    `="\\"${order.profiles?.phone_number || ''}\\""`,
+                    `"${order.products?.name || 'N/A'}"`,
+                    order.quantity,
+                    order.price_per_item,
+                    order.cost_price_per_item ?? 0,
+                    total_price,
+                    total_cost,
+                    total_price - total_cost,
+                    order.status,
+                    `"${(order.notes || '').replace(/"/g, '""')}"`,
+                ].join(',')
+            })
         ].join('\n');
         
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -370,9 +377,9 @@ export default function AdminSalesOrdersClientPage({ initialOrders, stats }: {
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <StatCard title="Today's Revenue" value={`GHS ${stats.todaysRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`} icon={DollarSign} />
+            <StatCard title="Today's Profit" value={`GHS ${stats.todaysProfit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`} icon={TrendingUp} />
             <StatCard title="Pending Orders" value={stats.pendingOrdersCount} icon={AlertCircle} />
             <StatCard title="Ready for Pickup" value={stats.readyForPickupCount} icon={Package} />
-            <StatCard title="Total Orders" value={stats.totalOrdersCount} icon={Package} />
         </div>
          <Card>
             <CardHeader>
