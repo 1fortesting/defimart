@@ -1,13 +1,11 @@
-import { createClient } from '@/lib/supabase/server';
 import { RequestProductForm } from './request-product-form';
 import { Button } from './ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { PackagePlus } from 'lucide-react';
 import Link from 'next/link';
+import type { User } from '@supabase/supabase-js';
 
-export async function RequestProductSection() {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+export function RequestProductSection({ user }: { user: User | null }) {
 
     return (
         <div className="my-8">

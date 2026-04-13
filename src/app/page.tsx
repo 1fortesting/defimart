@@ -1,14 +1,11 @@
 import { createClient } from '@/lib/supabase/server';
-import { Filters } from '@/components/filters';
 import { ProductCarousel } from '@/components/product-carousel';
 import { SearchBar } from '@/components/search-bar';
 import { CategorySidebar } from '@/components/category-sidebar';
 import { FlashSaleSection } from '@/components/flash-sale-section';
 import { RecommendedForYouSection } from '@/components/recommended-for-you-section';
-import { RequestProductSection } from '@/components/request-product-section';
-import { CategoryProductRow } from '@/components/category-product-row';
 import type { Tables } from '@/types/supabase';
-import { HomeProductGrid } from './home-product-grid';
+import { HomePageContent } from './home-page-content';
 
 export default async function Home() {
   const supabase = createClient();
@@ -23,7 +20,7 @@ export default async function Home() {
   const { data: savedProducts } = user 
       ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 
       : { data: null };
-  const savedProductIds = new Set(savedProducts?.map(p => p.product_id) || []);
+  const savedProductIds = savedProducts?.map(p => p.product_id) || [];
 
   const allProducts = products || [];
 
@@ -45,7 +42,6 @@ export default async function Home() {
   const featuredProducts = productsWithRatings.filter(p => p.is_featured);
   const shuffledProducts = [...productsWithRatings].sort(() => 0.5 - Math.random());
   
-  // Prioritize featured products for the carousel, but fall back to random if not enough.
   const carouselProducts = featuredProducts.length >= 5 
     ? featuredProducts.slice(0, 5) 
     : shuffledProducts.slice(0, 5);
@@ -60,8 +56,14 @@ export default async function Home() {
   }, {} as { [key: string]: Tables<'products'>[] });
 
   const categoriesToShow = Object.keys(productsByCategory)
-    .sort((a, b) => productsByCategory[b].length - productsByCategory[a].length) // Sort by most products
-    .slice(0, 5); // Take top 5 categories
+    .sort((a, b) => productsByCategory[b].length - productsByCategory[a].length)
+    .slice(0, 3);
+  
+  const categoriesData = categoriesToShow.map(category => ({
+      title: category,
+      category: category,
+      products: productsByCategory[category].slice(0, 10)
+  }));
 
   return (
     <main className="flex-1">
@@ -84,21 +86,14 @@ export default async function Home() {
 
             <FlashSaleSection />
             
-            {/* New Category Rows */}
-            {categoriesToShow.map(category => (
-                <CategoryProductRow
-                    key={category}
-                    title={category}
-                    category={category}
-                    products={productsByCategory[category].slice(0, 10)}
-                />
-            ))}
-
-            <RequestProductSection />
-            
             <RecommendedForYouSection user={user} allProductsWithRatings={productsWithRatings} />
             
-            <HomeProductGrid products={productsWithRatings} user={user} savedProductIds={savedProductIds} />
+            <HomePageContent 
+                products={shuffledProducts} 
+                user={user} 
+                savedProductIds={savedProductIds}
+                categoriesData={categoriesData}
+            />
         </div>
       </main>
   );

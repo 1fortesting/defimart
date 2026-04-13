@@ -18,7 +18,7 @@ export function HorizontalProductCard({ product }: HorizontalProductCardProps) {
         : product.price;
 
     return (
-        <Link href={`/products/${product.id}`} className="block w-36 md:w-48 flex-shrink-0">
+        <Link href={`/products/${product.id}`} className="block w-32 md:w-40 flex-shrink-0">
             <Card className="overflow-hidden group transition-all duration-300 ease-in-out hover:shadow-md h-full flex flex-col">
                 <div className="relative">
                     <Image
