@@ -18,7 +18,7 @@ export async function FlashSaleSection() {
 
     if (!discountedProducts || discountedProducts.length === 0) {
         return (
-            <div className="bg-card rounded-lg my-8">
+            <div className="bg-card rounded-lg my-12 md:my-16">
                 <div className="bg-red-600 text-white p-3 flex justify-between items-center rounded-t-lg">
                     <div className="flex items-center gap-2">
                         <Zap className="h-6 w-6" />
@@ -42,7 +42,7 @@ export async function FlashSaleSection() {
     const shuffledProducts = [...discountedProducts].sort(() => 0.5 - Math.random());
 
     return (
-        <div className="bg-card rounded-lg my-8">
+        <div className="bg-card rounded-lg my-12 md:my-16">
             <Link href="/discounts">
                 <div className="bg-red-600 text-white p-3 flex justify-between items-center rounded-t-lg hover:bg-red-700 transition-colors cursor-pointer">
                     <div className="flex items-center gap-2">

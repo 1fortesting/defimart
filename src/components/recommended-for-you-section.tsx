@@ -92,7 +92,7 @@ export async function RecommendedForYouSection({ user, allProductsWithRatings }:
     if (products.length === 0) return null;
 
     return (
-        <div className="bg-card rounded-lg my-8">
+        <div className="bg-card rounded-lg my-12 md:my-16">
              <div className="bg-accent text-accent-foreground p-3 flex justify-center items-center rounded-t-lg">
                  <div className="flex items-center gap-2">
                     <Sparkles className="h-6 w-6" />

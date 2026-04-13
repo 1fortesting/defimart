@@ -8,7 +8,7 @@ import type { User } from '@supabase/supabase-js';
 export function RequestProductSection({ user }: { user: User | null }) {
 
     return (
-        <div className="my-8">
+        <div className="my-12 md:my-16">
              <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1" className="border-none rounded-lg overflow-hidden shadow-lg">
                     <AccordionTrigger className="p-6 text-left hover:no-underline transition-colors w-full bg-destructive text-destructive-foreground hover:bg-destructive/90 data-[state=open]:rounded-b-none">

@@ -14,7 +14,7 @@ export function OutstandingProducts({ products }: OutstandingProductsProps) {
     }
 
     return (
-        <section className="my-8 md:my-12">
+        <section className="my-12 md:my-16">
             <h2 className="text-2xl font-bold text-center mb-6">Outstanding Finds</h2>
             <div className="flex justify-center gap-4 md:gap-8">
                 {products.map((product) => (
