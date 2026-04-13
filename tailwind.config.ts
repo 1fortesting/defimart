@@ -102,6 +102,11 @@ export default {
             '0%, 100%': { transform: 'rotate(10deg)' },
             '50%': { transform: 'rotate(-10deg)' },
         },
+        'peek-a-boo': {
+          '0%': { transform: 'translateX(0)' },
+          '10%, 30%': { transform: 'translateX(-24px)' },
+          '40%, 100%': { transform: 'translateX(0)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -109,6 +114,7 @@ export default {
         'pulse-second': 'pulse-second 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'heartbeat': 'heartbeat 1s ease-in-out infinite',
         'swing': 'swing 3s ease-in-out infinite',
+        'peek-a-boo': 'peek-a-boo 3s ease-in-out 2 1s',
       },
     },
   },

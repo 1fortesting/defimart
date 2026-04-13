@@ -77,7 +77,7 @@ export function FlashSaleProductCard({ product }: FlashSaleProductCardProps) {
     }, [isDiscountActive, product.discount_end_date]);
 
     return (
-    <Link href={`/products/${product.id}`} className="block w-40 md:w-48 flex-shrink-0">
+    <Link href={`/products/${product.id}`} className="block w-36 md:w-48 flex-shrink-0">
         <Card className="relative overflow-hidden group transition-all duration-300 ease-in-out bg-white/60 dark:bg-slate-900/50 backdrop-blur-lg border border-white/20 dark:border-slate-800/50 shadow-lg hover:shadow-primary/20 flex flex-col h-full">
             {/* Decorative elements */}
             <div className="absolute -top-12 -left-12 w-32 h-32 bg-red-500/20 rounded-full blur-2xl transition-all duration-700 opacity-70 group-hover:opacity-100 group-hover:w-40 group-hover:h-40" />

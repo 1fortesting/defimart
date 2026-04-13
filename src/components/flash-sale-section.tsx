@@ -55,7 +55,7 @@ export async function FlashSaleSection() {
                 </div>
             </Link>
             <div className="p-4">
-                <div className="flex gap-4 overflow-x-auto pb-2 -mb-2">
+                <div className="flex gap-4 overflow-x-auto pb-2 -mb-2 animate-peek-a-boo hover:animate-none">
                     {shuffledProducts.map(product => (
                         <FlashSaleProductCard key={product.id} product={product} />
                     ))}
