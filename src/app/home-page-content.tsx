@@ -66,7 +66,7 @@ export function HomePageContent({ products, user, savedProductIds, categoriesDat
     const renderProductGrid = (productsToRender: ProductWithRating[]) => {
         if (!productsToRender || productsToRender.length === 0) return null;
         return (
-            <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 my-8">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6 lg:gap-8 my-8">
                 {productsToRender.map((product) => (
                     <ProductCard 
                         key={product.id} 

@@ -68,7 +68,7 @@ export default function SavedPage() {
         <div className="container mx-auto">
           <h1 className="text-3xl font-bold mb-8">My Wishlist</h1>
           {savedItems && savedItems.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6 lg:gap-8">
               {savedItems.map((item) => 
                 item.products ? (
                   <ProductCard 

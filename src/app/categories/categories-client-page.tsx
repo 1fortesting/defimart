@@ -97,7 +97,7 @@ export default function CategoriesClientPage({ allProducts, allCategories, allBr
                 <div className="overflow-y-auto p-4 md:p-6">
                     <h1 className="text-xl md:text-2xl font-bold mb-4">{selectedItem}</h1>
                     {filteredProducts.length > 0 ? (
-                        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4 lg:gap-6">
                             {filteredProducts.map(product => (
                                 <ProductCard 
                                     key={product.id}

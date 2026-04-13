@@ -28,7 +28,7 @@ export default async function DiscountsPage() {
                 </div>
                 <h1 className="text-3xl font-bold mb-8">Discounted Products</h1>
                 {discountedProducts && discountedProducts.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6 lg:gap-8">
                         {discountedProducts.map((product) => (
                             <ProductCard 
                                 key={product.id} 
