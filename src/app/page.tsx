@@ -25,34 +25,6 @@ export default async function Home() {
 
   const allProducts = productsData || [];
 
-  // --- Outstanding Products Logic ---
-  const { data: ordersData } = await supabase.from('orders').select('product_id, quantity');
-  const orders = ordersData || [];
-
-  const salesByProduct: { [key: string]: number } = orders.reduce((acc, order) => {
-    if (!acc[order.product_id]) {
-      acc[order.product_id] = 0;
-    }
-    acc[order.product_id] += order.quantity;
-    return acc;
-  }, {} as { [key: string]: number });
-
-  const productsWithSales = allProducts
-    .map(p => ({ ...p, total_sales: salesByProduct[p.id] || 0 }))
-    .sort((a, b) => b.total_sales - a.total_sales);
-
-  const topSellers = productsWithSales.slice(0, 10);
-  const shuffledTopSellers = topSellers.sort(() => 0.5 - Math.random());
-
-  let outstandingProducts = shuffledTopSellers.slice(0, 4);
-
-  if (outstandingProducts.length < 4) {
-      const existingIds = new Set(outstandingProducts.map(p => p.id));
-      const otherProducts = allProducts.filter(p => !existingIds.has(p.id)).sort(() => 0.5 - Math.random());
-      outstandingProducts.push(...otherProducts.slice(0, 4 - outstandingProducts.length));
-  }
-  // --- End Outstanding Products ---
-
   const reviewsByProduct = (reviews || []).reduce((acc, review) => {
     if (!acc[review.product_id]) {
         acc[review.product_id] = [];
@@ -68,12 +40,24 @@ export default async function Home() {
     return { ...p, average_rating, review_count };
   });
 
-  const featuredProducts = productsWithRatings.filter(p => p.is_featured);
   const shuffledProducts = [...productsWithRatings].sort(() => 0.5 - Math.random());
   
-  const carouselProducts = featuredProducts.length >= 5 
-    ? featuredProducts.slice(0, 5) 
-    : shuffledProducts.slice(0, 5);
+  // --- New logic for featured and outstanding products ---
+  const { data: featuredProductsData } = await supabase.from('products').select('*').eq('is_featured', true).limit(5);
+  const featuredProducts = featuredProductsData || [];
+  
+  const { data: outstandingProductsData } = await supabase.from('products').select('*').eq('is_outstanding', true).limit(4);
+  let outstandingProducts = outstandingProductsData || [];
+
+  // Fallback logic if not enough products are flagged
+  const carouselProducts = featuredProducts.length > 0 ? featuredProducts : allProducts.slice(0, 5);
+
+  if (outstandingProducts.length < 4) {
+      const existingIds = new Set(outstandingProducts.map(p => p.id));
+      const otherProducts = allProducts.filter(p => !existingIds.has(p.id)).sort(() => 0.5 - Math.random());
+      outstandingProducts.push(...otherProducts.slice(0, 4 - outstandingProducts.length));
+  }
+  // --- End new logic ---
 
   const productsByCategory: { [key: string]: Tables<'products'>[] } = allProducts.reduce((acc, product) => {
     const category = product.category || 'Other';

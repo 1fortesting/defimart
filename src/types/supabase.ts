@@ -208,6 +208,7 @@ export type Database = {
           id: string
           image_urls: string[] | null
           is_featured: boolean | null
+          is_outstanding: boolean | null
           name: string
           price: number
           quantity: number | null
@@ -225,6 +226,7 @@ export type Database = {
           id?: string
           image_urls?: string[] | null
           is_featured?: boolean | null
+          is_outstanding?: boolean | null
           name: string
           price: number
           quantity?: number | null
@@ -242,6 +244,7 @@ export type Database = {
           id?: string
           image_urls?: string[] | null
           is_featured?: boolean | null
+          is_outstanding?: boolean | null
           name?: string
           price?: number
           quantity?: number | null
@@ -506,6 +509,7 @@ export type Enums<
     
 
     
+
 
 
 

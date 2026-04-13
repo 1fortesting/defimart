@@ -148,14 +148,19 @@ export default function NewProductPage() {
              <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Product Status</CardTitle>
+                        <CardTitle>Homepage Display</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="space-y-4">
                         <div className="flex items-center space-x-2">
                             <Switch id="is_featured" name="is_featured" />
                             <Label htmlFor="is_featured">Featured Product</Label>
                         </div>
-                         <p className="text-xs text-muted-foreground mt-2">Featured products appear in the main carousel on the homepage.</p>
+                         <p className="text-xs text-muted-foreground">Featured products appear in the main carousel on the homepage.</p>
+                         <div className="flex items-center space-x-2">
+                            <Switch id="is_outstanding" name="is_outstanding" />
+                            <Label htmlFor="is_outstanding">Outstanding Product</Label>
+                        </div>
+                         <p className="text-xs text-muted-foreground">Outstanding products appear in the special section below the carousel.</p>
                     </CardContent>
                 </Card>
                 <Card>
