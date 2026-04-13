@@ -243,8 +243,8 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
             </div>
         </CardHeader>
         <CardContent className="relative p-3 flex flex-col justify-between flex-grow overflow-hidden">
-            <div className="absolute -bottom-10 -right-10 w-28 h-28 bg-primary/5 rounded-full" />
-            <div className="absolute -top-12 -left-12 w-32 h-32 bg-accent/5 rounded-full" />
+            <div className="absolute -bottom-10 -right-10 w-28 h-28 bg-primary/10 rounded-full blur-2xl" />
+            <div className="absolute -top-12 -left-12 w-32 h-32 bg-accent/10 rounded-full blur-2xl" />
             <div className="relative z-10 flex flex-col justify-between flex-grow h-full">
                 <div className="flex-grow">
                     <Link href={`/products/${product.id}`} className="hover:underline">
