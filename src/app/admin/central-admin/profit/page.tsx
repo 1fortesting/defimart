@@ -99,6 +99,16 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
     const totalSales = orders?.reduce((sum, o) => sum + o.quantity, 0) ?? 0; // Total units sold
     const { count: totalProducts } = await supabaseAdmin.from('products').select('id', { count: 'exact', head: true });
 
+    const { data: allOrders, error: allOrdersError } = await supabaseAdmin
+        .from('orders')
+        .select('price_per_item, cost_price_per_item, quantity');
+
+    if (allOrdersError) console.error("Error fetching all orders for total profit:", allOrdersError.message);
+
+    const allTimeTotalRevenue = allOrders?.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0) ?? 0;
+    const allTimeTotalCost = allOrders?.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0) ?? 0;
+    const allTimeTotalProfit = allTimeTotalRevenue - allTimeTotalCost;
+
     // --- Product Performance Table ---
     let productsQuery = supabaseAdmin.from('products').select('*');
     if (selectedProductId) {
@@ -132,7 +142,8 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
                     totalRevenue,
                     totalProfit,
                     totalSales,
-                    productCount: totalProducts ?? 0
+                    productCount: totalProducts ?? 0,
+                    allTimeTotalProfit,
                 }}
                 dailyProfit={profitChartData}
                 chartDescription={chartDescription}

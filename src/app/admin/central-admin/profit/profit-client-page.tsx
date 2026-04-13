@@ -43,7 +43,7 @@ export default function ProfitClientPage({
     allProducts,
     currentFilters
 }: {
-    stats: { totalRevenue: number, totalProfit: number, totalSales: number, productCount: number },
+    stats: { totalRevenue: number, totalProfit: number, totalSales: number, productCount: number, allTimeTotalProfit: number },
     dailyProfit: { date: string, total: number }[],
     chartDescription: string,
     chartTimeUnit: 'day' | 'hour',
@@ -185,7 +185,8 @@ export default function ProfitClientPage({
                 </CardContent>
             </Card>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
+                <StatCard title="All-Time Profit" value={`GHS ${stats.allTimeTotalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={TrendingUp} />
                 <StatCard title={hasFilters ? "Filtered Profit" : "Today's Profit"} value={`GHS ${stats.totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={TrendingUp} />
                 <StatCard title={hasFilters ? "Filtered Revenue" : "Today's Revenue"} value={`GHS ${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={DollarSign} />
                 <StatCard title={hasFilters ? "Filtered Units Sold" : "Today's Units Sold"} value={`+${stats.totalSales.toLocaleString('en-US')}`} icon={ShoppingCart} />
