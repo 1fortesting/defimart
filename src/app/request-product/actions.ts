@@ -1,3 +1,4 @@
+
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -27,42 +28,33 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   let storageFilePath: string | null = null;
 
   if (imageFile && imageFile.size > 0) {
-    try {
-      if (imageFile.size > MAX_FILE_SIZE) {
-        return { error: 'Image is too large. Max size is 5MB.', success: false };
+    if (imageFile.size > MAX_FILE_SIZE) {
+        console.error('Image is too large. Max size is 5MB.');
+    } else if (!ACCEPTED_IMAGE_TYPES.includes(imageFile.type)) {
+        console.error('Invalid image format.');
+    } else {
+      try {
+        storageFilePath = `${Date.now()}-${imageFile.name}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('product_requests')
+          .upload(storageFilePath, imageFile, {
+            contentType: imageFile.type,
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error('UPLOAD ERROR:', uploadError);
+        } else {
+          const { data: urlData } = supabase.storage
+            .from('product_requests')
+            .getPublicUrl(storageFilePath);
+
+          imageUrl = urlData?.publicUrl || null;
+        }
+      } catch (err) {
+        console.error('UPLOAD FAILED:', err);
       }
-
-      if (!ACCEPTED_IMAGE_TYPES.includes(imageFile.type)) {
-        return { error: 'Invalid image format.', success: false };
-      }
-
-      const fileExt = imageFile.name.split('.').pop();
-      storageFilePath = `${user.id}/${Date.now()}-${Math.random()}.${fileExt}`;
-
-      const arrayBuffer = await imageFile.arrayBuffer();
-      const fileBuffer = new Uint8Array(arrayBuffer);
-
-      const { error: uploadError } = await supabase.storage
-        .from('requested_product_images')
-        .upload(storageFilePath, fileBuffer, {
-          contentType: imageFile.type,
-          upsert: false,
-        });
-
-      if (uploadError) {
-        console.error('UPLOAD ERROR:', uploadError);
-        return { error: uploadError.message, success: false };
-      }
-
-      const { data: urlData } = supabase.storage
-        .from('requested_product_images')
-        .getPublicUrl(storageFilePath);
-
-      imageUrl = urlData?.publicUrl || null;
-
-    } catch (err) {
-      console.error('UPLOAD FAILED:', err);
-      return { error: 'Image upload failed unexpectedly.', success: false };
     }
   }
 
@@ -71,13 +63,14 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     description: description || '',
     user_id: user.id,
     image_url: imageUrl,
+    department: 'sales',
   });
 
   if (insertError) {
     console.error('DB ERROR:', insertError);
 
     if (storageFilePath) {
-      await supabase.storage.from('requested_product_images').remove([storageFilePath]);
+      await supabase.storage.from('product_requests').remove([storageFilePath]);
     }
 
     return { error: insertError.message, success: false };
@@ -89,10 +82,13 @@ export async function createProductRequest(prevState: any, formData: FormData) {
       const adminPhoneNumbers = [
         process.env.PROCUREMENT_ADMIN_PHONE_1,
         process.env.PROCUREMENT_ADMIN_PHONE_2,
+        process.env.SALES_ADMIN_PHONE_1,
+        process.env.SALES_ADMIN_PHONE_2,
+        process.env.SALES_ADMIN_PHONE_3,
       ].filter(Boolean) as string[];
 
       if (adminPhoneNumbers.length > 0) {
-        const adminMessage = `DEFIMART ADMIN: New product request from ${profile?.display_name || 'a user'}. Product: ${product_name}. Please review in the admin dashboard.`;
+        const adminMessage = `DEFIMART ADMIN: New product request for SALES from ${profile?.display_name || 'a user'}. Product: ${product_name}. Please review in the admin dashboard.`;
         try {
           await Promise.all(
             adminPhoneNumbers.map(number => sendSms({ phoneNumber: number, message: adminMessage }))
@@ -115,6 +111,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
   // --- End SMS ---
 
   revalidatePath('/admin/procurement/requests');
+  revalidatePath('/admin/sales/requests');
 
   return { success: true, message: 'Request submitted successfully' };
 }

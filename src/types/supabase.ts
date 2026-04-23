@@ -266,6 +266,7 @@ export type Database = {
         Row: {
           admin_notes: string | null
           created_at: string
+          department: string | null
           description: string
           id: string
           image_url: string | null
@@ -276,6 +277,7 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           created_at?: string
+          department?: string | null
           description: string
           id?: string
           image_url?: string | null
@@ -286,6 +288,7 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           created_at?: string
+          department?: string | null
           description?: string
           id?: string
           image_url?: string | null
@@ -509,6 +512,7 @@ export type Enums<
     
 
     
+
 
 
 
