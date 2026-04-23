@@ -45,21 +45,26 @@ export default function RequestsClientPage({ initialRequests }: { initialRequest
                             {initialRequests.map((request) => (
                                 <AccordionItem key={request.id} value={request.id}>
                                     <AccordionTrigger>
-                                        <div className="flex justify-between items-center w-full">
-                                            <div className="flex items-center gap-4 text-left">
-                                                <div className="truncate">
+                                        <div className="w-full text-left">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex-1 truncate pr-4">
                                                     <p className="font-semibold truncate">{request.product_name}</p>
                                                     <p className="text-sm text-muted-foreground">from {request.profiles?.display_name || 'Anonymous'}</p>
                                                 </div>
+                                                <div className="text-right flex-shrink-0">
+                                                    <p className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}</p>
+                                                </div>
                                             </div>
-                                            <p className="text-sm text-muted-foreground mr-4 hidden md:block">{formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}</p>
+                                            {request.image_url && (
+                                                <div className="mt-4">
+                                                    <Image src={request.image_url} alt="Product request" width={100} height={100} className="rounded-md object-cover aspect-square" />
+                                                </div>
+                                            )}
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent className="space-y-4">
                                         <div className="grid md:grid-cols-3 gap-6">
                                             <div className="md:col-span-2 space-y-4">
-                                                <h4 className="font-semibold">Product Name</h4>
-                                                <p className="text-muted-foreground">{request.product_name}</p>
                                                 <h4 className="font-semibold">Full Description</h4>
                                                 <p className="text-muted-foreground whitespace-pre-wrap">{request.description}</p>
                                                 <h4 className="font-semibold">Customer Details</h4>

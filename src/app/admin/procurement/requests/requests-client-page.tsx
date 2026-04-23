@@ -127,36 +127,44 @@ export default function ProductRequestsClientPage({ initialRequests }: { initial
                                     {requests.map((request) => (
                                         <AccordionItem key={request.id} value={request.id}>
                                             <AccordionTrigger>
-                                                <div className="flex justify-between items-center w-full">
-                                                    <div className="flex items-center gap-4 text-left">
-                                                        {request.image_url && <Image src={request.image_url} alt="Product request" width={40} height={40} className="rounded-md object-cover" />}
-                                                        <div className="truncate">
+                                                <div className="w-full text-left">
+                                                    <div className="flex justify-between items-start">
+                                                        <div className="flex-1 truncate pr-4">
                                                             <p className="font-semibold truncate">{request.product_name}</p>
                                                             <p className="text-sm text-muted-foreground">from {request.profiles?.display_name || 'Anonymous'}</p>
                                                         </div>
+                                                        <div className="text-right flex-shrink-0">
+                                                            <p className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}</p>
+                                                        </div>
                                                     </div>
-                                                    <p className="text-sm text-muted-foreground mr-4 hidden md:block">{formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}</p>
+                                                    {request.image_url && (
+                                                        <div className="mt-4">
+                                                            <Image src={request.image_url} alt="Product request" width={100} height={100} className="rounded-md object-cover aspect-square" />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </AccordionTrigger>
                                             <AccordionContent className="space-y-4">
                                                 <div className="grid md:grid-cols-3 gap-6">
                                                     <div className="md:col-span-2 space-y-4">
-                                                        <h4 className="font-semibold">Product Name</h4>
-                                                        <p className="text-muted-foreground">{request.product_name}</p>
                                                         <h4 className="font-semibold">Full Description</h4>
                                                         <p className="text-muted-foreground whitespace-pre-wrap">{request.description}</p>
                                                         <h4 className="font-semibold">Customer Details</h4>
                                                         <p className="text-sm text-muted-foreground"><strong>Name:</strong> {request.profiles?.display_name || 'N/A'}</p>
                                                         <p className="text-sm text-muted-foreground"><strong>Phone:</strong> {request.profiles?.phone_number || 'N/A'}</p>
                                                     </div>
-                                                     {request.image_url && (
-                                                         <div className="space-y-2">
-                                                            <h4 className="font-semibold">Uploaded Image</h4>
+                                                     <div className="space-y-2">
+                                                        <h4 className="font-semibold">Uploaded Image</h4>
+                                                        {request.image_url ? (
                                                             <a href={request.image_url} target="_blank" rel="noopener noreferrer">
                                                                 <Image src={request.image_url} alt="Product request" width={200} height={200} className="rounded-lg border object-cover aspect-square hover:opacity-80 transition-opacity" />
                                                             </a>
-                                                         </div>
-                                                     )}
+                                                        ) : (
+                                                             <div className="flex items-center justify-center h-[200px] w-full bg-muted rounded-lg">
+                                                                <p className="text-sm text-muted-foreground">No image provided</p>
+                                                            </div>
+                                                        )}
+                                                     </div>
                                                 </div>
                                                 <div className="flex items-center justify-between mt-4 border-t pt-4">
                                                      <p className="text-sm font-medium">Update Status:</p>
