@@ -44,22 +44,29 @@ export default function RequestsClientPage({ initialRequests }: { initialRequest
                         <Accordion type="single" collapsible className="w-full">
                             {initialRequests.map((request) => (
                                 <AccordionItem key={request.id} value={request.id}>
-                                    <AccordionTrigger>
-                                        <div className="w-full text-left">
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex-1 truncate pr-4">
-                                                    <p className="font-semibold truncate">{request.product_name}</p>
-                                                    <p className="text-sm text-muted-foreground">from {request.profiles?.display_name || 'Anonymous'}</p>
-                                                </div>
-                                                <div className="text-right flex-shrink-0">
-                                                    <p className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}</p>
-                                                </div>
-                                            </div>
+                                     <AccordionTrigger className="p-4 hover:bg-muted/50 rounded-md">
+                                        <div className="flex w-full items-start gap-4 text-left">
                                             {request.image_url && (
-                                                <div className="mt-4">
-                                                    <Image src={request.image_url} alt="Product request" width={100} height={100} className="rounded-md object-cover aspect-square" />
-                                                </div>
+                                                <Image
+                                                    src={request.image_url}
+                                                    alt="Product request"
+                                                    width={80}
+                                                    height={80}
+                                                    className="rounded-md object-cover aspect-square flex-shrink-0 border"
+                                                />
                                             )}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <div className="flex-1 truncate pr-4">
+                                                        <p className="font-semibold truncate">{request.product_name}</p>
+                                                        <p className="text-sm text-muted-foreground">from {request.profiles?.display_name || 'Anonymous'}</p>
+                                                    </div>
+                                                    <div className="text-right flex-shrink-0">
+                                                        <p className="text-sm text-muted-foreground">{formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}</p>
+                                                    </div>
+                                                </div>
+                                                <p className="text-sm text-muted-foreground mt-2 truncate">{request.description}</p>
+                                            </div>
                                         </div>
                                     </AccordionTrigger>
                                     <AccordionContent className="space-y-4">
