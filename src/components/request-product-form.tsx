@@ -48,6 +48,8 @@ export function RequestProductForm() {
         const file = event.target.files?.[0];
         if (file) {
             setImagePreview(URL.createObjectURL(file));
+        } else {
+            setImagePreview(null);
         }
     };
 
@@ -68,7 +70,6 @@ export function RequestProductForm() {
                     placeholder="e.g., Anker Power Bank 20000mAh"
                     required
                 />
-                {state.errors?.product_name && <p className="text-sm text-red-500 mt-1">{state.errors.product_name[0]}</p>}
             </div>
             <div className="space-y-2">
                 <Label htmlFor="description">Product Description</Label>
@@ -78,10 +79,9 @@ export function RequestProductForm() {
                     placeholder="Please be as descriptive as possible. Include brand, model, size, color, etc."
                     rows={3}
                 />
-                 {state.errors?.description && <p className="text-sm text-red-500 mt-1">{state.errors.description[0]}</p>}
             </div>
             <div className="space-y-2">
-                <Label htmlFor="image">Product Image (Optional)</Label>
+                <Label htmlFor="image">Product Image</Label>
                 {imagePreview ? (
                     <div className="relative w-32 h-32">
                         <img src={imagePreview} alt="Image Preview" className="rounded-md object-cover w-full h-full" />
@@ -97,7 +97,7 @@ export function RequestProductForm() {
                                 <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span></p>
                                 <p className="text-xs text-muted-foreground">PNG, JPG or WEBP (MAX. 5MB)</p>
                             </div>
-                            <Input ref={fileInputRef} id="image" name="image" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
+                            <Input ref={fileInputRef} id="image" name="image" type="file" accept="image/*" className="hidden" onChange={handleImageChange} required />
                         </label>
                     </div> 
                 )}
