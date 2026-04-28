@@ -1,4 +1,3 @@
-
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -29,32 +28,41 @@ export async function createProductRequest(prevState: any, formData: FormData) {
 
   if (imageFile && imageFile.size > 0) {
     if (imageFile.size > MAX_FILE_SIZE) {
-        console.error('Image is too large. Max size is 5MB.');
-    } else if (!ACCEPTED_IMAGE_TYPES.includes(imageFile.type)) {
-        console.error('Invalid image format.');
-    } else {
-      try {
-        storageFilePath = `${Date.now()}-${imageFile.name}`;
+        return { error: 'Image is too large. Max size is 5MB.', success: false };
+    }
+    if (!ACCEPTED_IMAGE_TYPES.includes(imageFile.type)) {
+        return { error: 'Invalid image format. Please use JPG, PNG, or WEBP.', success: false };
+    }
+
+    try {
+        storageFilePath = `${user.id}/${Date.now()}-${imageFile.name}`;
 
         const { error: uploadError } = await supabase.storage
           .from('requested_product_images')
           .upload(storageFilePath, imageFile, {
-            contentType: imageFile.type,
+            cacheControl: '3600',
             upsert: false,
           });
 
         if (uploadError) {
           console.error('UPLOAD ERROR:', uploadError);
-        } else {
-          const { data: urlData } = supabase.storage
+          return { error: `Image upload failed: ${uploadError.message}`, success: false };
+        }
+        
+        const { data: urlData } = supabase.storage
             .from('requested_product_images')
             .getPublicUrl(storageFilePath);
 
-          imageUrl = urlData?.publicUrl || null;
+        imageUrl = urlData?.publicUrl || null;
+        
+        if (!imageUrl) {
+            await supabase.storage.from('requested_product_images').remove([storageFilePath]);
+            return { error: 'Could not get public URL for the uploaded image.', success: false };
         }
-      } catch (err) {
+
+    } catch (err: any) {
         console.error('UPLOAD FAILED:', err);
-      }
+        return { error: `An unexpected error occurred: ${err.message}`, success: false };
     }
   }
 
@@ -70,10 +78,11 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     console.error('DB ERROR:', insertError);
 
     if (storageFilePath) {
+      // Rollback image upload if DB insert fails
       await supabase.storage.from('requested_product_images').remove([storageFilePath]);
     }
 
-    return { error: insertError.message, success: false };
+    return { error: `Database error: ${insertError.message}`, success: false };
   }
   
   // --- SMS Notifications ---
