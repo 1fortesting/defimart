@@ -1,3 +1,4 @@
+
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -35,7 +36,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     }
 
     try {
-        storageFilePath = `requests/${user.id}/${Date.now()}-${imageFile.name}`;
+        storageFilePath = `${user.id}/${Date.now()}-${imageFile.name}`;
 
         const { error: uploadError } = await supabase.storage
           .from('requested_product_images')
