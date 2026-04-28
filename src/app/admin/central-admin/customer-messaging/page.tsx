@@ -15,6 +15,10 @@ export type CustomerWithPerformance = {
     completed_orders: number;
 };
 
+export type SmsHistoryWithSender = Tables<'sms_history'> & {
+    profiles: Pick<Tables<'profiles'>, 'display_name'> | null;
+};
+
 export default async function CustomerMessagingPage() {
     const cookieStore = cookies();
     const supabaseAdmin = createServerClient<Database>(
@@ -70,11 +74,22 @@ export default async function CustomerMessagingPage() {
     const sevenDaysAgo = subDays(new Date(), 7);
     const newSignups = allCustomers.filter(c => new Date(c.created_at) >= sevenDaysAgo);
 
+    const { data: smsHistory, error: historyError } = await supabaseAdmin
+        .from('sms_history')
+        .select('*, profiles(display_name)')
+        .order('created_at', { ascending: false })
+        .limit(10);
+    
+    if (historyError) console.error('Error fetching SMS history:', historyError);
+
     return (
        <CustomerMessagingClientPage 
             allCustomers={allCustomers}
             topCustomers={topCustomers}
             newSignups={newSignups}
+            smsHistory={smsHistory ?? []}
        />
     );
 }
+
+    

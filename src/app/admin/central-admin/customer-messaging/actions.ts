@@ -52,6 +52,19 @@ export async function sendBulkSms(prevState: any, formData: FormData) {
         const successfulSends = results.filter(r => r.status === 'fulfilled').length;
         const failedSends = results.length - successfulSends;
 
+        if (successfulSends > 0) {
+            const { error: historyError } = await supabase.from('sms_history').insert({
+                message_content: message,
+                recipients_count: successfulSends,
+                recipient_ids: validCustomers.map(c => c.id),
+                sender_id: user.id
+            });
+            if (historyError) {
+                console.error('Error saving SMS to history:', historyError);
+                // Don't block the user response for this, just log it.
+            }
+        }
+
         let resultMessage = `SMS sent to ${successfulSends} customers.`;
         if (failedSends > 0) {
             resultMessage += ` ${failedSends} failed.`;
@@ -65,3 +78,5 @@ export async function sendBulkSms(prevState: any, formData: FormData) {
         return { success: false, message: 'An unexpected error occurred while sending messages.' };
     }
 }
+
+    

@@ -10,11 +10,12 @@ import { useActionState, useState, useTransition, useMemo, useEffect } from 'rea
 import { useFormStatus } from 'react-dom';
 import { sendBulkSms } from './actions';
 import { useToast } from '@/hooks/use-toast';
-import { type CustomerWithPerformance } from './page';
+import { type CustomerWithPerformance, type SmsHistoryWithSender } from './page';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDistanceToNow } from 'date-fns';
 import { Loader2, MessageSquare, Send, Users, TrendingUp, Sparkles, AlertTriangle, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 function SubmitButton({ disabled }: { disabled?: boolean }) {
     const { pending } = useFormStatus();
@@ -89,10 +90,12 @@ export default function CustomerMessagingClientPage({
     allCustomers,
     topCustomers,
     newSignups,
+    smsHistory
 }: {
     allCustomers: CustomerWithPerformance[],
     topCustomers: CustomerWithPerformance[],
-    newSignups: CustomerWithPerformance[]
+    newSignups: CustomerWithPerformance[],
+    smsHistory: SmsHistoryWithSender[]
 }) {
     const { toast } = useToast();
     const [message, setMessage] = useState('');
@@ -226,6 +229,40 @@ export default function CustomerMessagingClientPage({
                     </Tabs>
                 </CardContent>
             </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Sent Message History</CardTitle>
+                    <CardDescription>A log of the most recent bulk messages sent from this panel.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {smsHistory.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-4">No messages have been sent yet.</p>
+                    ) : (
+                        <Accordion type="single" collapsible className="w-full">
+                            {smsHistory.map(item => (
+                                <AccordionItem key={item.id} value={item.id}>
+                                    <AccordionTrigger>
+                                        <div className="flex justify-between items-center w-full pr-4 text-sm">
+                                            <p className="font-medium truncate max-w-xs">{item.message_content}</p>
+                                            <div className="flex items-center gap-4 text-muted-foreground flex-shrink-0">
+                                                <span>To {item.recipients_count} recipients</span>
+                                                <span className="hidden sm:inline">{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
+                                            </div>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <AccordionContent className="space-y-2">
+                                        <p className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 p-3 rounded-md">{item.message_content}</p>
+                                        <p className="text-xs text-muted-foreground pt-2">Sent by: {item.profiles?.display_name || 'Admin'}</p>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     )
 }
+
+    

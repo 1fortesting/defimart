@@ -136,6 +136,7 @@ export type Database = {
       orders: {
         Row: {
           buyer_id: string
+          cost_price_per_item: number | null
           created_at: string
           id: string
           notes: string | null
@@ -145,10 +146,10 @@ export type Database = {
           quantity: number
           seller_id: string
           status: Database["public"]["Enums"]["order_status"]
-          cost_price_per_item: number | null
         }
         Insert: {
           buyer_id: string
+          cost_price_per_item?: number | null
           created_at?: string
           id?: string
           notes?: string | null
@@ -158,10 +159,10 @@ export type Database = {
           quantity: number
           seller_id: string
           status?: Database["public"]["Enums"]["order_status"]
-          cost_price_per_item?: number | null
         }
         Update: {
           buyer_id?: string
+          cost_price_per_item?: number | null
           created_at?: string
           id?: string
           notes?: string | null
@@ -171,7 +172,6 @@ export type Database = {
           quantity?: number
           seller_id?: string
           status?: Database["public"]["Enums"]["order_status"]
-          cost_price_per_item?: number | null
         }
         Relationships: [
           {
@@ -201,6 +201,7 @@ export type Database = {
         Row: {
           brand: string | null
           category: string | null
+          cost_price: number | null
           created_at: string
           description: string | null
           discount_end_date: string | null
@@ -214,11 +215,11 @@ export type Database = {
           quantity: number | null
           seller_id: string
           tags: string[] | null
-          cost_price: number | null
         }
         Insert: {
           brand?: string | null
           category?: string | null
+          cost_price?: number | null
           created_at?: string
           description?: string | null
           discount_end_date?: string | null
@@ -232,11 +233,11 @@ export type Database = {
           quantity?: number | null
           seller_id: string
           tags?: string[] | null
-          cost_price?: number | null
         }
         Update: {
           brand?: string | null
           category?: string | null
+          cost_price?: number | null
           created_at?: string
           description?: string | null
           discount_end_date?: string | null
@@ -250,7 +251,6 @@ export type Database = {
           quantity?: number | null
           seller_id?: string
           tags?: string[] | null
-          cost_price?: number | null
         }
         Relationships: [
           {
@@ -413,6 +413,41 @@ export type Database = {
           },
         ]
       }
+      sms_history: {
+        Row: {
+          created_at: string
+          id: string
+          message_content: string
+          recipient_ids: Json | null
+          recipients_count: number
+          sender_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_content: string
+          recipient_ids?: Json | null
+          recipients_count?: number
+          sender_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_content?: string
+          recipient_ids?: Json | null
+          recipients_count?: number
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_history_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -513,9 +548,4 @@ export type Enums<
 
     
 
-
-
-
-
-
-
+    
