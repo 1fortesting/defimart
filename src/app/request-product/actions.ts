@@ -35,10 +35,10 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     }
 
     try {
-        storageFilePath = `${user.id}/${Date.now()}-${imageFile.name}`;
+        storageFilePath = `requests/${user.id}/${Date.now()}-${imageFile.name}`;
 
         const { error: uploadError } = await supabase.storage
-          .from('requested_product_images')
+          .from('product_images')
           .upload(storageFilePath, imageFile, {
             cacheControl: '3600',
             upsert: false,
@@ -50,13 +50,13 @@ export async function createProductRequest(prevState: any, formData: FormData) {
         }
         
         const { data: urlData } = supabase.storage
-            .from('requested_product_images')
+            .from('product_images')
             .getPublicUrl(storageFilePath);
 
         imageUrl = urlData?.publicUrl || null;
         
         if (!imageUrl) {
-            await supabase.storage.from('requested_product_images').remove([storageFilePath]);
+            await supabase.storage.from('product_images').remove([storageFilePath]);
             return { error: 'Could not get public URL for the uploaded image.', success: false };
         }
 
@@ -79,7 +79,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
 
     if (storageFilePath) {
       // Rollback image upload if DB insert fails
-      await supabase.storage.from('requested_product_images').remove([storageFilePath]);
+      await supabase.storage.from('product_images').remove([storageFilePath]);
     }
 
     return { error: `Database error: ${insertError.message}`, success: false };
