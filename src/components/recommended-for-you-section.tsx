@@ -42,21 +42,22 @@ async function getRecommendationData(
         ...(reviews?.map(p => p.product_id) || []),
     ]);
 
-    if (interactedProductIds.size === 0) {
-        // No history: show random products
-        const shuffled = allProductsWithRatings.sort(() => 0.5 - Math.random());
+    const userHistoryProducts = allProductsForPrompt.filter(p => interactedProductIds.has(p.id));
+    const availableProducts = allProductsForPrompt.filter(p => !interactedProductIds.has(p.id));
+
+    if (userHistoryProducts.length === 0 || availableProducts.length < 5) {
+        // No history, or not enough available products to recommend from: show random products
+        const shuffled = availableProducts.length > 0 ? availableProducts.sort(() => 0.5 - Math.random()) : allProductsForPrompt.sort(() => 0.5 - Math.random());
         return {
             title: "Explore These Items",
-            products: shuffled.slice(0, 8),
+            products: allProductsWithRatings.filter(p => shuffled.map(s => s.id).includes(p.id)).slice(0, 5),
         };
     }
-    
-    const userHistoryProducts = allProductsForPrompt.filter(p => interactedProductIds.has(p.id));
 
     try {
         const result = await recommendProducts({
             userHistory: userHistoryProducts,
-            allProducts: allProductsForPrompt.filter(p => !interactedProductIds.has(p.id)) // Don't recommend what they already have
+            allProducts: availableProducts
         });
 
         const recommendedIds = result.recommendations;
@@ -76,10 +77,10 @@ async function getRecommendationData(
 
     } catch (e) {
         console.error("AI Recommendation failed, falling back to random:", e);
-        const shuffled = allProductsWithRatings.filter(p => !interactedProductIds.has(p.id)).sort(() => 0.5 - Math.random());
+        const shuffled = availableProducts.sort(() => 0.5 - Math.random());
         return {
             title: "Discover Something New",
-            products: shuffled.slice(0, 5),
+            products: allProductsWithRatings.filter(p => shuffled.map(s => s.id).includes(p.id)).slice(0, 5),
         };
     }
 }

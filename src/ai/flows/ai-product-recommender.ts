@@ -29,7 +29,7 @@ const prompt = ai.definePrompt({
 
 Analyze the user's history of interacted products (saved, reviewed, or purchased). Do not recommend products that are already in their history.
 
-From the list of all available products, select 5 that are similar in category, complementary, or would likely be of interest to this user. Return only the array of product IDs for your recommendations.
+From the list of all available products, select 5 that are similar in category, complementary, or would likely be of interest to this user. Return a JSON object with a single key "recommendations" containing an array of 5 product IDs.
 
 ### User Interaction History:
 {{#if userHistory}}
