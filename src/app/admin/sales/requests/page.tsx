@@ -8,9 +8,11 @@ export type ProductRequestWithUser = Tables<'product_requests'> & {
 
 export default async function SalesProductRequestsPage() {
     const supabase = createClient();
+    // Fetch requests specifically for the 'sales' department
     const { data, error } = await supabase
         .from('product_requests')
         .select('*, profiles(display_name, phone_number)')
+        .eq('department', 'sales')
         .order('created_at', { ascending: false })
         .returns<ProductRequestWithUser[]>();
     
