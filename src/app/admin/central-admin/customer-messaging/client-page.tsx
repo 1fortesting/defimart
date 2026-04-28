@@ -13,7 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { type CustomerWithPerformance } from './page';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDistanceToNow } from 'date-fns';
-import { Loader2, MessageSquare, Send, Users, TrendingUp, Sparkles, AlertTriangle } from 'lucide-react';
+import { Loader2, MessageSquare, Send, Users, TrendingUp, Sparkles, AlertTriangle, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 
 function SubmitButton({ disabled }: { disabled?: boolean }) {
     const { pending } = useFormStatus();
@@ -97,6 +98,7 @@ export default function CustomerMessagingClientPage({
     const [message, setMessage] = useState('');
     const [selectedCustomers, setSelectedCustomers] = useState<Set<string>>(new Set());
     const [activeTab, setActiveTab] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const [state, formAction] = useActionState(sendBulkSms, { success: false, message: null });
 
@@ -124,18 +126,34 @@ export default function CustomerMessagingClientPage({
         });
     };
     
-    const customerLists: { [key: string]: CustomerWithPerformance[] } = {
+    const customerLists = useMemo(() => ({
         all: allCustomers,
         top: topCustomers,
         new: newSignups,
-    };
+    }), [allCustomers, topCustomers, newSignups]);
 
-    const selectedPhones = useMemo(() => {
-        return allCustomers.filter(c => selectedCustomers.has(c.id) && c.phone_number).map(c => c.phone_number!);
+    const filteredCustomerLists = useMemo(() => {
+        if (!searchQuery) return customerLists;
+        const lowerQuery = searchQuery.toLowerCase();
+        
+        const filterFn = (c: CustomerWithPerformance) =>
+            c.display_name?.toLowerCase().includes(lowerQuery) ||
+            c.email?.toLowerCase().includes(lowerQuery) ||
+            c.phone_number?.includes(searchQuery);
+
+        return {
+            all: allCustomers.filter(filterFn),
+            top: topCustomers.filter(filterFn),
+            new: newSignups.filter(filterFn),
+        };
+    }, [searchQuery, allCustomers, topCustomers, newSignups, customerLists]);
+
+    const selectedCustomerIds = useMemo(() => {
+        return allCustomers.filter(c => selectedCustomers.has(c.id) && c.phone_number).map(c => c.id);
     }, [selectedCustomers, allCustomers]);
     
     const handleFormSubmit = (formData: FormData) => {
-        formData.append('phoneNumbers', JSON.stringify(selectedPhones));
+        formData.append('customerIds', JSON.stringify(selectedCustomerIds));
         formAction(formData);
     }
 
@@ -155,19 +173,19 @@ export default function CustomerMessagingClientPage({
                             <Textarea 
                                 id="message" 
                                 name="message"
-                                placeholder="e.g., Hi {customer_name}, enjoy 10% off your next purchase with code: ... "
+                                placeholder="e.g., Hi {customer_name}, enjoy 10% off your next purchase with code: ..."
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 rows={4}
                             />
-                            <p className="text-xs text-muted-foreground">{message.length} characters. Note: {`{customer_name}`} placeholder is not yet supported.</p>
+                            <p className="text-xs text-muted-foreground">{message.length} characters. Use {`{customer_name}`} to insert the customer's name.</p>
                         </div>
                     </CardContent>
                     <CardFooter className="flex justify-between items-center">
                         <p className="text-sm text-muted-foreground">
-                            Sending to <strong>{selectedPhones.length}</strong> customer(s).
+                            Sending to <strong>{selectedCustomerIds.length}</strong> customer(s).
                         </p>
-                        <SubmitButton disabled={selectedPhones.length === 0 || message.trim().length === 0} />
+                        <SubmitButton disabled={selectedCustomerIds.length === 0 || message.trim().length === 0} />
                     </CardFooter>
                 </Card>
             </form>
@@ -177,22 +195,33 @@ export default function CustomerMessagingClientPage({
                 <CardHeader>
                     <CardTitle>Select Recipients</CardTitle>
                     <CardDescription>Choose which customers to message from the lists below.</CardDescription>
+                     <div className="pt-4">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input 
+                                placeholder="Search by name, email, or phone..."
+                                className="pl-10"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <Tabs value={activeTab} onValueChange={setActiveTab}>
                         <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="all"><Users className="mr-2"/>All Customers ({allCustomers.length})</TabsTrigger>
-                            <TabsTrigger value="top"><TrendingUp className="mr-2"/>Top Customers ({topCustomers.length})</TabsTrigger>
-                            <TabsTrigger value="new"><Sparkles className="mr-2"/>New Signups ({newSignups.length})</TabsTrigger>
+                            <TabsTrigger value="all"><Users className="mr-2"/>All Customers ({filteredCustomerLists.all.length})</TabsTrigger>
+                            <TabsTrigger value="top"><TrendingUp className="mr-2"/>Top Customers ({filteredCustomerLists.top.length})</TabsTrigger>
+                            <TabsTrigger value="new"><Sparkles className="mr-2"/>New Signups ({filteredCustomerLists.new.length})</TabsTrigger>
                         </TabsList>
                         <TabsContent value="all" className="mt-4">
-                            <CustomerTable customers={customerLists.all} selectedCustomers={selectedCustomers} onSelectionChange={handleSelectionChange} />
+                            <CustomerTable customers={filteredCustomerLists.all} selectedCustomers={selectedCustomers} onSelectionChange={handleSelectionChange} />
                         </TabsContent>
                         <TabsContent value="top" className="mt-4">
-                            <CustomerTable customers={customerLists.top} selectedCustomers={selectedCustomers} onSelectionChange={handleSelectionChange} />
+                            <CustomerTable customers={filteredCustomerLists.top} selectedCustomers={selectedCustomers} onSelectionChange={handleSelectionChange} />
                         </TabsContent>
                          <TabsContent value="new" className="mt-4">
-                            <CustomerTable customers={customerLists.new} selectedCustomers={selectedCustomers} onSelectionChange={handleSelectionChange} />
+                            <CustomerTable customers={filteredCustomerLists.new} selectedCustomers={selectedCustomers} onSelectionChange={handleSelectionChange} />
                         </TabsContent>
                     </Tabs>
                 </CardContent>

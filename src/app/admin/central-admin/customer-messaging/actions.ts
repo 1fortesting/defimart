@@ -17,23 +17,36 @@ export async function sendBulkSms(prevState: any, formData: FormData) {
     }
 
     const message = formData.get('message') as string;
-    const phoneNumbersString = formData.get('phoneNumbers') as string;
+    const customerIdsString = formData.get('customerIds') as string;
 
-    if (!message || !phoneNumbersString) {
-        return { success: false, message: 'Message and phone numbers are required.' };
+    if (!message || !customerIdsString) {
+        return { success: false, message: 'Message and recipients are required.' };
     }
     
-    const phoneNumbers = JSON.parse(phoneNumbersString) as string[];
+    const customerIds = JSON.parse(customerIdsString) as string[];
 
-    if (!Array.isArray(phoneNumbers) || phoneNumbers.length === 0) {
+    if (!Array.isArray(customerIds) || customerIds.length === 0) {
         return { success: false, message: 'No valid recipients selected.' };
     }
+    
+    const { data: customers, error: customerError } = await supabase
+        .from('profiles')
+        .select('id, display_name, phone_number')
+        .in('id', customerIds);
+    
+    if (customerError) {
+        console.error('Error fetching customers for SMS:', customerError);
+        return { success: false, message: 'Could not fetch customer details.' };
+    }
+    
+    const validCustomers = customers.filter(c => c.phone_number);
 
     try {
-        // In a real production app, this should be handled by a proper queueing system
-        // to avoid long-running server actions and to handle rate limits gracefully.
         const results = await Promise.allSettled(
-            phoneNumbers.map(number => sendSms({ phoneNumber: number, message }))
+            validCustomers.map(customer => {
+                const personalizedMessage = message.replace(/\{customer_name\}/g, customer.display_name || 'Valued Customer');
+                return sendSms({ phoneNumber: customer.phone_number!, message: personalizedMessage });
+            })
         );
 
         const successfulSends = results.filter(r => r.status === 'fulfilled').length;
