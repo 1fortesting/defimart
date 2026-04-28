@@ -94,7 +94,7 @@ export async function createProduct(prevState: any, formData: FormData) {
   const { name, description, price, cost_price, quantity, category, brand, image, discount_percentage, discount_end_date, is_featured, is_outstanding } = validatedFields.data;
 
   const imageFile = image as File;
-  const storageFilePath = `${user.id}/${Date.now()}-${imageFile.name}`;
+  const storageFilePath = `public/${user.id}-${Date.now()}-${imageFile.name}`;
   const { error: uploadError } = await supabase.storage
     .from('product_images')
     .upload(storageFilePath, imageFile);
@@ -197,7 +197,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
         if (imageFile.size > 5 * 1024 * 1024) return { message: 'Max image size is 5MB.', success: false, errors: {} };
         if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(imageFile.type)) return { message: 'Only .jpg, .jpeg, .png and .webp formats are supported.', success: false, errors: {} };
 
-        const storageFilePath = `${user.id}/${Date.now()}-${imageFile.name}`;
+        const storageFilePath = `public/${user.id}-${Date.now()}-${imageFile.name}`;
         const { error: uploadError } = await supabase.storage.from('product_images').upload(storageFilePath, imageFile);
 
         if (uploadError) return { message: `Storage Error: ${uploadError.message}`, success: false, errors: {} };

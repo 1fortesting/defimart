@@ -11,7 +11,6 @@ export default async function SalesProductRequestsPage() {
     const { data, error } = await supabase
         .from('product_requests')
         .select('*, profiles(display_name, phone_number)')
-        .eq('department', 'sales')
         .order('created_at', { ascending: false })
         .returns<ProductRequestWithUser[]>();
     

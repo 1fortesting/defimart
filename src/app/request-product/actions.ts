@@ -36,7 +36,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     }
 
     try {
-        storageFilePath = `${user.id}/${Date.now()}-${imageFile.name}`;
+        storageFilePath = `public/${user.id}-${Date.now()}-${imageFile.name}`;
 
         const { error: uploadError } = await supabase.storage
           .from('requested_product_images')
