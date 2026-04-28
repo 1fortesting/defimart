@@ -50,11 +50,14 @@ export function RequestProductForm() {
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0] || null;
-        console.log("File selected:", file);
         setSelectedFile(file);
 
         if (file) {
-            setImagePreview(URL.createObjectURL(file));
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
         } else {
             setImagePreview(null);
         }
@@ -68,10 +71,9 @@ export function RequestProductForm() {
         }
     }
 
-    const handleFormAction = async (formData: FormData) => {
-        // Manually append the file from state to ensure it's included
+    const handleFormAction = (formData: FormData) => {
         if (selectedFile) {
-            formData.append('image', selectedFile);
+            formData.set('image', selectedFile);
         }
         dispatch(formData);
     };
@@ -97,7 +99,7 @@ export function RequestProductForm() {
                 />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="image">Product Image (Required)</Label>
+                <Label htmlFor="image">Product Image (Optional)</Label>
                 {imagePreview ? (
                     <div className="relative w-32 h-32">
                         <img src={imagePreview} alt="Image Preview" className="rounded-md object-cover w-full h-full" />
@@ -117,7 +119,6 @@ export function RequestProductForm() {
                         </label>
                     </div> 
                 )}
-                 {state.errors?.image && <p className="text-sm text-red-500 mt-1">{state.errors.image[0]}</p>}
                  {selectedFile && (
                   <p className="text-xs text-muted-foreground mt-2">Selected: {selectedFile.name}</p>
                 )}

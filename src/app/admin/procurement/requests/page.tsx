@@ -9,18 +9,16 @@ export type ProductRequestWithUser = Tables<'product_requests'> & {
 export default async function ProductRequestsPage() {
     const supabase = createClient();
     
+    // Fetch ALL requests to ensure nothing is missed.
     const { data, error } = await supabase
         .from('product_requests')
         .select('*, profiles(display_name, phone_number)')
-        .or('department.eq.procurement,department.is.null')
         .order('created_at', { ascending: false })
         .returns<ProductRequestWithUser[]>();
     
     if (error) {
         console.error("Failed to fetch product requests:", error.message);
     }
-    
-    console.log("Fetched requests for procurement:", data);
 
     return <ProductRequestsClientPage initialRequests={data || []} />;
 }
