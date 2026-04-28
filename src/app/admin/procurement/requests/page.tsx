@@ -10,7 +10,6 @@ export default async function ProductRequestsPage() {
     const supabase = createClient();
     
     // Fetch all requests to ensure everything is visible.
-    // Department-specific filtering can be re-added once the core functionality is stable.
     const { data, error } = await supabase
         .from('product_requests')
         .select('*, profiles(display_name, phone_number)')
@@ -21,5 +20,7 @@ export default async function ProductRequestsPage() {
         console.error("Failed to fetch product requests:", error.message);
     }
     
+    console.log("Fetched requests for procurement:", data);
+
     return <ProductRequestsClientPage initialRequests={data || []} />;
 }

@@ -24,11 +24,14 @@ export async function createProductRequest(prevState: any, formData: FormData) {
       throw new Error('Product name is required.');
     }
     
-    // STRICT VALIDATION
+    // As per new requirement, image is mandatory
     if (!imageFile || imageFile.size === 0) {
-      throw new Error("An image is required to submit a request.");
+        throw new Error("An image is required to submit a request.");
     }
     
+    let imageUrl: string | null = null;
+
+    // STEP 1 & 2: STRICT FILE VALIDATION
     if (!imageFile.type.startsWith("image/")) {
       throw new Error("File must be an image (e.g., JPG, PNG, WEBP).");
     }
@@ -36,13 +39,13 @@ export async function createProductRequest(prevState: any, formData: FormData) {
       throw new Error("Image must be less than 5MB.");
     }
     
-    // UPLOAD LOGIC
+    // STEP 3: FORCE IMAGE UPLOAD (BLOCKING)
     const fileExt = imageFile.name.split('.').pop();
-    const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+    const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
     const filePath = `requests/${fileName}`;
-      
-    console.log("Uploading to:", filePath);
 
+    console.log("Uploading to:", filePath);
+    
     const { data: uploadData, error: uploadError } = await supabase.storage
         .from("requested_product_images")
         .upload(filePath, imageFile);
@@ -54,30 +57,36 @@ export async function createProductRequest(prevState: any, formData: FormData) {
       throw new Error(`Image upload failed: ${uploadError?.message || 'Unknown storage error'}`);
     }
     
-    // VERIFY UPLOAD AND GET URL
+    // STEP 4: VERIFY UPLOAD EXISTS AND GET URL
     const { data: publicUrlData } = supabase.storage
         .from("requested_product_images")
         .getPublicUrl(filePath);
 
-    const imageUrl = publicUrlData?.publicUrl;
+    imageUrl = publicUrlData?.publicUrl;
     console.log("Image URL:", imageUrl);
     
+    // STEP 5: BLOCK IF IMAGE URL IS EMPTY
     if (!imageUrl || imageUrl.trim() === "") {
+        // Clean up orphaned file
         await supabase.storage.from("requested_product_images").remove([filePath]);
-        throw new Error("Failed to get image URL after upload. The request was not saved.");
+        throw new Error("Image URL is empty after upload. The request was not saved.");
     }
 
-    // INSERT INTO DATABASE
-    const { error: insertError } = await supabase.from("product_requests").insert({
+    // STEP 6: ONLY THEN INSERT INTO DATABASE
+    const { data: insertedRequest, error: insertError } = await supabase.from("product_requests").insert({
       product_name,
       description: description || '',
       user_id: user.id,
       image_url: imageUrl,
-      department: "procurement" // Route to procurement
+      department: "sales" // As per user instruction
     }).select().single();
 
     if (insertError) {
-      await supabase.storage.from("requested_product_images").remove([filePath]);
+      // Clean up orphaned file if DB insert fails
+      if (imageUrl) {
+        const path = new URL(imageUrl).pathname.split('/requested_product_images/')[1];
+        await supabase.storage.from("requested_product_images").remove([path]);
+      }
       throw new Error(`Failed to save request to database: ${insertError.message}`);
     }
 
@@ -85,16 +94,15 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     const sendNotifications = async () => {
         const { data: profile } = await supabase.from('profiles').select('display_name, phone_number').eq('id', user.id).single();
         
-        // Notify admins - using Sales numbers as a fallback
+        // Notify admins 
         const adminPhoneNumbers = [
-            process.env.PROCUREMENT_ADMIN_PHONE_1,
             process.env.SALES_ADMIN_PHONE_1,
             process.env.SALES_ADMIN_PHONE_2,
             process.env.SALES_ADMIN_PHONE_3,
         ].filter(Boolean) as string[];
 
         if (adminPhoneNumbers.length > 0) {
-          const adminMessage = `DEFIMART ADMIN: New product request for PROCUREMENT from ${profile?.display_name || 'a user'}. Product: ${product_name}. Please review in the admin dashboard.`;
+          const adminMessage = `DEFIMART ADMIN: New product request for SALES from ${profile?.display_name || 'a user'}. Product: ${product_name}. Please review in the admin dashboard.`;
           try {
             await Promise.all(adminPhoneNumbers.map(number => sendSms({ phoneNumber: number, message: adminMessage })));
           } catch(e) {
@@ -114,6 +122,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     sendNotifications();
     
     revalidatePath('/admin/procurement/requests');
+    revalidatePath('/admin/sales/requests');
     
     return { success: true, message: 'Request submitted successfully!' };
 

@@ -19,5 +19,7 @@ export default async function SalesProductRequestsPage() {
         console.error("Failed to fetch product requests for sales:", error.message);
     }
     
+    console.log("Fetched requests for sales:", data);
+
     return <RequestsClientPage initialRequests={data || []} />;
 }
