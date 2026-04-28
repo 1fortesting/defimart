@@ -108,7 +108,7 @@ export default async function Home() {
 
             <FlashSaleSection />
             
-            <RecommendedForYouSection user={user} allProductsWithRatings={productsWithRatings} />
+            <RecommendedForYouSection />
             
             <HomePageContent 
                 products={shuffledProducts} 

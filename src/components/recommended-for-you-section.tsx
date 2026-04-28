@@ -1,96 +1,43 @@
-import { createClient } from '@/lib/supabase/server';
+'use client';
+
+import { useEffect, useState } from 'react';
 import type { Tables } from '@/types/supabase';
-import { Sparkles } from 'lucide-react';
-import { recommendProducts } from '@/ai/flows/ai-product-recommender';
+import { Sparkles, Loader2 } from 'lucide-react';
 import { FlashSaleProductCard } from './flash-sale-product-card';
-import type { User } from '@supabase/supabase-js';
+import { getRecommendations } from '@/app/actions';
 
 type ProductWithRating = Tables<'products'> & { average_rating: number; review_count: number };
 
-async function getRecommendationData(
-    user: User | null,
-    allProductsWithRatings: ProductWithRating[]
-): Promise<{ title: string; products: ProductWithRating[] }> {
+export function RecommendedForYouSection() {
+    const [data, setData] = useState<{ title: string; products: ProductWithRating[] } | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    const allProductsForPrompt = allProductsWithRatings.map(p => ({ id: p.id, name: p.name, category: p.category }));
-
-    if (!user) {
-        // Not logged in: show random products
-        const shuffled = allProductsWithRatings.sort(() => 0.5 - Math.random());
-        return {
-            title: "Popular Products",
-            products: shuffled.slice(0, 8),
-        };
-    }
-
-    const supabase = createClient();
-
-    // Fetch user's interaction history
-    const [
-        { data: saved },
-        { data: orders },
-        { data: reviews }
-    ] = await Promise.all([
-        supabase.from('saved_products').select('product_id').eq('user_id', user.id),
-        supabase.from('orders').select('product_id').eq('buyer_id', user.id),
-        supabase.from('reviews').select('product_id').eq('user_id', user.id),
-    ]);
-
-    const interactedProductIds = new Set([
-        ...(saved?.map(p => p.product_id) || []),
-        ...(orders?.map(p => p.product_id) || []),
-        ...(reviews?.map(p => p.product_id) || []),
-    ]);
-
-    const userHistoryProducts = allProductsForPrompt.filter(p => interactedProductIds.has(p.id));
-    const availableProducts = allProductsForPrompt.filter(p => !interactedProductIds.has(p.id));
-
-    if (userHistoryProducts.length === 0 || availableProducts.length < 5) {
-        // No history, or not enough available products to recommend from: show random products
-        const shuffled = availableProducts.length > 0 ? availableProducts.sort(() => 0.5 - Math.random()) : allProductsForPrompt.sort(() => 0.5 - Math.random());
-        return {
-            title: "Explore These Items",
-            products: allProductsWithRatings.filter(p => shuffled.map(s => s.id).includes(p.id)).slice(0, 5),
-        };
-    }
-
-    try {
-        const result = await recommendProducts({
-            userHistory: userHistoryProducts,
-            allProducts: availableProducts
+    useEffect(() => {
+        getRecommendations().then(result => {
+            setData(result);
+            setLoading(false);
         });
+    }, []);
 
-        const recommendedIds = result.recommendations;
-        
-        if (!recommendedIds || recommendedIds.length === 0) {
-            throw new Error("AI returned no recommendations.");
-        }
-
-        const recommendedProducts = allProductsWithRatings
-            .filter(p => recommendedIds.includes(p.id))
-            .sort((a, b) => recommendedIds.indexOf(a.id) - recommendedIds.indexOf(b.id)); // Preserve order from AI
-
-        return {
-            title: "Recommended For You",
-            products: recommendedProducts.slice(0, 5), // Ensure we only show 5
-        };
-
-    } catch (e) {
-        console.error("AI Recommendation failed, falling back to random:", e);
-        const shuffled = availableProducts.sort(() => 0.5 - Math.random());
-        return {
-            title: "Discover Something New",
-            products: allProductsWithRatings.filter(p => shuffled.map(s => s.id).includes(p.id)).slice(0, 5),
-        };
+    if (loading) {
+        return (
+            <div className="bg-card rounded-lg my-12 md:my-16">
+                 <div className="bg-accent text-accent-foreground p-3 flex justify-center items-center rounded-t-lg">
+                     <div className="flex items-center gap-2">
+                        <Sparkles className="h-6 w-6" />
+                        <h2 className="text-xl font-bold text-center">Finding Recommendations...</h2>
+                    </div>
+                </div>
+                <div className="p-4 pt-0 h-64 flex items-center justify-center">
+                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            </div>
+        );
     }
-}
-
-
-export async function RecommendedForYouSection({ user, allProductsWithRatings }: { user: User | null, allProductsWithRatings: ProductWithRating[] }) {
     
-    const { title, products } = await getRecommendationData(user, allProductsWithRatings);
+    if (!data || data.products.length === 0) return null;
 
-    if (products.length === 0) return null;
+    const { title, products } = data;
 
     return (
         <div className="bg-card rounded-lg my-12 md:my-16">
@@ -108,5 +55,5 @@ export async function RecommendedForYouSection({ user, allProductsWithRatings }:
                 </div>
             </div>
         </div>
-    )
+    );
 }
