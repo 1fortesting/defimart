@@ -173,12 +173,12 @@ export default function CustomerMessagingClientPage({
                             <Textarea 
                                 id="message" 
                                 name="message"
-                                placeholder="e.g., Hi {customer_name}, enjoy 10% off your next purchase with code: ..."
+                                placeholder="e.g., Hi {name}, enjoy 10% off your next purchase with code: ..."
                                 value={message}
                                 onChange={(e) => setMessage(e.target.value)}
                                 rows={4}
                             />
-                            <p className="text-xs text-muted-foreground">{message.length} characters. Use {`{customer_name}`} to insert the customer's name.</p>
+                            <p className="text-xs text-muted-foreground">{message.length} characters. Use {`{name}`} to insert the customer's name.</p>
                         </div>
                     </CardContent>
                     <CardFooter className="flex justify-between items-center">

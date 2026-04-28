@@ -44,7 +44,7 @@ export async function sendBulkSms(prevState: any, formData: FormData) {
     try {
         const results = await Promise.allSettled(
             validCustomers.map(customer => {
-                const personalizedMessage = message.replace(/\{customer_name\}/g, customer.display_name || 'Valued Customer');
+                const personalizedMessage = message.replace(/\{name\}/g, customer.display_name || 'Valued Customer');
                 return sendSms({ phoneNumber: customer.phone_number!, message: personalizedMessage });
             })
         );
