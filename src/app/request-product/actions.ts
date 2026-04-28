@@ -18,83 +18,80 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     const description = formData.get('description') as string | null;
     const imageFile = formData.get('image') as File | null;
     
-    console.log("Selected file on server:", imageFile);
+    console.log("File received on server:", imageFile);
 
     if (!product_name || product_name.trim() === '') {
-      throw new Error('Product name is required.');
-    }
-    
-    // As per new requirement, image is mandatory
-    if (!imageFile || imageFile.size === 0) {
-        throw new Error("An image is required to submit a request.");
+      return { success: false, error: 'Product name is required.' };
     }
     
     let imageUrl: string | null = null;
+    
+    if (imageFile && imageFile.size > 0) {
+        console.log("Selected file:", imageFile.name, imageFile.size);
 
-    // STEP 1 & 2: STRICT FILE VALIDATION
-    if (!imageFile.type.startsWith("image/")) {
-      throw new Error("File must be an image (e.g., JPG, PNG, WEBP).");
+        // STEP 1: VALIDATE FILE BEFORE UPLOAD
+        if (!imageFile.type.startsWith("image/")) {
+            return { success: false, error: "File must be an image (e.g., JPG, PNG, WEBP)." };
+        }
+        if (imageFile.size > 5 * 1024 * 1024) { // 5MB
+            return { success: false, error: "Image must be less than 5MB." };
+        }
+
+        // STEP 2: FIX IMAGE UPLOAD
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
+        const filePath = `requests/${fileName}`;
+        console.log("Uploading to:", filePath);
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("requested_product_images")
+            .upload(filePath, imageFile);
+
+        console.log("Upload result:", uploadData);
+
+        // STEP 3: HANDLE UPLOAD ERROR
+        if (uploadError) {
+            console.error("Upload failed:", uploadError.message);
+            return { success: false, error: `Image upload failed: ${uploadError.message}` };
+        }
+
+        // STEP 4: GET PUBLIC URL
+        const { data: publicUrlData } = supabase.storage
+            .from("requested_product_images")
+            .getPublicUrl(filePath);
+
+        imageUrl = publicUrlData?.publicUrl;
+        console.log("Public URL:", imageUrl);
+        
+        // STEP 5: BLOCK IF IMAGE URL IS EMPTY
+        if (!imageUrl) {
+            // Clean up if URL retrieval fails
+            await supabase.storage.from("requested_product_images").remove([filePath]);
+            return { success: false, error: "Failed to get image URL after upload." };
+        }
     }
-    if (imageFile.size > 5 * 1024 * 1024) { // 5MB
-      throw new Error("Image must be less than 5MB.");
-    }
-    
-    // STEP 3: FORCE IMAGE UPLOAD (BLOCKING)
-    const fileExt = imageFile.name.split('.').pop();
-    const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
-    const filePath = `requests/${fileName}`;
 
-    console.log("Uploading to:", filePath);
-    
-    const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("requested_product_images")
-        .upload(filePath, imageFile);
-    
-    console.log("Upload result:", uploadData);
-
-    if (uploadError || !uploadData) {
-      console.error("Upload failed:", uploadError);
-      throw new Error(`Image upload failed: ${uploadError?.message || 'Unknown storage error'}`);
-    }
-    
-    // STEP 4: VERIFY UPLOAD EXISTS AND GET URL
-    const { data: publicUrlData } = supabase.storage
-        .from("requested_product_images")
-        .getPublicUrl(filePath);
-
-    imageUrl = publicUrlData?.publicUrl;
-    console.log("Image URL:", imageUrl);
-    
-    // STEP 5: BLOCK IF IMAGE URL IS EMPTY
-    if (!imageUrl || imageUrl.trim() === "") {
-        // Clean up orphaned file
-        await supabase.storage.from("requested_product_images").remove([filePath]);
-        throw new Error("Image URL is empty after upload. The request was not saved.");
-    }
-
-    // STEP 6: ONLY THEN INSERT INTO DATABASE
-    const { data: insertedRequest, error: insertError } = await supabase.from("product_requests").insert({
+    // STEP 6: INSERT INTO DATABASE
+    const { error: insertError } = await supabase.from("product_requests").insert({
       product_name,
       description: description || '',
       user_id: user.id,
       image_url: imageUrl,
-      department: "sales" // As per user instruction
-    }).select().single();
+      department: "sales"
+    });
 
     if (insertError) {
-      // Clean up orphaned file if DB insert fails
       if (imageUrl) {
         const path = new URL(imageUrl).pathname.split('/requested_product_images/')[1];
         await supabase.storage.from("requested_product_images").remove([path]);
       }
-      throw new Error(`Failed to save request to database: ${insertError.message}`);
+      return { success: false, error: `Database error: ${insertError.message}` };
     }
 
     // --- SMS Notifications ---
     const sendNotifications = async () => {
         const { data: profile } = await supabase.from('profiles').select('display_name, phone_number').eq('id', user.id).single();
         
-        // Notify admins 
         const adminPhoneNumbers = [
             process.env.SALES_ADMIN_PHONE_1,
             process.env.SALES_ADMIN_PHONE_2,
@@ -127,6 +124,6 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     return { success: true, message: 'Request submitted successfully!' };
 
   } catch (error: any) {
-    return { success: false, error: error.message, errors: {} };
+    return { success: false, error: error.message };
   }
 }

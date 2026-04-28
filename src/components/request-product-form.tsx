@@ -30,7 +30,10 @@ export function RequestProductForm() {
     const { toast } = useToast();
     const initialState = { message: null, error: null, errors: {}, success: false };
     const [state, dispatch] = useActionState(createProductRequest, initialState);
+    
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    
     const formRef = useRef<HTMLFormElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -39,13 +42,17 @@ export function RequestProductForm() {
             toast({ variant: 'success', title: 'Request Submitted!', description: state.message });
             formRef.current?.reset();
             setImagePreview(null);
+            setSelectedFile(null);
         } else if (state.error) {
             toast({ variant: 'destructive', title: 'Submission Failed', description: state.error });
         }
     }, [state, toast]);
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
+        const file = event.target.files?.[0] || null;
+        console.log("File selected:", file);
+        setSelectedFile(file);
+
         if (file) {
             setImagePreview(URL.createObjectURL(file));
         } else {
@@ -55,13 +62,22 @@ export function RequestProductForm() {
 
     const handleRemoveImage = () => {
         setImagePreview(null);
+        setSelectedFile(null);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
     }
 
+    const handleFormAction = async (formData: FormData) => {
+        // Manually append the file from state to ensure it's included
+        if (selectedFile) {
+            formData.append('image', selectedFile);
+        }
+        dispatch(formData);
+    };
+
     return (
-        <form ref={formRef} action={dispatch} className="space-y-4">
+        <form ref={formRef} action={handleFormAction} className="space-y-4">
             <div className="space-y-2">
                 <Label htmlFor="product_name">Product Name</Label>
                 <Input
@@ -81,7 +97,7 @@ export function RequestProductForm() {
                 />
             </div>
             <div className="space-y-2">
-                <Label htmlFor="image">Product Image</Label>
+                <Label htmlFor="image">Product Image (Required)</Label>
                 {imagePreview ? (
                     <div className="relative w-32 h-32">
                         <img src={imagePreview} alt="Image Preview" className="rounded-md object-cover w-full h-full" />
@@ -97,11 +113,14 @@ export function RequestProductForm() {
                                 <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span></p>
                                 <p className="text-xs text-muted-foreground">PNG, JPG or WEBP (MAX. 5MB)</p>
                             </div>
-                            <Input ref={fileInputRef} id="image" name="image" type="file" accept="image/*" className="hidden" onChange={handleImageChange} required />
+                            <Input ref={fileInputRef} id="image" name="image" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                         </label>
                     </div> 
                 )}
                  {state.errors?.image && <p className="text-sm text-red-500 mt-1">{state.errors.image[0]}</p>}
+                 {selectedFile && (
+                  <p className="text-xs text-muted-foreground mt-2">Selected: {selectedFile.name}</p>
+                )}
             </div>
             <SubmitButton />
         </form>

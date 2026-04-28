@@ -8,10 +8,10 @@ export type ProductRequestWithUser = Tables<'product_requests'> & {
 
 export default async function SalesProductRequestsPage() {
     const supabase = createClient();
-    // Fetch all requests for now to ensure visibility.
     const { data, error } = await supabase
         .from('product_requests')
         .select('*, profiles(display_name, phone_number)')
+        .or('department.eq.sales,department.is.null')
         .order('created_at', { ascending: false })
         .returns<ProductRequestWithUser[]>();
     

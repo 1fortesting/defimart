@@ -164,7 +164,7 @@ export default function ProductRequestsClientPage({ initialRequests }: { initial
                                                         <h4 className="font-semibold">Uploaded Image</h4>
                                                         {request.image_url ? (
                                                             <a href={request.image_url} target="_blank" rel="noopener noreferrer">
-                                                                <Image src={request.image_url} alt="Product request" width={200} height={200} className="rounded-lg border object-cover aspect-square hover:opacity-80 transition-opacity" />
+                                                                <Image src={request.image_url} alt="Product request" width={200} height={200} className="rounded-lg border object-cover aspect-square hover:opacity-80 transition-opacity w-full max-h-[200px]" />
                                                             </a>
                                                         ) : (
                                                              <div className="flex items-center justify-center h-[200px] w-full bg-muted rounded-lg">
