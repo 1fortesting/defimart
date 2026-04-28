@@ -64,7 +64,7 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
                          <div className="space-y-4">
                              <div>
                                 <span className="text-sm font-medium text-muted-foreground">Status</span>
-                                <p><Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : 'outline'}>{order.status}</Badge></p>
+                                <p><Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : order.status === 'cancelled' ? 'destructive' : 'outline'}>{order.status}</Badge></p>
                             </div>
                             <div>
                                 <span className="text-sm font-medium text-muted-foreground">Total Amount</span>
@@ -153,3 +153,5 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
         </div>
     )
 }
+
+    

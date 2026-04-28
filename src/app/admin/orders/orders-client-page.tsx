@@ -43,6 +43,7 @@ function StatusSelector({ orderId, currentStatus, onUpdate, isPending }: {
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="ready">Ready</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
             </Select>
             <input type="hidden" name="orderId" value={orderId} />
@@ -86,7 +87,7 @@ const OrderTableRow = ({ order, handleStatusUpdate, pendingOrderId }: { order: O
             </TableCell>
             <TableCell className="hidden lg:table-cell">{new Date(order.created_at).toLocaleString()}</TableCell>
             <TableCell>
-                <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : 'outline'}>{order.status}</Badge>
+                <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : order.status === 'cancelled' ? 'destructive' : 'outline'}>{order.status}</Badge>
             </TableCell>
             <TableCell className="hidden md:table-cell">
                 <StatusSelector 
@@ -120,7 +121,7 @@ const OrderCard = ({ order, handleStatusUpdate, pendingOrderId }: { order: Order
                             by {order.profiles?.display_name || 'N/A'} &bull; Qty: {order.quantity}
                         </CardDescription>
                     </div>
-                     <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : 'outline'}>{order.status}</Badge>
+                     <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : order.status === 'cancelled' ? 'destructive' : 'outline'}>{order.status}</Badge>
                 </div>
             </CardHeader>
             <CardContent>
@@ -232,3 +233,5 @@ export default function AdminOrdersClientPage({ initialOrders }: { initialOrders
     </Card>
   );
 }
+
+    

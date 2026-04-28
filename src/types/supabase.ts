@@ -456,7 +456,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      order_status: "pending" | "ready" | "completed"
+      order_status: "pending" | "ready" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -543,6 +543,8 @@ export type Enums<
   : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
     ? Database["public"]["Enums"][PublicEnumNameOrOptions]
     : never
+
+    
 
     
 

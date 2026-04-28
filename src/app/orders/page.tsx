@@ -90,7 +90,7 @@ export default async function OrdersPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : 'outline'}>{order.status}</Badge>
+                        <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : order.status === 'cancelled' ? 'destructive' : 'outline'}>{order.status}</Badge>
                       </TableCell>
                       <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
                     </TableRow>
@@ -108,3 +108,5 @@ export default async function OrdersPage() {
       </main>
   );
 }
+
+    

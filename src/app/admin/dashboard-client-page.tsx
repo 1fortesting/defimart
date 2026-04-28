@@ -72,7 +72,7 @@ export default function DashboardClientPage({
                              <TableRow key={order.id}>
                                 <TableCell>{order.profiles?.display_name || 'N/A'}</TableCell>
                                 <TableCell>{order.products?.name || 'N/A'}</TableCell>
-                                <TableCell><Badge variant="outline">{order.status}</Badge></TableCell>
+                                <TableCell><Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : order.status === 'cancelled' ? 'destructive' : 'outline'}>{order.status}</Badge></TableCell>
                                 <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
                             </TableRow>
                            ))}
@@ -88,3 +88,5 @@ export default function DashboardClientPage({
         </div>
     );
 }
+
+    
