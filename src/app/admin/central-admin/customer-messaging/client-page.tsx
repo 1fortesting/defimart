@@ -12,10 +12,18 @@ import { sendBulkSms } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { type CustomerWithPerformance, type SmsHistoryWithSender } from './page';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { formatDistanceToNow } from 'date-fns';
-import { Loader2, MessageSquare, Send, Users, TrendingUp, Sparkles, AlertTriangle, Search } from 'lucide-react';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Loader2, MessageSquare, Send, Users, TrendingUp, Sparkles, AlertTriangle, Search, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 function SubmitButton({ disabled }: { disabled?: boolean }) {
     const { pending } = useFormStatus();
@@ -159,10 +167,62 @@ export default function CustomerMessagingClientPage({
         formData.append('customerIds', JSON.stringify(selectedCustomerIds));
         formAction(formData);
     }
+    
+    const downloadCSV = (data: any[], filename: string) => {
+        if (data.length === 0) return;
+        const headers = Object.keys(data[0]);
+        const csvContent = [
+            headers.join(','),
+            ...data.map(row => headers.map(header => {
+                const cell = row[header];
+                const stringCell = (cell === null || cell === undefined) ? '' : String(cell);
+                return `"${stringCell.replace(/"/g, '""')}"`;
+            }).join(','))
+        ].join('\n');
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        if (link.href) {
+            URL.revokeObjectURL(link.href);
+        }
+        link.href = URL.createObjectURL(blob);
+        link.download = `${filename}_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleDownloadHistory = () => {
+        const dataToDownload = smsHistory.map(item => ({
+            message_id: item.id,
+            sent_at: format(new Date(item.created_at), 'yyyy-MM-dd HH:mm:ss'),
+            message_content: item.message_content,
+            recipients_count: item.recipients_count,
+            sent_by: item.profiles?.display_name || 'Admin',
+        }));
+        downloadCSV(dataToDownload, 'sms_history_report');
+    };
 
     return (
         <div className="flex flex-col gap-6">
-            <h1 className="text-lg font-semibold md:text-2xl flex items-center gap-2"><MessageSquare className="h-6 w-6" /> Customer Messaging</h1>
+            <div className="flex items-center justify-between">
+                <h1 className="text-lg font-semibold md:text-2xl flex items-center gap-2"><MessageSquare className="h-6 w-6" /> Customer Messaging</h1>
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                       <Button>
+                          <Download className="mr-2 h-4 w-4" />
+                          Download Report
+                       </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Export Data</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={handleDownloadHistory}>
+                            SMS History (.csv)
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
 
             <form action={handleFormSubmit}>
                  <Card>
@@ -264,5 +324,3 @@ export default function CustomerMessagingClientPage({
         </div>
     )
 }
-
-    
