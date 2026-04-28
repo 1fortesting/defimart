@@ -9,11 +9,11 @@ export type ProductRequestWithUser = Tables<'product_requests'> & {
 export default async function ProductRequestsPage() {
     const supabase = createClient();
     
-    // Fetch requests for 'procurement' OR older requests with no department set
+    // Fetch all requests to ensure everything is visible.
+    // Department-specific filtering can be re-added once the core functionality is stable.
     const { data, error } = await supabase
         .from('product_requests')
         .select('*, profiles(display_name, phone_number)')
-        .or('department.eq.procurement,department.is.null')
         .order('created_at', { ascending: false })
         .returns<ProductRequestWithUser[]>();
     
