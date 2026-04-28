@@ -72,7 +72,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     description: description || '',
     user_id: user.id,
     image_url: imageUrl,
-    department: 'sales',
+    department: 'procurement',
   });
 
   if (insertError) {
@@ -98,7 +98,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
       ].filter(Boolean) as string[];
 
       if (adminPhoneNumbers.length > 0) {
-        const adminMessage = `DEFIMART ADMIN: New product request for SALES from ${profile?.display_name || 'a user'}. Product: ${product_name}. Please review in the admin dashboard.`;
+        const adminMessage = `DEFIMART ADMIN: New product request for PROCUREMENT from ${profile?.display_name || 'a user'}. Product: ${product_name}. Please review in the admin dashboard.`;
         try {
           await Promise.all(
             adminPhoneNumbers.map(number => sendSms({ phoneNumber: number, message: adminMessage }))
