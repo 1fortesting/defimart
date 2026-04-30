@@ -16,7 +16,7 @@ type CartItemWithProduct = Tables<'cart_items'> & {
 };
 
 export default async function CheckoutPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {

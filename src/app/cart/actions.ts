@@ -7,7 +7,7 @@ import { Tables } from '@/types/supabase';
 import { sendSms } from '@/lib/sendSms';
 
 export async function addToCart(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -53,7 +53,7 @@ export async function addToCart(formData: FormData) {
 }
 
 export async function updateItemQuantity(formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return redirect('/login');
@@ -72,7 +72,7 @@ export async function updateItemQuantity(formData: FormData) {
 }
 
 export async function removeItem(formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return redirect('/login');
@@ -84,7 +84,7 @@ export async function removeItem(formData: FormData) {
 }
 
 export async function placeOrder(formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {

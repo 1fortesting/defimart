@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { sendSms } from '@/lib/sendSms';
 
 export async function createProductRequest(prevState: any, formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -25,8 +25,6 @@ export async function createProductRequest(prevState: any, formData: FormData) {
     let imageUrl: string | null = null;
     
     if (imageFile && imageFile.size > 0) {
-        console.log("Image provided, processing upload:", imageFile.name, imageFile.size);
-
         if (!imageFile.type.startsWith("image/")) {
             return { success: false, error: "File must be an image (e.g., JPG, PNG, WEBP)." };
         }
@@ -36,8 +34,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
 
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-        const filePath = `public/${fileName}`;
-        console.log("Uploading to:", filePath);
+        const filePath = `requests/${fileName}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
             .from("requested_product_images")
@@ -48,14 +45,11 @@ export async function createProductRequest(prevState: any, formData: FormData) {
             return { success: false, error: `Image upload failed: ${uploadError.message}` };
         }
 
-        console.log("Upload result:", uploadData);
-
         const { data: publicUrlData } = supabase.storage
             .from("requested_product_images")
             .getPublicUrl(filePath);
 
         imageUrl = publicUrlData?.publicUrl;
-        console.log("Public URL:", imageUrl);
         
         if (!imageUrl) {
             await supabase.storage.from("requested_product_images").remove([filePath]);
@@ -68,7 +62,7 @@ export async function createProductRequest(prevState: any, formData: FormData) {
       description: description || '',
       user_id: user.id,
       image_url: imageUrl,
-      department: "procurement"
+      department: "sales"
     });
 
     if (insertError) {
@@ -84,8 +78,8 @@ export async function createProductRequest(prevState: any, formData: FormData) {
         const { data: profile } = await supabase.from('profiles').select('display_name, phone_number').eq('id', user.id).single();
         
         const adminPhoneNumbers = [
-            process.env.PROCUREMENT_ADMIN_PHONE, // Assuming you have this env var
-            process.env.SALES_ADMIN_PHONE_1, // Notifying sales too might be useful
+            process.env.SALES_ADMIN_PHONE_1,
+            process.env.SALES_ADMIN_PHONE_2,
         ].filter(Boolean) as string[];
 
         if (adminPhoneNumbers.length > 0) {

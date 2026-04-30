@@ -11,7 +11,7 @@ export type OrderWithDetails = Tables<'orders'> & {
 };
 
 export default async function SearchOrdersPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabaseAdmin = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!,

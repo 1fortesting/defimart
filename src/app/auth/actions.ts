@@ -5,13 +5,13 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
 export async function logout() {
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.auth.signOut();
   redirect('/login');
 }
 
 export async function requestPasswordReset(formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const email = formData.get('email') as string;
 
   const { error } = await supabase.auth.resetPasswordForEmail(email);

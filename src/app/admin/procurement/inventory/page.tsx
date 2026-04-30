@@ -3,7 +3,7 @@ import { Tables } from '@/types/supabase';
 import InventoryClientPage from './inventory-client-page';
 
 export default async function AdminInventoryPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: products } = await supabase
     .from('products')

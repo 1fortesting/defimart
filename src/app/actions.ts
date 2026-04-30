@@ -6,7 +6,7 @@ import type { Tables } from '@/types/supabase';
 type ProductWithRating = Tables<'products'> & { average_rating: number; review_count: number };
 
 export async function getRecommendations(): Promise<{ title: string; products: ProductWithRating[] }> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     const { data: productsData } = await supabase.from('products').select('*');

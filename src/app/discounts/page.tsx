@@ -4,7 +4,7 @@ import { ProductCard } from '@/components/product-card';
 import { BackButton } from '@/components/back-button';
 
 export default async function DiscountsPage() {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     const { data: discountedProducts } = await supabase

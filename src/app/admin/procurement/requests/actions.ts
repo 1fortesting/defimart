@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { sendSms } from '@/lib/sendSms';
 
 export async function updateRequestStatus(formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const requestId = formData.get('requestId') as string;
     const newStatus = formData.get('status') as string;
 
@@ -27,7 +27,7 @@ export async function updateRequestStatus(formData: FormData) {
     // --- SMS Notification to User ---
     const userPhoneNumber = request.profiles?.phone_number;
     if (userPhoneNumber) {
-        const shortDesc = request.description.substring(0, 30);
+        const shortDesc = request.product_name.substring(0, 30);
         let userMessage = `DEFIMART UPDATE: Your product request for "${shortDesc}..." has been updated to: ${newStatus.toUpperCase()}.`;
         if (newStatus === 'sourced') {
             userMessage += ' The item will be available in the store shortly!';

@@ -7,7 +7,7 @@ export type ProductRequestWithUser = Tables<'product_requests'> & {
 };
 
 export default async function ProductRequestsPage() {
-    const supabase = createClient();
+    const supabase = await createClient();
     
     // Fetch ALL requests to ensure nothing is missed.
     const { data, error } = await supabase

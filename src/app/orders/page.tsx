@@ -1,4 +1,3 @@
-
 import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -13,7 +12,7 @@ type OrderWithProduct = Tables<'orders'> & {
 };
 
 export default async function OrdersPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -108,5 +107,3 @@ export default async function OrdersPage() {
       </main>
   );
 }
-
-    

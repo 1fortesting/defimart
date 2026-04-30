@@ -7,7 +7,7 @@ export default async function SearchPage({
 }: {
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const query = (searchParams?.q as string) || '';
   
   const { data: { user } } = await supabase.auth.getUser();

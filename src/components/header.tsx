@@ -29,7 +29,7 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { RefreshButton } from './refresh-button';
 
 export async function Header() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   let cartItemCount = 0;

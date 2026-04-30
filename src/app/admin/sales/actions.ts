@@ -7,7 +7,7 @@ import { sendSms } from '@/lib/sendSms';
 import { getPickupDateString } from '@/lib/getPickupDate';
 
 export async function updateOrderStatus(formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const orderId = formData.get('orderId') as string;
     const newStatus = formData.get('status') as Database['public']['Enums']['order_status'];
 

@@ -1,10 +1,9 @@
-
 import { createClient } from '@/lib/supabase/server';
 import { HeaderNav } from './header-nav';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export async function BottomNav() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   let cartItemCount = 0;

@@ -9,7 +9,7 @@ export type ReviewWithProfile = Tables<'reviews'> & {
 };
 
 export default async function ProductPage({ params }: { params: { id: string } }) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     const { data: product } = await supabase

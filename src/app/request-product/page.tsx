@@ -4,7 +4,7 @@ import { AuthPrompt } from '@/components/auth-prompt';
 import { RequestProductForm } from '@/components/request-product-form';
 
 export default async function RequestProductPage() {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {

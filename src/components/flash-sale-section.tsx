@@ -5,7 +5,7 @@ import { Zap, ChevronRight } from 'lucide-react';
 import { FlashSaleProductCard } from './flash-sale-product-card';
 
 export async function FlashSaleSection() {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data: discountedProducts } = await supabase
         .from('products')

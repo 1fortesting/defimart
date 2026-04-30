@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
 export async function updateFeatureStatus(productId: string, isFeatured: boolean, isOutstanding: boolean) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase
         .from('products')
         .update({ is_featured: isFeatured, is_outstanding: isOutstanding })

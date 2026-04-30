@@ -4,7 +4,7 @@ import ProcurementProductsClientPage from './products-client-page';
 import { ProductWithSalesAndReviews } from '@/app/admin/central-admin/product-performance/page';
 
 export default async function AdminProcurementProductsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: productsData } = await supabase
     .from('products')

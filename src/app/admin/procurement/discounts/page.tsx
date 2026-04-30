@@ -3,7 +3,7 @@ import { Tables } from '@/types/supabase';
 import DiscountsClientPage from './discounts-client-page';
 
 export default async function AdminProcurementDiscountsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: products } = await supabase
     .from('products')
