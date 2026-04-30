@@ -1,9 +1,10 @@
+export const dynamic = 'force-dynamic';
 
 import { createClient } from '@/lib/supabase/server';
 import { AuthPrompt } from '@/components/auth-prompt';
 
 export default async function MessagesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   
   return (
