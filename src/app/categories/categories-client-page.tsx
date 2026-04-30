@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -54,15 +55,15 @@ export default function CategoriesClientPage({ allProducts, allCategories, allBr
 
     return (
         <main className="flex-1 pb-20 md:pb-0 bg-background">
-            <div className="grid grid-cols-[100px_1fr] md:grid-cols-[250px_1fr] h-[calc(100vh-120px)] md:h-[calc(100vh-105px)]">
-                {/* Sidebar */}
-                <div className="bg-muted/40 h-full overflow-y-auto flex flex-col">
-                    <div className="flex flex-col md:flex-row border-b border-border">
+            <div className="flex flex-col md:grid md:grid-cols-[250px_1fr] md:h-[calc(100vh-105px)]">
+                {/* Navigation: Sidebar on Desktop, Top bar on Mobile */}
+                <div className="bg-muted/40 flex flex-col md:h-full border-b md:border-b-0 md:border-r border-border sticky top-0 md:relative z-30 shadow-sm md:shadow-none">
+                    <div className="flex border-b border-border bg-background">
                          <button 
                             onClick={() => handleTabChange('categories')}
                             className={cn(
-                                "p-3 text-center text-sm md:text-base md:flex-1 md:px-4 md:py-3 transition-colors font-semibold",
-                                mainTab === 'categories' ? 'text-primary border-b-2 md:border-b-0 md:border-r-2 border-primary bg-background' : 'hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                "flex-1 p-3 text-center text-sm md:text-base transition-all font-semibold",
+                                mainTab === 'categories' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'hover:bg-muted text-muted-foreground'
                             )}
                         >
                             Categories
@@ -70,21 +71,23 @@ export default function CategoriesClientPage({ allProducts, allCategories, allBr
                          <button 
                             onClick={() => handleTabChange('brands')}
                             className={cn(
-                                "p-3 text-center text-sm md:text-base md:flex-1 md:px-4 md:py-3 transition-colors font-semibold",
-                                mainTab === 'brands' ? 'text-primary border-b-2 md:border-b-0 md:border-r-2 border-primary bg-background' : 'hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                "flex-1 p-3 text-center text-sm md:text-base transition-all font-semibold",
+                                mainTab === 'brands' ? 'text-primary border-b-2 border-primary bg-primary/5' : 'hover:bg-muted text-muted-foreground'
                             )}
                         >
                             Brands
                         </button>
                     </div>
-                    <nav className="flex flex-col text-sm flex-1">
+                    <nav className="flex flex-row md:flex-col overflow-x-auto md:overflow-y-auto no-scrollbar bg-background md:bg-transparent py-1 md:py-0">
                         {itemsToShow.map(item => (
                             <button
                                 key={item}
                                 onClick={() => setSelectedItem(item)}
                                 className={cn(
-                                    "p-3 text-center md:text-left md:px-4 md:py-3 transition-colors truncate",
-                                    selectedItem === item ? 'bg-background font-semibold text-primary' : 'hover:bg-background/50'
+                                    "px-4 py-2.5 md:py-3 text-sm whitespace-nowrap md:text-left transition-colors flex-shrink-0 md:flex-shrink",
+                                    selectedItem === item 
+                                        ? 'bg-primary/10 text-primary font-bold md:border-l-4 border-primary rounded-full md:rounded-none mx-2 md:mx-0 my-1 md:my-0' 
+                                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-full md:rounded-none mx-1 md:mx-0 my-1 md:my-0'
                                 )}
                             >
                                 {item}
@@ -94,8 +97,14 @@ export default function CategoriesClientPage({ allProducts, allCategories, allBr
                 </div>
 
                 {/* Main Content */}
-                <div className="overflow-y-auto p-4 md:p-6">
-                    <h1 className="text-xl md:text-2xl font-bold mb-4">{selectedItem}</h1>
+                <div className="overflow-y-auto p-4 md:p-6 flex-1">
+                    <div className="flex items-center justify-between mb-6">
+                        <h1 className="text-xl md:text-2xl font-bold tracking-tight">{selectedItem}</h1>
+                        <span className="text-xs md:text-sm text-muted-foreground bg-muted px-2 py-1 rounded-md">
+                            {filteredProducts.length} items
+                        </span>
+                    </div>
+                    
                     {filteredProducts.length > 0 ? (
                         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4 lg:gap-6">
                             {filteredProducts.map(product => (
@@ -109,10 +118,13 @@ export default function CategoriesClientPage({ allProducts, allCategories, allBr
                             ))}
                         </div>
                     ) : (
-                        <div className="flex items-center justify-center h-full text-center text-muted-foreground py-16">
-                           <div>
-                                <p className="text-lg">No products found.</p>
-                                <p>There are no products listed under '{selectedItem}'.</p>
+                        <div className="flex items-center justify-center min-h-[50vh] text-center text-muted-foreground py-16">
+                           <div className="max-w-xs">
+                                <div className="bg-muted rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-muted-foreground/50">
+                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                                </div>
+                                <p className="text-lg font-semibold text-foreground">No products found</p>
+                                <p className="text-sm mt-1">There are no items listed under '{selectedItem}' at this time.</p>
                            </div>
                         </div>
                     )}
