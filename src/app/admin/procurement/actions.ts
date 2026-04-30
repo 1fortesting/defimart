@@ -37,7 +37,7 @@ const UpdateProductSchema = BaseProductSchema.extend({
 
 
 export async function createProduct(prevState: any, formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   const { data: { user } } = await supabase.auth.getUser();
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
@@ -154,7 +154,7 @@ export async function createProduct(prevState: any, formData: FormData) {
 }
 
 export async function updateProduct(prevState: any, formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { message: 'Unauthorized.', success: false, errors: {} };
 
@@ -168,7 +168,6 @@ export async function updateProduct(prevState: any, formData: FormData) {
      const validatedFields = UpdateProductSchema.safeParse({
         ...rawFormData,
         price: parseFloat(rawFormData.price as string),
-        cost_price: rawFormData.cost_price ? parseFloat(rawFormData.cost_price as string) : 0,
         quantity: parseInt(rawFormData.quantity as string, 10),
         discount_percentage: rawFormData.discount_percentage ? parseFloat(rawFormData.discount_percentage as string) : null,
         discount_end_date: rawFormData.discount_end_date || null
@@ -267,7 +266,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
 
 
 export async function deleteProduct(formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const productId = formData.get('productId') as string;
 
     const { error } = await supabase.from('products').delete().eq('id', productId);

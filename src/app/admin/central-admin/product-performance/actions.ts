@@ -10,7 +10,7 @@ export async function getReviewSummaryForProduct(productId: string) {
         return { error: 'Product ID is required.' };
     }
 
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
     const supabaseAdmin = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -4,7 +4,7 @@ import CategoriesClientPage from './categories-client-page';
 import { Suspense } from 'react';
 
 export default async function CategoriesPage() {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data: products } = await supabase
         .from('products')

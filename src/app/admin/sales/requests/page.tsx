@@ -1,7 +1,8 @@
 export const dynamic = 'force-dynamic';
 
-import { createClient } from '@/lib/supabase/server';
-import { Tables } from '@/types/supabase';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import type { Database, Tables } from '@/types/supabase';
 import RequestsClientPage from './requests-client-page';
 
 export type ProductRequestWithUser = Tables<'product_requests'> & {
@@ -9,10 +10,22 @@ export type ProductRequestWithUser = Tables<'product_requests'> & {
 };
 
 export default async function SalesProductRequestsPage() {
-    const supabase = await createClient();
+    const cookieStore = await cookies();
+
+    // Using admin client to ensure all requests are visible to sales too
+    const supabaseAdmin = createServerClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+          cookies: {
+            get(name: string) {
+              return cookieStore.get(name)?.value;
+            },
+          },
+        }
+    );
     
-    // Fetch ALL requests to ensure nothing is missed by either department.
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
         .from('product_requests')
         .select('*, profiles(display_name, phone_number)')
         .order('created_at', { ascending: false })

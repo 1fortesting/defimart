@@ -34,7 +34,7 @@ const UpdateProductSchema = BaseProductSchema.extend({
 
 
 export async function createProduct(prevState: any, formData: FormData) {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   const { data: { user } } = await supabase.auth.getUser();
   const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
@@ -147,7 +147,7 @@ export async function createProduct(prevState: any, formData: FormData) {
 }
 
 export async function updateProduct(prevState: any, formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const rawFormData = Object.fromEntries(formData.entries());
 
@@ -249,7 +249,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
 
 
 export async function deleteProduct(formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const productId = formData.get('productId') as string;
 
     const { error } = await supabase.from('products').delete().eq('id', productId);
