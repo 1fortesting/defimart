@@ -1,10 +1,12 @@
+export const dynamic = 'force-dynamic';
+
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/supabase';
 import SalesCustomersClientPage from './customers-client-page';
 
 export default async function AdminSalesCustomersPage() {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     // We need to use the service role key to fetch all users,
     // which is safe to do in a server component.
     const supabaseAdmin = createServerClient<Database>(

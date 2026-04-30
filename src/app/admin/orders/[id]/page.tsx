@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database, Tables } from '@/types/supabase';
@@ -16,8 +18,8 @@ type OrderWithDetails = Tables<'orders'> & {
     profiles: Tables<'profiles'> | null;
 };
 
-export default async function OrderDetailsPage({ params }: { params: { id: string } }) {
-    const cookieStore = cookies();
+export default async function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+    const cookieStore = await cookies();
     const supabaseAdmin = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -30,10 +32,12 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
         }
     );
 
+    const { id } = await params;
+
     const { data: order, error } = await supabaseAdmin
         .from('orders')
         .select('*, products(*), profiles:profiles!orders_buyer_id_fkey(*)')
-        .eq('id', params.id)
+        .eq('id', id)
         .returns<OrderWithDetails[]>()
         .single();
     
@@ -153,5 +157,3 @@ export default async function OrderDetailsPage({ params }: { params: { id: strin
         </div>
     )
 }
-
-    

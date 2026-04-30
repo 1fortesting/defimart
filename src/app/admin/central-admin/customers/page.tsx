@@ -1,10 +1,12 @@
+export const dynamic = 'force-dynamic';
+
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/supabase';
 import CentralAdminCustomersClientPage from './customers-client-page';
 
 export default async function AdminCentralCustomersPage() {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabaseAdmin = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!,

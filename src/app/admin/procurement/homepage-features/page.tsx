@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createClient } from '@/lib/supabase/server';
 import HomepageFeaturesClientPage from './client-page';
 import type { Tables } from '@/types/supabase';

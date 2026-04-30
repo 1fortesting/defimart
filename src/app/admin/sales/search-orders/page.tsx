@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database, Tables } from '@/types/supabase';
@@ -20,7 +22,8 @@ export default async function SearchOrdersPage({ searchParams }: { searchParams?
         }
     );
 
-    const selectedDateStr = searchParams?.date as string;
+    const params = await searchParams;
+    const selectedDateStr = params?.date as string;
     const selectedDate = selectedDateStr && isValid(parseISO(selectedDateStr)) ? parseISO(selectedDateStr) : null;
     
     let orders: OrderWithDetails[] = [];

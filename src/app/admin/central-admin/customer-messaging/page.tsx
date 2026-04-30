@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database, Tables } from '@/types/supabase';
@@ -20,7 +22,7 @@ export type SmsHistoryWithSender = Tables<'sms_history'> & {
 };
 
 export default async function CustomerMessagingPage() {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const supabaseAdmin = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -91,5 +93,3 @@ export default async function CustomerMessagingPage() {
        />
     );
 }
-
-    

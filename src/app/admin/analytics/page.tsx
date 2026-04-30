@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database, Tables } from '@/types/supabase';
@@ -18,7 +20,7 @@ export type ReviewWithProductAndProfile = Tables<'reviews'> & {
 };
 
 export default async function AnalyticsPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
     const supabaseAdmin = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,8 +34,9 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
         }
     );
 
-    const selectedDateStr = searchParams?.date as string;
-    const selectedProductId = searchParams?.productId as string;
+    const params = await searchParams;
+    const selectedDateStr = params?.date as string;
+    const selectedProductId = params?.productId as string;
 
     const selectedDate = selectedDateStr && isValid(parseISO(selectedDateStr)) ? parseISO(selectedDateStr) : null;
 
@@ -111,7 +114,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
         const productReviews = reviews?.filter(r => r.product_id === p.id) ?? [];
 
         const total_sales = productOrders.reduce((sum, o) => sum + o.quantity, 0);
-        const total_revenue = productOrders.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
+        const total_revenue = productOrders.reduce((sum, o) => sum + (p.price * o.quantity), 0);
         const review_count = productReviews.length;
         const average_rating = review_count > 0 ? productReviews.reduce((sum, r) => sum + r.rating, 0) / review_count : 0;
         

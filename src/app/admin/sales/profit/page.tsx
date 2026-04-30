@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database, Tables } from '@/types/supabase';
@@ -14,7 +16,7 @@ export type ProductWithProfit = Tables<'products'> & {
 };
 
 export default async function ProfitPage({ searchParams }: { searchParams?: { [key: string]: string | string[] | undefined } }) {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
 
     const supabaseAdmin = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,8 +30,9 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
         }
     );
 
-    const selectedDateStr = searchParams?.date as string;
-    const selectedProductId = searchParams?.productId as string;
+    const params = await searchParams;
+    const selectedDateStr = params?.date as string;
+    const selectedProductId = params?.productId as string;
 
     const selectedDate = selectedDateStr && isValid(parseISO(selectedDateStr)) ? parseISO(selectedDateStr) : null;
 

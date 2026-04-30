@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database, Tables } from '@/types/supabase';
@@ -13,8 +15,8 @@ export type ReviewWithProduct = Tables<'reviews'> & {
     products: Pick<Tables<'products'>, 'name'> | null;
 };
 
-export default async function CustomerDetailsPage({ params }: { params: { id: string } }) {
-    const cookieStore = cookies();
+export default async function CustomerDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+    const cookieStore = await cookies();
     const supabaseAdmin = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -27,9 +29,11 @@ export default async function CustomerDetailsPage({ params }: { params: { id: st
         }
     );
 
+    const { id } = await params;
+
     // 1. Fetch user and profile data
-    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(params.id);
-    const { data: profile, error: profileError } = await supabaseAdmin.from('profiles').select('*').eq('id', params.id).single();
+    const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.getUserById(id);
+    const { data: profile, error: profileError } = await supabaseAdmin.from('profiles').select('*').eq('id', id).single();
 
     if (userError || !user || profileError || !profile) {
         notFound();
@@ -41,7 +45,7 @@ export default async function CustomerDetailsPage({ params }: { params: { id: st
     const { data: orders, error: ordersError } = await supabaseAdmin
         .from('orders')
         .select('*, products(name)')
-        .eq('buyer_id', params.id)
+        .eq('buyer_id', id)
         .order('created_at', { ascending: false })
         .returns<OrderWithProduct[]>();
 
@@ -49,7 +53,7 @@ export default async function CustomerDetailsPage({ params }: { params: { id: st
     const { data: reviews, error: reviewsError } = await supabaseAdmin
         .from('reviews')
         .select('*, products(name)')
-        .eq('user_id', params.id)
+        .eq('user_id', id)
         .order('created_at', { ascending: false })
         .returns<ReviewWithProduct[]>();
 
