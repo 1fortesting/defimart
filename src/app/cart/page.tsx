@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Trash2, Minus, Plus, CheckCircle, Loader2 } from 'lucide-react';
+import { ShoppingCart, Trash2, Minus, Plus, CheckCircle, Loader2, WifiOff } from 'lucide-react';
 import { removeItem, updateItemQuantity } from './actions';
 import { AuthPrompt } from '@/components/auth-prompt';
 import { useEffect, useState, useTransition } from 'react';
@@ -103,6 +103,20 @@ export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItemWithProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
+  const [isOffline, setIsOffline] = useState(false);
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined') {
+        setIsOffline(!navigator.onLine);
+        const handleStatus = () => setIsOffline(!navigator.onLine);
+        window.addEventListener('online', handleStatus);
+        window.addEventListener('offline', handleStatus);
+        return () => {
+            window.removeEventListener('online', handleStatus);
+            window.removeEventListener('offline', handleStatus);
+        };
+    }
+  }, []);
 
   useEffect(() => {
     const syncCart = async () => {
@@ -113,8 +127,16 @@ export default function CartPage() {
 
       let finalCart: CartItemWithProduct[] = [];
 
+      // Initial attempt to load from local storage cache for instant UI
+      try {
+        const cached = localStorage.getItem('cart');
+        if (cached) finalCart = JSON.parse(cached);
+      } catch(e) {}
+      
+      setCartItems(finalCart);
+
       if (user) {
-        // Logged-in user: DB is the source of truth
+        // Logged-in user: try to sync with DB
         const { data: dbItems, error } = await supabase
           .from('cart_items')
           .select('*, products(name, price, image_urls, quantity, discount_percentage, discount_end_date)')
@@ -123,25 +145,16 @@ export default function CartPage() {
           .returns<CartItemWithProduct[]>();
 
         if (error) {
-          console.error('Error fetching cart:', error);
-        } else {
-          finalCart = dbItems || [];
-          // Overwrite local storage to sync it with the DB state
+          console.error('Error fetching cart from DB:', error);
+          // Keep current state (loaded from cache)
+        } else if (dbItems) {
+          finalCart = dbItems;
+          setCartItems(finalCart);
           localStorage.setItem('cart', JSON.stringify(finalCart));
-        }
-      } else {
-        // Logged-out user: local storage is the source of truth
-        try {
-            finalCart = JSON.parse(localStorage.getItem('cart') || '[]') as CartItemWithProduct[];
-        } catch (e) {
-            console.error('Failed to parse cart from local storage', e);
-            finalCart = [];
         }
       }
       
-      setCartItems(finalCart);
       setLoading(false);
-      // Dispatch event to ensure header count is correct after sync
       window.dispatchEvent(new Event('cart-updated'));
     };
 
@@ -157,14 +170,10 @@ export default function CartPage() {
     const newCartItems = cartItems.map(item =>
         item.id === itemId ? { ...item, quantity: newQuantity } : item
     );
-    setCartItems(newCartItems); // Instant UI update
-    
-    // Update local storage
+    setCartItems(newCartItems); 
     localStorage.setItem('cart', JSON.stringify(newCartItems));
-    // Notify header
     window.dispatchEvent(new Event('cart-updated'));
 
-    // Sync with DB if user is logged in and the item is from the DB
     if(user && !itemId.startsWith('local-')) {
         startTransition(() => {
             const formData = new FormData();
@@ -177,14 +186,10 @@ export default function CartPage() {
 
   const handleRemoveItem = (itemId: string) => {
     const newCartItems = cartItems.filter(item => item.id !== itemId);
-    setCartItems(newCartItems); // Instant UI update
-
-    // Update local storage
+    setCartItems(newCartItems);
     localStorage.setItem('cart', JSON.stringify(newCartItems));
-    // Notify header
     window.dispatchEvent(new Event('cart-updated'));
 
-    // Sync with DB if user is logged in and the item is from the DB
     if(user && !itemId.startsWith('local-')) {
         startTransition(() => {
             const formData = new FormData();
@@ -195,7 +200,7 @@ export default function CartPage() {
   };
 
 
-  if (loading) {
+  if (loading && cartItems.length === 0) {
     return (
         <main className="flex-1 p-8 flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -203,7 +208,7 @@ export default function CartPage() {
     );
   }
 
-  if (!user && cartItems.length === 0) {
+  if (!user && cartItems.length === 0 && !loading) {
     return (
         <main className="flex-1 p-8 flex items-center justify-center">
           <AuthPrompt />
@@ -223,11 +228,17 @@ export default function CartPage() {
   const totalItems = cartItems?.reduce((acc, item) => acc + item.quantity, 0) ?? 0;
 
   return (
-      <main className="flex-1 p-4 md:p-8">
+      <main className="flex-1 p-4 md:p-8 bg-muted/20">
+        {isOffline && (
+            <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg flex items-center gap-3 text-orange-700 text-sm animate-in slide-in-from-top duration-300">
+                <WifiOff className="h-4 w-4" />
+                <span>You're viewing your cart offline. Actions will sync once reconnected.</span>
+            </div>
+        )}
         {cartItems && cartItems.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2">
-                <h1 className="text-2xl font-bold mb-4">Cart ({totalItems})</h1>
+                <h1 className="text-2xl font-bold mb-4">Shopping Cart ({totalItems})</h1>
               <Card>
                 <CardContent className="divide-y p-0">
                     {cartItems.map(item => <div key={item.id} className="px-6">
@@ -242,7 +253,7 @@ export default function CartPage() {
               </Card>
             </div>
             <div>
-              <h2 className="text-lg font-semibold mb-4 uppercase text-muted-foreground">Cart Summary</h2>
+              <h2 className="text-lg font-semibold mb-4 uppercase text-muted-foreground">Summary</h2>
               <Card>
                 <CardContent className="space-y-4 pt-6">
                   <div className="flex justify-between font-semibold text-lg">
@@ -256,7 +267,7 @@ export default function CartPage() {
                 </CardContent>
                 <CardFooter>
                     <Button asChild className="w-full mt-4" size="lg" disabled={isPending}>
-                        <Link href="/checkout">Checkout (GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})</Link>
+                        <Link href="/checkout">Checkout</Link>
                     </Button>
                 </CardFooter>
               </Card>
@@ -264,10 +275,12 @@ export default function CartPage() {
           </div>
         ) : (
           <div className="text-center text-muted-foreground py-16">
-            <ShoppingCart className="mx-auto h-12 w-12 mb-4" />
+            <div className="bg-muted w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ShoppingCart className="h-10 w-10 text-muted-foreground/60" />
+            </div>
              <h1 className="text-2xl font-bold mb-2">Your cart is empty!</h1>
             <p className="mb-4">Browse our categories and discover our best deals!</p>
-            <Button asChild className="mt-4">
+            <Button asChild className="mt-4 px-8">
                 <Link href="/">Start Shopping</Link>
             </Button>
           </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { WifiOff, CheckCircle2, RefreshCw } from 'lucide-react';
+import { WifiOff, CheckCircle2, RefreshCw, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { syncOfflineActions } from '@/lib/offline-sync';
@@ -13,26 +13,29 @@ export function NetworkStatus() {
   const [showStatus, setShowStatus] = useState(false);
 
   useEffect(() => {
-    // Initial state
-    setIsOnline(navigator.onLine);
+    // Set initial state based on browser
+    if (typeof navigator !== 'undefined') {
+        setIsOnline(navigator.onLine);
+    }
 
     const handleOnline = async () => {
       setIsOnline(true);
       setShowStatus(true);
-      setSyncMessage('You\'re back online. Syncing your activity...');
+      setSyncMessage('Welcome back! Reconnecting and syncing your data...');
       
       setIsSyncing(true);
       await syncOfflineActions((msg) => setSyncMessage(msg));
       setIsSyncing(false);
 
-      // Hide after success
-      setTimeout(() => setShowStatus(false), 3000);
+      // Keep success message visible for a moment
+      setSyncMessage('System fully synchronized!');
+      setTimeout(() => setShowStatus(false), 4000);
     };
 
     const handleOffline = () => {
       setIsOnline(false);
       setShowStatus(true);
-      setSyncMessage('You\'re offline. You can still browse and save items.');
+      setSyncMessage('Working Offline: Defimart will sync when you return online.');
     };
 
     window.addEventListener('online', handleOnline);
@@ -52,8 +55,10 @@ export function NetworkStatus() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -100, opacity: 0 }}
           className={cn(
-            "fixed top-4 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 transition-colors",
-            isOnline ? "bg-emerald-500 text-white" : "bg-orange-500 text-white"
+            "fixed top-4 left-1/2 -translate-x-1/2 z-[10000] px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border backdrop-blur-md transition-all",
+            isOnline 
+              ? "bg-emerald-500/90 text-white border-emerald-400" 
+              : "bg-orange-500/90 text-white border-orange-400"
           )}
         >
           {isSyncing ? (
@@ -61,19 +66,18 @@ export function NetworkStatus() {
           ) : isOnline ? (
             <CheckCircle2 className="h-5 w-5" />
           ) : (
-            <WifiOff className="h-5 w-5" />
+            <WifiOff className="h-5 w-5 animate-pulse" />
           )}
-          <span className="font-medium text-sm md:text-base whitespace-nowrap">
+          <span className="font-semibold text-sm md:text-base whitespace-nowrap">
             {syncMessage}
           </span>
-          {!isOnline && (
-            <button 
-              onClick={() => setShowStatus(false)}
-              className="ml-2 hover:opacity-80"
-            >
-              ×
-            </button>
-          )}
+          <button 
+            onClick={() => setShowStatus(false)}
+            className="ml-2 p-1 hover:bg-white/20 rounded-full transition-colors"
+            aria-label="Close status"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </motion.div>
       )}
     </AnimatePresence>

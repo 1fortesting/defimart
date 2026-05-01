@@ -1,7 +1,12 @@
-const CACHE_NAME = 'defimart-v1';
-const DATA_CACHE_NAME = 'defimart-data-v1';
+/**
+ * Defimart Service Worker - V3
+ * Handles intelligent caching of assets, pages, and images for a seamless offline experience.
+ */
 
-const assetsToCache = [
+const CACHE_NAME = 'defimart-cache-v3';
+const IMAGE_CACHE = 'defimart-images-v1';
+
+const STATIC_ASSETS = [
   '/',
   '/offline',
   '/manifest.json',
@@ -9,78 +14,95 @@ const assetsToCache = [
   '/icons/icon-512x512.png',
   '/screenshots/screenshot1.png',
   '/screenshots/screenshot2.png',
+  '/screenshots/screenshot-wide.png',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
 ];
 
-// Install Event
+// 1. Install - Pre-cache critical assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Opened cache');
-      return cache.addAll(assetsToCache);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
   self.skipWaiting();
 });
 
-// Activate Event
+// 2. Activate - Cleanup old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then((keys) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== DATA_CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
+        keys.filter((key) => key !== CACHE_NAME && key !== IMAGE_CACHE).map((key) => caches.delete(key))
       );
     })
   );
   self.clients.claim();
 });
 
-// Fetch Event
+// 3. Fetch - Handle different resource types
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests and Supabase auth/api calls from caching to avoid errors
-  if (event.request.method !== 'GET' || event.request.url.includes('/auth/v1/') || event.request.url.includes('/rest/v1/')) {
+  if (event.request.method !== 'GET') return;
+
+  const url = new URL(event.request.url);
+
+  // Bypass for Supabase critical auth and non-GET requests
+  if (url.origin.includes('supabase.co') && url.pathname.includes('/auth/v1')) {
     return;
   }
 
-  // Handle HTML navigation requests
-  if (event.request.mode === 'navigate') {
+  // Strategy for Images: Cache-First
+  // We cache images from common sources used in the app
+  const isImage = event.request.destination === 'image' || 
+                 url.hostname.includes('picsum.photos') || 
+                 url.hostname.includes('unsplash.com') ||
+                 url.hostname.includes('supabase.co');
+
+  if (isImage) {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match('/offline');
+      caches.open(IMAGE_CACHE).then((cache) => {
+        return cache.match(event.request).then((cachedResponse) => {
+          if (cachedResponse) return cachedResponse;
+
+          return fetch(event.request).then((networkResponse) => {
+            cache.put(event.request, networkResponse.clone());
+            return networkResponse;
+          }).catch(() => {
+            // If network fails for image, just return undefined (browser shows broken image)
+            return null;
+          });
+        });
       })
     );
     return;
   }
 
-  // Stale-While-Revalidate for other requests
+  // Strategy for Navigation: Network-First with Cache Fallback
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          const clonedResponse = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clonedResponse));
+          return networkResponse;
+        })
+        .catch(() => {
+          return caches.match(event.request).then((cachedResponse) => {
+            return cachedResponse || caches.match('/offline');
+          });
+        })
+    );
+    return;
+  }
+
+  // Strategy for everything else: Stale-While-Revalidate
   event.respondWith(
-    caches.match(event.request).then((response) => {
+    caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request).then((networkResponse) => {
-        // Cache the new response
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
+        const clonedResponse = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clonedResponse));
         return networkResponse;
-      });
-      return response || fetchPromise;
+      }).catch(() => null);
+
+      return cachedResponse || fetchPromise;
     })
   );
 });
-
-// Background Sync
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-offline-actions') {
-    event.waitUntil(syncOfflineActions());
-  }
-});
-
-async function syncOfflineActions() {
-  // This is a placeholder for the browser-level Sync API
-  // Real logic is handled in src/lib/offline-sync.ts for better framework integration
-  console.log('Background sync triggered');
-}
