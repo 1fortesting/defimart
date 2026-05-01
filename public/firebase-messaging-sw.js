@@ -1,15 +1,13 @@
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
 
-// These will be initialized with your firebase config
-// Note: In production, these should match src/firebase/config.ts
 firebase.initializeApp({
-  apiKey: "PLACEHOLDER",
-  authDomain: "PLACEHOLDER",
-  projectId: "PLACEHOLDER",
-  storageBucket: "PLACEHOLDER",
-  messagingSenderId: "PLACEHOLDER",
-  appId: "PLACEHOLDER"
+  apiKey: "AIzaSyBxypdLXBXs8g6G87-b_W5A2UI-DL_40qA",
+  authDomain: "studio-8414277475-82477.firebaseapp.com",
+  projectId: "studio-8414277475-82477",
+  storageBucket: "studio-8414277475-82477.firebasestorage.app",
+  messagingSenderId: "841306847068",
+  appId: "1:841306847068:web:14649e913ef75fa24cb399"
 });
 
 const messaging = firebase.messaging();
@@ -19,8 +17,7 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
     body: payload.notification.body,
-    icon: 'https://iili.io/qO5Jeou.png',
-    data: payload.data
+    icon: '/logo.png'
   };
 
   self.registration.showNotification(notificationTitle, notificationOptions);

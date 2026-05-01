@@ -1,11 +1,14 @@
+
+// PWA Service Worker for Offline Fallback and Static Caching
 const CACHE_NAME = 'defimart-cache-v1';
 const OFFLINE_URL = '/offline';
 
 const assetsToCache = [
-  OFFLINE_URL,
   '/',
-  '/favicon.ico',
-  'https://iili.io/qO5Jeou.png'
+  '/offline',
+  '/manifest.json',
+  'https://iili.io/qO5Jeou.png',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
 ];
 
 self.addEventListener('install', (event) => {
@@ -39,11 +42,12 @@ self.addEventListener('fetch', (event) => {
         return caches.match(OFFLINE_URL);
       })
     );
-  } else {
-    event.respondWith(
-      caches.match(event.request).then((response) => {
-        return response || fetch(event.request);
-      })
-    );
+    return;
   }
+
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
 });
