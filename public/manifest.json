@@ -6,10 +6,6 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": [
-    "window-controls-overlay",
-    "standalone"
-  ],
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#F5A623",
@@ -26,6 +22,10 @@
       "id": "com.defimart.app"
     }
   ],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
   "scope_extensions": [
     {
       "origin": "https://defimartonline.com"
@@ -34,7 +34,7 @@
   "shortcuts": [
     {
       "name": "Browse Products",
-      "short_name": "Browse",
+      "short_name": "Products",
       "url": "/search",
       "icons": [
         {
@@ -119,6 +119,13 @@
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Defimart Products"
+    },
+    {
+      "src": "/screenshots/screenshot-wide.png",
+      "sizes": "1280x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Defimart Desktop View"
     }
   ]
 }
