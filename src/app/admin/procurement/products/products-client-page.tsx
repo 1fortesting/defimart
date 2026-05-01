@@ -91,7 +91,7 @@ const ProductCard = ({ product }: { product: Tables<'products'> }) => {
                              <>
                                 <p className="font-semibold">-</p>
                                 <p className="text-xs text-muted-foreground">Discount</p>
-                            </ Perc>
+                            </>
                         )}
                     </div>
                     <div>
