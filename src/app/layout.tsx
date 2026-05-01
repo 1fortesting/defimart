@@ -23,16 +23,16 @@ export const metadata: Metadata = {
     title: 'Defimart',
   },
   alternates: {
-    canonical: 'https://defimartonline.com',
+    canonical: 'https://www.defimartonline.com',
   },
   openGraph: {
     title: 'Defimart – Student Online Store',
     description: 'A student-focused online store for easy pickup-based shopping on campus.',
-    url: 'https://defimartonline.com',
+    url: 'https://www.defimartonline.com',
     siteName: 'Defimart',
     images: [
       {
-        url: 'https://defimartonline.com/logo.png',
+        url: 'https://www.defimartonline.com/logo.png',
         width: 1200,
         height: 630,
         alt: 'Defimart Logo',

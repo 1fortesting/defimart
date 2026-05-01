@@ -1,60 +1,16 @@
 {
   "name": "Defimart",
   "short_name": "Defimart",
-  "description": "Student Online Store in Ghana",
-  "id": "/",
-  "start_url": "/",
+  "description": "Student-focused online store for easy pickup-based shopping on campus.",
+  "start_url": "https://www.defimartonline.com",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "background_color": "#EBF0F6",
+  "theme_color": "#2680E6",
   "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#F5A623",
-  "categories": [
-    "shopping",
-    "lifestyle"
-  ],
-  "lang": "en",
-  "dir": "ltr",
   "prefer_related_applications": false,
-  "related_applications": [
-    {
-      "platform": "play",
-      "id": "com.defimart.app"
-    }
-  ],
-  "display_override": [
-    "window-controls-overlay",
-    "standalone"
-  ],
-  "scope_extensions": [
-    {
-      "origin": "https://defimartonline.com"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Browse Products",
-      "short_name": "Products",
-      "url": "/search",
-      "icons": [
-        {
-          "src": "/icons/icon-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "My Orders",
-      "short_name": "Orders",
-      "url": "/orders",
-      "icons": [
-        {
-          "src": "/icons/icon-96x96.png",
-          "sizes": "96x96"
-        }
-      ]
-    }
-  ],
+  "scope_extensions": [{"origin": "https://www.defimartonline.com"}],
   "icons": [
     {
       "src": "/icons/icon-96x96.png",
@@ -107,18 +63,10 @@
   ],
   "screenshots": [
     {
-      "src": "/screenshots/screenshot1.png",
-      "sizes": "1080x1920",
+      "src": "/screenshots/screenshot-mobile.png",
+      "sizes": "750x1334",
       "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Defimart Homepage"
-    },
-    {
-      "src": "/screenshots/screenshot2.png",
-      "sizes": "1080x1920",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Defimart Products"
+      "label": "Defimart Mobile View"
     },
     {
       "src": "/screenshots/screenshot-wide.png",
@@ -127,5 +75,22 @@
       "form_factor": "wide",
       "label": "Defimart Desktop View"
     }
-  ]
+  ],
+  "shortcuts": [
+    {
+      "name": "Browse Products",
+      "short_name": "Shop",
+      "url": "/search",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "My Orders",
+      "short_name": "Orders",
+      "url": "/orders",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    }
+  ],
+  "categories": ["shopping", "lifestyle"],
+  "lang": "en-GH",
+  "dir": "ltr"
 }
