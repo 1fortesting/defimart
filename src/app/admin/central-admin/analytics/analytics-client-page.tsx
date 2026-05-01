@@ -47,7 +47,7 @@ export default function AnalyticsClientPage({
     allProducts,
     currentFilters
 }: {
-    stats: { totalRevenue: number, totalProfit: number, totalSales: number, totalCustomers: number, productCount: number },
+    stats: { allTimeRevenue: number, allTimeProfit: number, periodRevenue: number, periodProfit: number, periodUnitsSold: number, totalCustomers: number, productCount: number },
     dailySales: { date: string, total: number }[],
     salesChartDescription: string,
     salesChartTimeUnit: 'day' | 'hour',
@@ -127,11 +127,12 @@ export default function AnalyticsClientPage({
     }
     
     const hasFilters = currentFilters.date || currentFilters.productId;
+    const periodLabel = currentFilters.date ? format(new Date(currentFilters.date), 'MMM d') : 'Selected Period';
 
     return (
         <>
             <div className="flex items-center justify-between">
-                <h1 className="text-lg font-semibold md:text-2xl">Analytics</h1>
+                <h1 className="text-lg font-semibold md:text-2xl">Platform Analytics</h1>
                  <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                        <Button>
@@ -151,7 +152,7 @@ export default function AnalyticsClientPage({
             <Card>
                 <CardHeader>
                     <CardTitle>Filters</CardTitle>
-                    <CardDescription>Filter analytics data by date and/or product. Defaults to today's data.</CardDescription>
+                    <CardDescription>Filter analytics data by date and/or product. Period defaults to last 30 days.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col sm:flex-row flex-wrap items-start gap-4">
                     <Input
@@ -186,10 +187,10 @@ export default function AnalyticsClientPage({
             </Card>
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <StatCard title={hasFilters ? "Filtered Revenue" : "Today's Revenue"} value={`GHS ${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={DollarSign} />
-                <StatCard title={hasFilters ? "Filtered Profit" : "Today's Profit"} value={`GHS ${stats.totalProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={TrendingUp} />
-                <StatCard title={hasFilters ? "Filtered Units Sold" : "Today's Units Sold"} value={`+${stats.totalSales.toLocaleString('en-US')}`} icon={ShoppingCart} />
-                <StatCard title="Total Products" value={stats.productCount.toLocaleString('en-US')} icon={Package} />
+                <StatCard title="Total Revenue (All-Time)" value={`GHS ${stats.allTimeRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={DollarSign} />
+                <StatCard title="Total Profit (All-Time)" value={`GHS ${stats.allTimeProfit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={TrendingUp} />
+                <StatCard title={`${periodLabel} Revenue`} value={`GHS ${stats.periodRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon={DollarSign} />
+                <StatCard title={`${periodLabel} Units Sold`} value={`+${stats.periodUnitsSold.toLocaleString('en-US')}`} icon={ShoppingCart} />
             </div>
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
                 <Card className="lg:col-span-4">
@@ -204,7 +205,7 @@ export default function AnalyticsClientPage({
                 <Card className="lg:col-span-3">
                     <CardHeader>
                         <CardTitle>Top Products</CardTitle>
-                        <CardDescription>Your best-selling products by profit.</CardDescription>
+                        <CardDescription>Your best-selling products by profit in the selected period.</CardDescription>
                     </CardHeader>
                     <CardContent>
                          <Table>
@@ -229,7 +230,7 @@ export default function AnalyticsClientPage({
             <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
                 <Card>
                     <CardHeader>
-                        <CardTitle>All Product Performance</CardTitle>
+                        <CardTitle>All Product Performance (Selected Period)</CardTitle>
                     </CardHeader>
                     <CardContent>
                          <Table>
