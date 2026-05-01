@@ -1,0 +1,1 @@
+This folder is for your PWA screenshots (screenshot1.png, screenshot2.png). Replace this file with your actual 1080x1920 PNG images.
