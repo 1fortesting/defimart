@@ -4,8 +4,18 @@ import type { Database } from '@/types/supabase';
 
 export async function createClient() {
   const cookieStore = await cookies();
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder';
+  
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    // Return a dummy client during build time if env vars are missing to prevent crash
+    return createServerClient<Database>('https://placeholder.supabase.co', 'placeholder', {
+      cookies: {
+        get(name: string) { return undefined; },
+      },
+    });
+  }
 
   return createServerClient<Database>(url, key, {
     cookies: {
@@ -16,18 +26,14 @@ export async function createClient() {
         try {
           cookieStore.set({ name, value, ...options });
         } catch (error) {
-          // The `set` method was called from a Server Component.
-          // This can be ignored if you have middleware refreshing
-          // user sessions.
+          // Ignore if called in RSC
         }
       },
       remove(name: string, options: CookieOptions) {
         try {
           cookieStore.set({ name, value: '', ...options });
         } catch (error) {
-          // The `delete` method was called from a Server Component.
-          // This can be ignored if you have middleware refreshing
-          // user sessions.
+          // Ignore if called in RSC
         }
       },
     },

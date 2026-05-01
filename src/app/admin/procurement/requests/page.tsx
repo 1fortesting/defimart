@@ -12,7 +12,7 @@ export type ProductRequestWithUser = Tables<'product_requests'> & {
 export default async function ProductRequestsPage() {
     const cookieStore = await cookies();
     
-    // Using admin client to ensure all requests are visible
+    // Using SERVICE_ROLE_KEY to ensure admin can see all requests bypass RLS
     const supabaseAdmin = createServerClient<Database>(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!,

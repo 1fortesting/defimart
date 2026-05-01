@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createClient } from '@/lib/supabase/server';
 import { ProductCarousel } from '@/components/product-carousel';
 import { SearchBar } from '@/components/search-bar';
@@ -111,7 +113,6 @@ export default async function Home() {
                 categoriesData={categoriesData}
             />
 
-            {/* SEO Descriptive Section */}
             <section className="bg-white dark:bg-slate-900 rounded-2xl p-8 md:p-12 my-16 shadow-lg border border-border overflow-hidden relative">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/5 rounded-full -ml-32 -mb-32 blur-3xl" />
