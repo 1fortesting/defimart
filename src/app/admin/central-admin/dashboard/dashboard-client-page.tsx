@@ -1,13 +1,15 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ShoppingCart, Package, RefreshCw } from 'lucide-react';
+import { Users, ShoppingCart, Package, RefreshCw, Megaphone } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableHead } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tables } from '@/types/supabase';
+import Link from 'next/link';
 
 type OrderWithProductAndBuyer = Tables<'orders'> & {
   products: Pick<Tables<'products'>, 'name'> | null;
@@ -42,10 +44,18 @@ export default function CentralAdminDashboardClientPage({
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h1 className="text-lg font-semibold md:text-2xl">Dashboard</h1>
-                <Button onClick={() => startTransition(() => router.refresh())} disabled={isRefreshing} variant="outline" size="sm">
-                    <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    Refresh
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button asChild variant="outline" size="sm" className="hidden sm:flex border-primary/30 text-primary hover:bg-primary/10">
+                        <Link href="/admin/central-admin/notifications">
+                            <Megaphone className="mr-2 h-4 w-4" />
+                            Send Push Alert
+                        </Link>
+                    </Button>
+                    <Button onClick={() => startTransition(() => router.refresh())} disabled={isRefreshing} variant="outline" size="sm">
+                        <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        Refresh
+                    </Button>
+                </div>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <StatCard title="Total Products" value={stats.productCount ?? 0} icon={ShoppingCart} />
@@ -88,5 +98,3 @@ export default function CentralAdminDashboardClientPage({
         </div>
     );
 }
-
-    

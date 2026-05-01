@@ -1,3 +1,4 @@
+
 export const dynamic = 'force-dynamic';
 
 import { createServerClient } from '@supabase/ssr';
@@ -5,6 +6,9 @@ import { cookies } from 'next/headers';
 import type { Database, Tables } from '@/types/supabase';
 import AdminSalesOrdersClientPage from './orders-client-page';
 import { startOfToday } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import { Megaphone } from 'lucide-react';
+import Link from 'next/link';
 
 export type OrderWithDetails = Tables<'orders'> & {
   products: Pick<Tables<'products'>, 'name' | 'image_urls'> | null;
@@ -46,15 +50,25 @@ export default async function AdminSalesOrdersPage() {
     const readyForPickupCount = allOrders.filter(o => o.status === 'ready').length;
     
     return (
-        <AdminSalesOrdersClientPage 
-            initialOrders={allOrders} 
-            stats={{ 
-                todaysRevenue,
-                todaysProfit,
-                pendingOrdersCount,
-                readyForPickupCount,
-                totalOrdersCount: allOrders.length,
-             }}
-        />
+        <div className="space-y-4">
+             <div className="flex justify-end px-2">
+                <Button asChild variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10">
+                    <Link href="/admin/sales/notifications">
+                        <Megaphone className="mr-2 h-4 w-4" />
+                        Push Promo to Customers
+                    </Link>
+                </Button>
+            </div>
+            <AdminSalesOrdersClientPage 
+                initialOrders={allOrders} 
+                stats={{ 
+                    todaysRevenue,
+                    todaysProfit,
+                    pendingOrdersCount,
+                    readyForPickupCount,
+                    totalOrdersCount: allOrders.length,
+                }}
+            />
+        </div>
     );
 }

@@ -1,9 +1,10 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Tag, RefreshCw, Search, Package, AlertCircle } from 'lucide-react';
+import { PlusCircle, Tag, RefreshCw, Search, Package, AlertCircle, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Tables } from '@/types/supabase';
@@ -90,7 +91,7 @@ const ProductCard = ({ product }: { product: Tables<'products'> }) => {
                              <>
                                 <p className="font-semibold">-</p>
                                 <p className="text-xs text-muted-foreground">Discount</p>
-                            </>
+                            </ Perc>
                         )}
                     </div>
                     <div>
@@ -160,6 +161,12 @@ export default function ProcurementProductsClientPage({ products, outstandingPro
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold md:text-2xl">Products</h1>
         <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm" className="hidden sm:flex border-primary/30 text-primary hover:bg-primary/10">
+                <Link href="/admin/procurement/notifications">
+                    <Megaphone className="mr-2 h-4 w-4" />
+                    Broadcast Stock Alert
+                </Link>
+            </Button>
             <Button onClick={() => startTransition(() => router.refresh())} disabled={isRefreshing} variant="outline" size="sm">
                 <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                 Refresh
