@@ -41,15 +41,16 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
 
     const selectedDate = selectedDateStr && isValid(parseISO(selectedDateStr)) ? parseISO(selectedDateStr) : null;
 
-    const startDate = selectedDate ? startOfDay(selectedDate) : startOfToday();
+    // Default to last 30 days if no date is selected for a better overview
+    const startDate = selectedDate ? startOfDay(selectedDate) : startOfDay(subDays(new Date(), 29));
     const endDate = selectedDate ? endOfDay(selectedDate) : endOfToday();
     
     // --- Data Fetching ---
     
+    // Fetch all orders in the range to calculate both revenue (completed) and volume (all)
     let ordersQuery = supabaseAdmin
         .from('orders')
-        .select('created_at, price_per_item, cost_price_per_item, quantity, product_id')
-        .eq('status', 'completed')
+        .select('created_at, price_per_item, cost_price_per_item, quantity, product_id, status')
         .gte('created_at', startDate.toISOString())
         .lte('created_at', endDate.toISOString());
 
@@ -64,12 +65,15 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
         reviewsQuery = reviewsQuery.eq('product_id', selectedProductId);
     }
 
-    const { data: orders, error: ordersError } = await ordersQuery;
+    const { data: allOrders, error: ordersError } = await ordersQuery;
     const { data: reviews, error: reviewsError } = await reviewsQuery;
 
     if (ordersError) console.error("Error fetching orders:", ordersError.message);
     if (reviewsError) console.error("Error fetching reviews:", reviewsError.message);
     
+    const orders = allOrders || [];
+    const completedOrders = orders.filter(o => o.status === 'completed');
+
     // --- Chart Data ---
     let salesChartData;
     let salesChartTimeUnit: 'day' | 'hour' = 'day';
@@ -82,28 +86,27 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
             date: `${String(i).padStart(2, '0')}:00`,
             total: 0
         }));
-        orders?.forEach(order => {
+        completedOrders.forEach(order => {
             const hour = new Date(order.created_at).getHours();
             salesChartData[hour].total += order.price_per_item * order.quantity;
         });
-    } else { // Default view (today)
-        salesChartTimeUnit = 'hour';
-        salesChartDescription = 'Total revenue for today.';
-        salesChartData = Array.from({ length: 24 }, (_, i) => ({
-            date: `${String(i).padStart(2, '0')}:00`,
-            total: 0
-        }));
-        orders?.forEach(order => {
-            const hour = new Date(order.created_at).getHours();
-            salesChartData[hour].total += order.price_per_item * order.quantity;
+    } else { 
+        salesChartDescription = 'Daily revenue for the selected period.';
+        salesChartData = eachDayOfInterval({ start: startDate, end: endDate }).map(day => {
+            const dateString = format(day, 'MMM d');
+            const total = completedOrders
+                ?.filter(order => format(new Date(order.created_at), 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'))
+                .reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0) ?? 0;
+            return { date: dateString, total };
         });
     }
     
     // --- Stats Cards ---
-    const totalRevenue = orders?.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0) ?? 0;
-    const totalCost = orders?.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0) ?? 0;
+    const totalRevenue = completedOrders.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
+    const totalCost = completedOrders.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0);
     const totalProfit = totalRevenue - totalCost;
-    const totalSales = orders?.reduce((sum, o) => sum + o.quantity, 0) ?? 0; // Total units sold
+    const totalSales = orders.reduce((sum, o) => sum + o.quantity, 0); // Total units across all orders
+    
     const { count: totalCustomers } = await supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true });
     const { count: totalProducts } = await supabaseAdmin.from('products').select('id', { count: 'exact', head: true });
 
@@ -116,12 +119,13 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
     if (productsError) console.error("Error fetching products:", productsError.message);
 
     const productsWithPerf: ProductWithSalesAndReviews[] = products?.map(p => {
-        const productOrders = orders?.filter(o => o.product_id === p.id) ?? [];
+        const productOrders = orders.filter(o => o.product_id === p.id);
+        const productCompletedOrders = productOrders.filter(o => o.status === 'completed');
         const productReviews = reviews?.filter(r => r.product_id === p.id) ?? [];
 
         const total_sales = productOrders.reduce((sum, o) => sum + o.quantity, 0);
-        const total_revenue = productOrders.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
-        const total_cost = productOrders.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0);
+        const total_revenue = productCompletedOrders.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
+        const total_cost = productCompletedOrders.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0);
         const total_profit = total_revenue - total_cost;
         const review_count = productReviews.length;
         const average_rating = review_count > 0 ? productReviews.reduce((sum, r) => sum + r.rating, 0) / review_count : 0;

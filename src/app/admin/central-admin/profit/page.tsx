@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { createClient } from '@/lib/supabase/server';
 import type { Tables } from '@/types/supabase';
-import { startOfDay, endOfDay, format, isValid, parseISO, startOfToday, endOfToday } from 'date-fns';
+import { startOfDay, endOfDay, format, isValid, parseISO, startOfToday, endOfToday, subDays } from 'date-fns';
 import ProfitClientPage from './profit-client-page';
 
 export type ProductWithProfit = Tables<'products'> & {
@@ -22,7 +22,8 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
 
     const selectedDate = selectedDateStr && isValid(parseISO(selectedDateStr)) ? parseISO(selectedDateStr) : null;
 
-    const startDate = selectedDate ? startOfDay(selectedDate) : startOfToday();
+    // Default to last 30 days for a better profit overview
+    const startDate = selectedDate ? startOfDay(selectedDate) : startOfDay(subDays(new Date(), 29));
     const endDate = selectedDate ? endOfDay(selectedDate) : endOfToday();
     
     // --- Data Fetching ---
@@ -45,12 +46,15 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
         reviewsQuery = reviewsQuery.eq('product_id', selectedProductId);
     }
 
-    const { data: orders, error: ordersError } = await ordersQuery;
-    const { data: reviews, error: reviewsError } = await reviewsQuery;
+    const { data: ordersData, error: ordersError } = await ordersQuery;
+    const { data: reviewsData, error: reviewsError } = await reviewsQuery;
 
     if (ordersError) console.error("Error fetching orders:", ordersError.message);
     if (reviewsError) console.error("Error fetching reviews:", reviewsError.message);
     
+    const orders = ordersData || [];
+    const reviews = reviewsData || [];
+
     // --- Chart Data ---
     let profitChartData;
     let chartTimeUnit: 'day' | 'hour' = 'hour';
@@ -63,38 +67,35 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
             date: `${String(i).padStart(2, '0')}:00`,
             total: 0
         }));
-        orders?.forEach(order => {
+        orders.forEach(order => {
             const hour = new Date(order.created_at).getHours();
             const profit = (order.price_per_item - (order.cost_price_per_item ?? 0)) * order.quantity;
             profitChartData[hour].total += profit;
         });
-    } else { // Default view (today)
-        chartTimeUnit = 'hour';
-        chartDescription = 'Total profit for today.';
-        profitChartData = Array.from({ length: 24 }, (_, i) => ({
-            date: `${String(i).padStart(2, '0')}:00`,
-            total: 0
-        }));
-        orders?.forEach(order => {
-            const hour = new Date(order.created_at).getHours();
+    } else { 
+        chartTimeUnit = 'day';
+        chartDescription = 'Daily profit for the selected period.';
+        // Simplified daily chart for multi-day view
+        const dayMap: Record<string, number> = {};
+        orders.forEach(order => {
+            const day = format(new Date(order.created_at), 'MMM d');
             const profit = (order.price_per_item - (order.cost_price_per_item ?? 0)) * order.quantity;
-            profitChartData[hour].total += profit;
+            dayMap[day] = (dayMap[day] || 0) + profit;
         });
+        profitChartData = Object.entries(dayMap).map(([date, total]) => ({ date, total }));
     }
     
     // --- Stats Cards ---
-    const totalRevenue = orders?.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0) ?? 0;
-    const totalCost = orders?.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0) ?? 0;
+    const totalRevenue = orders.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
+    const totalCost = orders.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0);
     const totalProfit = totalRevenue - totalCost;
-    const totalSales = orders?.reduce((sum, o) => sum + o.quantity, 0) ?? 0; // Total units sold
+    const totalSales = orders.reduce((sum, o) => sum + o.quantity, 0); 
     const { count: totalProducts } = await supabaseAdmin.from('products').select('id', { count: 'exact', head: true });
 
-    const { data: allOrders, error: allOrdersError } = await supabaseAdmin
+    const { data: allOrders } = await supabaseAdmin
         .from('orders')
         .select('price_per_item, cost_price_per_item, quantity')
         .eq('status', 'completed');
-
-    if (allOrdersError) console.error("Error fetching all orders for total profit:", allOrdersError.message);
 
     const allTimeTotalRevenue = allOrders?.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0) ?? 0;
     const allTimeTotalCost = allOrders?.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0) ?? 0;
@@ -105,12 +106,11 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
     if (selectedProductId) {
         productsQuery = productsQuery.eq('id', selectedProductId);
     }
-    const { data: products, error: productsError } = await productsQuery;
-    if (productsError) console.error("Error fetching products:", productsError.message);
+    const { data: products } = await productsQuery;
 
     const productsWithPerf: ProductWithProfit[] = products?.map(p => {
-        const productOrders = orders?.filter(o => o.product_id === p.id) ?? [];
-        const productReviews = reviews?.filter(r => r.product_id === p.id) ?? [];
+        const productOrders = orders.filter(o => o.product_id === p.id);
+        const productReviews = reviews.filter(r => r.product_id === p.id);
 
         const total_sales = productOrders.reduce((sum, o) => sum + o.quantity, 0);
         const total_revenue = productOrders.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
@@ -122,9 +122,7 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
         return { ...p, total_sales, total_revenue, total_profit, average_rating, review_count };
     }) ?? [];
 
-    // --- Data for Filters ---
-    const { data: allProductsForFilter, error: allProductsError } = await supabaseAdmin.from('products').select('id, name');
-    if(allProductsError) console.error("Error fetching all products for filter:", allProductsError.message);
+    const { data: allProductsForFilter } = await supabaseAdmin.from('products').select('id, name');
 
     return (
         <div className="flex flex-col gap-6">

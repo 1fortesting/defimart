@@ -1,9 +1,8 @@
-'use client';
+export const dynamic = 'force-dynamic';
 
-import { createClient } from '@/lib/supabase/client';
-import { Tables } from '@/types/supabase';
-import { useEffect, useState } from 'react';
-import type { User } from '@supabase/supabase-js';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import type { Database, Tables } from '@/types/supabase';
 import { FullPageLoading } from '@/components/loading-spinner';
 import CentralAdminDashboardClientPage from './dashboard-client-page';
 
@@ -12,40 +11,42 @@ type OrderWithProductAndBuyer = Tables<'orders'> & {
   profiles: Pick<Tables<'profiles'>, 'display_name'> | null;
 };
 
-export default function CentralAdminDashboardPage() {
-    const [stats, setStats] = useState<{ productCount: number, userCount: number, orderCount: number } | null>(null);
-    const [recentOrders, setRecentOrders] = useState<OrderWithProductAndBuyer[] | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            const supabase = createClient();
-            
-            const { count: productCount } = await supabase.from('products').select('id', { count: 'exact', head: true });
-            const { count: userCount } = await supabase.from('profiles').select('id', { count: 'exact', head: true });
-            const { count: orderCount } = await supabase.from('orders').select('id', { count: 'exact', head: true });
-
-            const { data: ordersData } = await supabase
-                .from('orders')
-                .select('*, products(name), profiles:profiles!orders_buyer_id_fkey(display_name)')
-                .order('created_at', { ascending: false })
-                .limit(5)
-                .returns<OrderWithProductAndBuyer[]>();
-
-            setStats({
-                productCount: productCount ?? 0,
-                userCount: userCount ?? 0,
-                orderCount: orderCount ?? 0,
-            });
-            setRecentOrders(ordersData);
-            setLoading(false);
+export default async function CentralAdminDashboardPage() {
+    const cookieStore = await cookies();
+    const supabaseAdmin = createServerClient<Database>(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+          cookies: {
+            get(name: string) {
+              return cookieStore.get(name)?.value;
+            },
+          },
         }
-        fetchData();
-    }, []);
+    );
 
-    if (loading || !stats || !recentOrders) {
-        return <FullPageLoading text="Loading dashboard..." />;
+    // Fetch counts using service role to bypass RLS
+    const { count: productCount } = await supabaseAdmin.from('products').select('id', { count: 'exact', head: true });
+    const { count: userCount } = await supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true });
+    const { count: orderCount } = await supabaseAdmin.from('orders').select('id', { count: 'exact', head: true });
+
+    // Fetch recent orders
+    const { data: ordersData, error: ordersError } = await supabaseAdmin
+        .from('orders')
+        .select('*, products(name), profiles:profiles!orders_buyer_id_fkey(display_name)')
+        .order('created_at', { ascending: false })
+        .limit(5)
+        .returns<OrderWithDetails[]>();
+
+    if (ordersError) {
+        console.error("Error fetching recent orders:", ordersError.message);
     }
 
-    return <CentralAdminDashboardClientPage stats={stats} recentOrders={recentOrders} />;
+    const stats = {
+        productCount: productCount ?? 0,
+        userCount: userCount ?? 0,
+        orderCount: orderCount ?? 0,
+    };
+
+    return <CentralAdminDashboardClientPage stats={stats} recentOrders={ordersData || []} />;
 }
