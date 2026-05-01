@@ -5,14 +5,13 @@ import { useEffect, useState } from "react";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, Home, Package, ShoppingCart, Users, Tag, LineChart, Menu, LogOut, User as UserIcon, Building, Briefcase, Warehouse, DoorOpen, Search, TrendingUp, ClipboardList } from 'lucide-react';
+import { Menu, LogOut, DoorOpen, Search, TrendingUp, ClipboardList, Package, Users, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { User } from '@supabase/supabase-js';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from "@/lib/utils";
 import { WelcomeSplash } from "@/components/admin/welcome-splash";
 
 const navLinks = [
@@ -21,6 +20,7 @@ const navLinks = [
     { href: "/admin/sales/requests", text: "Product Requests", icon: ClipboardList },
     { href: "/admin/sales/search-orders", text: "Search Orders", icon: Search },
     { href: "/admin/sales/profit", text: "Profit Analytics", icon: TrendingUp },
+    { href: "/admin/sales/notifications", text: "Push Alerts", icon: Bell },
 ];
 
 const teamMembers = [

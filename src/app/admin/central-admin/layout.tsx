@@ -3,17 +3,15 @@
 import { DepartmentLogin } from "@/components/admin/department-login";
 import { useEffect, useState } from "react";
 import Link from 'next/link';
-import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, Home, Package, ShoppingCart, Users, Tag, LineChart, Menu, LogOut, User as UserIcon, Building, Briefcase, Warehouse, DoorOpen, Star, TrendingUp, MessageSquare } from 'lucide-react';
+import { Home, Package, Users, LineChart, Menu, LogOut, DoorOpen, Star, TrendingUp, MessageSquare, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { User } from '@supabase/supabase-js';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from "@/lib/utils";
 import { WelcomeSplash } from "@/components/admin/welcome-splash";
 
 const navLinks = [
@@ -24,6 +22,7 @@ const navLinks = [
     { href: "/admin/central-admin/reviews", text: "Reviews", icon: Star },
     { href: "/admin/central-admin/customers", text: "Customers", icon: Users },
     { href: "/admin/central-admin/customer-messaging", text: "Messaging", icon: MessageSquare },
+    { href: "/admin/central-admin/notifications", text: "Push Alerts", icon: Bell },
 ];
 
 const AdminNav = ({ isMobile = false }: { isMobile?: boolean }) => {
@@ -119,9 +118,7 @@ const AdminHeader = ({ user, handleLogout, onExit }: { user: User | null; handle
                 </Sheet>
             </div>
 
-            <div className="w-full flex-1">
-                 {/* Can add search here if needed */}
-            </div>
+            <div className="w-full flex-1" />
 
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>

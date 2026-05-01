@@ -5,14 +5,13 @@ import { useEffect, useState } from "react";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, Home, Package, ShoppingCart, Users, Tag, LineChart, Menu, LogOut, User as UserIcon, Building, Briefcase, Warehouse, DoorOpen, PlusCircle, AlertCircle, ClipboardList, Star } from 'lucide-react';
+import { Menu, LogOut, DoorOpen, PlusCircle, AlertCircle, ClipboardList, Star, Tag, Package, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { User } from '@supabase/supabase-js';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn } from "@/lib/utils";
 import { WelcomeSplash } from "@/components/admin/welcome-splash";
 
 const navLinks = [
@@ -22,6 +21,7 @@ const navLinks = [
     { href: "/admin/procurement/requests", text: "Product Requests", icon: ClipboardList },
     { href: "/admin/procurement/discounts", text: "Discounts", icon: Tag },
     { href: "/admin/procurement/inventory", text: "Inventory", icon: AlertCircle },
+    { href: "/admin/procurement/notifications", text: "Push Alerts", icon: Bell },
 ];
 
 const teamMembers = [

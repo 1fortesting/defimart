@@ -7,9 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Loader2, Users, Target } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { createClient } from '@/lib/supabase/client';
+import { sendPush } from '@/lib/sendPush';
 
 interface NotificationPanelProps {
   role: 'CEO' | 'Sales' | 'Procurement';
@@ -19,10 +19,9 @@ export function NotificationPanel({ role }: NotificationPanelProps) {
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [type, setType] = useState('');
-  const [audience, setAudience] = useState('all');
+  const [audience, setAudience] = useState<'all' | 'active'>('all');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const supabase = createClient();
 
   const getAvailableTypes = () => {
     if (role === 'CEO') return ['Flash Sale', 'Promotion', 'New Arrivals', 'New Stock', 'Back in Stock', 'System Update'];
@@ -39,14 +38,22 @@ export function NotificationPanel({ role }: NotificationPanelProps) {
 
     setIsLoading(true);
     try {
-      // In a real implementation, this calls your Supabase Edge Function
-      const { data, error } = await supabase.functions.invoke('send-fcm', {
-        body: { title, body, type, audience, role }
+      const result = await sendPush({
+        title,
+        body,
+        type,
+        audience,
+        role
       });
 
-      if (error) throw error;
+      if (!result.success) throw new Error(result.error);
 
-      toast({ title: 'Notification Queued', description: 'Your message is being delivered to devices.' });
+      toast({ 
+        variant: 'success',
+        title: 'Notification Sent', 
+        description: `Successfully sent "${type}" alert to ${audience === 'all' ? 'everyone' : 'active users'}.` 
+      });
+      
       setTitle('');
       setBody('');
     } catch (err: any) {
@@ -57,52 +64,74 @@ export function NotificationPanel({ role }: NotificationPanelProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Compose Notification</CardTitle>
-        <CardDescription>Send a push notification to users based on your {role} permissions.</CardDescription>
+    <Card className="shadow-lg border-primary/20">
+      <CardHeader className="bg-primary/5 rounded-t-lg">
+        <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-primary" />
+            Compose Push Alert
+        </CardTitle>
+        <CardDescription>Target your audience with a high-impact notification from the {role} desk.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid gap-2">
-          <Label htmlFor="type">Notification Type</Label>
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select type" />
-            </SelectTrigger>
-            <SelectContent>
-              {getAvailableTypes().map(t => (
-                <SelectItem key={t} value={t}>{t}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <CardContent className="space-y-6 pt-6">
+        <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid gap-2">
+                <Label htmlFor="type" className="font-semibold">Alert Category</Label>
+                <Select value={type} onValueChange={setType}>
+                    <SelectTrigger className="border-primary/20 focus:ring-primary">
+                    <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    {getAvailableTypes().map(t => (
+                        <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <div className="grid gap-2">
+                <Label htmlFor="audience" className="font-semibold">Target Audience</Label>
+                <Select value={audience} onValueChange={(v: any) => setAudience(v)}>
+                    <SelectTrigger className="border-primary/20 focus:ring-primary">
+                    <SelectValue placeholder="Select audience" />
+                    </SelectTrigger>
+                    <SelectContent>
+                    <SelectItem value="all">Everyone</SelectItem>
+                    <SelectItem value="active">Active Shoppers Only</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="audience">Target Audience</Label>
-          <Select value={audience} onValueChange={setAudience}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select audience" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Registered Users</SelectItem>
-              <SelectItem value="active">Active Buyers (Last 30 days)</SelectItem>
-            </SelectContent>
-          </Select>
+          <Label htmlFor="title" className="font-semibold">Headline</Label>
+          <Input 
+            id="title" 
+            value={title} 
+            onChange={e => setTitle(e.target.value)} 
+            placeholder="e.g. ⚡ Flash Sale Alert!" 
+            className="border-primary/20 focus:ring-primary"
+          />
         </div>
 
         <div className="grid gap-2">
-          <Label htmlFor="title">Title</Label>
-          <Input id="title" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. ⚡ Flash Sale Alert!" />
+          <Label htmlFor="body" className="font-semibold">Message Body</Label>
+          <Textarea 
+            id="body" 
+            value={body} 
+            onChange={e => setBody(e.target.value)} 
+            placeholder="Write a catchy message to grab attention..." 
+            className="min-h-[100px] border-primary/20 focus:ring-primary resize-none"
+          />
+          <p className="text-[10px] text-muted-foreground text-right italic">Users will see this on their lock screen.</p>
         </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="body">Message Body</Label>
-          <Textarea id="body" value={body} onChange={e => setBody(e.target.value)} placeholder="Keep it short and catchy..." />
-        </div>
-
-        <Button onClick={handleSend} disabled={isLoading} className="w-full">
-          {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-          Broadcast Notification
+        <Button onClick={handleSend} disabled={isLoading} className="w-full h-12 text-lg shadow-primary/20">
+          {isLoading ? (
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+          ) : (
+            <Send className="mr-2 h-5 w-5" />
+          )}
+          {isLoading ? 'Delivering...' : 'Broadcast Notification'}
         </Button>
       </CardContent>
     </Card>
