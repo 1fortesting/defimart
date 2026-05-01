@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   description: 'Defimart is a student-focused online store in Ghana designed for easy, fast, and reliable campus shopping. Buy what you need with simple pickup-based transactions.',
   keywords: 'Defimart, student store Ghana, campus marketplace, online shopping Ghana, university deals, pay on pickup',
   manifest: '/manifest.json',
+  applicationName: 'Defimart',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -42,11 +43,20 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico' },
-      { url: '/favicon.ico', sizes: '32x32', type: 'image/x-icon' },
+      { url: '/icons/icon-96x96.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/icon-72x72.png', sizes: '16x16', type: 'image/png' },
     ],
     apple: [
-      { url: 'https://iili.io/qO5Jeou.png', sizes: '180x180', type: 'image/png' },
+      { url: '/icons/icon-192x192.png' },
+      { url: '/icons/icon-152x152.png', sizes: '152x152' },
+      { url: '/icons/icon-192x192.png', sizes: '192x192' },
+      { url: '/icons/icon-512x512.png', sizes: '512x512' },
     ],
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'msapplication-TileColor': '#F5A623',
+    'msapplication-TileImage': '/icons/icon-144x144.png',
   },
 };
 
@@ -64,7 +74,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/favicon.ico" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -106,8 +115,15 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js');
-                  navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                  navigator.serviceWorker
+                    .register('/sw.js')
+                    .then((reg) => console.log('SW registered:', reg.scope))
+                    .catch((err) => console.log('SW registration failed:', err));
+                    
+                  navigator.serviceWorker
+                    .register('/firebase-messaging-sw.js')
+                    .then((reg) => console.log('Firebase SW registered:', reg.scope))
+                    .catch((err) => console.log('Firebase SW registration failed:', err));
                 });
               }
             `,

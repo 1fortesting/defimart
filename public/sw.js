@@ -1,13 +1,12 @@
-
-// PWA Service Worker for Offline Fallback and Static Caching
 const CACHE_NAME = 'defimart-cache-v1';
-const OFFLINE_URL = '/offline';
-
 const assetsToCache = [
   '/',
   '/offline',
   '/manifest.json',
-  'https://iili.io/qO5Jeou.png',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
+  '/screenshots/screenshot1.png',
+  '/screenshots/screenshot2.png',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
 ];
 
@@ -17,37 +16,26 @@ self.addEventListener('install', (event) => {
       return cache.addAll(assetsToCache);
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
+        cacheNames.filter((name) => name !== CACHE_NAME).map((name) => caches.delete(name))
       );
     })
   );
-  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match(OFFLINE_URL);
-      })
-    );
-    return;
-  }
-
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+      return response || fetch(event.request).catch(() => {
+        if (event.request.mode === 'navigate') {
+          return caches.match('/offline');
+        }
+      });
     })
   );
 });

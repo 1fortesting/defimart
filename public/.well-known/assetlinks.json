@@ -1,12 +1,8 @@
-[
-  {
-    "relation": ["delegate_permission/common.handle_all_urls"],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "com.defimartonline.twa",
-      "sha256_cert_fingerprints": [
-        "PLACEHOLDER_SHA256_FINGERPRINT"
-      ]
-    }
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.defimart.app",
+    "sha256_cert_fingerprints": ["PASTE_SHA256_FINGERPRINT_HERE_AFTER_PWABUILDER"]
   }
-]
+}]
