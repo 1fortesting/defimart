@@ -1,7 +1,7 @@
 'use client';
 
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getMessaging, getToken, onMessage, Messaging } from "firebase/messaging";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -19,9 +19,20 @@ export const requestForToken = async () => {
   
   try {
     const messaging = getMessaging(app);
+    
+    // Ensure the service worker is ready before requesting a token
+    const registration = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+    
+    if (!registration) {
+        console.log('Firebase Service Worker not found. Re-registering...');
+        await navigator.serviceWorker.register(`/firebase-messaging-sw.js?apiKey=${firebaseConfig.apiKey}`);
+    }
+
     const currentToken = await getToken(messaging, {
       vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+      serviceWorkerRegistration: registration
     });
+
     if (currentToken) {
       return currentToken;
     } else {

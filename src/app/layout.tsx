@@ -117,13 +117,18 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
+                  // Register PWA service worker
                   navigator.serviceWorker
                     .register('/sw.js')
-                    .then((reg) => console.log('SW registered:', reg.scope))
-                    .catch((err) => console.log('SW registration failed:', err));
+                    .then((reg) => console.log('PWA SW registered:', reg.scope))
+                    .catch((err) => console.log('PWA SW registration failed:', err));
                     
+                  // Register Firebase messaging service worker separately with explicit config
+                  const fbConfig = {
+                    apiKey: "${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}"
+                  };
                   navigator.serviceWorker
-                    .register('/firebase-messaging-sw.js')
+                    .register('/firebase-messaging-sw.js?apiKey=' + fbConfig.apiKey)
                     .then((reg) => console.log('Firebase SW registered:', reg.scope))
                     .catch((err) => console.log('Firebase SW registration failed:', err));
                 });

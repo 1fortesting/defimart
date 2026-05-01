@@ -1,24 +1,32 @@
-importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js');
+// This file is required for background push notifications
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
 
-firebase.initializeApp({
-  apiKey: "AIzaSyBxypdLXBXs8g6G87-b_W5A2UI-DL_40qA",
-  authDomain: "studio-8414277475-82477.firebaseapp.com",
-  projectId: "studio-8414277475-82477",
-  storageBucket: "studio-8414277475-82477.firebasestorage.app",
-  messagingSenderId: "841306847068",
-  appId: "1:841306847068:web:14649e913ef75fa24cb399"
-});
+// These values are public and safe to include in the service worker
+// Note: In a production environment, you should replace these with your actual Firebase config values
+const firebaseConfig = {
+  apiKey: self.location.search.includes('apiKey=') ? new URLSearchParams(self.location.search).get('apiKey') : "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
+};
 
-const messaging = firebase.messaging();
+if (firebaseConfig.apiKey) {
+    firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
-  console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body,
-    icon: '/logo.png'
-  };
+    messaging.onBackgroundMessage((payload) => {
+      console.log('[firebase-messaging-sw.js] Received background message ', payload);
+      const notificationTitle = payload.notification.title;
+      const notificationOptions = {
+        body: payload.notification.body,
+        icon: '/icons/icon-192x192.png',
+        badge: '/icons/icon-96x96.png',
+        data: payload.data
+      };
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
-});
+      self.registration.showNotification(notificationTitle, notificationOptions);
+    });
+}
