@@ -1,10 +1,12 @@
-import { WifiOff, ShoppingBag, ArrowLeft, RefreshCcw, ShoppingCart, Heart } from 'lucide-react';
+'use client';
+
+import { WifiOff, ShoppingBag, RefreshCcw, ShoppingCart, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export default function OfflinePage() {
   return (
-    <main className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-muted/20">
+    <main className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-muted/20 min-h-[calc(100vh-105px)]">
       <div className="bg-orange-100 rounded-full p-8 mb-6 border-4 border-white shadow-lg animate-pulse">
         <WifiOff className="h-16 w-16 text-orange-500" />
       </div>
@@ -39,7 +41,7 @@ export default function OfflinePage() {
              <Button 
                 variant="ghost" 
                 onClick={() => typeof window !== 'undefined' && window.location.reload()} 
-                className="text-primary hover:text-primary/80 font-semibold"
+                className="text-primary hover:text-primary/80 font-semibold w-full"
             >
                  <RefreshCcw className="mr-2 h-4 w-4" />
                  Try to Reconnect
