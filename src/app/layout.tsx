@@ -117,20 +117,28 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  // Register PWA service worker
+                  // 1. Register PWA service worker (handles caching/offline)
                   navigator.serviceWorker
                     .register('/sw.js')
-                    .then((reg) => console.log('PWA SW registered:', reg.scope))
-                    .catch((err) => console.log('PWA SW registration failed:', err));
+                    .then((reg) => console.log('PWA SW registered'))
+                    .catch((err) => console.log('PWA SW failed:', err));
                     
-                  // Register Firebase messaging service worker separately with explicit config
-                  const fbConfig = {
-                    apiKey: "${process.env.NEXT_PUBLIC_FIREBASE_API_KEY}"
+                  // 2. Register Firebase messaging service worker separately with full config
+                  const config = {
+                    apiKey: "${process.env.NEXT_PUBLIC_FIREBASE_API_KEY || ''}",
+                    authDomain: "${process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || ''}",
+                    projectId: "${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || ''}",
+                    storageBucket: "${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || ''}",
+                    messagingSenderId: "${process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || ''}",
+                    appId: "${process.env.NEXT_PUBLIC_FIREBASE_APP_ID || ''}"
                   };
+                  
+                  const params = new URLSearchParams(config).toString();
+                  
                   navigator.serviceWorker
-                    .register('/firebase-messaging-sw.js?apiKey=' + fbConfig.apiKey)
-                    .then((reg) => console.log('Firebase SW registered:', reg.scope))
-                    .catch((err) => console.log('Firebase SW registration failed:', err));
+                    .register('/firebase-messaging-sw.js?' + params)
+                    .then((reg) => console.log('Firebase SW registered'))
+                    .catch((err) => console.log('Firebase SW failed:', err));
                 });
               }
             `,

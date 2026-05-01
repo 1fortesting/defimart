@@ -18,14 +18,21 @@ export const requestForToken = async () => {
   if (typeof window === 'undefined' || !('Notification' in window)) return null;
   
   try {
+    // Request permission explicitly
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      console.log('Notification permission denied.');
+      return null;
+    }
+
     const messaging = getMessaging(app);
     
     // Ensure the service worker is ready before requesting a token
     const registration = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
     
     if (!registration) {
-        console.log('Firebase Service Worker not found. Re-registering...');
-        await navigator.serviceWorker.register(`/firebase-messaging-sw.js?apiKey=${firebaseConfig.apiKey}`);
+        console.log('Firebase Service Worker not found. Please ensure it is registered in layout.tsx');
+        return null;
     }
 
     const currentToken = await getToken(messaging, {
@@ -34,13 +41,14 @@ export const requestForToken = async () => {
     });
 
     if (currentToken) {
+      console.log('FCM Token generated:', currentToken);
       return currentToken;
     } else {
       console.log('No registration token available. Request permission to generate one.');
       return null;
     }
   } catch (err) {
-    console.log('An error occurred while retrieving token. ', err);
+    console.error('An error occurred while retrieving FCM token:', err);
     return null;
   }
 };
@@ -50,6 +58,7 @@ export const onMessageListener = () => {
   const messaging = getMessaging(app);
   return new Promise((resolve) => {
     onMessage(messaging, (payload) => {
+      console.log('Foreground message received:', payload);
       resolve(payload);
     });
   });

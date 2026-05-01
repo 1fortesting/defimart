@@ -1,32 +1,37 @@
-// This file is required for background push notifications
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.0.0/firebase-messaging-compat.js');
 
-// These values are public and safe to include in the service worker
-// Note: In a production environment, you should replace these with your actual Firebase config values
+// Extract config from URL parameters
+const urlParams = new URLSearchParams(location.search);
+
 const firebaseConfig = {
-  apiKey: self.location.search.includes('apiKey=') ? new URLSearchParams(self.location.search).get('apiKey') : "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: urlParams.get('apiKey'),
+  authDomain: urlParams.get('authDomain'),
+  projectId: urlParams.get('projectId'),
+  storageBucket: urlParams.get('storageBucket'),
+  messagingSenderId: urlParams.get('messagingSenderId'),
+  appId: urlParams.get('appId'),
 };
 
-if (firebaseConfig.apiKey) {
-    firebase.initializeApp(firebaseConfig);
-    const messaging = firebase.messaging();
+// Initialize the Firebase app in the service worker
+if (firebaseConfig.apiKey && firebaseConfig.messagingSenderId) {
+  firebase.initializeApp(firebaseConfig);
+  const messaging = firebase.messaging();
 
-    messaging.onBackgroundMessage((payload) => {
-      console.log('[firebase-messaging-sw.js] Received background message ', payload);
-      const notificationTitle = payload.notification.title;
-      const notificationOptions = {
-        body: payload.notification.body,
-        icon: '/icons/icon-192x192.png',
-        badge: '/icons/icon-96x96.png',
-        data: payload.data
-      };
+  // Handle background messages
+  messaging.onBackgroundMessage((payload) => {
+    console.log('[firebase-messaging-sw.js] Received background message ', payload);
+    
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+      body: payload.notification.body,
+      icon: '/icons/icon-192x192.png',
+      badge: '/icons/icon-72x72.png',
+      data: payload.data
+    };
 
-      self.registration.showNotification(notificationTitle, notificationOptions);
-    });
+    self.registration.showNotification(notificationTitle, notificationOptions);
+  });
+} else {
+  console.error('[firebase-messaging-sw.js] Config missing from URL params');
 }
