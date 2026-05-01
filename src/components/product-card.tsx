@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Tables } from '@/types/supabase';
-import { Heart, ShoppingCart, Star } from 'lucide-react';
+import { Heart, ShoppingCart, Star, WifiOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { toggleSaveProduct } from '@/app/saved/actions';
@@ -13,6 +13,7 @@ import { addToCart } from '@/app/cart/actions';
 import { useState, useEffect, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { StarRating } from './star-rating';
+import { addToQueue } from '@/lib/offline-db';
 
 type ProductCardProps = {
   product: Tables<'products'> & { average_rating?: number; review_count?: number };
@@ -37,11 +38,15 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         ? product.price - (product.price * (product.discount_percentage! / 100))
         : product.price;
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
+        const offline = !navigator.onLine;
+
         toast({
-            title: 'Added to Cart',
-            description: `${product.name} has been added.`,
-            variant: 'success',
+            title: offline ? 'Saved Offline' : 'Added to Cart',
+            description: offline 
+                ? `${product.name} will be added once you're online.` 
+                : `${product.name} has been added.`,
+            variant: offline ? 'default' : 'success',
         });
         
         try {
@@ -67,25 +72,32 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         window.dispatchEvent(new Event('cart-updated'));
         
         if (user) {
-            startTransition(async () => {
-                const formData = new FormData();
-                formData.append('productId', product.id);
-                await addToCart(formData);
-            });
+            if (offline) {
+                await addToQueue({ type: 'ADD_TO_CART', payload: { productId: product.id } });
+            } else {
+                startTransition(async () => {
+                    const formData = new FormData();
+                    formData.append('productId', product.id);
+                    await addToCart(formData);
+                });
+            }
         }
     };
 
 
-    const handleToggleSave = () => {
+    const handleToggleSave = async () => {
+        const offline = !navigator.onLine;
         const newIsSaved = !isSavedState;
         setIsSavedState(newIsSaved);
         
         if (onUnsave && !newIsSaved) onUnsave(product.id);
 
         toast({
-            title: newIsSaved ? 'Product Saved' : 'Product Unsaved',
-            description: `${product.name} has been ${newIsSaved ? 'added to' : 'removed from'} your wishlist.`,
-            variant: 'success'
+            title: offline ? 'Saved Offline' : (newIsSaved ? 'Product Saved' : 'Product Unsaved'),
+            description: offline 
+                ? 'Your changes will sync when you return online.'
+                : `${product.name} has been ${newIsSaved ? 'added to' : 'removed from'} your wishlist.`,
+            variant: offline ? 'default' : 'success'
         });
 
         try {
@@ -101,12 +113,16 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         window.dispatchEvent(new Event('saved-updated'));
             
         if (user) {
-            startTransition(async () => {
-                const formData = new FormData();
-                formData.append('productId', product.id);
-                formData.append('pathname', pathname);
-                await toggleSaveProduct(formData);
-            });
+            if (offline) {
+                await addToQueue({ type: 'SAVE_PRODUCT', payload: { productId: product.id, pathname } });
+            } else {
+                startTransition(async () => {
+                    const formData = new FormData();
+                    formData.append('productId', product.id);
+                    formData.append('pathname', pathname);
+                    await toggleSaveProduct(formData);
+                });
+            }
         }
     };
     
@@ -128,7 +144,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
             <div className="p-4">
                 <Link href={`/products/${product.id}`} className="block">
                     <Image
-                        src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/600/400'}
+                        src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/400/400'}
                         alt={product.name}
                         width={400}
                         height={400}

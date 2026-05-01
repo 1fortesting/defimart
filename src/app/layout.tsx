@@ -9,6 +9,7 @@ import { GlobalToaster } from '@/components/global-toaster';
 import { Suspense } from 'react';
 import { TawkToManager } from '@/components/tawk-to-manager';
 import { FCMTokenManager } from '@/components/fcm-token-manager';
+import { NetworkStatus } from '@/components/network-status';
 
 export const metadata: Metadata = {
   title: 'Defimart – Student Online Store in Ghana',
@@ -101,6 +102,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <StorefrontShell header={<Header />} bottomNav={<BottomNav />}>
+            <NetworkStatus />
             {children}
           </StorefrontShell>
           <Toaster />
