@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Tables } from '@/types/supabase';
-import { Heart, ShoppingCart, Star, WifiOff } from 'lucide-react';
+import { Heart, ShoppingCart, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { toggleSaveProduct } from '@/app/saved/actions';
@@ -13,7 +13,6 @@ import { addToCart } from '@/app/cart/actions';
 import { useState, useEffect, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { StarRating } from './star-rating';
-import { addToQueue } from '@/lib/offline-db';
 
 type ProductCardProps = {
   product: Tables<'products'> & { average_rating?: number; review_count?: number };
@@ -38,15 +37,20 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         ? product.price - (product.price * (product.discount_percentage! / 100))
         : product.price;
 
-    const handleAddToCart = async () => {
-        const offline = !navigator.onLine;
+    const handleAddToCart = () => {
+        if (!navigator.onLine) {
+            toast({
+                title: 'Offline',
+                description: 'Please connect to the internet to add items to your cart.',
+                variant: 'destructive',
+            });
+            return;
+        }
 
         toast({
-            title: offline ? 'Saved Offline' : 'Added to Cart',
-            description: offline 
-                ? `${product.name} will be added once you're online.` 
-                : `${product.name} has been added.`,
-            variant: offline ? 'default' : 'success',
+            title: 'Added to Cart',
+            description: `${product.name} has been added.`,
+            variant: 'success',
         });
         
         try {
@@ -67,62 +71,55 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                 cart.push(cartItem);
             }
             localStorage.setItem('cart', JSON.stringify(cart));
-        } catch (e) { console.error('Failed to update cart in local storage', e); }
+        } catch (e) {
+            console.error('Failed to update cart in local storage', e);
+        }
 
         window.dispatchEvent(new Event('cart-updated'));
         
         if (user) {
-            if (offline) {
-                await addToQueue({ type: 'ADD_TO_CART', payload: { productId: product.id } });
-            } else {
-                startTransition(async () => {
-                    const formData = new FormData();
-                    formData.append('productId', product.id);
-                    await addToCart(formData);
-                });
-            }
+            startTransition(async () => {
+                const formData = new FormData();
+                formData.append('productId', product.id);
+                const result = await addToCart(formData);
+                if (result.error) {
+                    toast({ variant: 'destructive', title: 'Error', description: result.error });
+                }
+            });
         }
     };
 
 
-    const handleToggleSave = async () => {
-        const offline = !navigator.onLine;
+    const handleToggleSave = () => {
+        if (!navigator.onLine) {
+            toast({
+                title: 'Offline',
+                description: 'Please connect to the internet to save items.',
+                variant: 'destructive',
+            });
+            return;
+        }
+
         const newIsSaved = !isSavedState;
         setIsSavedState(newIsSaved);
         
-        if (onUnsave && !newIsSaved) onUnsave(product.id);
+        if (onUnsave && !newIsSaved) {
+            onUnsave(product.id);
+        }
 
         toast({
-            title: offline ? 'Saved Offline' : (newIsSaved ? 'Product Saved' : 'Product Unsaved'),
-            description: offline 
-                ? 'Your changes will sync when you return online.'
-                : `${product.name} has been ${newIsSaved ? 'added to' : 'removed from'} your wishlist.`,
-            variant: offline ? 'default' : 'success'
+            title: newIsSaved ? 'Product Saved' : 'Product Unsaved',
+            description: `${product.name} has been ${newIsSaved ? 'added to' : 'removed from'} your wishlist.`,
+            variant: 'success'
         });
-
-        try {
-            let saved = JSON.parse(localStorage.getItem('saved') || '[]');
-            if (newIsSaved) {
-                if (!saved.some((item: any) => item.product_id === product.id)) saved.push({ id: `local-${product.id}`, product_id: product.id, products: product });
-            } else {
-                saved = saved.filter((item: any) => item.product_id !== product.id);
-            }
-            localStorage.setItem('saved', JSON.stringify(saved));
-        } catch(e) { console.error('Failed to update saved items in local storage', e); }
-
-        window.dispatchEvent(new Event('saved-updated'));
             
         if (user) {
-            if (offline) {
-                await addToQueue({ type: 'SAVE_PRODUCT', payload: { productId: product.id, pathname } });
-            } else {
-                startTransition(async () => {
-                    const formData = new FormData();
-                    formData.append('productId', product.id);
-                    formData.append('pathname', pathname);
-                    await toggleSaveProduct(formData);
-                });
-            }
+            startTransition(async () => {
+                const formData = new FormData();
+                formData.append('productId', product.id);
+                formData.append('pathname', pathname);
+                await toggleSaveProduct(formData);
+            });
         }
     };
     
@@ -149,7 +146,6 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                         width={400}
                         height={400}
                         className="object-cover w-full aspect-square group-hover:scale-105 transition-transform duration-300 rounded-md"
-                        data-ai-hint="product image"
                     />
                 </Link>
             </div>

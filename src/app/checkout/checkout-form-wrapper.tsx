@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Tables } from '@/types/supabase';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -10,8 +9,6 @@ import Image from 'next/image';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { CheckoutButton } from './checkout-button';
-import { addToQueue } from '@/lib/offline-db';
-import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
@@ -19,37 +16,18 @@ type CartItemWithProduct = Tables<'cart_items'> & {
 };
 
 export function CheckoutFormWrapper({ cartItems, subtotal }: { cartItems: CartItemWithProduct[], subtotal: number }) {
-  const router = useRouter();
   const { toast } = useToast();
 
   const handleFormAction = async (formData: FormData) => {
     if (!navigator.onLine) {
-        // Save checkout data for later
-        const notes: Record<string, string> = {};
-        cartItems.forEach(item => {
-            const note = formData.get(`notes_${item.id}`) as string;
-            if (note) notes[`notes_${item.id}`] = note;
-        });
-
-        await addToQueue({
-            type: 'PLACE_ORDER',
-            payload: { notes }
-        });
-
         toast({
-            title: 'Order Saved Offline',
-            description: 'We\'ll process your order automatically when you\'re back online.',
-            variant: 'default'
+            title: 'No Internet',
+            description: 'Please connect to the internet to place your order.',
+            variant: 'destructive'
         });
-
-        // Optimistically clear local cart and redirect
-        localStorage.removeItem('cart');
-        window.dispatchEvent(new Event('cart-updated'));
-        router.push('/orders?message=Your order was saved offline and will sync soon.');
         return;
     }
 
-    // Normal online flow
     await placeOrder(formData);
   };
 
@@ -143,9 +121,9 @@ export function CheckoutFormWrapper({ cartItems, subtotal }: { cartItems: CartIt
                 <CardFooter className="flex flex-col gap-4">
                     <CheckoutButton />
                     {!navigator.onLine && (
-                        <div className="flex items-center gap-2 text-xs text-orange-600 bg-orange-50 p-2 rounded w-full">
+                        <div className="flex items-center gap-2 text-xs text-destructive bg-destructive/10 p-2 rounded w-full">
                             <WifiOff className="h-3 w-3" />
-                            <span>Working offline. Order will sync when online.</span>
+                            <span>Connect to the internet to complete your order.</span>
                         </div>
                     )}
                 </CardFooter>
