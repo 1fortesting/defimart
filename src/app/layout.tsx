@@ -81,19 +81,6 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "Defimart",
-              "url": "https://defimartonline.com",
-              "logo": "https://defimartonline.com/logo.png",
-              "description": "Defimart is a student-focused online store in Ghana that makes campus shopping simple, fast, and accessible through pickup-based transactions."
-            }),
-          }}
-        />
       </head>
       <body className="font-body antialiased">
         <ThemeProvider
@@ -117,13 +104,10 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  // 1. Register PWA service worker (handles caching/offline)
-                  navigator.serviceWorker
-                    .register('/sw.js')
-                    .then((reg) => console.log('PWA SW registered'))
-                    .catch((err) => console.log('PWA SW failed:', err));
+                  // Register PWA service worker
+                  navigator.serviceWorker.register('/sw.js').catch(console.error);
                     
-                  // 2. Register Firebase messaging service worker separately with full config
+                  // Register Firebase messaging service worker
                   const config = {
                     apiKey: "${process.env.NEXT_PUBLIC_FIREBASE_API_KEY || ''}",
                     authDomain: "${process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || ''}",
@@ -132,13 +116,8 @@ export default function RootLayout({
                     messagingSenderId: "${process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || ''}",
                     appId: "${process.env.NEXT_PUBLIC_FIREBASE_APP_ID || ''}"
                   };
-                  
                   const params = new URLSearchParams(config).toString();
-                  
-                  navigator.serviceWorker
-                    .register('/firebase-messaging-sw.js?' + params)
-                    .then((reg) => console.log('Firebase SW registered'))
-                    .catch((err) => console.log('Firebase SW failed:', err));
+                  navigator.serviceWorker.register('/firebase-messaging-sw.js?' + params).catch(console.error);
                 });
               }
             `,

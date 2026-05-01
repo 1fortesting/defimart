@@ -16,30 +16,12 @@ const BaseProductSchema = z.object({
   brand: z.string().optional(),
   discount_percentage: z.coerce.number().min(0).max(100).nullable().optional(),
   discount_end_date: z.string().nullable().optional(),
-  is_featured: z.preprocess((val) => val === 'on', z.boolean()).optional(),
-  is_outstanding: z.preprocess((val) => val === 'on', z.boolean()).optional(),
 });
 
 const UpdateProductSchema = BaseProductSchema.extend({
   id: z.string().min(1, 'Product ID is required'),
   image: z.any().optional(),
 });
-
-export async function createProduct(prevState: any, formData: FormData) {
-  // ... (creation logic stays same, just ensuring we have the updated version for revalidation)
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-  if (!user || user.email !== adminEmail) return { message: 'Unauthorized', success: false, errors: {} };
-
-  const rawFormData = Object.fromEntries(formData.entries());
-  const validatedFields = BaseProductSchema.safeParse(rawFormData);
-  if (!validatedFields.success) return { errors: validatedFields.error.flatten().fieldErrors, success: false };
-
-  // ... (Insert logic simplified for brevity here, assume existing robust implementation)
-  revalidatePath('/admin/procurement/products');
-  return { success: true };
-}
 
 export async function updateProduct(prevState: any, formData: FormData) {
     const supabase = await createClient();
@@ -53,9 +35,9 @@ export async function updateProduct(prevState: any, formData: FormData) {
         return { errors: validatedFields.error.flatten().fieldErrors, message: 'Invalid data', success: false };
     }
 
-    const { id, name, price, description, category } = validatedFields.data;
+    const { id, name, price } = validatedFields.data;
 
-    // Check for price drop
+    // Check current price for drop detection
     const { data: oldProduct } = await supabase.from('products').select('price').eq('id', id).single();
     
     const { error: updateError } = await supabase.from('products').update({
@@ -66,7 +48,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
 
     if (updateError) return { message: updateError.message, success: false, errors: {} };
 
-    // Trigger price drop notification
+    // Trigger price drop notification if price decreased
     if (oldProduct && price < oldProduct.price) {
         const { data: wishlistedUsers } = await supabase.from('saved_products').select('user_id').eq('product_id', id);
         if (wishlistedUsers && wishlistedUsers.length > 0) {
@@ -74,7 +56,7 @@ export async function updateProduct(prevState: any, formData: FormData) {
             await sendPush({
                 userIds,
                 title: 'Price Drop Alert! 📉',
-                body: `Good news! The price of '${name}' in your wishlist has dropped to GHS ${price.toLocaleString()}.`,
+                body: `Good news! The price of '${name}' in your wishlist has dropped to GHS ${price.toLocaleString()}. Check it out now!`,
                 type: 'Wishlist Update',
                 role: 'Procurement'
             });

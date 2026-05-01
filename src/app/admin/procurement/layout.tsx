@@ -136,7 +136,7 @@ const AdminHeader = ({ user, handleLogout, onExit }: { user: User | null; handle
                                 <Button onClick={onExit} variant="secondary" className="w-full">
                                     <LogOut className="mr-2 h-4 w-4" />Exit Department
                                 </Button>
-                            </SheetClose>
+                             </SheetClose>
                             <Button size="sm" className="w-full" asChild>
                                 <SheetClose asChild><Link href="/">View Storefront</Link></SheetClose>
                             </Button>

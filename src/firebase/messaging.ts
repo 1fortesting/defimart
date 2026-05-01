@@ -18,20 +18,15 @@ export const requestForToken = async () => {
   if (typeof window === 'undefined' || !('Notification' in window)) return null;
   
   try {
-    // Request permission explicitly
     const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      console.log('Notification permission denied.');
-      return null;
-    }
+    if (permission !== 'granted') return null;
 
     const messaging = getMessaging(app);
     
-    // Ensure the service worker is ready before requesting a token
+    // Ensure the service worker is ready
     const registration = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
-    
     if (!registration) {
-        console.log('Firebase Service Worker not found. Please ensure it is registered in layout.tsx');
+        console.warn('Firebase Service Worker not found.');
         return null;
     }
 
@@ -40,13 +35,7 @@ export const requestForToken = async () => {
       serviceWorkerRegistration: registration
     });
 
-    if (currentToken) {
-      console.log('FCM Token generated:', currentToken);
-      return currentToken;
-    } else {
-      console.log('No registration token available. Request permission to generate one.');
-      return null;
-    }
+    return currentToken || null;
   } catch (err) {
     console.error('An error occurred while retrieving FCM token:', err);
     return null;
