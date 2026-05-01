@@ -3,6 +3,6 @@
   "target": {
     "namespace": "android_app",
     "package_name": "com.defimart.app",
-    "sha256_cert_fingerprints": ["PASTE_SHA256_FINGERPRINT_HERE_AFTER_PWABUILDER"]
+    "sha256_cert_fingerprints": ["64:D3:69:14:CA:19:B3:A8:49:7D:07:8F:7E:12:E8:7A:61:F6:60:DF:5E:6A:DB:DB:11:A2:A4:51:26:46:55:07"]
   }
 }]
