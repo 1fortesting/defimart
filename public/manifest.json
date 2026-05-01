@@ -1,8 +1,40 @@
 {
-  "name": "DEFIMART",
-  "short_name": "DEFIMART",
-  "description": "A student marketplace for pickup-based transactions.",
+  "name": "Defimart",
+  "short_name": "Defimart",
+  "description": "Student Online Store in Ghana - Easy campus shopping and pickup.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#F5A623",
+  "orientation": "portrait",
+  "scope": "/",
+  "categories": ["shopping", "lifestyle"],
   "icons": [
+    {
+      "src": "https://iili.io/qO5Jeou.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "https://iili.io/qO5Jeou.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "https://iili.io/qO5Jeou.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "https://iili.io/qO5Jeou.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "https://iili.io/qO5Jeou.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
     {
       "src": "https://iili.io/qO5Jeou.png",
       "sizes": "192x192",
@@ -11,13 +43,13 @@
     },
     {
       "src": "https://iili.io/qO5Jeou.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    },
+    {
+      "src": "https://iili.io/qO5Jeou.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
-  ],
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#facc15"
+  ]
 }

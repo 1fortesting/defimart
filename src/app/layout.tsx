@@ -8,11 +8,18 @@ import { StorefrontShell } from '@/components/storefront-shell';
 import { GlobalToaster } from '@/components/global-toaster';
 import { Suspense } from 'react';
 import { TawkToManager } from '@/components/tawk-to-manager';
+import { FCMTokenManager } from '@/components/fcm-token-manager';
 
 export const metadata: Metadata = {
   title: 'Defimart – Student Online Store in Ghana',
   description: 'Defimart is a student-focused online store in Ghana designed for easy, fast, and reliable campus shopping. Buy what you need with simple pickup-based transactions.',
   keywords: 'Defimart, student store Ghana, campus marketplace, online shopping Ghana, university deals, pay on pickup',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Defimart',
+  },
   alternates: {
     canonical: 'https://defimartonline.com',
   },
@@ -46,7 +53,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#facc15',
+  themeColor: '#F5A623',
 };
 
 export default function RootLayout({
@@ -64,7 +71,6 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        <link rel="manifest" href="/manifest.json" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -92,8 +98,21 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <GlobalToaster />
           </Suspense>
+          <FCMTokenManager />
         </ThemeProvider>
         <TawkToManager />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js');
+                  navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
