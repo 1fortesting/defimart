@@ -27,7 +27,7 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
                 },
             },
         }
-    );
+    ) as any;
 
     const { id } = await params;
 
@@ -42,29 +42,27 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
     const userWithProfile = { ...user, ...profile };
 
     // 2. Fetch user's orders
-    const { data: orders, error: ordersError } = await supabaseAdmin
+    const { data: orders, error: ordersError } = await (supabaseAdmin
         .from('orders')
         .select('*, products(name)')
         .eq('buyer_id', id)
-        .order('created_at', { ascending: false })
-        .returns<OrderWithProduct[]>();
+        .order('created_at', { ascending: false }) as any);
 
     // 3. Fetch user's reviews
-    const { data: reviews, error: reviewsError } = await supabaseAdmin
+    const { data: reviews, error: reviewsError } = await (supabaseAdmin
         .from('reviews')
         .select('*, products(name)')
         .eq('user_id', id)
-        .order('created_at', { ascending: false })
-        .returns<ReviewWithProduct[]>();
+        .order('created_at', { ascending: false }) as any);
 
     if (ordersError) console.error("Error fetching customer orders:", ordersError.message);
     if (reviewsError) console.error("Error fetching customer reviews:", reviewsError.message);
 
     // 4. Calculate stats
-    const totalSpent = orders?.reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0) ?? 0;
+    const totalSpent = (orders as any[])?.reduce((sum: number, order: any) => sum + (order.price_per_item * order.quantity), 0) ?? 0;
     const totalOrders = orders?.length ?? 0;
     const totalReviews = reviews?.length ?? 0;
-    const avgRating = totalReviews > 0 ? (reviews?.reduce((sum, r) => sum + r.rating, 0) ?? 0) / totalReviews : 0;
+    const avgRating = totalReviews > 0 ? ((reviews as any[])?.reduce((sum: number, r: any) => sum + r.rating, 0) ?? 0) / totalReviews : 0;
 
     const stats = {
         totalSpent,

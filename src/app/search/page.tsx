@@ -7,7 +7,7 @@ export default async function SearchPage({
 }: {
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
-  const supabase = await createClient();
+  const supabase = await createClient() as any;
   const query = (searchParams?.q as string) || '';
   
   const { data: { user } } = await supabase.auth.getUser();
@@ -17,10 +17,10 @@ export default async function SearchPage({
   const { data: savedProducts } = user 
       ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 
       : { data: null };
-  const savedProductIds = new Set(savedProducts?.map(p => p.product_id) || []);
+  const savedProductIds = new Set((savedProducts as any[])?.map((p: any) => p.product_id) || []);
 
   const allProducts = products || [];
-  const allCategories = [...new Set(allProducts?.map(p => p.category).filter(Boolean) as string[])].sort();
+  const allCategories = [...new Set(allProducts?.map((p: any) => p.category).filter(Boolean) as string[])].sort();
 
   return (
     <main className="flex-1 p-4 md:p-8">
@@ -30,7 +30,7 @@ export default async function SearchPage({
           allProducts={allProducts}
           allCategories={allCategories}
           user={user}
-          savedProductIds={Array.from(savedProductIds)}
+          savedProductIds={Array.from(savedProductIds) as string[]}
         />
       </Suspense>
     </main>

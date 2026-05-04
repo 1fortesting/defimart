@@ -28,7 +28,7 @@ function SubmitButton() {
 
 export function RequestProductForm() {
     const { toast } = useToast();
-    const initialState = { message: null, error: null, errors: {}, success: false };
+    const initialState = { message: '', error: undefined, success: false };
     const [state, dispatch] = useActionState(createProductRequest, initialState);
     
     const [selectedFile, setSelectedFile] = useState<File | null>(null);

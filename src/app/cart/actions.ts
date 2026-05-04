@@ -7,7 +7,7 @@ import { Tables } from '@/types/supabase';
 import { sendSms } from '@/lib/sendSms';
 
 export async function addToCart(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = await createClient() as any;
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -53,7 +53,7 @@ export async function addToCart(formData: FormData) {
 }
 
 export async function updateItemQuantity(formData: FormData) {
-    const supabase = await createClient();
+    const supabase = await createClient() as any;
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return redirect('/login');
@@ -72,7 +72,7 @@ export async function updateItemQuantity(formData: FormData) {
 }
 
 export async function removeItem(formData: FormData) {
-    const supabase = await createClient();
+    const supabase = await createClient() as any;
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) return redirect('/login');
@@ -84,7 +84,7 @@ export async function removeItem(formData: FormData) {
 }
 
 export async function placeOrder(formData: FormData) {
-    const supabase = await createClient();
+    const supabase = await createClient() as any;
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -108,7 +108,7 @@ export async function placeOrder(formData: FormData) {
     }
 
     // 2. Create order records with price at time of purchase
-    const newOrders = cartItems.map(item => {
+    const newOrders = (cartItems as any[]).map((item: any) => {
         const product = item.products as Tables<'products'>;
         if (!product) {
             // This case should ideally not happen if DB constraints are set up
@@ -137,7 +137,7 @@ export async function placeOrder(formData: FormData) {
         };
     });
 
-    const { data: createdOrders, error: orderError } = await supabase.from('orders').insert(newOrders).select();
+    const { data: createdOrders, error: orderError } = await (supabase.from('orders').insert(newOrders).select() as any);
 
     if (orderError) {
         console.error("Order placement error:", orderError);
@@ -155,11 +155,11 @@ export async function placeOrder(formData: FormData) {
             process.env.SALES_ADMIN_PHONE_3,
         ].filter(Boolean) as string[];
 
-        const totalAmount = createdOrders.reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0);
+        const totalAmount = (createdOrders as any[]).reduce((sum: number, order: any) => sum + (order.price_per_item * order.quantity), 0);
         
-        const firstCartItem = cartItems.find(item => item.product_id === createdOrders[0].product_id);
+        const firstCartItem = (cartItems as any[]).find((item: any) => item.product_id === createdOrders[0].product_id);
         const firstProductName = firstCartItem?.products?.name || 'Unknown Product';
-        const totalItems = createdOrders.reduce((sum, order) => sum + order.quantity, 0);
+        const totalItems = (createdOrders as any[]).reduce((sum: number, order: any) => sum + order.quantity, 0);
         const productNameDisplay = totalItems > 1 ? `${firstProductName} & more` : firstProductName;
         
         const firstOrderId = createdOrders[0].id.substring(0, 8);

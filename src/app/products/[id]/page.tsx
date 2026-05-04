@@ -8,14 +8,15 @@ export type ReviewWithProfile = Tables<'reviews'> & {
   profiles: Pick<Tables<'profiles'>, 'display_name' | 'avatar_url'> | null;
 };
 
-export default async function ProductPage({ params }: { params: { id: string } }) {
-    const supabase = await createClient();
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const supabase = await (await createClient()) as any;
     const { data: { user } } = await supabase.auth.getUser();
 
     const { data: product } = await supabase
         .from('products')
         .select('*')
-        .eq('id', params.id)
+        .eq('id', id)
         .single();
 
     if (!product) {
@@ -28,23 +29,22 @@ export default async function ProductPage({ params }: { params: { id: string } }
     
     const isSaved = !!savedProducts;
 
-    const { data: reviews, error: reviewsError } = await supabase
+    const { data: reviews, error: reviewsError } = await (supabase
         .from('reviews')
         .select('*, profiles(display_name, avatar_url)')
-        .eq('product_id', params.id)
-        .order('created_at', { ascending: false })
-        .returns<ReviewWithProfile[]>();
+        .eq('product_id', id)
+        .order('created_at', { ascending: false }) as any);
 
     if (reviewsError) {
         console.error('Error fetching reviews:', reviewsError);
     }
     
-    const totalRating = reviews?.reduce((acc, review) => acc + review.rating, 0) ?? 0;
+    const totalRating = (reviews as any[])?.reduce((acc: number, review: any) => acc + review.rating, 0) ?? 0;
     const averageRating = reviews && reviews.length > 0 ? totalRating / reviews.length : 0;
     
     let userReview = null;
     if (user && reviews) {
-        userReview = reviews.find(r => r.user_id === user.id) || null;
+        userReview = (reviews as any[]).find((r: any) => r.user_id === user.id) || null;
     }
 
     return (

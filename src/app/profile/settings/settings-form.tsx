@@ -16,9 +16,9 @@ function SubmitButton() {
 
 export function SettingsForm({ user }: { user: User }) {
     const { toast } = useToast();
-    const initialState = { message: null, error: null };
+    const initialState = { message: undefined, error: undefined, errors: undefined };
     // useActionState is a React 19 hook, which this project uses.
-    const [state, dispatch] = useActionState(updateUserProfile, initialState);
+    const [state, dispatch] = useActionState(updateUserProfile, initialState as any);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {

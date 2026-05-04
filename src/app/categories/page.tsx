@@ -6,7 +6,7 @@ import CategoriesClientPage from './categories-client-page';
 import { Suspense } from 'react';
 
 export default async function CategoriesPage() {
-    const supabase = await createClient();
+    const supabase = await createClient() as any;
 
     const { data: products } = await supabase
         .from('products')
@@ -18,10 +18,10 @@ export default async function CategoriesPage() {
     const { data: savedProducts } = user 
       ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 
       : { data: null };
-    const savedProductIds = new Set(savedProducts?.map(p => p.product_id) || []);
+    const savedProductIds = new Set((savedProducts as any[])?.map((p: any) => p.product_id) || []);
 
-    const categories = [...new Set(products?.map(p => p.category).filter(Boolean) as string[])].sort();
-    const brands = [...new Set(products?.map(p => p.brand).filter(Boolean) as string[])].sort();
+    const categories = [...new Set((products as any[])?.map((p: any) => p.category).filter(Boolean) as string[])].sort();
+    const brands = [...new Set((products as any[])?.map((p: any) => p.brand).filter(Boolean) as string[])].sort();
 
     return (
         <Suspense fallback={<div>Loading...</div>}>

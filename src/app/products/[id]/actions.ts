@@ -11,7 +11,7 @@ const ReviewSchema = z.object({
 });
 
 export async function submitReview(prevState: any, formData: FormData) {
-    const supabase = createClient();
+    const supabase = await createClient() as any;
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {

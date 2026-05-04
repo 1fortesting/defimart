@@ -14,7 +14,7 @@ export function SearchBar({ products, className }: { products: Tables<'products'
   const [query, setQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState<Tables<'products'>[]>([]);
   const [isFocused, setIsFocused] = useState(false);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const searchContainerRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
 
   useEffect(() => {

@@ -18,6 +18,103 @@ const BaseProductSchema = z.object({
   discount_end_date: z.string().nullable().optional(),
 });
 
+const CreateProductSchema = BaseProductSchema.extend({
+  image: z
+    .any()
+    .refine((file) => file?.size > 0, 'Image is required.')
+    .refine((file) => file?.size < 5 * 1024 * 1024, 'Max image size is 5MB.')
+    .refine(
+      (file) => ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(file?.type),
+      'Only .jpg, .jpeg, .png and .webp formats are supported.'
+    ),
+});
+
+export async function createProduct(prevState: any, formData: FormData) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { message: 'Unauthorized.', success: false, errors: {} };
+
+    const rawFormData = Object.fromEntries(formData.entries());
+    
+    if (rawFormData.category === 'Other') {
+        const customCategory = (rawFormData.custom_category as string)?.trim();
+        rawFormData.category = customCategory || null;
+    }
+
+    const validatedFields = CreateProductSchema.safeParse({
+        ...rawFormData,
+        price: parseFloat(rawFormData.price as string),
+        cost_price: rawFormData.cost_price ? parseFloat(rawFormData.cost_price as string) : undefined,
+        quantity: parseInt(rawFormData.quantity as string, 10),
+        discount_percentage: rawFormData.discount_percentage ? parseFloat(rawFormData.discount_percentage as string) : null,
+        discount_end_date: rawFormData.discount_end_date || null
+    });
+
+    if (!validatedFields.success) {
+        return { errors: validatedFields.error.flatten().fieldErrors, message: 'Invalid data', success: false };
+    }
+
+    const { name, description, price, cost_price, quantity, category, brand, image, discount_percentage, discount_end_date } = validatedFields.data;
+
+    const imageFile = image as File;
+    const fileName = `${Date.now()}-${imageFile.name}`;
+    const { error: uploadError } = await supabase.storage
+      .from('product_images')
+      .upload(fileName, imageFile);
+    
+    if (uploadError) {
+      return { message: `Storage Error: ${uploadError.message}`, success: false, errors: {} };
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('product_images')
+      .getPublicUrl(fileName);
+
+    if (!urlData?.publicUrl) {
+      await supabase.storage.from('product_images').remove([fileName]);
+      return { message: 'Could not get public URL for image.', success: false, errors: {} };
+    }
+    const publicUrl = urlData.publicUrl;
+
+    let aiTags: string[] = [];
+    try {
+      const tagResponse = await generateProductTags({
+        productName: name,
+        description: description || '',
+        category: category || '',
+      });
+      aiTags = tagResponse.tags;
+    } catch (e) {
+      console.error("AI Tag generation failed:", e);
+    }
+
+    const { error } = await supabase.from('products').insert({
+        name,
+        description,
+        price,
+        cost_price: cost_price || null,
+        quantity,
+        category: category || null,
+        brand: brand || null,
+        image_urls: [publicUrl],
+        seller_id: user.id,
+        is_featured: formData.get('is_featured') === 'on',
+        is_outstanding: formData.get('is_outstanding') === 'on',
+        discount_percentage: (discount_percentage && discount_end_date) ? discount_percentage : null,
+        discount_end_date: (discount_percentage && discount_end_date) ? new Date(discount_end_date).toISOString() : null,
+        tags: aiTags,
+    });
+
+    if (error) {
+        await supabase.storage.from('product_images').remove([fileName]);
+        return { message: error.message, success: false, errors: {} };
+    }
+
+    revalidatePath('/admin/procurement/products');
+    revalidatePath('/');
+    return { success: true };
+}
+
 const UpdateProductSchema = BaseProductSchema.extend({
   id: z.string().min(1, 'Product ID is required'),
   image: z.any().optional(),

@@ -19,7 +19,7 @@ export default async function AdminSalesCustomersPage() {
             },
           },
         }
-    );
+    ) as any;
     
     const { data: { users }, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
 
@@ -36,8 +36,8 @@ export default async function AdminSalesCustomersPage() {
        return <p>Error fetching profiles.</p>
     }
 
-    const usersWithProfiles = users.map(user => {
-        const profile = profiles?.find(p => p.id === user.id);
+    const usersWithProfiles = (users as any[]).map((user: any) => {
+        const profile = (profiles as any[])?.find((p: any) => p.id === user.id);
         return {
             ...user,
             ...profile,

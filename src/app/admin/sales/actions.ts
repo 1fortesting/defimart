@@ -8,7 +8,7 @@ import { getPickupDateString } from '@/lib/getPickupDate';
 import { sendPush } from '@/lib/sendPush';
 
 export async function updateOrderStatus(formData: FormData) {
-    const supabase = await createClient();
+    const supabase = await createClient() as any;
     const orderId = formData.get('orderId') as string;
     const newStatus = formData.get('status') as Database['public']['Enums']['order_status'];
 

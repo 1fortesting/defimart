@@ -34,13 +34,13 @@ export async function Header() {
 
   let cartItemCount = 0;
   if (user) {
-    const { data: cartItems, error } = await supabase
+    const { data: cartItems, error } = await (supabase as any)
       .from('cart_items')
       .select('quantity')
       .eq('user_id', user.id);
 
     if (cartItems) {
-      cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+      cartItemCount = (cartItems as any[]).reduce((sum: number, item: any) => sum + item.quantity, 0);
     }
   }
   

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { sendSms } from '@/lib/sendSms';
 
 export async function createProductRequest(prevState: any, formData: FormData) {
-  const supabase = await createClient();
+  const supabase = await createClient() as any;
   
   try {
     const { data: { user } } = await supabase.auth.getUser();

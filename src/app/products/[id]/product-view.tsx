@@ -75,7 +75,7 @@ function SubmitReviewButton({ userReview, rating }: { userReview: ReviewWithProf
 
 function ReviewForm({ productId, userReview }: { productId: string, userReview: ReviewWithProfile | null }) {
     const { toast } = useToast();
-    const initialState = { message: null, errors: {}, success: false };
+    const initialState = { message: '', errors: {}, success: false };
     const [state, dispatch] = useActionState(submitReview, initialState);
     const [rating, setRating] = useState(userReview?.rating || 0);
     const [hoverRating, setHoverRating] = useState(0);
@@ -234,7 +234,7 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                         )}
                     </div>
                     {user ? (
-                        <form action={toggleSaveProduct}>
+                        <form action={async (formData) => { await toggleSaveProduct(formData); }}>
                             <input type="hidden" name="productId" value={product.id} />
                             <input type="hidden" name="pathname" value={pathname} />
                             <Button type="submit" variant="outline" size="lg">

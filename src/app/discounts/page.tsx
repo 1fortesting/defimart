@@ -4,7 +4,7 @@ import { ProductCard } from '@/components/product-card';
 import { BackButton } from '@/components/back-button';
 
 export default async function DiscountsPage() {
-    const supabase = await createClient();
+    const supabase = await createClient() as any;
     const { data: { user } } = await supabase.auth.getUser();
 
     const { data: discountedProducts } = await supabase
@@ -12,13 +12,12 @@ export default async function DiscountsPage() {
         .select('*')
         .gt('discount_percentage', 0)
         .gt('discount_end_date', new Date().toISOString())
-        .order('created_at', { ascending: false })
-        .returns<Tables<'products'>[]>();
+        .order('created_at', { ascending: false });
 
     const { data: savedProducts } = user 
       ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 
       : { data: null };
-    const savedProductIds = new Set(savedProducts?.map(p => p.product_id) || []);
+    const savedProductIds = new Set((savedProducts as any[])?.map((p: any) => p.product_id) || []);
 
     return (
         <main className="flex-1 p-4 md:p-8">
@@ -29,7 +28,7 @@ export default async function DiscountsPage() {
                 <h1 className="text-3xl font-bold mb-8">Discounted Products</h1>
                 {discountedProducts && discountedProducts.length > 0 ? (
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6 lg:gap-8">
-                        {discountedProducts.map((product) => (
+                        {(discountedProducts as any[]).map((product: any) => (
                             <ProductCard 
                                 key={product.id} 
                                 product={product} 

@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
 export async function toggleSaveProduct(formData: FormData) {
-  const supabase = await createClient();
+  const supabase = await createClient() as any;
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {

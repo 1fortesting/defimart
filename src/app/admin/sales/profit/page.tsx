@@ -28,7 +28,7 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
             },
           },
         }
-    );
+    ) as any;
 
     const params = await searchParams;
     const selectedDateStr = params?.date as string;
@@ -66,7 +66,7 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
     if (reviewsError) console.error("Error fetching reviews:", reviewsError.message);
     
     // --- Chart Data ---
-    let profitChartData;
+    let profitChartData: { date: string, total: number }[];
     let chartTimeUnit: 'day' | 'hour' = 'hour';
     let chartDescription;
     
@@ -77,7 +77,7 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
             date: `${String(i).padStart(2, '0')}:00`,
             total: 0
         }));
-        orders?.forEach(order => {
+        (orders as any[])?.forEach((order: any) => {
             const hour = new Date(order.created_at).getHours();
             const profit = (order.price_per_item - (order.cost_price_per_item ?? 0)) * order.quantity;
             profitChartData[hour].total += profit;
@@ -89,7 +89,7 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
             date: `${String(i).padStart(2, '0')}:00`,
             total: 0
         }));
-        orders?.forEach(order => {
+        (orders as any[])?.forEach((order: any) => {
             const hour = new Date(order.created_at).getHours();
             const profit = (order.price_per_item - (order.cost_price_per_item ?? 0)) * order.quantity;
             profitChartData[hour].total += profit;
@@ -97,10 +97,10 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
     }
     
     // --- Stats Cards ---
-    const totalRevenue = orders?.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0) ?? 0;
-    const totalCost = orders?.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0) ?? 0;
+    const totalRevenue = (orders as any[])?.reduce((sum: number, o: any) => sum + (o.price_per_item * o.quantity), 0) ?? 0;
+    const totalCost = (orders as any[])?.reduce((sum: number, o: any) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0) ?? 0;
     const totalProfit = totalRevenue - totalCost;
-    const totalSales = orders?.reduce((sum, o) => sum + o.quantity, 0) ?? 0; // Total units sold
+    const totalSales = (orders as any[])?.reduce((sum: number, o: any) => sum + o.quantity, 0) ?? 0; // Total units sold
     const { count: totalProducts } = await supabaseAdmin.from('products').select('id', { count: 'exact', head: true });
 
     // --- Product Performance Table ---
@@ -111,16 +111,16 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
     const { data: products, error: productsError } = await productsQuery;
     if (productsError) console.error("Error fetching products:", productsError.message);
 
-    const productsWithPerf: ProductWithProfit[] = products?.map(p => {
-        const productOrders = orders?.filter(o => o.product_id === p.id) ?? [];
-        const productReviews = reviews?.filter(r => r.product_id === p.id) ?? [];
+    const productsWithPerf: ProductWithProfit[] = (products as any[])?.map((p: any) => {
+        const productOrders = (orders as any[])?.filter((o: any) => o.product_id === p.id) ?? [];
+        const productReviews = (reviews as any[])?.filter((r: any) => r.product_id === p.id) ?? [];
 
-        const total_sales = productOrders.reduce((sum, o) => sum + o.quantity, 0);
-        const total_revenue = productOrders.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
-        const total_cost = productOrders.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0);
+        const total_sales = productOrders.reduce((sum: number, o: any) => sum + o.quantity, 0);
+        const total_revenue = productOrders.reduce((sum: number, o: any) => sum + (o.price_per_item * o.quantity), 0);
+        const total_cost = productOrders.reduce((sum: number, o: any) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0);
         const total_profit = total_revenue - total_cost;
         const review_count = productReviews.length;
-        const average_rating = review_count > 0 ? productReviews.reduce((sum, r) => sum + r.rating, 0) / review_count : 0;
+        const average_rating = review_count > 0 ? productReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / review_count : 0;
         
         return { ...p, total_sales, total_revenue, total_profit, average_rating, review_count };
     }) ?? [];

@@ -10,6 +10,9 @@ export function FCMTokenManager() {
 
   useEffect(() => {
     const setupMessaging = async () => {
+      // Top-level browser support guard
+      if (typeof window === 'undefined' || !('Notification' in window) || !('serviceWorker' in navigator)) return;
+
       // Check for environment variables before proceeding
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         console.warn('Supabase credentials missing. FCM Token registration skipped.');
@@ -24,7 +27,7 @@ export function FCMTokenManager() {
         const token = await requestForToken();
         if (token) {
           // Upsert token to Supabase
-          await supabase.from('fcm_tokens').upsert({
+          await (supabase as any).from('fcm_tokens').upsert({
             user_id: user.id,
             token: token,
             updated_at: new Date().toISOString(),
@@ -38,14 +41,16 @@ export function FCMTokenManager() {
     setupMessaging();
 
     // Listen for foreground messages
-    const unsubscribe = onMessageListener().then((payload: any) => {
-      if (payload) {
-        toast({
-          title: payload.notification?.title || 'Notification',
-          description: payload.notification?.body || '',
-        });
-      }
-    }).catch(err => console.log('failed: ', err));
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      onMessageListener().then((payload: any) => {
+        if (payload) {
+          toast({
+            title: payload.notification?.title || 'Notification',
+            description: payload.notification?.body || '',
+          });
+        }
+      }).catch(err => console.log('failed: ', err));
+    }
 
     // Foreground listener usually returns a promise that resolves when message received.
     // In a real world app, you'd handle cleanup if the SDK supports it.

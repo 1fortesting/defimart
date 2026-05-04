@@ -11,7 +11,7 @@ import { HomePageContent } from './home-page-content';
 import { OutstandingProducts } from '@/components/outstanding-products';
 
 export default async function Home() {
-  const supabase = await createClient();
+  const supabase = await createClient() as any;
 
   const {
     data: { user },
@@ -23,11 +23,11 @@ export default async function Home() {
   const { data: savedProducts } = user 
       ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 
       : { data: null };
-  const savedProductIds = savedProducts?.map(p => p.product_id) || [];
+  const savedProductIds = (savedProducts as any[])?.map((p: any) => p.product_id) || [];
 
   const allProducts = productsData || [];
 
-  const reviewsByProduct = (reviews || []).reduce((acc, review) => {
+  const reviewsByProduct = (reviews || []).reduce((acc: Record<string, number[]>, review: any) => {
     if (!acc[review.product_id]) {
         acc[review.product_id] = [];
     }
@@ -35,10 +35,10 @@ export default async function Home() {
     return acc;
   }, {} as Record<string, number[]>);
 
-  const productsWithRatings = allProducts.map(p => {
+  const productsWithRatings = allProducts.map((p: any) => {
     const ratings = reviewsByProduct[p.id] || [];
     const review_count = ratings.length;
-    const average_rating = review_count > 0 ? ratings.reduce((sum, r) => sum + r.rating, 0) / review_count : 0;
+    const average_rating = review_count > 0 ? (ratings as number[]).reduce((sum: number, r: number) => sum + r, 0) / review_count : 0;
     return { ...p, average_rating, review_count };
   });
 
@@ -53,12 +53,12 @@ export default async function Home() {
   const carouselProducts = featuredProducts.length > 0 ? featuredProducts : allProducts.slice(0, 5);
 
   if (outstandingProducts.length < 4) {
-      const existingIds = new Set(outstandingProducts.map(p => p.id));
-      const otherProducts = allProducts.filter(p => !existingIds.has(p.id)).sort(() => 0.5 - Math.random());
+      const existingIds = new Set(outstandingProducts.map((p: any) => p.id));
+      const otherProducts = allProducts.filter((p: any) => !existingIds.has(p.id)).sort(() => 0.5 - Math.random());
       outstandingProducts.push(...otherProducts.slice(0, 4 - outstandingProducts.length));
   }
 
-  const productsByCategory: { [key: string]: Tables<'products'>[] } = allProducts.reduce((acc, product) => {
+  const productsByCategory: { [key: string]: Tables<'products'>[] } = allProducts.reduce((acc: { [key: string]: Tables<'products'>[] }, product: any) => {
     const category = product.category || 'Other';
     if (!acc[category]) {
         acc[category] = [];

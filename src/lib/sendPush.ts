@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 
 interface SendPushParams {
   userIds?: string[];
-  audience?: 'all' | 'active';
+  audience?: 'all' | 'active' | 'category';
   title: string;
   body: string;
   type: string;

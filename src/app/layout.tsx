@@ -10,6 +10,8 @@ import { Suspense } from 'react';
 import { TawkToManager } from '@/components/tawk-to-manager';
 import { FCMTokenManager } from '@/components/fcm-token-manager';
 import { NetworkStatus } from '@/components/network-status';
+import { ErrorBoundary } from '@/components/error-boundary';
+import { GlobalErrorHandler } from '@/components/global-error-handler';
 
 export const metadata: Metadata = {
   title: 'Defimart – Student Online Store in Ghana',
@@ -90,7 +92,10 @@ export default function RootLayout({
         >
           <StorefrontShell header={<Header />} bottomNav={<BottomNav />}>
             <NetworkStatus />
-            {children}
+            <GlobalErrorHandler />
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
           </StorefrontShell>
           <Toaster />
           <Suspense fallback={null}>
