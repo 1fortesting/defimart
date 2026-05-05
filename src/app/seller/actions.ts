@@ -1,3 +1,4 @@
+
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -44,19 +45,57 @@ export async function toggleShopStatus(sellerId: string, isOpen: boolean) {
   revalidatePath('/seller/dashboard');
 }
 
+export async function updateShopInfo(formData: FormData) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Unauthorized');
+
+    const sellerId = formData.get('sellerId') as string;
+    const shopName = formData.get('shop_name') as string;
+    const openTime = formData.get('open_time') as string;
+    const closeTime = formData.get('close_time') as string;
+    const avatarFile = formData.get('logo') as File | null;
+
+    // Update Seller Details
+    const { error: sellerError } = await supabase
+        .from('sellers' as any)
+        .update({
+            shop_name: shopName,
+            open_time: openTime,
+            close_time: closeTime
+        })
+        .eq('id', sellerId);
+
+    if (sellerError) throw sellerError;
+
+    // Update Logo (Profile Avatar)
+    if (avatarFile && avatarFile.size > 0) {
+        const fileName = `${user.id}/shop-logo-${Date.now()}`;
+        const { error: uploadError } = await supabase.storage
+            .from('vendor-images')
+            .upload(fileName, avatarFile, { upsert: true });
+
+        if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage
+                .from('vendor-images')
+                .getPublicUrl(fileName);
+            
+            await supabase.auth.updateUser({
+                data: { avatar_url: publicUrl }
+            });
+            
+            await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
+        }
+    }
+
+    revalidatePath('/seller/dashboard');
+    return { success: true };
+}
+
 export async function addSellerProduct(formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Unauthorized');
-
-  // Get seller record
-  const { data: seller } = await supabase
-    .from('sellers' as any)
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
-
-  if (!seller) throw new Error('Seller not found');
 
   const name = formData.get('name') as string;
   const description = formData.get('description') as string;
@@ -71,7 +110,6 @@ export async function addSellerProduct(formData: FormData) {
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `seller-uploads/${fileName}`;
 
-    // Using the new 'vendor-images' bucket
     const { error: uploadError } = await supabase.storage
       .from('vendor-images')
       .upload(filePath, imageFile);
