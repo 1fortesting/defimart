@@ -56,7 +56,7 @@ export async function updateShopInfo(formData: FormData) {
     const avatarFile = formData.get('logo') as File | null;
 
     try {
-        // 1. Update Seller Details in the database
+        // 1. Update Seller Details
         const { error: sellerError } = await supabase
             .from('sellers' as any)
             .update({
@@ -68,21 +68,21 @@ export async function updateShopInfo(formData: FormData) {
 
         if (sellerError) throw new Error(`Database error: ${sellerError.message}`);
 
-        // 2. Update Logo (Profile Avatar) - Using seller-avatars bucket
+        // 2. Update Logo
         if (avatarFile && avatarFile.size > 0) {
-            // Validate file type
             if (!['image/jpeg', 'image/png', 'image/webp'].includes(avatarFile.type)) {
                 throw new Error('Invalid file type. Only JPG, PNG, and WEBP are allowed.');
             }
 
+            // Path matches RLS policy: {user_id}/{filename}
             const fileName = `${user.id}/shop-logo-${Date.now()}`;
             const { error: uploadError } = await supabase.storage
                 .from('seller-avatars')
                 .upload(fileName, avatarFile, { upsert: true });
 
             if (uploadError) {
-                console.error('Storage Error:', uploadError);
-                throw new Error(`Upload failed: ${uploadError.message}. Make sure the 'seller-avatars' bucket exists and is public.`);
+                console.error('Storage Upload Error:', uploadError);
+                throw new Error(`Upload failed: ${uploadError.message}. Ensure the 'seller-avatars' bucket exists, is Public, and has the correct RLS policies.`);
             }
 
             const { data: { publicUrl } } = supabase.storage
@@ -95,15 +95,14 @@ export async function updateShopInfo(formData: FormData) {
             });
             
             // Sync with Profiles table
-            const { error: profileError } = await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
-            if (profileError) throw new Error(`Profile update error: ${profileError.message}`);
+            await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
         }
 
         revalidatePath('/seller/dashboard');
         revalidatePath('/shops');
         return { success: true };
     } catch (err: any) {
-        console.error('Error updating shop info:', err);
+        console.error('Seller Update Action Error:', err);
         return { success: false, error: err.message || 'An unexpected error occurred.' };
     }
 }
