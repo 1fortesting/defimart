@@ -22,7 +22,8 @@ import {
     TrendingUp, 
     Phone, 
     ExternalLink,
-    Image as ImageIcon
+    Image as ImageIcon,
+    X
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -57,6 +58,11 @@ export default function SellerDashboardPage() {
   const [isAddPending, startAddTransition] = useTransition();
   const [isUpdatePending, startUpdateTransition] = useTransition();
   const [isDialogOpen, setIsAddDialogOpen] = useState(false);
+  
+  // Preview states
+  const [productImagePreview, setProductImagePreview] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -115,11 +121,30 @@ export default function SellerDashboardPage() {
     });
   };
 
+  const handleProductImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProductImagePreview(URL.createObjectURL(file));
+    } else {
+      setProductImagePreview(null);
+    }
+  };
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoPreview(URL.createObjectURL(file));
+    } else {
+      setLogoPreview(null);
+    }
+  };
+
   const handleAddProduct = async (formData: FormData) => {
     startAddTransition(async () => {
         try {
             await addSellerProduct(formData);
             setIsAddDialogOpen(false);
+            setProductImagePreview(null);
             toast({ title: 'Product submitted for approval' });
             window.location.reload();
         } catch (e) {
@@ -323,7 +348,10 @@ export default function SellerDashboardPage() {
         <TabsContent value="products" className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold flex items-center gap-2">My Catalog ({products.length})</h2>
-                <Dialog open={isDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                <Dialog open={isDialogOpen} onOpenChange={(open) => {
+                  setIsAddDialogOpen(open);
+                  if (!open) setProductImagePreview(null);
+                }}>
                     <DialogTrigger asChild>
                     <Button><Plus className="h-4 w-4 mr-2" /> Add New</Button>
                     </DialogTrigger>
@@ -356,11 +384,33 @@ export default function SellerDashboardPage() {
                         <Label htmlFor="description">Description</Label>
                         <Textarea id="description" name="description" rows={3} />
                         </div>
-                        <div className="space-y-2">
-                        <Label htmlFor="image">Product Image</Label>
-                        <Input id="image" name="image" type="file" accept="image/*" required />
+                        
+                        <div className="space-y-3">
+                          <Label htmlFor="image">Product Image</Label>
+                          {productImagePreview ? (
+                            <div className="relative aspect-square w-full rounded-xl overflow-hidden border bg-muted">
+                               <Image src={productImagePreview} alt="Preview" fill className="object-contain" />
+                               <button 
+                                  type="button" 
+                                  onClick={() => setProductImagePreview(null)}
+                                  className="absolute top-2 right-2 p-1 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+                               >
+                                  <X className="h-4 w-4" />
+                               </button>
+                            </div>
+                          ) : (
+                            <label htmlFor="image" className="flex flex-col items-center justify-center w-full aspect-square border-2 border-dashed rounded-xl cursor-pointer hover:bg-muted/50 transition-colors bg-muted/20 border-muted-foreground/20">
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <ImageIcon className="w-8 h-8 mb-4 text-muted-foreground" />
+                                    <p className="mb-2 text-sm text-muted-foreground font-semibold">Click to upload</p>
+                                    <p className="text-xs text-muted-foreground">PNG, JPG up to 5MB</p>
+                                </div>
+                                <Input id="image" name="image" type="file" accept="image/*" className="hidden" required onChange={handleProductImageChange} />
+                            </label>
+                          )}
                         </div>
-                        <Button type="submit" className="w-full" disabled={isAddPending}>
+
+                        <Button type="submit" className="w-full mt-4" disabled={isAddPending}>
                         {isAddPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
                         Submit for Approval
                         </Button>
@@ -458,13 +508,17 @@ export default function SellerDashboardPage() {
                             <div className="flex items-center gap-6 p-4 bg-muted/20 rounded-2xl border border-dashed">
                                 <div className="relative group">
                                     <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                                        <AvatarImage src={seller.user_metadata?.avatar_url || undefined} />
+                                        {logoPreview ? (
+                                           <AvatarImage src={logoPreview} />
+                                        ) : (
+                                           <AvatarImage src={seller.user_metadata?.avatar_url || undefined} />
+                                        )}
                                         <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">{seller.shop_name?.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <Label htmlFor="logo" className="absolute inset-0 flex items-center justify-center bg-black/40 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                                         <ImageIcon className="h-6 w-6" />
                                     </Label>
-                                    <Input id="logo" name="logo" type="file" accept="image/*" className="hidden" />
+                                    <Input id="logo" name="logo" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
                                 </div>
                                 <div>
                                     <p className="font-bold text-sm">Shop Logo</p>
