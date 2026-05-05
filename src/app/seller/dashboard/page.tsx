@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
@@ -12,10 +11,8 @@ import { updateOrderStatus } from '@/app/admin/sales/actions';
 import { useToast } from '@/hooks/use-toast';
 import { 
     Package, 
-    Power, 
     Plus, 
     Eye, 
-    CheckCircle2, 
     Clock, 
     Loader2, 
     LayoutDashboard, 
@@ -23,7 +20,6 @@ import {
     Users, 
     Settings, 
     TrendingUp, 
-    Mail, 
     Phone, 
     ExternalLink,
     Image as ImageIcon
@@ -37,8 +33,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { formatPrice } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 import Link from 'next/link';
+import { Separator } from '@/components/ui/separator';
 
 const categories = [
     "Electronics & Gadgets",
@@ -302,7 +299,7 @@ export default function SellerDashboardPage() {
                                                 <Button size="sm" onClick={() => handleUpdateStatus(order.id, 'ready')} disabled={isPending}>Mark Ready</Button>
                                             )}
                                             {order.status === 'ready' && (
-                                                <Button size="sm" variant="success" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Mark Complete</Button>
+                                                <Button size="sm" variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Mark Complete</Button>
                                             )}
                                             <Button size="sm" variant="ghost" asChild>
                                                 <Link href={`/admin/sales/${order.id}`}><Eye className="h-4 w-4" /></Link>
@@ -383,7 +380,7 @@ export default function SellerDashboardPage() {
                                 className="object-cover group-hover:scale-105 transition-transform duration-500"
                             />
                             <div className="absolute top-2 right-2">
-                                <Badge variant={product.is_approved ? 'success' : 'secondary'} className="shadow-lg backdrop-blur-md bg-white/80">
+                                <Badge variant={product.is_approved ? 'default' : 'secondary'} className={cn("shadow-lg backdrop-blur-md", product.is_approved ? "bg-emerald-500/80" : "bg-white/80")}>
                                     {product.is_approved ? 'Approved' : 'Reviewing'}
                                 </Badge>
                             </div>
