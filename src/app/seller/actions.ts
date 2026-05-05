@@ -71,14 +71,15 @@ export async function addSellerProduct(formData: FormData) {
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `seller-uploads/${fileName}`;
 
+    // Using the new 'vendor-images' bucket
     const { error: uploadError } = await supabase.storage
-      .from('product-images')
+      .from('vendor-images')
       .upload(filePath, imageFile);
 
     if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = supabase.storage
-      .from('product-images')
+      .from('vendor-images')
       .getPublicUrl(filePath);
     
     image_url = publicUrl;
@@ -92,12 +93,13 @@ export async function addSellerProduct(formData: FormData) {
       price,
       category,
       image_urls: image_url ? [image_url] : [],
-      seller_id: user.id, // Currently products table links to profile UUID
-      is_approved: false as any // Note: Added manually as per task
+      seller_id: user.id,
+      is_approved: false
     } as any);
 
   if (error) throw error;
 
   revalidatePath('/seller/dashboard');
+  revalidatePath('/');
   return { success: true };
 }
