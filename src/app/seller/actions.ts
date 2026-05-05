@@ -56,7 +56,7 @@ export async function updateShopInfo(formData: FormData) {
     const avatarFile = formData.get('logo') as File | null;
 
     try {
-        // Update Seller Details
+        // 1. Update Seller Details in the database
         const { error: sellerError } = await supabase
             .from('sellers' as any)
             .update({
@@ -68,17 +68,25 @@ export async function updateShopInfo(formData: FormData) {
 
         if (sellerError) throw new Error(`Database error: ${sellerError.message}`);
 
-        // Update Logo (Profile Avatar) - Using user_profile bucket as requested
+        // 2. Update Logo (Profile Avatar) - Using seller-avatar bucket
         if (avatarFile && avatarFile.size > 0) {
+            // Validate file type
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(avatarFile.type)) {
+                throw new Error('Invalid file type. Only JPG, PNG, and WEBP are allowed.');
+            }
+
             const fileName = `${user.id}/shop-logo-${Date.now()}`;
             const { error: uploadError } = await supabase.storage
-                .from('user_profile')
+                .from('seller-avatar')
                 .upload(fileName, avatarFile, { upsert: true });
 
-            if (uploadError) throw new Error(`Storage upload error: ${uploadError.message}`);
+            if (uploadError) {
+                console.error('Storage Error:', uploadError);
+                throw new Error(`Upload failed: ${uploadError.message}. Make sure the 'seller-avatar' bucket exists.`);
+            }
 
             const { data: { publicUrl } } = supabase.storage
-                .from('user_profile')
+                .from('seller-avatar')
                 .getPublicUrl(fileName);
             
             // Sync with Auth metadata
