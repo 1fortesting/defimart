@@ -68,7 +68,7 @@ export async function updateShopInfo(formData: FormData) {
 
         if (sellerError) throw new Error(`Database error: ${sellerError.message}`);
 
-        // 2. Update Logo (Profile Avatar) - Using seller-avatar bucket
+        // 2. Update Logo (Profile Avatar) - Using seller-avatars bucket
         if (avatarFile && avatarFile.size > 0) {
             // Validate file type
             if (!['image/jpeg', 'image/png', 'image/webp'].includes(avatarFile.type)) {
@@ -77,16 +77,16 @@ export async function updateShopInfo(formData: FormData) {
 
             const fileName = `${user.id}/shop-logo-${Date.now()}`;
             const { error: uploadError } = await supabase.storage
-                .from('seller-avatar')
+                .from('seller-avatars')
                 .upload(fileName, avatarFile, { upsert: true });
 
             if (uploadError) {
                 console.error('Storage Error:', uploadError);
-                throw new Error(`Upload failed: ${uploadError.message}. Make sure the 'seller-avatar' bucket exists.`);
+                throw new Error(`Upload failed: ${uploadError.message}. Make sure the 'seller-avatars' bucket exists and is public.`);
             }
 
             const { data: { publicUrl } } = supabase.storage
-                .from('seller-avatar')
+                .from('seller-avatars')
                 .getPublicUrl(fileName);
             
             // Sync with Auth metadata
