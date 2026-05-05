@@ -100,8 +100,8 @@ export default function SellerDashboardPage() {
         await toggleShopStatus(seller.id, isOpen);
         setSeller({ ...seller, is_open: isOpen });
         toast({ title: isOpen ? 'Shop is now OPEN' : 'Shop is now CLOSED', variant: isOpen ? 'success' : 'default' });
-      } catch (e) {
-        toast({ title: 'Update failed', variant: 'destructive' });
+      } catch (e: any) {
+        toast({ title: 'Update failed', description: e.message || 'Check your internet connection.', variant: 'destructive' });
       }
     });
   };
@@ -145,10 +145,10 @@ export default function SellerDashboardPage() {
             await addSellerProduct(formData);
             setIsAddDialogOpen(false);
             setProductImagePreview(null);
-            toast({ title: 'Product submitted for approval' });
+            toast({ title: 'Product submitted for approval', variant: 'success' });
             window.location.reload();
-        } catch (e) {
-            toast({ title: 'Failed to add product', variant: 'destructive' });
+        } catch (e: any) {
+            toast({ title: 'Failed to add product', description: e.message, variant: 'destructive' });
         }
     });
   };
@@ -160,8 +160,8 @@ export default function SellerDashboardPage() {
               await updateShopInfo(formData);
               toast({ title: 'Shop settings updated', variant: 'success' });
               window.location.reload();
-          } catch (e) {
-              toast({ title: 'Update failed', variant: 'destructive' });
+          } catch (e: any) {
+              toast({ title: 'Update failed', description: e.message, variant: 'destructive' });
           }
       });
   };

@@ -1,4 +1,3 @@
-
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -66,7 +65,7 @@ export async function updateShopInfo(formData: FormData) {
         })
         .eq('id', sellerId);
 
-    if (sellerError) throw sellerError;
+    if (sellerError) throw new Error(`Database error: ${sellerError.message}`);
 
     // Update Logo (Profile Avatar)
     if (avatarFile && avatarFile.size > 0) {
@@ -75,17 +74,18 @@ export async function updateShopInfo(formData: FormData) {
             .from('vendor-images')
             .upload(fileName, avatarFile, { upsert: true });
 
-        if (!uploadError) {
-            const { data: { publicUrl } } = supabase.storage
-                .from('vendor-images')
-                .getPublicUrl(fileName);
-            
-            await supabase.auth.updateUser({
-                data: { avatar_url: publicUrl }
-            });
-            
-            await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
-        }
+        if (uploadError) throw new Error(`Storage upload error: ${uploadError.message}`);
+
+        const { data: { publicUrl } } = supabase.storage
+            .from('vendor-images')
+            .getPublicUrl(fileName);
+        
+        await supabase.auth.updateUser({
+            data: { avatar_url: publicUrl }
+        });
+        
+        const { error: profileError } = await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
+        if (profileError) throw new Error(`Profile update error: ${profileError.message}`);
     }
 
     revalidatePath('/seller/dashboard');
@@ -114,7 +114,7 @@ export async function addSellerProduct(formData: FormData) {
       .from('vendor-images')
       .upload(filePath, imageFile);
 
-    if (uploadError) throw uploadError;
+    if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
 
     const { data: { publicUrl } } = supabase.storage
       .from('vendor-images')
@@ -135,7 +135,7 @@ export async function addSellerProduct(formData: FormData) {
       is_approved: false
     } as any);
 
-  if (error) throw error;
+  if (error) throw new Error(`Failed to list product: ${error.message}`);
 
   revalidatePath('/seller/dashboard');
   revalidatePath('/');
