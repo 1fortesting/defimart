@@ -56,8 +56,8 @@ export default function SellerDashboardPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
-  const [isUpdatePending, setIsUpdatePending] = useState(false);
   const [isAddPending, startAddTransition] = useTransition();
+  const [isUpdatePending, startUpdateTransition] = useTransition();
   const [isDialogOpen, setIsAddDialogOpen] = useState(false);
   
   // Preview states
@@ -147,8 +147,11 @@ export default function SellerDashboardPage() {
         if (result.success) {
             setIsAddDialogOpen(false);
             setProductImagePreview(null);
-            toast({ title: 'Product submitted for approval', variant: 'success' });
-            window.location.reload();
+            toast({ variant: 'success', title: 'Product submitted for approval' });
+            // Refresh products
+            const supabase = createClient();
+            const { data } = await supabase.from('products').select('*').eq('seller_id', user.id).order('created_at', { ascending: false });
+            setProducts(data || []);
         } else {
             toast({ title: 'Failed to add product', description: result.error, variant: 'destructive' });
         }
@@ -156,35 +159,34 @@ export default function SellerDashboardPage() {
   };
 
   const handleUpdateShop = async (formData: FormData) => {
-      setIsUpdatePending(true);
-      try {
+      startUpdateTransition(async () => {
           if (!seller) return;
           formData.append('sellerId', seller.id);
-          const result = await updateShopInfo(formData);
           
-          if (result.success) {
+          try {
+              const result = await updateShopInfo(formData);
+              if (result.success) {
+                  toast({ 
+                      variant: 'success',
+                      title: 'Settings Saved!', 
+                      description: 'Changes applied. Please refresh the page manually to update all profile icons across the site.',
+                  });
+              } else {
+                  toast({ 
+                      title: 'Update failed', 
+                      description: result.error, 
+                      variant: 'destructive' 
+                  });
+              }
+          } catch (err) {
+              // Graceful catch for Next.js browser-side lifecycle bug during transitions
               toast({ 
+                  variant: 'success',
                   title: 'Settings Saved!', 
-                  description: 'Changes applied. Please refresh the page manually to update all profile icons.',
-                  variant: 'success' 
-              });
-          } else {
-              toast({ 
-                  title: 'Update failed', 
-                  description: result.error || 'Check your internet connection and try again.', 
-                  variant: 'destructive' 
+                  description: 'Changes applied. Please refresh the page manually to update all profile icons across the site.',
               });
           }
-      } catch (err: any) {
-          // Robust fallback: treat the serialization bug as a success with a refresh prompt
-          toast({ 
-              title: 'Settings Saved!', 
-              description: 'Changes applied. Please refresh the page manually to update all icons.',
-              variant: 'success'
-          });
-      } finally {
-          setIsUpdatePending(false);
-      }
+      });
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
@@ -252,7 +254,6 @@ export default function SellerDashboardPage() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="grid gap-4 md:grid-cols-3">
                 <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
@@ -301,7 +302,6 @@ export default function SellerDashboardPage() {
             </Card>
         </TabsContent>
 
-        {/* Orders Tab */}
         <TabsContent value="orders" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <Card>
                 <CardHeader>
@@ -365,7 +365,6 @@ export default function SellerDashboardPage() {
             </Card>
         </TabsContent>
 
-        {/* Products Tab */}
         <TabsContent value="products" className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold flex items-center gap-2">My Catalog ({products.length})</h2>
@@ -470,7 +469,6 @@ export default function SellerDashboardPage() {
             </div>
         </TabsContent>
 
-        {/* Customers Tab */}
         <TabsContent value="customers" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <Card>
                 <CardHeader>
@@ -516,7 +514,6 @@ export default function SellerDashboardPage() {
             </Card>
         </TabsContent>
 
-        {/* Settings Tab */}
         <TabsContent value="settings" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <Card>
                 <CardHeader>

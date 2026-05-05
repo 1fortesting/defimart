@@ -5,16 +5,14 @@ import { updateUserProfile } from './actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useFormStatus } from 'react-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
-function SubmitButton() {
-    const { pending } = useFormStatus();
+function SubmitButton({ isPending }: { isPending: boolean }) {
     return (
-        <Button type="submit" disabled={pending} className="w-full sm:w-auto">
-            {pending ? (
+        <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
+            {isPending ? (
                 <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving Changes...
@@ -29,8 +27,7 @@ function SubmitButton() {
 export function SettingsForm({ user }: { user: User }) {
     const { toast } = useToast();
     const initialState = { message: undefined, error: undefined, errors: undefined };
-    // useActionState is a React 19 hook, which this project uses.
-    const [state, dispatch] = useActionState(updateUserProfile, initialState as any);
+    const [state, dispatch, isPending] = useActionState(updateUserProfile, initialState as any);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,9 +42,9 @@ export function SettingsForm({ user }: { user: User }) {
     useEffect(() => {
         if(state?.message) {
             toast({ 
+                variant: 'success',
                 title: 'Settings Saved!', 
-                description: 'Changes applied. Please refresh the page manually to update all profile icons.',
-                variant: 'success'
+                description: 'Changes applied. Please refresh the page manually to update all profile icons across the site.',
             });
         }
         if(state?.error) {
@@ -62,11 +59,11 @@ export function SettingsForm({ user }: { user: User }) {
                 <div className="flex items-center gap-4">
                      <Avatar className="h-20 w-20">
                         {imagePreview ? (
-                            <img src={imagePreview} alt="Preview" className="object-cover rounded-full aspect-square" />
+                            <img src={imagePreview} alt="Preview" className="object-cover rounded-full aspect-square w-full h-full" />
                         ) : (
                             <>
                                 <AvatarImage src={user.user_metadata.avatar_url} />
-                                <AvatarFallback>{user.user_metadata.display_name?.[0] || user.email?.[0]}</AvatarFallback>
+                                <AvatarFallback className="bg-primary/10 text-primary font-bold text-xl">{user.user_metadata.display_name?.[0] || user.email?.[0]}</AvatarFallback>
                             </>
                         )}
                     </Avatar>
@@ -89,7 +86,7 @@ export function SettingsForm({ user }: { user: User }) {
                 <Input id="email" name="email" type="email" defaultValue={user.email} disabled className="bg-muted/50" />
              </div>
             <div className="flex justify-end">
-                <SubmitButton />
+                <SubmitButton isPending={isPending} />
             </div>
         </form>
     );
