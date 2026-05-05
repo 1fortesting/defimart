@@ -40,6 +40,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const categories = [
     "Electronics & Gadgets",
@@ -183,7 +184,7 @@ export default function SellerDashboardPage() {
                   });
               }
           } catch (err) {
-              // Graceful catch for Next.js browser-side lifecycle bug during transitions
+              // Bug-as-feature: refresh prompt
               toast({ 
                   variant: 'success',
                   title: 'Settings Saved!', 
@@ -382,76 +383,78 @@ export default function SellerDashboardPage() {
                     <DialogTrigger asChild>
                       <Button size="lg" className="w-full sm:w-auto shadow-primary/20"><Plus className="h-4 w-4 mr-2" /> List New Product</Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden rounded-2xl">
-                      <div className="bg-primary p-6 text-primary-foreground">
+                    <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden rounded-2xl flex flex-col max-h-[90vh]">
+                      <div className="bg-primary p-6 text-primary-foreground flex-shrink-0">
                         <DialogHeader>
                             <DialogTitle className="text-2xl font-black tracking-tight text-white">Create Listing</DialogTitle>
                             <DialogDescription className="text-primary-foreground/80">
-                                Enter your product details. Our team will review and approve it within 24 hours.
+                                Enter your product details. Our team will review it shortly.
                             </DialogDescription>
                         </DialogHeader>
                       </div>
-                      <form action={handleAddProduct} className="p-6 space-y-5">
-                          <div className="space-y-4">
-                              <div className="grid gap-2">
-                                <Label htmlFor="name" className="font-bold text-xs uppercase tracking-wider">Product Name</Label>
-                                <Input id="name" name="name" placeholder="e.g. Wireless Noise-Cancelling Headphones" required className="bg-muted/30 border-2" />
-                              </div>
+                      <form action={handleAddProduct} className="flex flex-col flex-1 overflow-hidden bg-background">
+                          <ScrollArea className="flex-1 p-6">
+                              <div className="space-y-5 pb-4">
+                                  <div className="grid gap-2">
+                                    <Label htmlFor="name" className="font-bold text-xs uppercase tracking-wider">Product Name</Label>
+                                    <Input id="name" name="name" placeholder="e.g. Wireless Noise-Cancelling Headphones" required className="bg-muted/30 border-2" />
+                                  </div>
 
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                  <Label htmlFor="price" className="font-bold text-xs uppercase tracking-wider">Price (GHS)</Label>
-                                  <Input id="price" name="price" type="number" step="0.01" placeholder="0.00" required className="bg-muted/30 border-2" />
-                                </div>
-                                <div className="grid gap-2">
-                                  <Label htmlFor="category" className="font-bold text-xs uppercase tracking-wider">Category</Label>
-                                  <Select name="category" required>
-                                      <SelectTrigger className="bg-muted/30 border-2">
-                                          <SelectValue placeholder="Select" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                          {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                                      </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-
-                              <div className="grid gap-2">
-                                <Label htmlFor="description" className="font-bold text-xs uppercase tracking-wider">Product Story/Description</Label>
-                                <Textarea id="description" name="description" placeholder="What makes this product special? Include size, color, or condition." rows={3} className="bg-muted/30 border-2 resize-none" />
-                              </div>
-                              
-                              <div className="space-y-3">
-                                <Label className="font-bold text-xs uppercase tracking-wider">Product Showcase</Label>
-                                {productImagePreview ? (
-                                  <div className="relative group aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner">
-                                    <Image src={productImagePreview} alt="Preview" fill className="object-contain" />
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <button 
-                                            type="button" 
-                                            onClick={() => setProductImagePreview(null)}
-                                            className="bg-white text-destructive p-3 rounded-full shadow-2xl hover:scale-110 transition-transform"
-                                        >
-                                            <X className="h-6 w-6" />
-                                        </button>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="grid gap-2">
+                                      <Label htmlFor="price" className="font-bold text-xs uppercase tracking-wider">Price (GHS)</Label>
+                                      <Input id="price" name="price" type="number" step="0.01" placeholder="0.00" required className="bg-muted/30 border-2" />
+                                    </div>
+                                    <div className="grid gap-2">
+                                      <Label htmlFor="category" className="font-bold text-xs uppercase tracking-wider">Category</Label>
+                                      <Select name="category" required>
+                                          <SelectTrigger className="bg-muted/30 border-2">
+                                              <SelectValue placeholder="Select" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                              {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                          </SelectContent>
+                                      </Select>
                                     </div>
                                   </div>
-                                ) : (
-                                  <label htmlFor="image" className="flex flex-col items-center justify-center w-full aspect-video border-2 border-dashed rounded-2xl cursor-pointer hover:bg-primary/5 hover:border-primary/50 transition-all bg-muted/20 border-muted-foreground/20 group">
-                                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                          <div className="p-4 bg-primary/10 rounded-full mb-4 group-hover:scale-110 transition-transform">
-                                            <UploadCloud className="w-8 h-8 text-primary" />
-                                          </div>
-                                          <p className="mb-1 text-sm font-black text-foreground">Click to upload photo</p>
-                                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest">PNG or JPG up to 5MB</p>
-                                      </div>
-                                      <Input id="image" name="image" type="file" accept="image/*" className="hidden" required onChange={handleProductImageChange} />
-                                  </label>
-                                )}
-                              </div>
-                          </div>
 
-                          <div className="pt-2">
+                                  <div className="grid gap-2">
+                                    <Label htmlFor="description" className="font-bold text-xs uppercase tracking-wider">Product Story/Description</Label>
+                                    <Textarea id="description" name="description" placeholder="What makes this product special? Include size, color, or condition." rows={3} className="bg-muted/30 border-2 resize-none" />
+                                  </div>
+                                  
+                                  <div className="space-y-3">
+                                    <Label className="font-bold text-xs uppercase tracking-wider">Product Showcase</Label>
+                                    {productImagePreview ? (
+                                      <div className="relative group aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner">
+                                        <Image src={productImagePreview} alt="Preview" fill className="object-contain" />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setProductImagePreview(null)}
+                                                className="bg-white text-destructive p-3 rounded-full shadow-2xl hover:scale-110 transition-transform"
+                                            >
+                                                <X className="h-6 w-6" />
+                                            </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <label htmlFor="image" className="flex flex-col items-center justify-center w-full aspect-video border-2 border-dashed rounded-2xl cursor-pointer hover:bg-primary/5 hover:border-primary/50 transition-all bg-muted/20 border-muted-foreground/20 group">
+                                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                              <div className="p-4 bg-primary/10 rounded-full mb-4 group-hover:scale-110 transition-transform">
+                                                <UploadCloud className="w-8 h-8 text-primary" />
+                                              </div>
+                                              <p className="mb-1 text-sm font-black text-foreground">Click to upload photo</p>
+                                              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">PNG or JPG up to 5MB</p>
+                                          </div>
+                                          <Input id="image" name="image" type="file" accept="image/*" className="hidden" required onChange={handleProductImageChange} />
+                                      </label>
+                                    )}
+                                  </div>
+                              </div>
+                          </ScrollArea>
+
+                          <div className="p-6 pt-2 border-t bg-background flex-shrink-0">
                             <Button type="submit" className="w-full h-12 text-base font-bold shadow-xl shadow-primary/20" disabled={isAddPending}>
                               {isAddPending ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
                               Publish Listing
@@ -599,4 +602,3 @@ export default function SellerDashboardPage() {
     </div>
   );
 }
-
