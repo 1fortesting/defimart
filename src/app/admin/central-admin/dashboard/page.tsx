@@ -3,7 +3,6 @@ export const dynamic = 'force-dynamic';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { Database, Tables } from '@/types/supabase';
-import { FullPageLoading } from '@/components/loading-spinner';
 import CentralAdminDashboardClientPage from './dashboard-client-page';
 
 type OrderWithProductAndBuyer = Tables<'orders'> & {
@@ -36,7 +35,7 @@ export default async function CentralAdminDashboardPage() {
         .select('*, products(name), profiles:profiles!orders_buyer_id_fkey(display_name)')
         .order('created_at', { ascending: false })
         .limit(5)
-        .returns<OrderWithDetails[]>();
+        .returns<OrderWithProductAndBuyer[]>();
 
     if (ordersError) {
         console.error("Error fetching recent orders:", ordersError.message);
