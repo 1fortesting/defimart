@@ -32,7 +32,7 @@ export default function AdminSellersPage() {
       try {
         await updateSellerStatus(sellerId, status);
         setSellers(sellers.map(s => s.id === sellerId ? { ...s, status } : s));
-        toast({ title: `Seller ${status}` });
+        toast({ title: `Seller ${status}`, variant: 'success' });
       } catch (e) {
         toast({ title: 'Action failed', variant: 'destructive' });
       }
@@ -77,7 +77,7 @@ export default function AdminSellersPage() {
                   </TableCell>
                   <TableCell>
                     <Badge variant={
-                      seller.status === 'approved' ? 'success' :
+                      seller.status === 'approved' ? 'default' :
                       seller.status === 'rejected' ? 'destructive' : 'secondary'
                     }>
                       {seller.status}
@@ -106,7 +106,8 @@ export default function AdminSellersPage() {
                         </Button>
                       </>
                     )}
-                  </TableRow>
+                  </TableCell>
+                </TableRow>
               ))}
               {sellers.length === 0 && (
                 <TableRow>
