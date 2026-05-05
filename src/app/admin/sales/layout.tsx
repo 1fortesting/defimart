@@ -118,10 +118,10 @@ const AdminHeader = ({ user, handleLogout, onExit }: { user: User | null; handle
                             <span className="sr-only">Toggle navigation menu</span>
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="flex flex-col p-0 w-3/4">
-                         <div className="flex h-14 items-center border-b px-6">
-                            <Link href="/admin/departments" className="flex items-center gap-2 font-semibold">
-                                <DoorOpen className="h-6 w-6 text-primary" />
+                    <SheetContent side="left" className="flex flex-col p-0 w-3/4 bg-white border-r-0">
+                         <div className="flex h-14 items-center bg-[var(--gold)] px-6">
+                            <Link href="/admin/departments" className="flex items-center gap-2 font-semibold text-white">
+                                <DoorOpen className="h-6 w-6" />
                                 <span className="text-lg">Sales Dept.</span>
                             </Link>
                         </div>

@@ -19,7 +19,7 @@ export function CategoryProductRow({ title, products, category, color = 'bg-prim
     }
 
     return (
-        <div className="my-12 md:my-16">
+        <div className="mb-12 mt-4">
             <div className={cn("p-3 flex justify-between items-center rounded-t-lg text-white", color)}>
                 <h2 className="text-xl font-bold">{title}</h2>
                 <Link href={`/search?category=${encodeURIComponent(category)}`}>
@@ -28,7 +28,7 @@ export function CategoryProductRow({ title, products, category, color = 'bg-prim
                     </div>
                 </Link>
             </div>
-            <div className="p-4 bg-card rounded-b-lg shadow-sm">
+            <div className="bg-card rounded-lg mb-8 mt-2">
                 <div className="flex gap-4 overflow-x-auto pb-2 -mb-2">
                     {products.map(product => (
                         <HorizontalProductCard key={product.id} product={product} />

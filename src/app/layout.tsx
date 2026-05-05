@@ -11,7 +11,6 @@ import { TawkToManager } from '@/components/tawk-to-manager';
 import { FCMTokenManager } from '@/components/fcm-token-manager';
 import { NetworkStatus } from '@/components/network-status';
 import { ErrorBoundary } from '@/components/error-boundary';
-import { GlobalErrorHandler } from '@/components/global-error-handler';
 
 export const metadata: Metadata = {
   title: 'Defimart – Student Online Store in Ghana',
@@ -58,7 +57,7 @@ export const metadata: Metadata = {
   },
   other: {
     'mobile-web-app-capable': 'yes',
-    'msapplication-TileColor': '#F5A623',
+    'msapplication-TileColor': '#E8A320',
     'msapplication-TileImage': '/icons/icon-144x144.png',
   },
 };
@@ -66,7 +65,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#F5A623',
+  themeColor: '#E8A320',
 };
 
 export default function RootLayout({
@@ -75,16 +74,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="antialiased">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body className="font-body antialiased">
+      <body className="antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
@@ -92,7 +91,6 @@ export default function RootLayout({
         >
           <StorefrontShell header={<Header />} bottomNav={<BottomNav />}>
             <NetworkStatus />
-            <GlobalErrorHandler />
             <ErrorBoundary>
               {children}
             </ErrorBoundary>
@@ -109,20 +107,7 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  // Register PWA service worker
                   navigator.serviceWorker.register('/sw.js').catch(console.error);
-                    
-                  // Register Firebase messaging service worker
-                  const config = {
-                    apiKey: "${process.env.NEXT_PUBLIC_FIREBASE_API_KEY || ''}",
-                    authDomain: "${process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || ''}",
-                    projectId: "${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || ''}",
-                    storageBucket: "${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || ''}",
-                    messagingSenderId: "${process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || ''}",
-                    appId: "${process.env.NEXT_PUBLIC_FIREBASE_APP_ID || ''}"
-                  };
-                  const params = new URLSearchParams(config).toString();
-                  navigator.serviceWorker.register('/firebase-messaging-sw.js?' + params).catch(console.error);
                 });
               }
             `,

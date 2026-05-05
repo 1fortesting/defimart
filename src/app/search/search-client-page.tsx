@@ -338,7 +338,7 @@ export default function SearchClientPage({
               </div>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-6">
             {filteredProducts.map(product => (
               <ProductCard
                 key={product.id}

@@ -4,9 +4,10 @@ import { useState, useMemo } from 'react';
 import { Tables } from '@/types/supabase';
 import type { User } from '@supabase/supabase-js';
 import { ProductCard } from '@/components/product-card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FeaturedProductCard } from '@/components/featured-product-card';
 import { CategoryProductRow } from '@/components/category-product-row';
-import { RequestProductSection } from '@/components/request-product-section';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 type ProductWithRating = Tables<'products'> & { average_rating: number, review_count: number };
 
@@ -25,107 +26,130 @@ interface HomePageContentProps {
 }
 
 export function HomePageContent({ products, user, savedProductIds, categoriesData }: HomePageContentProps) {
-    const [sortBy, setSortBy] = useState('default');
-
-    const sortedProducts = useMemo(() => {
-        let sorted = [...products];
-        switch (sortBy) {
-            case 'price-asc':
-                sorted.sort((a, b) => {
-                    const priceA = a.discount_percentage && a.discount_end_date && new Date(a.discount_end_date) > new Date() ? a.price - (a.price * a.discount_percentage / 100) : a.price;
-                    const priceB = b.discount_percentage && b.discount_end_date && new Date(b.discount_end_date) > new Date() ? b.price - (b.price * b.discount_percentage / 100) : b.price;
-                    return priceA - priceB;
-                });
-                break;
-            case 'price-desc':
-                sorted.sort((a, b) => {
-                    const priceA = a.discount_percentage && a.discount_end_date && new Date(a.discount_end_date) > new Date() ? a.price - (a.price * a.discount_percentage / 100) : a.price;
-                    const priceB = b.discount_percentage && b.discount_end_date && new Date(b.discount_end_date) > new Date() ? b.price - (b.price * b.discount_percentage / 100) : b.price;
-                    return priceB - priceA;
-                });
-                break;
-            case 'newest':
-                sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-                break;
-            default:
-                // "default" uses the pre-shuffled order from the server.
-                break;
-        }
-        return sorted;
-    }, [products, sortBy]);
+    const [selectedCategory, setSelectedCategory] = useState('All');
     
+    // Dynamically derive top categories from the database (via products)
+    const dynamicCategories = useMemo(() => {
+        const counts: Record<string, number> = {};
+        products.forEach(p => {
+            if (p.category) {
+                // Use the exact case from the DB
+                counts[p.category] = (counts[p.category] || 0) + 1;
+            }
+        });
+        // Sort by frequency and take top 5
+        const sorted = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+        return ['All', ...sorted.slice(0, 5)];
+    }, [products]);
+
+    const filteredProducts = useMemo(() => {
+        if (selectedCategory === 'All') return products;
+        return products.filter(p => 
+            p.category === selectedCategory
+        );
+    }, [products, selectedCategory]);
+
+    const featuredProduct = products[0]; 
+    const gridProducts = selectedCategory === 'All' ? filteredProducts.slice(1) : filteredProducts;
+
     const [localSavedIds, setLocalSavedIds] = useState(new Set(savedProductIds));
-    const handleUnsave = (productId: string) => {
-        setLocalSavedIds(currentIds => {
-            const newIds = new Set(currentIds);
-            newIds.delete(productId);
-            return newIds;
+    const handleToggleSave = (productId: string) => {
+        setLocalSavedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(productId)) next.delete(productId);
+            else next.add(productId);
+            return next;
         });
     };
 
-    const renderProductGrid = (productsToRender: ProductWithRating[]) => {
-        if (!productsToRender || productsToRender.length === 0) return null;
-        return (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6 lg:gap-8 my-12 md:my-16">
-                {productsToRender.map((product) => (
-                    <ProductCard 
-                        key={product.id} 
-                        product={product} 
-                        user={user} 
-                        isSaved={localSavedIds.has(product.id)}
-                        onUnsave={handleUnsave}
-                    />
-                ))}
-            </div>
-        );
-    };
+    const productsPerSection = 12;
+    const section1 = gridProducts.slice(0, productsPerSection);
+    const section2 = gridProducts.slice(productsPerSection, productsPerSection * 2);
+    const section3 = gridProducts.slice(productsPerSection * 2);
 
-    const productsPerSection = 8;
-    const category1 = categoriesData[0];
-    const category2 = categoriesData[1];
-    const category3 = categoriesData[2];
-
-    const section1Products = sortedProducts.slice(0, productsPerSection);
-    const section2Products = sortedProducts.slice(productsPerSection, productsPerSection * 2);
-    const section3Products = sortedProducts.slice(productsPerSection * 2, productsPerSection * 3);
-    const section4Products = sortedProducts.slice(productsPerSection * 3);
-
+    const renderGrid = (items: ProductWithRating[]) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-6 my-6">
+            {items.map((product) => (
+                <ProductCard 
+                    key={product.id} 
+                    product={product}
+                    user={user}
+                    isSaved={localSavedIds.has(product.id)}
+                    onUnsave={(id) => handleToggleSave(id)}
+                />
+            ))}
+        </div>
+    );
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Explore Products</h2>
-                <div className="flex items-center gap-2">
-                    <Select value={sortBy} onValueChange={setSortBy}>
-                        <SelectTrigger className="w-auto md:w-[180px]" >
-                            <SelectValue placeholder="Sort by" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="default">Default (Boosted)</SelectItem>
-                            <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                            <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                            <SelectItem value="newest">Newest</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+        <div className="container mx-auto max-w-7xl pt-6 px-4 pb-12 bg-[var(--surface-2)] min-h-screen">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="font-syne font-[700] text-[var(--dark)] text-2xl md:text-3xl">Discover Products</h1>
+                <Link href="/search" className="text-[var(--gold)] text-[13px] md:text-sm font-[600] font-dm hover:underline">
+                    See all →
+                </Link>
             </div>
 
-            {renderProductGrid(section1Products)}
+            {/* Dynamic Filter Chips */}
+            <div className="flex gap-2 overflow-x-auto hide-scrollbar mb-8 -mx-1 px-1">
+                {dynamicCategories.map((cat) => (
+                    <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={cn(
+                            "px-5 py-2.5 rounded-full text-[13px] font-dm transition-all whitespace-nowrap",
+                            selectedCategory === cat 
+                                ? "bg-[var(--gold)] text-white font-[600]" 
+                                : "bg-[var(--surface)] text-[var(--muted)] font-[500] border border-[var(--border)]"
+                        )}
+                    >
+                        {cat}
+                    </button>
+                ))}
+            </div>
 
-            {category1 && <CategoryProductRow {...category1} />}
+            {/* Featured Section (Only for 'All') */}
+            {selectedCategory === 'All' && featuredProduct && (
+                <div className="mb-8">
+                    <FeaturedProductCard 
+                        product={featuredProduct}
+                        isSaved={localSavedIds.has(featuredProduct.id)}
+                        onToggleSave={handleToggleSave}
+                    />
+                </div>
+            )}
 
-            {renderProductGrid(section2Products)}
-            
-            {category2 && <CategoryProductRow {...category2} />}
-            
-            {renderProductGrid(section3Products)}
+            {/* Grid Sections with Category Rows Interleaved (Only for 'All') */}
+            {selectedCategory === 'All' ? (
+                <>
+                    {renderGrid(section1)}
+                    {categoriesData[0] && <CategoryProductRow {...categoriesData[0]} />}
+                    {renderGrid(section2)}
+                    {categoriesData[1] && <CategoryProductRow {...categoriesData[1]} />}
+                    {renderGrid(section3)}
+                    {categoriesData[2] && <CategoryProductRow {...categoriesData[2]} />}
+                </>
+            ) : (
+                <div className="min-h-[50vh]">
+                    {gridProducts.length > 0 ? (
+                        renderGrid(gridProducts)
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-20 text-center">
+                            <p className="text-[var(--muted)] font-dm text-lg">No products found in {selectedCategory}</p>
+                            <button 
+                                onClick={() => setSelectedCategory('All')}
+                                className="mt-4 text-[var(--gold)] font-bold hover:underline"
+                            >
+                                Clear filters
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
 
-            <RequestProductSection user={user} />
-            
-            {renderProductGrid(section4Products)}
-
-            {category3 && <CategoryProductRow {...category3} />}
-
+            {/* Bottom Spacer for Nav (Mobile only) */}
+            <div className="h-[80px] md:hidden" />
         </div>
     );
 }

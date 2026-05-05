@@ -68,20 +68,20 @@ export async function Header() {
 
   const MobileNavLink = ({ href, icon: Icon, title, description }: { href: string; icon: React.ElementType; title: string, description: string }) => (
     <SheetClose asChild>
-        <Link href={href} className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted">
-            <div className="p-2 bg-muted rounded-md">
-                <Icon className="h-5 w-5 text-primary" />
+        <Link href={href} className="flex items-center gap-4 p-3 rounded-lg hover:bg-[var(--surface-2)]">
+            <div className="p-2 bg-[var(--surface-2)] rounded-md">
+                <Icon className="h-5 w-5 text-[var(--gold)]" />
             </div>
             <div>
-                <p className="font-semibold text-foreground">{title}</p>
-                <p className="text-sm text-muted-foreground">{description}</p>
+                <p className="font-semibold text-[var(--dark)]">{title}</p>
+                <p className="text-sm text-[var(--muted)]">{description}</p>
             </div>
         </Link>
     </SheetClose>
   );
 
   return (
-    <header className="bg-background border-b p-4 flex flex-col gap-2">
+    <header className="bg-[var(--surface)] border-b border-[var(--border)] p-4 flex flex-col gap-2">
       {/* Desktop Header */}
       <div className="hidden md:flex justify-between items-center gap-4">
         <div className="font-bold text-3xl text-primary tracking-tight">
@@ -113,10 +113,10 @@ export async function Header() {
                     <span className="sr-only">Open menu</span>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-[85%] max-w-sm p-0 flex flex-col bg-background">
-                <div className="p-4 bg-primary text-primary-foreground">
+                    <SheetContent side="left" className="w-[85%] max-w-sm p-0 flex flex-col bg-[var(--surface)] border-r-0">
+                <div className="p-4 bg-[var(--gold)] text-white">
                   <SheetHeader>
-                      <SheetTitle>
+                      <SheetTitle className="text-white">
                         <div className="flex justify-between items-center">
                           <Link href="/" className="flex items-center gap-2 font-semibold">
                               <Image src="https://iili.io/qO5Jeou.png" alt="DEFIMART Logo" width={120} height={28} className="brightness-0 invert" />
@@ -126,9 +126,9 @@ export async function Header() {
                                   <div>
                                       <p className="font-semibold text-sm leading-tight truncate max-w-28">{user.user_metadata.display_name}</p>
                                   </div>
-                                  <Avatar className="h-9 w-9 border-2 border-primary-foreground/50">
+                                  <Avatar className="h-9 w-9 border-2 border-white/20">
                                       <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
-                                      <AvatarFallback className="bg-primary-foreground text-primary">
+                                      <AvatarFallback className="bg-white text-[var(--gold)]">
                                           {user.user_metadata.display_name?.[0] || user.email?.[0]}
                                       </AvatarFallback>
                                   </Avatar>

@@ -40,7 +40,7 @@ export function RecommendedForYouSection() {
     const { title, products } = data;
 
     return (
-        <div className="bg-card rounded-lg my-12 md:my-16">
+        <div className="bg-card rounded-lg mb-12 mt-4">
              <div className="bg-accent text-accent-foreground p-3 flex justify-center items-center rounded-t-lg">
                  <div className="flex items-center gap-2">
                     <Sparkles className="h-6 w-6" />

@@ -42,7 +42,7 @@ export async function FlashSaleSection() {
     const shuffledProducts = [...discountedProducts].sort(() => 0.5 - Math.random());
 
     return (
-        <div className="bg-card rounded-lg my-12 md:my-16">
+        <div className="bg-card rounded-lg mb-12 mt-4">
             <Link href="/discounts">
                 <div className="bg-red-600 text-white p-3 flex justify-between items-center rounded-t-lg hover:bg-red-700 transition-colors cursor-pointer">
                     <div className="flex items-center gap-2">

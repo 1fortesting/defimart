@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Package, Users, LineChart, Menu, LogOut, DoorOpen, Star, TrendingUp, MessageSquare, Bell } from 'lucide-react';
+import { Home, Package, Users, LineChart, Menu, LogOut, DoorOpen, Star, TrendingUp, MessageSquare, Bell, Newspaper } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -23,6 +23,7 @@ const navLinks = [
     { href: "/admin/central-admin/customers", text: "Customers", icon: Users },
     { href: "/admin/central-admin/customer-messaging", text: "Messaging", icon: MessageSquare },
     { href: "/admin/central-admin/notifications", text: "Push Alerts", icon: Bell },
+    { href: "/admin/central-admin/feeds", text: "Platform Feeds", icon: Newspaper },
 ];
 
 const AdminNav = ({ isMobile = false }: { isMobile?: boolean }) => {
@@ -94,10 +95,10 @@ const AdminHeader = ({ user, handleLogout, onExit }: { user: User | null; handle
                             <span className="sr-only">Toggle navigation menu</span>
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="flex flex-col p-0 w-3/4">
-                         <div className="flex h-14 items-center border-b px-6">
-                            <Link href="/admin/departments" className="flex items-center gap-2 font-semibold">
-                                <DoorOpen className="h-6 w-6 text-primary" />
+                    <SheetContent side="left" className="flex flex-col p-0 w-3/4 bg-white border-r-0">
+                         <div className="flex h-14 items-center bg-[var(--gold)] px-6">
+                            <Link href="/admin/departments" className="flex items-center gap-2 font-semibold text-white">
+                                <DoorOpen className="h-6 w-6" />
                                 <span className="text-lg">Central Admin</span>
                             </Link>
                         </div>

@@ -59,57 +59,74 @@ export function SearchBar({ products, className }: { products: Tables<'products'
   const showResults = isFocused && query.length > 0;
 
   return (
-    <form onSubmit={handleSubmit} className={cn("relative w-full", className)} ref={searchContainerRef}>
-        <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+    <form onSubmit={handleSubmit} className={cn("relative w-full max-w-2xl mx-auto", className)} ref={searchContainerRef}>
+        <div className="relative w-full flex items-center bg-background rounded-full border shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all overflow-hidden">
+            <Search className="absolute left-4 h-4 w-4 text-muted-foreground pointer-events-none" />
             <Input
                 placeholder="Search for anything..."
-                className="pl-10 pr-10 w-full md:text-left text-center"
+                className="px-11 w-full border-none focus-visible:ring-0 focus-visible:ring-offset-0 h-11 bg-transparent rounded-none text-center"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => setIsFocused(true)}
             />
             {query && (
-                <button type="button" onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2" aria-label="Clear search">
-                    <X className="h-4 w-4 text-muted-foreground" />
+                <button 
+                    type="button" 
+                    onClick={() => setQuery('')} 
+                    className="absolute right-[90px] p-1 hover:bg-muted rounded-full transition-colors" 
+                    aria-label="Clear search"
+                >
+                    <X className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
             )}
-             {showResults && (
-                <div className="absolute top-full mt-2 w-full bg-background border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
-                {filteredProducts.length > 0 ? (
-                    <ul>
-                    {filteredProducts.map(product => {
-                        const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
-                        const discountedPrice = isDiscountActive
-                            ? product.price - (product.price * (product.discount_percentage! / 100))
-                            : product.price;
-
-                        return (
-                            <li key={product.id}>
-                                <Link href={`/products/${product.id}`} onClick={handleSelect} className="flex items-center gap-4 p-3 hover:bg-muted">
-                                    <Image
-                                        src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/40/40'}
-                                        alt={product.name}
-                                        width={40}
-                                        height={40}
-                                        className="rounded-md object-cover aspect-square"
-                                    />
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-semibold truncate">{product.name}</p>
-                                        <p className="text-sm text-muted-foreground">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                                    </div>
-                                </Link>
-                            </li>
-                        )
-                    })}
-                    </ul>
-                ) : (
-                    <p className="p-4 text-sm text-muted-foreground text-center">No results found.</p>
-                )}
-                </div>
-            )}
+            <Button 
+                type="submit" 
+                className="absolute right-0 h-full rounded-none px-6 font-bold hidden sm:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+                Search
+            </Button>
         </div>
-        <Button type="submit" className="absolute right-0 top-0 h-full rounded-l-none hidden sm:inline-flex">Search</Button>
+
+        {showResults && (
+            <div className="absolute top-full mt-2 w-full bg-white border border-[var(--border)] rounded-2xl shadow-2xl z-50 max-h-80 overflow-hidden flex flex-col">
+                <div className="bg-[var(--gold)] px-4 py-2">
+                    <p className="text-[10px] font-syne font-bold text-white uppercase tracking-wider">Search Results</p>
+                </div>
+                <div className="overflow-y-auto p-2">
+                    {filteredProducts.length > 0 ? (
+                        <ul className="space-y-1">
+                        {filteredProducts.map(product => {
+                            const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
+                            const discountedPrice = isDiscountActive
+                                ? product.price - (product.price * (product.discount_percentage! / 100))
+                                : product.price;
+
+                            return (
+                                <li key={product.id}>
+                                    <Link href={`/products/${product.id}`} onClick={handleSelect} className="flex items-center gap-4 p-2.5 hover:bg-[var(--surface-2)] rounded-xl transition-colors">
+                                        <div className="relative h-10 w-10 flex-shrink-0 bg-[var(--surface-2)] rounded-lg">
+                                            <Image
+                                                src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/40/40'}
+                                                alt={product.name}
+                                                fill
+                                                className="rounded-lg object-contain p-1"
+                                            />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-bold text-sm truncate text-[var(--dark)]">{product.name}</p>
+                                            <p className="text-xs text-[var(--gold)] font-bold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                        </div>
+                                    </Link>
+                                </li>
+                            )
+                        })}
+                        </ul>
+                    ) : (
+                        <p className="p-4 text-sm text-[var(--muted)] text-center font-medium">No results found.</p>
+                    )}
+                </div>
+            </div>
+        )}
     </form>
   );
 }

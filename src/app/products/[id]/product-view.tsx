@@ -14,8 +14,8 @@ import { StarRating } from '@/components/star-rating';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, ShoppingCart, Star, Calendar, Info, MessageSquare, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Heart, ShoppingCart, Star, Calendar, Info, MessageSquare, Loader2, Share2, Copy, Check, MessageCircle, Facebook } from 'lucide-react';
+import { cn, formatPrice } from '@/lib/utils';
 import { Tables } from '@/types/supabase';
 import type { ReviewWithProfile } from './page';
 import { formatDistanceToNow } from 'date-fns';
@@ -24,6 +24,13 @@ import { addToCart } from '@/app/cart/actions';
 import { toggleSaveProduct } from '@/app/saved/actions';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface ProductViewProps {
     product: Tables<'products'>;
@@ -122,6 +129,8 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
     const pathname = usePathname();
     const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
+    const [isCopied, setIsCopied] = useState(false);
+    const [showShare, setShowShare] = useState(false);
 
     const isDiscountActive = product.discount_percentage && product.discount_percentage > 0 && product.discount_end_date && new Date(product.discount_end_date) > new Date();
     const discountedPrice = isDiscountActive
@@ -181,6 +190,26 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
         }
     };
 
+    const handleCopyLink = () => {
+        const url = typeof window !== 'undefined' ? `${window.location.origin}/products/${product.id}` : '';
+        navigator.clipboard.writeText(url);
+        setIsCopied(true);
+        toast({ title: 'Link Copied', description: 'Product link copied to clipboard!' });
+        setTimeout(() => setIsCopied(false), 2000);
+    };
+
+    const productUrl = typeof window !== 'undefined' ? `${window.location.origin}/products/${product.id}` : '';
+    const shareText = `Check out ${product.name} on Defimart! GHS ${formatPrice(discountedPrice)}\n\n${productUrl}`;
+    
+    const shareWhatsApp = () => {
+        window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+        setShowShare(false);
+    };
+
+    const shareFacebook = () => {
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`, '_blank');
+        setShowShare(false);
+    };
 
     return (
         <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
@@ -205,9 +234,9 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                 </div>
 
                 <div className="flex items-baseline gap-2">
-                     <span className="text-3xl font-bold">GHS {discountedPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                     <span className="text-3xl font-bold">GHS {formatPrice(discountedPrice)}</span>
                      {isDiscountActive && (
-                        <span className="text-xl text-muted-foreground line-through">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="text-xl text-muted-foreground line-through">GHS {formatPrice(product.price)}</span>
                      )}
                      {isDiscountActive && (
                          <Badge variant="destructive">-{product.discount_percentage}%</Badge>
@@ -232,24 +261,68 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                                 Add to Cart
                             </Button>
                         )}
+                        
+                        <div className="flex gap-2">
+                            {/* Share Sheet */}
+                            <Sheet open={showShare} onOpenChange={setShowShare}>
+                                <SheetTrigger asChild>
+                                    <Button variant="outline" size="lg" className="h-11 w-11 rounded-full p-0">
+                                        <Share2 className="h-5 w-5 text-muted-foreground" />
+                                    </Button>
+                                </SheetTrigger>
+                                <SheetContent side="bottom" className="rounded-t-3xl border-t-0 p-0 overflow-hidden bg-background/95 backdrop-blur-xl">
+                                    <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mt-3 mb-1" />
+                                    <SheetHeader className="px-6 py-4 border-b">
+                                        <SheetTitle className="text-left text-sm font-black uppercase tracking-widest italic">Share with friends</SheetTitle>
+                                    </SheetHeader>
+                                    <div className="p-6 grid grid-cols-3 gap-4">
+                                        <button onClick={shareWhatsApp} className="flex flex-col items-center gap-2 group">
+                                            <div className="h-14 w-14 bg-green-500/10 text-green-600 rounded-2xl flex items-center justify-center group-hover:bg-green-500 group-hover:text-white transition-all duration-300 shadow-sm">
+                                                <MessageCircle className="h-7 w-7" />
+                                            </div>
+                                            <span className="text-[10px] font-black uppercase tracking-tighter">WhatsApp</span>
+                                        </button>
+                                        <button onClick={shareFacebook} className="flex flex-col items-center gap-2 group">
+                                            <div className="h-14 w-14 bg-blue-600/10 text-blue-600 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                                                <Facebook className="h-7 w-7" />
+                                            </div>
+                                            <span className="text-[10px] font-black uppercase tracking-tighter">Facebook</span>
+                                        </button>
+                                        <button onClick={handleCopyLink} className="flex flex-col items-center gap-2 group">
+                                            <div className="h-14 w-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm">
+                                                {isCopied ? <Check className="h-7 w-7" /> : <Copy className="h-7 w-7" />}
+                                            </div>
+                                            <span className="text-[10px] font-black uppercase tracking-tighter">{isCopied ? 'Copied' : 'Copy Link'}</span>
+                                        </button>
+                                    </div>
+                                    <div className="px-6 pb-10">
+                                        <div className="bg-muted/30 p-3 rounded-xl border border-dashed flex items-center justify-between gap-3">
+                                            <p className="text-[10px] font-medium text-muted-foreground truncate flex-1">{productUrl}</p>
+                                            <Button variant="ghost" size="sm" className="h-7 text-[10px] font-black uppercase" onClick={handleCopyLink}>
+                                                Copy
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </SheetContent>
+                            </Sheet>
+
+                            {user ? (
+                                <form action={async (formData) => { await toggleSaveProduct(formData); }}>
+                                    <input type="hidden" name="productId" value={product.id} />
+                                    <input type="hidden" name="pathname" value={pathname} />
+                                    <Button type="submit" variant="outline" size="lg" className="h-11 w-11 rounded-full p-0">
+                                        <Heart className={cn("h-5 w-5", isSaved && "fill-red-500 text-red-500")} />
+                                    </Button>
+                                </form>
+                            ) : (
+                                <Button asChild variant="outline" size="lg" className="h-11 w-11 rounded-full p-0">
+                                    <Link href="/login">
+                                         <Heart className="h-5 w-5" />
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
                     </div>
-                    {user ? (
-                        <form action={async (formData) => { await toggleSaveProduct(formData); }}>
-                            <input type="hidden" name="productId" value={product.id} />
-                            <input type="hidden" name="pathname" value={pathname} />
-                            <Button type="submit" variant="outline" size="lg">
-                                <Heart className={cn("mr-2 h-5 w-5", isSaved && "fill-red-500 text-red-500")} />
-                                {isSaved ? 'Saved' : 'Save'}
-                            </Button>
-                        </form>
-                    ) : (
-                        <Button asChild variant="outline" size="lg">
-                            <Link href="/login">
-                                 <Heart className="mr-2 h-5 w-5" />
-                                 Save
-                            </Link>
-                        </Button>
-                    )}
                 </div>
 
                 <Separator />

@@ -61,12 +61,12 @@ export function ProductCarousel({ products }: ProductCarouselProps) {
                   alt={product.name}
                   width={1200}
                   height={500}
-                  className="object-cover w-full aspect-[2.2/1] md:aspect-video"
+                  className="object-cover w-full aspect-[21/9] md:aspect-[3/1]"
                   data-ai-hint="hero product"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
                 <div className="absolute inset-0 flex flex-col justify-center items-start p-6 md:p-12 text-foreground">
-                    <h2 className="text-3xl md:text-5xl font-bold max-w-lg leading-tight text-white">{product.name}</h2>
+                    <h2 className="text-2xl md:text-4xl font-bold max-w-lg leading-tight text-white">{product.name}</h2>
                     <p className="mt-2 text-lg max-w-lg hidden md:block text-white/80">{product.description}</p>
                 </div>
               </Card>

@@ -36,18 +36,22 @@ export function NetworkStatus() {
     <AnimatePresence>
       {showStatus && !isOnline && (
         <motion.div
-          initial={{ y: -100, opacity: 0 }}
+          initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -100, opacity: 0 }}
-          className="fixed top-4 left-1/2 -translate-x-1/2 z-[10000] px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border bg-destructive text-destructive-foreground backdrop-blur-md"
+          exit={{ y: 50, opacity: 0 }}
+          className="fixed bottom-20 md:top-6 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:right-auto z-[10000] px-4 py-2.5 md:px-6 md:py-3 rounded-2xl md:rounded-full shadow-2xl flex items-center justify-between md:justify-start gap-3 border bg-destructive/95 text-destructive-foreground backdrop-blur-xl"
         >
-          <WifiOff className="h-5 w-5 animate-pulse" />
-          <span className="font-semibold text-sm md:text-base whitespace-nowrap">
-            You're offline. Please connect to continue.
-          </span>
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 p-1.5 rounded-lg">
+                <WifiOff className="h-4 w-4 md:h-5 md:w-5 animate-pulse" />
+            </div>
+            <span className="font-bold text-xs md:text-sm tracking-tight">
+              Connection lost. Reconnecting...
+            </span>
+          </div>
           <button 
             onClick={() => setShowStatus(false)}
-            className="ml-2 p-1 hover:bg-white/20 rounded-full transition-colors"
+            className="p-1.5 hover:bg-white/10 rounded-xl transition-colors"
             aria-label="Close status"
           >
             <X className="h-4 w-4" />

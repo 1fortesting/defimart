@@ -10,6 +10,7 @@ import {
   Heart,
   ShoppingCart,
   LayoutGrid,
+  Newspaper,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from './ui/badge';
@@ -104,6 +105,7 @@ export function HeaderNav({ user, cartItemCount: initialCartCount, isMobile = fa
 
   const desktopLinks = [
     { href: "/", icon: Home, text: "Home" },
+    { href: "/feeds", icon: Newspaper, text: "Feeds" },
     { href: "/orders", icon: Package, text: "Orders" },
     { href: "/saved", icon: Heart, text: "Wishlist" },
     { href: "/cart", icon: ShoppingCart, text: "Cart", badgeCount: cartCount },
@@ -111,6 +113,7 @@ export function HeaderNav({ user, cartItemCount: initialCartCount, isMobile = fa
   
   const mobileLinks = [
       { href: "/", icon: Home, text: "Home" },
+      { href: "/feeds", icon: Newspaper, text: "Feeds" },
       { href: "/categories", icon: LayoutGrid, text: "Categories" },
       { href: "/cart", icon: ShoppingCart, text: "Cart", badgeCount: cartCount },
       { href: "/saved", icon: Heart, text: "Wishlist" },
