@@ -26,7 +26,6 @@ import { ThemeToggle } from './theme-toggle';
 import { logout } from '@/app/auth/actions';
 import { SearchBar } from './search-bar';
 import { Separator } from './ui/separator';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { RefreshButton } from './refresh-button';
 
 export async function Header() {
@@ -35,6 +34,7 @@ export async function Header() {
 
   let cartItemCount = 0;
   let isSeller = false;
+  const isAdmin = user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
   if (user) {
     // Fetch cart count
@@ -72,9 +72,9 @@ export async function Header() {
     { title: "My Shop", description: "Manage products & shop status", href: "/seller/dashboard", icon: Store },
   ] : [];
 
-  const generalLinks = [
+  const generalLinks = isAdmin ? [
     { title: "Request a Product", description: "Tell us what you want to see", href: "/request-product", icon: PackagePlus },
-  ];
+  ] : [];
 
   const infoLinks = [
     { title: "About Us", description: "Learn more about DEFIMART", href: "/about", icon: Info },

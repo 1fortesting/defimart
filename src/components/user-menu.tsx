@@ -29,6 +29,8 @@ export function UserMenu({ user }: { user: User | null }) {
     );
   }
 
+  const isAdmin = user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+
   const handleLogout = async () => {
     await logout();
   };
@@ -67,9 +69,11 @@ export function UserMenu({ user }: { user: User | null }) {
             <DropdownMenuItem asChild>
             <Link href="/messages"><MessageSquare className="mr-2 h-4 w-4" />Messages</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-                <Link href="/request-product"><PackagePlus className="mr-2 h-4 w-4" />Request a Product</Link>
-            </DropdownMenuItem>
+            {isAdmin && (
+                <DropdownMenuItem asChild>
+                    <Link href="/request-product"><PackagePlus className="mr-2 h-4 w-4" />Request a Product</Link>
+                </DropdownMenuItem>
+            )}
             <DropdownMenuItem asChild>
             <Link href="/faq"><HelpCircle className="mr-2 h-4 w-4" />FAQ</Link>
             </DropdownMenuItem>

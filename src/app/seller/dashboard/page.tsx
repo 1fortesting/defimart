@@ -8,15 +8,25 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { toggleShopStatus, addSellerProduct } from '../actions';
 import { useToast } from '@/hooks/use-toast';
-import { Package, Power, Plus, Eye, CheckCircle2, Clock } from 'lucide-react';
+import { Package, Power, Plus, Eye, CheckCircle2, Clock, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Link from 'next/link';
 
-const categories = ["Electronics & Gadgets", "Fashion & Apparel", "Home & Kitchen", "Books & Stationery", "Other"];
+const categories = [
+    "Electronics & Gadgets",
+    "Fashion & Apparel",
+    "Home & Kitchen",
+    "Health & Beauty",
+    "Sports & Fitness",
+    "Books & Stationery",
+    "Groceries & Food",
+    "Other"
+];
 
 export default function SellerDashboardPage() {
   const [seller, setSeller] = useState<any>(null);
@@ -64,7 +74,7 @@ export default function SellerDashboardPage() {
             await addSellerProduct(formData);
             setIsAddDialogOpen(false);
             toast({ title: 'Product submitted for approval' });
-            // Refresh logic omitted for brevity, usually router.refresh() handles this
+            // Refresh logic
             window.location.reload();
         } catch (e) {
             toast({ title: 'Failed to add product', variant: 'destructive' });

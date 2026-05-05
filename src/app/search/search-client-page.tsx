@@ -40,8 +40,6 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useSearchParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { RequestProductForm } from '@/components/request-product-form';
 
 interface SearchClientPageProps {
   initialQuery: string;
@@ -108,7 +106,7 @@ export default function SearchClientPage({
     // 3. Filter by price
     results = results.filter(p => {
         const discountedPrice = p.discount_percentage && p.discount_end_date && new Date(p.discount_end_date) > new Date()
-            ? p.price - (p.price * (p.price * (p.discount_percentage / 100)))
+            ? p.price - (p.price * (p.discount_percentage / 100))
             : p.price;
         return discountedPrice >= priceRange[0] && discountedPrice <= priceRange[1];
     });
@@ -134,7 +132,6 @@ export default function SearchClientPage({
       case 'newest':
         results.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         break;
-      // Default to popularity (can be random for now)
       default:
          results.sort(() => 0.5 - Math.random());
         break;
@@ -356,18 +353,6 @@ export default function SearchClientPage({
               <p className="text-muted-foreground mt-1">Try a different search term or check your spelling.</p>
             </div>
           )}
-
-          <div className="col-span-full mt-12">
-             <Card>
-                <CardHeader>
-                    <CardTitle>Can't find what you're looking for?</CardTitle>
-                    <CardDescription>Let us know, and we'll do our best to source it for you.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <RequestProductForm />
-                </CardContent>
-            </Card>
-          </div>
         </main>
       </div>
 
@@ -436,7 +421,6 @@ export default function SearchClientPage({
                 </SheetContent>
             </Sheet>
       </div>
-
     </div>
   );
 }
