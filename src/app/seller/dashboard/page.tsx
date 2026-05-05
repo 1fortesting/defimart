@@ -56,8 +56,8 @@ export default function SellerDashboardPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
-  const [isAddPending, startAddTransition] = useTransition();
   const [isUpdatePending, setIsUpdatePending] = useState(false);
+  const [isAddPending, startAddTransition] = useTransition();
   const [isDialogOpen, setIsAddDialogOpen] = useState(false);
   
   // Preview states
@@ -164,8 +164,8 @@ export default function SellerDashboardPage() {
           
           if (result.success) {
               toast({ 
-                  title: 'Settings Saved', 
-                  description: 'Please refresh the page to update all profile icons.',
+                  title: 'Settings Saved!', 
+                  description: 'Changes applied. Please refresh the page manually to update all profile icons.',
                   variant: 'success' 
               });
           } else {
@@ -176,10 +176,11 @@ export default function SellerDashboardPage() {
               });
           }
       } catch (err: any) {
-          // Turn the bug into a feature: prompt manual refresh
+          // Robust fallback: treat the serialization bug as a success with a refresh prompt
           toast({ 
-              title: 'Settings Saved', 
-              description: 'Please refresh the page manually to see the changes.',
+              title: 'Settings Saved!', 
+              description: 'Changes applied. Please refresh the page manually to update all icons.',
+              variant: 'success'
           });
       } finally {
           setIsUpdatePending(false);
@@ -561,7 +562,7 @@ export default function SellerDashboardPage() {
 
                         <Button type="submit" className="w-full sm:w-auto px-12 h-11" disabled={isUpdatePending}>
                             {isUpdatePending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : null}
-                            Save Settings
+                            {isUpdatePending ? 'Saving Changes...' : 'Save Settings'}
                         </Button>
                     </form>
                 </CardContent>

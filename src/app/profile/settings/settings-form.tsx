@@ -45,8 +45,8 @@ export function SettingsForm({ user }: { user: User }) {
     useEffect(() => {
         if(state?.message) {
             toast({ 
-                title: 'Settings Saved', 
-                description: 'Please refresh the page to update all profile icons.',
+                title: 'Settings Saved!', 
+                description: 'Changes applied. Please refresh the page manually to update all profile icons.',
                 variant: 'success'
             });
         }
