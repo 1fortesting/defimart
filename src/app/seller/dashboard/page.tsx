@@ -155,13 +155,18 @@ export default function SellerDashboardPage() {
 
   const handleUpdateShop = async (formData: FormData) => {
       startUpdateTransition(async () => {
-          try {
-              formData.append('sellerId', seller.id);
-              await updateShopInfo(formData);
+          formData.append('sellerId', seller.id);
+          const result = await updateShopInfo(formData);
+          
+          if (result.success) {
               toast({ title: 'Shop settings updated', variant: 'success' });
               window.location.reload();
-          } catch (e: any) {
-              toast({ title: 'Update failed', description: e.message, variant: 'destructive' });
+          } else {
+              toast({ 
+                  title: 'Update failed', 
+                  description: result.error || 'Check your internet connection and try again.', 
+                  variant: 'destructive' 
+              });
           }
       });
   };

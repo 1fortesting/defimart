@@ -47,7 +47,7 @@ export async function toggleShopStatus(sellerId: string, isOpen: boolean) {
 export async function updateShopInfo(formData: FormData) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Unauthorized');
+    if (!user) return { success: false, error: 'Unauthorized' };
 
     const sellerId = formData.get('sellerId') as string;
     const shopName = formData.get('shop_name') as string;
@@ -55,41 +55,49 @@ export async function updateShopInfo(formData: FormData) {
     const closeTime = formData.get('close_time') as string;
     const avatarFile = formData.get('logo') as File | null;
 
-    // Update Seller Details
-    const { error: sellerError } = await supabase
-        .from('sellers' as any)
-        .update({
-            shop_name: shopName,
-            open_time: openTime,
-            close_time: closeTime
-        })
-        .eq('id', sellerId);
+    try {
+        // Update Seller Details
+        const { error: sellerError } = await supabase
+            .from('sellers' as any)
+            .update({
+                shop_name: shopName,
+                open_time: openTime,
+                close_time: closeTime
+            })
+            .eq('id', sellerId);
 
-    if (sellerError) throw new Error(`Database error: ${sellerError.message}`);
+        if (sellerError) throw new Error(`Database error: ${sellerError.message}`);
 
-    // Update Logo (Profile Avatar)
-    if (avatarFile && avatarFile.size > 0) {
-        const fileName = `${user.id}/shop-logo-${Date.now()}`;
-        const { error: uploadError } = await supabase.storage
-            .from('vendor-images')
-            .upload(fileName, avatarFile, { upsert: true });
+        // Update Logo (Profile Avatar) - Using user_profile bucket as requested
+        if (avatarFile && avatarFile.size > 0) {
+            const fileName = `${user.id}/shop-logo-${Date.now()}`;
+            const { error: uploadError } = await supabase.storage
+                .from('user_profile')
+                .upload(fileName, avatarFile, { upsert: true });
 
-        if (uploadError) throw new Error(`Storage upload error: ${uploadError.message}`);
+            if (uploadError) throw new Error(`Storage upload error: ${uploadError.message}`);
 
-        const { data: { publicUrl } } = supabase.storage
-            .from('vendor-images')
-            .getPublicUrl(fileName);
-        
-        await supabase.auth.updateUser({
-            data: { avatar_url: publicUrl }
-        });
-        
-        const { error: profileError } = await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
-        if (profileError) throw new Error(`Profile update error: ${profileError.message}`);
+            const { data: { publicUrl } } = supabase.storage
+                .from('user_profile')
+                .getPublicUrl(fileName);
+            
+            // Sync with Auth metadata
+            await supabase.auth.updateUser({
+                data: { avatar_url: publicUrl }
+            });
+            
+            // Sync with Profiles table
+            const { error: profileError } = await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
+            if (profileError) throw new Error(`Profile update error: ${profileError.message}`);
+        }
+
+        revalidatePath('/seller/dashboard');
+        revalidatePath('/shops');
+        return { success: true };
+    } catch (err: any) {
+        console.error('Error updating shop info:', err);
+        return { success: false, error: err.message || 'An unexpected error occurred.' };
     }
-
-    revalidatePath('/seller/dashboard');
-    return { success: true };
 }
 
 export async function addSellerProduct(formData: FormData) {
