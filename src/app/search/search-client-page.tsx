@@ -43,7 +43,7 @@ import { Badge } from '@/components/ui/badge';
 
 interface SearchClientPageProps {
   initialQuery: string;
-  allProducts: Tables<'products'>[];
+  allProducts: (Tables<'products'> & { shop_name?: string })[];
   allCategories: string[];
   user: User | null;
   savedProductIds: string[];
@@ -52,7 +52,7 @@ interface SearchClientPageProps {
 export default function SearchClientPage({
   initialQuery,
   allProducts,
-  allCategories,
+  allCategories: serverCategories,
   user,
   savedProductIds: initialSavedIds,
 }: SearchClientPageProps) {
@@ -75,26 +75,59 @@ export default function SearchClientPage({
   const [discount, setDiscount] = useState<number>(0);
   const [sortBy, setSortBy] = useState('popularity');
 
-  const brands = useMemo(() => {
-    const brandSet = new Set<string>();
-    allProducts.forEach(p => {
-        if (p.brand) {
-            brandSet.add(p.brand);
-        }
-    });
-    return Array.from(brandSet).sort();
-  }, [allProducts]);
+  // Dynamically calculate available categories based on search query and other filters (except category itself)
+  const availableCategories = useMemo(() => {
+    let results = [...allProducts];
+    if (query) {
+      const lowerQuery = query.toLowerCase();
+      results = results.filter(p =>
+        p.name.toLowerCase().includes(lowerQuery) ||
+        (p.description && p.description.toLowerCase().includes(lowerQuery)) ||
+        (p.tags && p.tags.some(tag => tag.toLowerCase().includes(lowerQuery))) ||
+        (p.shop_name && p.shop_name.toLowerCase().includes(lowerQuery))
+      );
+    }
+    if (selectedBrands.length > 0) {
+        results = results.filter(p => p.brand && selectedBrands.includes(p.brand));
+    }
+    const cats = new Set<string>();
+    results.forEach(p => { if (p.category) cats.add(p.category); });
+    return Array.from(cats).sort();
+  }, [allProducts, query, selectedBrands]);
+
+  // Dynamically calculate available brands based on search query and other filters (except brand itself)
+  const availableBrands = useMemo(() => {
+    let results = [...allProducts];
+    if (query) {
+      const lowerQuery = query.toLowerCase();
+      results = results.filter(p =>
+        p.name.toLowerCase().includes(lowerQuery) ||
+        (p.description && p.description.toLowerCase().includes(lowerQuery)) ||
+        (p.tags && p.tags.some(tag => tag.toLowerCase().includes(lowerQuery))) ||
+        (p.shop_name && p.shop_name.toLowerCase().includes(lowerQuery))
+      );
+    }
+    if (selectedCategories.length > 0) {
+      results = results.filter(p => p.category && selectedCategories.includes(p.category));
+    }
+    const brandsSet = new Set<string>();
+    results.forEach(p => { if (p.brand) brandsSet.add(p.brand); });
+    return Array.from(brandsSet).sort();
+  }, [allProducts, query, selectedCategories]);
+
+  const brands = availableBrands;
 
   useEffect(() => {
     let results = [...allProducts];
 
-    // 1. Filter by search query
+    // 1. Filter by search query (including vendor shop name)
     if (query) {
       const lowercasedQuery = query.toLowerCase();
       results = results.filter(p =>
         p.name.toLowerCase().includes(lowercasedQuery) ||
         (p.description && p.description.toLowerCase().includes(lowercasedQuery)) ||
-        (p.tags && p.tags.some(tag => tag.toLowerCase().includes(lowercasedQuery)))
+        (p.tags && p.tags.some(tag => tag.toLowerCase().includes(lowercasedQuery))) ||
+        (p.shop_name && p.shop_name.toLowerCase().includes(lowercasedQuery))
       );
     }
 
@@ -130,7 +163,7 @@ export default function SearchClientPage({
         results.sort((a, b) => b.price - a.price);
         break;
       case 'newest':
-        results.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        results.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
         break;
       default:
          results.sort(() => 0.5 - Math.random());
@@ -173,12 +206,16 @@ export default function SearchClientPage({
         <AccordionItem value="category">
             <AccordionTrigger className="text-lg font-semibold">Category</AccordionTrigger>
             <AccordionContent className="pt-2 space-y-2">
-                {allCategories.map(cat => (
-                    <div key={cat} className="flex items-center space-x-2">
-                        <Checkbox id={`cat-mob-${cat}`} checked={selectedCategories.includes(cat)} onCheckedChange={() => handleCategoryToggle(cat)} />
-                        <Label htmlFor={`cat-mob-${cat}`} className="font-normal cursor-pointer">{cat}</Label>
-                    </div>
-                ))}
+                {availableCategories.length > 0 ? (
+                    availableCategories.map(cat => (
+                        <div key={cat} className="flex items-center space-x-2">
+                            <Checkbox id={`cat-mob-${cat}`} checked={selectedCategories.includes(cat)} onCheckedChange={() => handleCategoryToggle(cat)} />
+                            <Label htmlFor={`cat-mob-${cat}`} className="font-normal cursor-pointer">{cat}</Label>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-xs text-muted-foreground italic">No categories available for this search.</p>
+                )}
             </AccordionContent>
         </AccordionItem>
         <AccordionItem value="price">
@@ -271,6 +308,7 @@ export default function SearchClientPage({
                                     {brand}
                                 </DropdownMenuCheckboxItem>
                             ))}
+                            {brands.length === 0 && <p className="p-2 text-xs text-muted-foreground italic">No brands available.</p>}
                         </ScrollArea>
                     </DropdownMenuContent>
                 </DropdownMenu>
