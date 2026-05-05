@@ -15,6 +15,7 @@ import {
   LogOut,
   LogIn,
   Info,
+  Store,
 } from 'lucide-react';
 import { HeaderNav } from './header-nav';
 import Image from 'next/image';
@@ -33,8 +34,11 @@ export async function Header() {
   const { data: { user } } = await supabase.auth.getUser();
 
   let cartItemCount = 0;
+  let isSeller = false;
+
   if (user) {
-    const { data: cartItems, error } = await (supabase as any)
+    // Fetch cart count
+    const { data: cartItems } = await (supabase as any)
       .from('cart_items')
       .select('quantity')
       .eq('user_id', user.id);
@@ -42,6 +46,16 @@ export async function Header() {
     if (cartItems) {
       cartItemCount = (cartItems as any[]).reduce((sum: number, item: any) => sum + item.quantity, 0);
     }
+
+    // Check if approved seller
+    const { data: seller } = await supabase
+      .from('sellers' as any)
+      .select('status')
+      .eq('user_id', user.id)
+      .eq('status', 'approved')
+      .maybeSingle();
+    
+    isSeller = !!seller;
   }
   
   const { data: products } = await supabase.from('products').select('*');
@@ -53,6 +67,10 @@ export async function Header() {
     { title: "Wishlist", description: "View your saved products", href: "/saved", icon: Heart },
     { title: "Messages", description: "Your conversations with sellers", href: "/messages", icon: MessageSquare },
   ];
+
+  const sellerLinks = isSeller ? [
+    { title: "My Shop", description: "Manage products & shop status", href: "/seller/dashboard", icon: Store },
+  ] : [];
 
   const generalLinks = [
     { title: "Request a Product", description: "Tell us what you want to see", href: "/request-product", icon: PackagePlus },
@@ -144,6 +162,7 @@ export async function Header() {
                         {user && (
                             <>
                                 {userLinks.map(link => <MobileNavLink key={link.href} {...link} />)}
+                                {sellerLinks.map(link => <MobileNavLink key={link.href} {...link} />)}
                                 <Separator className="my-2" />
                             </>
                         )}
@@ -199,7 +218,7 @@ export async function Header() {
 
       {/* Desktop Nav */}
       <div className="hidden md:flex justify-center">
-        <HeaderNav user={user} cartItemCount={cartItemCount} />
+        <HeaderNav user={user} cartItemCount={cartItemCount} isSeller={isSeller} />
       </div>
     </header>
   );

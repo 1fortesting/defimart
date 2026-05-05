@@ -2,31 +2,57 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, LayoutGrid, ShoppingCart, Heart, User, Newspaper } from 'lucide-react';
+import { Home, LayoutGrid, ShoppingCart, Heart, User, Newspaper, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
-
-const navItems = [
-  { label: 'Home', href: '/', icon: Home },
-  { label: 'Categories', href: '/categories', icon: LayoutGrid },
-  { label: 'Feeds', href: '/feeds', icon: Newspaper },
-  { label: 'Cart', href: '/cart', icon: ShoppingCart },
-  { label: 'Wishlist', href: '/saved', icon: Heart },
-  { label: 'Profile', href: '/profile', icon: User },
-];
+import { createClient } from '@/lib/supabase/client';
 
 export function BottomNav() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [isSeller, setIsSeller] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    
+    const checkSeller = async () => {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: seller } = await supabase
+            .from('sellers' as any)
+            .select('status')
+            .eq('user_id', user.id)
+            .eq('status', 'approved')
+            .maybeSingle();
+        
+        setIsSeller(!!seller);
+    };
+
+    checkSeller();
   }, []);
 
   if (!mounted) return null;
 
+  const navItems = [
+    { label: 'Home', href: '/', icon: Home },
+    { label: 'Categories', href: '/categories', icon: LayoutGrid },
+    { label: 'Feeds', href: '/feeds', icon: Newspaper },
+    { label: 'Cart', href: '/cart', icon: ShoppingCart },
+    { label: 'Wishlist', href: '/saved', icon: Heart },
+  ];
+
+  // If seller, add Shop and it might displace one item or we just add it
+  // Let's add Shop and keep Profile at the end
+  if (isSeller) {
+      navItems.push({ label: 'Shop', href: '/seller/dashboard', icon: Store });
+  }
+
+  navItems.push({ label: 'Profile', href: '/profile', icon: User });
+
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--surface)] border-t border-[var(--border)] h-[72px] z-[100] flex items-center justify-around px-1">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--surface)] border-t border-[var(--border)] h-[72px] z-[100] flex items-center justify-around px-1 overflow-x-auto no-scrollbar">
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         const Icon = item.icon;
@@ -35,7 +61,7 @@ export function BottomNav() {
           <Link 
             key={item.href} 
             href={item.href}
-            className="flex flex-col items-center justify-center gap-1 min-w-[50px] transition-transform active:scale-90"
+            className="flex flex-col items-center justify-center gap-1 min-w-[60px] transition-transform active:scale-90"
           >
             <Icon 
               className={cn(

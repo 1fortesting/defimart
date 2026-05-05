@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -11,6 +10,7 @@ import {
   ShoppingCart,
   LayoutGrid,
   Newspaper,
+  Store,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from './ui/badge';
@@ -70,7 +70,7 @@ const NavLink = ({ href, icon: Icon, children, active, badgeCount, isMobile }: N
   );
 }
 
-export function HeaderNav({ user, cartItemCount: initialCartCount, isMobile = false }: { user: SupabaseUser | null, cartItemCount: number, isMobile?: boolean }) {
+export function HeaderNav({ user, cartItemCount: initialCartCount, isMobile = false, isSeller = false }: { user: SupabaseUser | null, cartItemCount: number, isMobile?: boolean, isSeller?: boolean }) {
   const pathname = usePathname();
   const [cartCount, setCartCount] = useState(initialCartCount);
 
@@ -110,6 +110,10 @@ export function HeaderNav({ user, cartItemCount: initialCartCount, isMobile = fa
     { href: "/saved", icon: Heart, text: "Wishlist" },
     { href: "/cart", icon: ShoppingCart, text: "Cart", badgeCount: cartCount },
   ];
+
+  if (isSeller) {
+      desktopLinks.splice(2, 0, { href: "/seller/dashboard", icon: Store, text: "My Shop" });
+  }
   
   const mobileLinks = [
       { href: "/", icon: Home, text: "Home" },
