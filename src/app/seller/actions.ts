@@ -52,22 +52,28 @@ export async function toggleShopStatus(sellerId: string, isOpen: boolean) {
 
 /**
  * Updates shop information including logo and hours.
+ * Refactored for extreme robustness to prevent 'unexpected response' errors.
  */
 export async function updateShopInfo(formData: FormData) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized: Session expired.' };
-
-    const sellerId = formData.get('sellerId') as string;
-    const shopName = formData.get('shop_name') as string;
-    const openTime = formData.get('open_time') as string;
-    const closeTime = formData.get('close_time') as string;
-    const avatarFile = formData.get('logo') as File | null;
-
-    if (!sellerId) return { success: false, error: 'Shop ID is missing.' };
-
     try {
-        // 1. Update Seller Details
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+            return { success: false, error: 'Authentication failed. Please log in again.' };
+        }
+
+        const sellerId = formData.get('sellerId') as string;
+        const shopName = formData.get('shop_name') as string;
+        const openTime = formData.get('open_time') as string;
+        const closeTime = formData.get('close_time') as string;
+        const logoFile = formData.get('logo');
+
+        if (!sellerId) {
+            return { success: false, error: 'Shop ID is missing. Profile cannot be updated.' };
+        }
+
+        // 1. Update basic shop details
         const { error: sellerError } = await supabase
             .from('sellers' as any)
             .update({
@@ -77,49 +83,63 @@ export async function updateShopInfo(formData: FormData) {
             })
             .eq('id', sellerId);
 
-        if (sellerError) throw new Error(`Database error: ${sellerError.message}`);
+        if (sellerError) {
+            console.error('DB Update Error:', sellerError);
+            return { success: false, error: `Failed to update shop details: ${sellerError.message}` };
+        }
 
-        // 2. Update Logo if provided
-        if (avatarFile && avatarFile instanceof File && avatarFile.size > 0) {
-            if (!['image/jpeg', 'image/png', 'image/webp'].includes(avatarFile.type)) {
-                throw new Error('Invalid file type. Only JPG, PNG, and WEBP are allowed.');
+        // 2. Handle Logo Upload if a file was provided
+        // We check if it's an object with a size property to ensure it's a valid File/Blob
+        if (logoFile && typeof logoFile === 'object' && 'size' in logoFile && logoFile.size > 0) {
+            const file = logoFile as File;
+            
+            // Validate file type
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                return { success: false, error: 'Invalid file type. Please upload a JPG, PNG, or WEBP image.' };
             }
 
             // Limit file size to 5MB
-            if (avatarFile.size > 5 * 1024 * 1024) {
-                throw new Error('Logo size exceeds 5MB limit.');
+            if (file.size > 5 * 1024 * 1024) {
+                return { success: false, error: 'Logo file is too large. Max size is 5MB.' };
             }
 
-            const fileName = `${user.id}/shop-logo-${Date.now()}`;
+            // Create a unique filename in the user's folder
+            const fileName = `${user.id}/logo-${Date.now()}`;
+            
             const { error: uploadError } = await supabase.storage
                 .from('seller-avatars')
-                .upload(fileName, avatarFile, { upsert: true });
+                .upload(fileName, file, { upsert: true });
 
             if (uploadError) {
                 console.error('Storage Upload Error:', uploadError);
-                throw new Error(`Upload failed: ${uploadError.message}. Check storage permissions.`);
+                return { success: false, error: `Failed to upload logo: ${uploadError.message}` };
             }
 
             const { data: { publicUrl } } = supabase.storage
                 .from('seller-avatars')
                 .getPublicUrl(fileName);
             
-            // Sync with Auth metadata
+            // Sync image URL across public profiles and auth metadata
+            await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
+            
             const { error: authUpdateError } = await supabase.auth.updateUser({
                 data: { avatar_url: publicUrl }
             });
-            if (authUpdateError) console.warn('Auth metadata sync failed:', authUpdateError.message);
-            
-            // Sync with Profiles table
-            await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
+
+            if (authUpdateError) {
+                console.warn('Auth metadata sync failed:', authUpdateError.message);
+                // We don't fail the whole action for this as the DB is already updated
+            }
         }
 
+        // Clear server-side caches
         revalidatePath('/seller/dashboard');
         revalidatePath('/shops');
+        
         return { success: true };
     } catch (err: any) {
-        console.error('Seller Update Action Error:', err);
-        return { success: false, error: err.message || 'An unexpected error occurred during shop update.' };
+        console.error('Unhandled Shop Update Error:', err);
+        return { success: false, error: err.message || 'A server-side error occurred during the update.' };
     }
 }
 
@@ -137,7 +157,7 @@ export async function addSellerProduct(formData: FormData) {
     const priceRaw = formData.get('price');
     const price = priceRaw ? parseFloat(priceRaw as string) : 0;
     const category = formData.get('category') as string;
-    const imageFile = formData.get('image') as File | null;
+    const imageFile = formData.get('image');
 
     if (!name || isNaN(price)) {
       return { success: false, error: 'Product name and price are required.' };
@@ -145,14 +165,15 @@ export async function addSellerProduct(formData: FormData) {
 
     let image_url = null;
 
-    if (imageFile && imageFile instanceof File && imageFile.size > 0) {
-      const fileExt = imageFile.name.split('.').pop();
+    if (imageFile && typeof imageFile === 'object' && 'size' in imageFile && imageFile.size > 0) {
+      const file = imageFile as File;
+      const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `seller-uploads/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('vendor-images')
-        .upload(filePath, imageFile);
+        .upload(filePath, file);
 
       if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
 

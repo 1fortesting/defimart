@@ -32,7 +32,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, formatPrice } from '@/lib/utils';
 import Link from 'next/link';
@@ -57,7 +57,7 @@ export default function SellerDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [isAddPending, startAddTransition] = useTransition();
-  const [isUpdatePending, startUpdateTransition] = useTransition();
+  const [isUpdatePending, setIsUpdatePending] = useState(false);
   const [isDialogOpen, setIsAddDialogOpen] = useState(false);
   
   // Preview states
@@ -156,22 +156,34 @@ export default function SellerDashboardPage() {
   };
 
   const handleUpdateShop = async (formData: FormData) => {
-      startUpdateTransition(async () => {
+      setIsUpdatePending(true);
+      try {
           if (!seller) return;
           formData.append('sellerId', seller.id);
           const result = await updateShopInfo(formData);
           
           if (result.success) {
               toast({ title: 'Shop settings updated', variant: 'success' });
-              window.location.reload();
+              // We use a small timeout then reload to ensure auth metadata is refreshed app-wide
+              setTimeout(() => {
+                  window.location.reload();
+              }, 600);
           } else {
               toast({ 
                   title: 'Update failed', 
                   description: result.error || 'Check your internet connection and try again.', 
                   variant: 'destructive' 
               });
+              setIsUpdatePending(false);
           }
-      });
+      } catch (err: any) {
+          toast({ 
+              title: 'Unexpected error', 
+              description: 'Please refresh the page and try again.', 
+              variant: 'destructive' 
+          });
+          setIsUpdatePending(false);
+      }
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
@@ -197,7 +209,7 @@ export default function SellerDashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-background p-6 rounded-2xl border shadow-sm">
           <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16 border-2 border-primary/20">
-                  <AvatarImage src={user?.user_metadata?.avatar_url || undefined} />
+                  <AvatarImage src={logoPreview || user?.user_metadata?.avatar_url || undefined} />
                   <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">{seller.shop_name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
@@ -516,11 +528,7 @@ export default function SellerDashboardPage() {
                             <div className="flex items-center gap-6 p-4 bg-muted/20 rounded-2xl border border-dashed">
                                 <div className="relative group">
                                     <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
-                                        {logoPreview ? (
-                                           <AvatarImage src={logoPreview} />
-                                        ) : (
-                                           <AvatarImage src={user?.user_metadata?.avatar_url || undefined} />
-                                        )}
+                                        <AvatarImage src={logoPreview || user?.user_metadata?.avatar_url || undefined} />
                                         <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">{seller.shop_name?.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <Label htmlFor="logo" className="absolute inset-0 flex items-center justify-center bg-black/40 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
