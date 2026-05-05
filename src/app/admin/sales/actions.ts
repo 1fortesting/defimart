@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache';
 import type { Database } from '@/types/supabase';
 import { sendSms } from '@/lib/sendSms';
 import { getPickupDateString } from '@/lib/getPickupDate';
-import { sendPush } from '@/lib/sendPush';
 
 export async function updateOrderStatus(formData: FormData) {
     const supabase = await createClient() as any;
@@ -57,36 +56,24 @@ export async function updateOrderStatus(formData: FormData) {
     
     if (updateError) return { error: 'Failed to update order status.' };
 
-    // --- Notifications ---
+    // --- SMS Notifications ---
     if (newStatus === 'ready' && oldStatus !== 'ready') {
         const buyerPhoneNumber = order.profiles?.phone_number;
         const productName = order.products?.name;
         const pickupDate = getPickupDateString();
 
-        // Push Alert
-        await sendPush({
-            userIds: [order.buyer_id],
-            title: 'Order Ready for Pickup! 📦',
-            body: `Your order for '${productName}' is ready. Pick it up on ${pickupDate}.`,
-            type: 'Order Update',
-            role: 'Sales'
-        });
-
-        // SMS fallback
         if (buyerPhoneNumber) {
-            const message = `DEFIMART: Your order #${order.id.substring(0, 8)} for '${productName}' has been approved. Pickup will be available on ${pickupDate}. Thank you!`;
+            const message = `DEFIMART: Order #${order.id.substring(0, 8)} for '${productName}' is ready! Pick it up on ${pickupDate}. Payment is on pickup. Thank you!`;
             await sendSms({ phoneNumber: buyerPhoneNumber, message });
         }
     }
 
     if (newStatus === 'completed' && oldStatus !== 'completed') {
-        await sendPush({
-            userIds: [order.buyer_id],
-            title: 'Order Completed! ✅',
-            body: `Thank you for shopping at DEFIMART. Your order #${order.id.substring(0, 8)} is now complete.`,
-            type: 'Order Update',
-            role: 'Sales'
-        });
+        const buyerPhoneNumber = order.profiles?.phone_number;
+        if (buyerPhoneNumber) {
+            const message = `DEFIMART: Order #${order.id.substring(0, 8)} is now complete! Thank you for shopping with us. We hope to see you again soon!`;
+            await sendSms({ phoneNumber: buyerPhoneNumber, message });
+        }
     }
 
     revalidatePath('/admin/sales/orders');

@@ -56,7 +56,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
           <Clock className="h-5 w-5" />
           <AlertTitle>Application Pending</AlertTitle>
           <AlertDescription>
-            Your seller application for <strong>{seller.shop_name}</strong> is currently being reviewed by our team. You will be notified via email once approved.
+            Your seller application for <strong>{seller.shop_name}</strong> is currently being reviewed by our team. You will be notified via <strong>SMS</strong> once approved.
           </AlertDescription>
         </Alert>
       </div>
@@ -70,7 +70,7 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
           <Ban className="h-5 w-5" />
           <AlertTitle>Application Rejected</AlertTitle>
           <AlertDescription>
-            We regret to inform you that your seller application has been rejected. Please contact support for more information.
+            We regret to inform you that your seller application has been rejected. We have sent you an <strong>SMS</strong> with more details. Please contact support if you have questions.
           </AlertDescription>
         </Alert>
       </div>

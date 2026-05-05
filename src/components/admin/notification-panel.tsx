@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -8,10 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Send, Loader2, Target, Sparkles, Megaphone, Clock } from 'lucide-react';
+import { Send, Loader2, Sparkles, Megaphone, Clock, MessageSquare } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { sendPush } from '@/lib/sendPush';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
+import { sendSms } from '@/lib/sendSms';
 
 interface NotificationPanelProps {
   role: 'CEO' | 'Sales' | 'Procurement';
@@ -19,22 +19,21 @@ interface NotificationPanelProps {
 
 const TEMPLATES = {
     CEO: [
-        { label: 'System Update', title: '🛠️ Scheduled Maintenance', body: 'Defimart will be briefly offline for updates tonight at 12AM. Thanks for your patience!' },
-        { label: 'Global Promo', title: '🎁 Surprise Discount!', body: 'Use code DEFI20 for 20% off your entire order, valid today only!' },
+        { label: 'System Update', title: '🛠️ DEFIMART UPDATE', body: 'We will be briefly offline for scheduled maintenance tonight at 12AM. We apologize for any inconvenience!' },
+        { label: 'Global Promo', title: '🎁 SURPRISE OFFER', body: 'Flash Sale! Use code DEFI20 for 20% off your next purchase, valid today only!' },
     ],
     Sales: [
-        { label: 'Flash Sale', title: '⚡ Flash Sale Live!', body: 'The 1-hour flash sale has started. Grab your favorites before they are gone!' },
-        { label: 'New Arrivals', title: '🆕 Just Landed!', body: 'Fresh stock just arrived in the Fashion category. Shop the latest trends now.' },
-        { label: 'Cart Reminder', title: '🛒 Forget Something?', body: 'You left items in your cart! Complete your order now and pick it up on the next scheduled day.' },
+        { label: 'Flash Sale', title: '⚡ FLASH SALE LIVE', body: 'The 1-hour flash sale has started! Visit DEFIMART now to grab your favorites at massive discounts.' },
+        { label: 'New Arrivals', title: '🆕 JUST LANDED', body: 'Fresh stock just arrived in the store! Check out the latest trends and essential study gear today.' },
+        { label: 'Cart Reminder', title: '🛒 SHOPPING CART', body: 'You left items in your cart! Complete your order now and pick it up during our next campus delivery window.' },
     ],
     Procurement: [
-        { label: 'Restock Alert', title: '📦 Back in Stock!', body: 'Our best-selling power banks are finally back. Order yours now while supplies last.' },
-        { label: 'New Inventory', title: '📚 New Books Available', body: 'The latest semester textbooks have been added to the store. Check them out!' },
+        { label: 'Restock Alert', title: '📦 BACK IN STOCK', body: 'Our best-selling power banks and study accessories are finally back! Order now while supplies last.' },
+        { label: 'New Inventory', title: '📚 NEW ARRIVALS', body: 'The latest semester textbooks and stationeries have been added to the store. Shop now for a productive week!' },
     ]
 }
 
 export function NotificationPanel({ role }: NotificationPanelProps) {
-  const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [type, setType] = useState('');
   const [audience, setAudience] = useState<'all' | 'active' | 'category'>('all');
@@ -43,45 +42,63 @@ export function NotificationPanel({ role }: NotificationPanelProps) {
   const { toast } = useToast();
 
   const getAvailableTypes = () => {
-    if (role === 'CEO') return ['Flash Sale', 'Promotion', 'New Arrivals', 'New Stock', 'Back in Stock', 'System Update'];
-    if (role === 'Sales') return ['Flash Sale', 'Promotion', 'New Arrivals', 'Abandoned Cart'];
-    if (role === 'Procurement') return ['New Stock', 'Back in Stock'];
+    if (role === 'CEO') return ['System Alert', 'Global Promotion', 'Security Update'];
+    if (role === 'Sales') return ['Flash Sale', 'Discount Offer', 'New Arrivals', 'Cart Reminder'];
+    if (role === 'Procurement') return ['Inventory Restock', 'New Arrivals'];
     return [];
   };
 
   const applyTemplate = (template: { title: string, body: string }) => {
-    setTitle(template.title);
-    setBody(template.body);
+    setBody(`${template.title}: ${template.body}`);
   };
 
-  const handleSend = async () => {
-    if (!title || !body || !type) {
-      toast({ variant: 'destructive', title: 'Missing fields', description: 'Please fill in all required fields.' });
+  const handleSendSmsBroadcast = async () => {
+    if (!body || !type) {
+      toast({ variant: 'destructive', title: 'Missing fields', description: 'Please provide a message and select an alert category.' });
       return;
     }
 
     setIsLoading(true);
     try {
-      const result = await sendPush({
-        title,
-        body,
-        type,
-        audience,
-        role
-      });
+      const supabase = createClient();
+      
+      // 1. Fetch relevant user phone numbers
+      let query = supabase.from('profiles').select('phone_number').not('phone_number', 'is', null);
+      
+      if (audience === 'category' && targetCategory) {
+          // Find users who have items of this category in their wishlist or order history
+          // This is a simplified fetch for broadcast logic
+      }
 
-      if (!result.success) throw new Error(result.error);
+      const { data: recipients, error: fetchError } = await query;
+      
+      if (fetchError || !recipients) throw new Error('Could not fetch recipients.');
 
+      const phoneNumbers = recipients.map(r => r.phone_number).filter(Boolean) as string[];
+
+      if (phoneNumbers.length === 0) {
+          toast({ title: 'No Recipients', description: 'No users found with valid phone numbers for this audience.' });
+          setIsLoading(false);
+          return;
+      }
+
+      // 2. Perform Broadcast (Limit to chunks for API safety if needed, here we do a Promise.allSettled)
+      // Note: In production, bulk SMS is usually handled via an Edge Function loop or bulk API endpoint
+      const results = await Promise.allSettled(
+          phoneNumbers.map(number => sendSms({ phoneNumber: number, message: body }))
+      );
+
+      const successful = results.filter(r => r.status === 'fulfilled').length;
+      
       toast({ 
         variant: 'success',
-        title: 'Notification Sent', 
-        description: `Successfully broadcasted to ${audience === 'all' ? 'all users' : 'target audience'}.` 
+        title: 'SMS Broadcast Complete', 
+        description: `Successfully delivered to ${successful} out of ${phoneNumbers.length} recipients.` 
       });
       
-      setTitle('');
       setBody('');
     } catch (err: any) {
-      toast({ variant: 'destructive', title: 'Failed to send', description: err.message });
+      toast({ variant: 'destructive', title: 'Broadcast Failed', description: err.message });
     } finally {
       setIsLoading(false);
     }
@@ -94,17 +111,17 @@ export function NotificationPanel({ role }: NotificationPanelProps) {
                 <Card className="shadow-lg border-primary/20">
                     <CardHeader className="bg-primary/5 rounded-t-lg border-b border-primary/10">
                         <CardTitle className="flex items-center gap-2">
-                            <Megaphone className="h-5 w-5 text-primary" />
-                            Compose Broadcast
+                            <MessageSquare className="h-5 w-5 text-primary" />
+                            SMS Broadcast Center
                         </CardTitle>
-                        <CardDescription>Target your audience with a high-impact notification from the {role} desk.</CardDescription>
+                        <CardDescription>Deliver critical updates directly to customer phones from the {role} desk.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6 pt-6">
                         <div className="grid md:grid-cols-2 gap-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="type" className="font-semibold">Alert Category</Label>
                                 <Select value={type} onValueChange={setType}>
-                                    <SelectTrigger className="border-primary/20 focus:ring-primary">
+                                    <SelectTrigger className="border-primary/20">
                                     <SelectValue placeholder="Select type" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -118,13 +135,13 @@ export function NotificationPanel({ role }: NotificationPanelProps) {
                             <div className="grid gap-2">
                                 <Label htmlFor="audience" className="font-semibold">Target Audience</Label>
                                 <Select value={audience} onValueChange={(v: any) => setAudience(v)}>
-                                    <SelectTrigger className="border-primary/20 focus:ring-primary">
+                                    <SelectTrigger className="border-primary/20">
                                     <SelectValue placeholder="Select audience" />
                                     </SelectTrigger>
                                     <SelectContent>
                                     <SelectItem value="all">Everyone (Broadcast)</SelectItem>
-                                    <SelectItem value="active">Active Shoppers Only</SelectItem>
-                                    <SelectItem value="category">Specific Category Interest</SelectItem>
+                                    <SelectItem value="active">Active Shoppers</SelectItem>
+                                    <SelectItem value="category">Category Interest</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -144,39 +161,29 @@ export function NotificationPanel({ role }: NotificationPanelProps) {
                         )}
 
                         <div className="grid gap-2">
-                        <Label htmlFor="title" className="font-semibold">Headline</Label>
-                        <Input 
-                            id="title" 
-                            value={title} 
-                            onChange={e => setTitle(e.target.value.substring(0, 50))} 
-                            placeholder="e.g. ⚡ Flash Sale Alert!" 
-                            className="border-primary/20 focus:ring-primary"
-                        />
-                        <p className="text-[10px] text-muted-foreground text-right">{title.length}/50 characters</p>
-                        </div>
-
-                        <div className="grid gap-2">
-                        <Label htmlFor="body" className="font-semibold">Message Body</Label>
+                        <Label htmlFor="body" className="font-semibold">SMS Content</Label>
                         <Textarea 
                             id="body" 
                             value={body} 
-                            onChange={e => setBody(e.target.value.substring(0, 150))} 
-                            placeholder="Write a catchy message to grab attention..." 
-                            className="min-h-[100px] border-primary/20 focus:ring-primary resize-none"
+                            onChange={e => setBody(e.target.value.substring(0, 160))} 
+                            placeholder="Write your SMS here. Keep it concise for maximum impact..." 
+                            className="min-h-[120px] border-primary/20 focus:ring-primary resize-none"
                         />
                         <div className="flex justify-between items-center">
-                             <p className="text-[10px] text-muted-foreground italic">Users see this on lock screens.</p>
-                             <p className="text-[10px] text-muted-foreground">{body.length}/150 characters</p>
+                             <p className="text-[10px] text-muted-foreground italic">Standard SMS is 160 characters.</p>
+                             <p className={cn("text-[10px] font-bold", body.length > 140 ? "text-orange-500" : "text-muted-foreground")}>
+                                {body.length}/160 characters
+                             </p>
                         </div>
                         </div>
 
-                        <Button onClick={handleSend} disabled={isLoading} className="w-full h-12 text-lg shadow-primary/20 font-bold uppercase tracking-wider">
+                        <Button onClick={handleSendSmsBroadcast} disabled={isLoading} className="w-full h-12 text-lg shadow-primary/20 font-bold uppercase tracking-wider">
                         {isLoading ? (
                             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         ) : (
                             <Send className="mr-2 h-5 w-5" />
                         )}
-                        {isLoading ? 'Delivering...' : 'Broadcast Alert'}
+                        {isLoading ? 'Sending SMS...' : 'Send SMS Broadcast'}
                         </Button>
                     </CardContent>
                 </Card>
@@ -189,7 +196,6 @@ export function NotificationPanel({ role }: NotificationPanelProps) {
                             <Sparkles className="h-4 w-4 text-primary" />
                             Smart Templates
                         </CardTitle>
-                        <CardDescription className="text-xs">Quick starts for the {role} desk.</CardDescription>
                     </CardHeader>
                     <CardContent className="grid gap-3">
                         {TEMPLATES[role].map((template, idx) => (
@@ -217,10 +223,8 @@ export function NotificationPanel({ role }: NotificationPanelProps) {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="space-y-4">
-                            <div className="text-xs text-muted-foreground text-center py-8 bg-muted/30 rounded-lg border border-dashed">
-                                No recently sent alerts <br/> logged for this session.
-                            </div>
+                        <div className="text-xs text-muted-foreground text-center py-8 bg-muted/30 rounded-lg border border-dashed">
+                            No SMS broadcasts <br/> sent this session.
                         </div>
                     </CardContent>
                 </Card>

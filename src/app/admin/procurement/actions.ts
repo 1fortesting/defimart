@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { generateProductTags } from '@/ai/flows/ai-product-tag-generator';
-import { sendPush } from '@/lib/sendPush';
+import { sendSms } from '@/lib/sendSms';
 
 const BaseProductSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -145,18 +145,21 @@ export async function updateProduct(prevState: any, formData: FormData) {
 
     if (updateError) return { message: updateError.message, success: false, errors: {} };
 
-    // Trigger price drop notification if price decreased
+    // --- Trigger SMS Price Drop Notification ---
     if (oldProduct && price < oldProduct.price) {
-        const { data: wishlistedUsers } = await supabase.from('saved_products').select('user_id').eq('product_id', id);
+        const { data: wishlistedUsers } = await supabase
+            .from('saved_products')
+            .select('user_id, profiles(phone_number)')
+            .eq('product_id', id);
+
         if (wishlistedUsers && wishlistedUsers.length > 0) {
-            const userIds = wishlistedUsers.map(u => u.user_id);
-            await sendPush({
-                userIds,
-                title: 'Price Drop Alert! 📉',
-                body: `Good news! The price of '${name}' in your wishlist has dropped to GHS ${price.toLocaleString()}. Check it out now!`,
-                type: 'Wishlist Update',
-                role: 'Procurement'
-            });
+            const usersWithPhones = wishlistedUsers.filter(u => (u.profiles as any)?.phone_number);
+            const message = `DEFIMART PRICE DROP! 📉 Good news! The price of '${name}' in your wishlist has dropped to GHS ${price.toLocaleString()}. Grab it now before stock runs out!`;
+            
+            // Send SMS to each user
+            await Promise.allSettled(
+                usersWithPhones.map(u => sendSms({ phoneNumber: (u.profiles as any).phone_number, message }))
+            );
         }
     }
 
