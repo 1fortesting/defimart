@@ -14,7 +14,7 @@ import { StarRating } from '@/components/star-rating';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, ShoppingCart, Star, Calendar, Info, MessageSquare, Loader2, Share2, Copy, Check, MessageCircle, Facebook } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Calendar, Info, MessageSquare, Loader2, Share2, Copy, Check, MessageCircle, Facebook, Store } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { Tables } from '@/types/supabase';
 import type { ReviewWithProfile } from './page';
@@ -24,6 +24,7 @@ import { addToCart } from '@/app/cart/actions';
 import { toggleSaveProduct } from '@/app/saved/actions';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import {
   Sheet,
   SheetContent,
@@ -63,74 +64,26 @@ function getNextPickupInfo() {
     return `Order now for pickup on ${pickupDayString}, ${formattedDate}.`;
 }
 
-function SubmitReviewButton({ userReview, rating }: { userReview: ReviewWithProfile | null, rating: number }) {
-    const { pending } = useFormStatus();
-
-    return (
-        <Button type="submit" disabled={pending || rating === 0}>
-            {pending ? (
-                <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {userReview ? 'Updating Review...' : 'Submitting Review...'}
-                </>
-            ) : (
-                userReview ? 'Update Review' : 'Submit Review'
-            )}
-        </Button>
-    );
-}
-
-function ReviewForm({ productId, userReview }: { productId: string, userReview: ReviewWithProfile | null }) {
-    const { toast } = useToast();
-    const initialState = { message: '', errors: {}, success: false };
-    const [state, dispatch] = useActionState(submitReview, initialState);
-    const [rating, setRating] = useState(userReview?.rating || 0);
-    const [hoverRating, setHoverRating] = useState(0);
-
-    useEffect(() => {
-        if(state.success) {
-            toast({ title: 'Success', description: state.message });
-        } else if (state.message) {
-            toast({ variant: 'destructive', title: 'Error', description: state.message });
-        }
-    }, [state, toast]);
-
-    return (
-        <form action={dispatch}>
-             <input type="hidden" name="productId" value={productId} />
-             <div className="grid gap-4">
-                <div>
-                    <Label htmlFor="rating" className="mb-2 block">Your Rating</Label>
-                    <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                             <Star
-                                key={star}
-                                className={cn("cursor-pointer transition-colors", (hoverRating >= star || rating >= star) ? 'text-primary fill-primary' : 'text-gray-300')}
-                                onClick={() => setRating(star)}
-                                onMouseEnter={() => setHoverRating(star)}
-                                onMouseLeave={() => setHoverRating(0)}
-                            />
-                        ))}
-                    </div>
-                    <input type="hidden" name="rating" value={rating} />
-                    {state.errors?.rating && <p className="text-sm text-red-500 mt-1">{state.errors.rating[0]}</p>}
-                </div>
-                <div>
-                    <Label htmlFor="comment">Your Review</Label>
-                    <Textarea id="comment" name="comment" placeholder="Share your thoughts on the product..." defaultValue={userReview?.comment || ''} />
-                </div>
-                <SubmitReviewButton userReview={userReview} rating={rating} />
-            </div>
-        </form>
-    )
-}
-
 export default function ProductView({ product, isSaved, reviews, averageRating, user, userReview }: ProductViewProps) {
     const pathname = usePathname();
     const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
     const [isCopied, setIsCopied] = useState(false);
     const [showShare, setShowShare] = useState(false);
+    const [seller, setSeller] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchSeller = async () => {
+            const supabase = createClient();
+            const { data } = await supabase
+                .from('sellers' as any)
+                .select('*')
+                .eq('user_id', product.seller_id)
+                .maybeSingle();
+            setSeller(data);
+        };
+        fetchSeller();
+    }, [product.seller_id]);
 
     const isDiscountActive = product.discount_percentage && product.discount_percentage > 0 && product.discount_end_date && new Date(product.discount_end_date) > new Date();
     const discountedPrice = isDiscountActive
@@ -144,6 +97,15 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
         : <Badge variant="secondary" className="bg-green-100 text-green-700">In Stock</Badge>
 
     const handleAddToCart = () => {
+        if (seller && !seller.is_open) {
+            toast({
+                title: 'Shop Closed',
+                description: `This vendor (${seller.shop_name}) is not accepting orders right now.`,
+                variant: 'destructive'
+            });
+            return;
+        }
+
         toast({
             title: 'Added to Cart',
             description: `${product.name} has been added.`,
@@ -163,14 +125,7 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                     product_id: product.id,
                     quantity: 1,
                     created_at: new Date().toISOString(),
-                    products: {
-                        name: product.name,
-                        price: product.price,
-                        image_urls: product.image_urls,
-                        quantity: product.quantity,
-                        discount_percentage: product.discount_percentage,
-                        discount_end_date: product.discount_end_date
-                    }
+                    products: { ...product }
                 };
                 cart.push(cartItem);
             }
@@ -201,16 +156,6 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
     const productUrl = typeof window !== 'undefined' ? `${window.location.origin}/products/${product.id}` : '';
     const shareText = `Check out ${product.name} on Defimart! GHS ${formatPrice(discountedPrice)}\n\n${productUrl}`;
     
-    const shareWhatsApp = () => {
-        window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-        setShowShare(false);
-    };
-
-    const shareFacebook = () => {
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`, '_blank');
-        setShowShare(false);
-    };
-
     return (
         <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
             <div>
@@ -226,6 +171,13 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
             </div>
             <div className="space-y-6">
                 <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+                        <Store className="h-4 w-4" />
+                        <span>{seller?.shop_name || 'Generic Seller'}</span>
+                        {!seller?.is_open && (
+                            <Badge variant="destructive" className="ml-2 py-0 h-5">Closed</Badge>
+                        )}
+                    </div>
                     <h1 className="text-3xl lg:text-4xl font-bold">{product.name}</h1>
                      <div className="flex items-center gap-4">
                         <StarRating rating={averageRating} showText={false} />
@@ -253,55 +205,47 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                 
                 <div className="space-y-4">
                     <div className="flex items-center gap-4">
-                        {product.quantity === 0 ? (
-                            <Button size="lg" disabled>Out of Stock</Button>
+                        {product.quantity === 0 || (seller && !seller.is_open) ? (
+                            <Button size="lg" disabled className="w-full md:w-auto">
+                                {product.quantity === 0 ? 'Out of Stock' : 'Shop Closed'}
+                            </Button>
                         ) : (
-                            <Button onClick={handleAddToCart} size="lg" disabled={isPending}>
+                            <Button onClick={handleAddToCart} size="lg" disabled={isPending} className="w-full md:w-auto">
                                 <ShoppingCart className="mr-2 h-5 w-5" />
                                 Add to Cart
                             </Button>
                         )}
                         
                         <div className="flex gap-2">
-                            {/* Share Sheet */}
                             <Sheet open={showShare} onOpenChange={setShowShare}>
                                 <SheetTrigger asChild>
                                     <Button variant="outline" size="lg" className="h-11 w-11 rounded-full p-0">
                                         <Share2 className="h-5 w-5 text-muted-foreground" />
                                     </Button>
                                 </SheetTrigger>
-                                <SheetContent side="bottom" className="rounded-t-3xl border-t-0 p-0 overflow-hidden bg-background/95 backdrop-blur-xl">
-                                    <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mt-3 mb-1" />
-                                    <SheetHeader className="px-6 py-4 border-b">
-                                        <SheetTitle className="text-left text-sm font-black uppercase tracking-widest italic">Share with friends</SheetTitle>
+                                <SheetContent side="bottom" className="rounded-t-3xl">
+                                    <SheetHeader>
+                                        <SheetTitle>Share with friends</SheetTitle>
                                     </SheetHeader>
                                     <div className="p-6 grid grid-cols-3 gap-4">
-                                        <button onClick={shareWhatsApp} className="flex flex-col items-center gap-2 group">
-                                            <div className="h-14 w-14 bg-green-500/10 text-green-600 rounded-2xl flex items-center justify-center group-hover:bg-green-500 group-hover:text-white transition-all duration-300 shadow-sm">
-                                                <MessageCircle className="h-7 w-7" />
+                                        <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`)} className="flex flex-col items-center gap-2">
+                                            <div className="h-12 w-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                                                <MessageCircle className="h-6 w-6" />
                                             </div>
-                                            <span className="text-[10px] font-black uppercase tracking-tighter">WhatsApp</span>
+                                            <span className="text-xs font-medium">WhatsApp</span>
                                         </button>
-                                        <button onClick={shareFacebook} className="flex flex-col items-center gap-2 group">
-                                            <div className="h-14 w-14 bg-blue-600/10 text-blue-600 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                                                <Facebook className="h-7 w-7" />
+                                        <button onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`)} className="flex flex-col items-center gap-2">
+                                            <div className="h-12 w-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                                                <Facebook className="h-6 w-6" />
                                             </div>
-                                            <span className="text-[10px] font-black uppercase tracking-tighter">Facebook</span>
+                                            <span className="text-xs font-medium">Facebook</span>
                                         </button>
-                                        <button onClick={handleCopyLink} className="flex flex-col items-center gap-2 group">
-                                            <div className="h-14 w-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-sm">
-                                                {isCopied ? <Check className="h-7 w-7" /> : <Copy className="h-7 w-7" />}
+                                        <button onClick={handleCopyLink} className="flex flex-col items-center gap-2">
+                                            <div className="h-12 w-12 bg-muted text-foreground rounded-full flex items-center justify-center">
+                                                {isCopied ? <Check className="h-6 w-6 text-green-500" /> : <Copy className="h-6 w-6" />}
                                             </div>
-                                            <span className="text-[10px] font-black uppercase tracking-tighter">{isCopied ? 'Copied' : 'Copy Link'}</span>
+                                            <span className="text-xs font-medium">{isCopied ? 'Copied!' : 'Copy Link'}</span>
                                         </button>
-                                    </div>
-                                    <div className="px-6 pb-10">
-                                        <div className="bg-muted/30 p-3 rounded-xl border border-dashed flex items-center justify-between gap-3">
-                                            <p className="text-[10px] font-medium text-muted-foreground truncate flex-1">{productUrl}</p>
-                                            <Button variant="ghost" size="sm" className="h-7 text-[10px] font-black uppercase" onClick={handleCopyLink}>
-                                                Copy
-                                            </Button>
-                                        </div>
                                     </div>
                                 </SheetContent>
                             </Sheet>
@@ -340,58 +284,6 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                             No online payment is required. You will pay in person when you collect your order.
                         </AlertDescription>
                     </Alert>
-                </div>
-                
-                 <Separator />
-
-                <div id="reviews" className="space-y-8">
-                    <Card>
-                         <CardHeader>
-                            <CardTitle>Customer Reviews</CardTitle>
-                            <CardDescription>See what others are saying about this product.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                            {user && (
-                                <>
-                                    <h3 className="font-semibold text-lg">{userReview ? 'Update Your Review' : 'Leave a Review'}</h3>
-                                    <ReviewForm productId={product.id} userReview={userReview} />
-                                    <Separator />
-                                </>
-                            )}
-                            {!user && (
-                                <Alert>
-                                    <MessageSquare className="h-4 w-4" />
-                                    <AlertDescription>
-                                        <Link href="/login" className="font-semibold underline">Sign in</Link> to leave a review.
-                                    </AlertDescription>
-                                </Alert>
-                            )}
-                            
-                             {reviews.length > 0 ? (
-                                <div className="space-y-6">
-                                {reviews.map(review => (
-                                    <div key={review.id} className="flex gap-4">
-                                        <Avatar>
-                                            <AvatarImage src={review.profiles?.avatar_url || undefined} />
-                                            <AvatarFallback>{review.profiles?.display_name?.charAt(0) || 'U'}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex-1">
-                                            <div className="flex items-center justify-between">
-                                                <span className="font-semibold">{review.profiles?.display_name || 'Anonymous'}</span>
-                                                 <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(review.created_at), { addSuffix: true })}</span>
-                                            </div>
-                                            <StarRating rating={review.rating} size={16} showText={false} className="my-1" />
-                                            <p className="text-sm text-muted-foreground">{review.comment}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                                </div>
-                            ) : (
-                                <p className="text-sm text-muted-foreground text-center">No reviews yet.</p>
-                            )}
-
-                        </CardContent>
-                    </Card>
                 </div>
             </div>
         </div>
