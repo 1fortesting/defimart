@@ -50,6 +50,7 @@ const categories = [
 ];
 
 export default function SellerDashboardPage() {
+  const [user, setUser] = useState<any>(null);
   const [seller, setSeller] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -70,6 +71,7 @@ export default function SellerDashboardPage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      setUser(user);
 
       const { data: sellerData } = await supabase.from('sellers' as any).select('*').eq('user_id', user.id).single();
       setSeller(sellerData);
@@ -141,20 +143,21 @@ export default function SellerDashboardPage() {
 
   const handleAddProduct = async (formData: FormData) => {
     startAddTransition(async () => {
-        try {
-            await addSellerProduct(formData);
+        const result = await addSellerProduct(formData);
+        if (result.success) {
             setIsAddDialogOpen(false);
             setProductImagePreview(null);
             toast({ title: 'Product submitted for approval', variant: 'success' });
             window.location.reload();
-        } catch (e: any) {
-            toast({ title: 'Failed to add product', description: e.message, variant: 'destructive' });
+        } else {
+            toast({ title: 'Failed to add product', description: result.error, variant: 'destructive' });
         }
     });
   };
 
   const handleUpdateShop = async (formData: FormData) => {
       startUpdateTransition(async () => {
+          if (!seller) return;
           formData.append('sellerId', seller.id);
           const result = await updateShopInfo(formData);
           
@@ -172,18 +175,18 @@ export default function SellerDashboardPage() {
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
-  if (!seller) return null;
+  if (!seller) return <div className="p-8 text-center"><p className="text-muted-foreground">Seller profile not found.</p></div>;
 
   const totalRevenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
   const pendingOrdersCount = orders.filter(o => o.status === 'pending' || o.status === 'ready').length;
   
-  const uniqueCustomers = Array.from(new Set(orders.map(o => o.profiles?.id))).map(id => {
+  const uniqueCustomers = Array.from(new Set(orders.map(o => o.profiles?.id))).filter(Boolean).map(id => {
       const order = orders.find(o => o.profiles?.id === id);
       const customerOrders = orders.filter(o => o.profiles?.id === id);
       return {
           id,
-          name: order.profiles?.display_name || 'Anonymous',
-          phone: order.profiles?.phone_number || 'No Phone',
+          name: order?.profiles?.display_name || 'Anonymous',
+          phone: order?.profiles?.phone_number || 'No Phone',
           totalOrders: customerOrders.length
       };
   });
@@ -194,7 +197,7 @@ export default function SellerDashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-background p-6 rounded-2xl border shadow-sm">
           <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16 border-2 border-primary/20">
-                  <AvatarImage src={seller.user_metadata?.avatar_url || undefined} />
+                  <AvatarImage src={user?.user_metadata?.avatar_url || undefined} />
                   <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">{seller.shop_name?.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
@@ -516,7 +519,7 @@ export default function SellerDashboardPage() {
                                         {logoPreview ? (
                                            <AvatarImage src={logoPreview} />
                                         ) : (
-                                           <AvatarImage src={seller.user_metadata?.avatar_url || undefined} />
+                                           <AvatarImage src={user?.user_metadata?.avatar_url || undefined} />
                                         )}
                                         <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">{seller.shop_name?.charAt(0)}</AvatarFallback>
                                     </Avatar>
