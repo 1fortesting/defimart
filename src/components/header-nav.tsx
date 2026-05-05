@@ -105,6 +105,7 @@ export function HeaderNav({ user, cartItemCount: initialCartCount, isMobile = fa
 
   const desktopLinks = [
     { href: "/", icon: Home, text: "Home" },
+    { href: "/shops", icon: Store, text: "Shops" },
     { href: "/feeds", icon: Newspaper, text: "Feeds" },
     { href: "/orders", icon: Package, text: "Orders" },
     { href: "/saved", icon: Heart, text: "Wishlist" },
@@ -112,11 +113,12 @@ export function HeaderNav({ user, cartItemCount: initialCartCount, isMobile = fa
   ];
 
   if (isSeller) {
-      desktopLinks.splice(2, 0, { href: "/seller/dashboard", icon: Store, text: "My Shop" });
+      desktopLinks.splice(3, 0, { href: "/seller/dashboard", icon: Store, text: "My Shop" });
   }
   
   const mobileLinks = [
       { href: "/", icon: Home, text: "Home" },
+      { href: "/shops", icon: Store, text: "Shops" },
       { href: "/feeds", icon: Newspaper, text: "Feeds" },
       { href: "/categories", icon: LayoutGrid, text: "Categories" },
       { href: "/cart", icon: ShoppingCart, text: "Cart", badgeCount: cartCount },

@@ -37,16 +37,14 @@ export function BottomNav() {
 
   const navItems = [
     { label: 'Home', href: '/', icon: Home },
-    { label: 'Categories', href: '/categories', icon: LayoutGrid },
+    { label: 'Shops', href: '/shops', icon: Store },
     { label: 'Feeds', href: '/feeds', icon: Newspaper },
     { label: 'Cart', href: '/cart', icon: ShoppingCart },
     { label: 'Wishlist', href: '/saved', icon: Heart },
   ];
 
-  // If seller, add Shop and it might displace one item or we just add it
-  // Let's add Shop and keep Profile at the end
   if (isSeller) {
-      navItems.push({ label: 'Shop', href: '/seller/dashboard', icon: Store });
+      navItems.push({ label: 'My Shop', href: '/seller/dashboard', icon: Store });
   }
 
   navItems.push({ label: 'Profile', href: '/profile', icon: User });
