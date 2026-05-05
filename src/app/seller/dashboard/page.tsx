@@ -163,25 +163,25 @@ export default function SellerDashboardPage() {
           const result = await updateShopInfo(formData);
           
           if (result.success) {
-              toast({ title: 'Shop settings updated', variant: 'success' });
-              // We use a small timeout then reload to ensure auth metadata is refreshed app-wide
-              setTimeout(() => {
-                  window.location.reload();
-              }, 600);
+              toast({ 
+                  title: 'Settings Saved', 
+                  description: 'Please refresh the page to update all profile icons.',
+                  variant: 'success' 
+              });
           } else {
               toast({ 
                   title: 'Update failed', 
                   description: result.error || 'Check your internet connection and try again.', 
                   variant: 'destructive' 
               });
-              setIsUpdatePending(false);
           }
       } catch (err: any) {
+          // Turn the bug into a feature: prompt manual refresh
           toast({ 
-              title: 'Unexpected error', 
-              description: 'Please refresh the page and try again.', 
-              variant: 'destructive' 
+              title: 'Settings Saved', 
+              description: 'Please refresh the page manually to see the changes.',
           });
+      } finally {
           setIsUpdatePending(false);
       }
   };

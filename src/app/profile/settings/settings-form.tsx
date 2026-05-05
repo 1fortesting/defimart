@@ -8,10 +8,22 @@ import { Label } from '@/components/ui/label';
 import { useFormStatus } from 'react-dom';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
-    return <Button type="submit" disabled={pending} className="w-full sm:w-auto">{pending ? 'Saving...' : 'Save Changes'}</Button>;
+    return (
+        <Button type="submit" disabled={pending} className="w-full sm:w-auto">
+            {pending ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving Changes...
+                </>
+            ) : (
+                'Save Changes'
+            )}
+        </Button>
+    );
 }
 
 export function SettingsForm({ user }: { user: User }) {
@@ -32,7 +44,11 @@ export function SettingsForm({ user }: { user: User }) {
     
     useEffect(() => {
         if(state?.message) {
-            toast({ title: 'Success', description: state.message });
+            toast({ 
+                title: 'Settings Saved', 
+                description: 'Please refresh the page to update all profile icons.',
+                variant: 'success'
+            });
         }
         if(state?.error) {
             toast({ variant: 'destructive', title: 'Error', description: state.error });
