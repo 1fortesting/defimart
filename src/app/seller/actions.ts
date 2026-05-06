@@ -161,6 +161,7 @@ export async function addSellerProduct(formData: FormData) {
     }
 
     // Explicitly inserting into the vendor_products table
+    // Removed cost_price as it doesn't exist in the current vendor_products schema
     const { error } = await (supabase as any)
       .from('vendor_products')
       .insert({
@@ -172,7 +173,7 @@ export async function addSellerProduct(formData: FormData) {
         seller_id: user.id,
         is_approved: true, // Auto-display on platform as requested
         quantity: 1, // Default quantity
-        cost_price: 0 // Default to prevent constraint errors
+        tags: []
       });
 
     if (error) throw new Error(`Failed to list product: ${error.message}`);

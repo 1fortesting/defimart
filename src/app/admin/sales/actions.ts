@@ -1,3 +1,4 @@
+
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -17,7 +18,7 @@ export async function updateOrderStatus(formData: FormData) {
 
     const { data: order, error: fetchError } = await supabase
         .from('orders')
-        .select('*, products(name), profiles:profiles!orders_buyer_id_fkey(phone_number)')
+        .select('*, products(name), vendor_products(name), profiles:profiles!orders_buyer_id_fkey(phone_number)')
         .eq('id', orderId)
         .single();
 
@@ -28,27 +29,34 @@ export async function updateOrderStatus(formData: FormData) {
     
     const oldStatus = order.status;
 
+    // Handle stock adjustments for completed orders
     if (newStatus === 'completed' && oldStatus !== 'completed') {
-        const { data: product, error: productError } = await supabase
-            .from('products')
-            .select('quantity')
-            .eq('id', order.product_id)
-            .single();
-        
-        if (productError || product === null) {
-            return { error: 'Order status NOT updated. Could not find the product to adjust stock.' };
-        }
+        const table = order.product_id ? 'products' : 'vendor_products';
+        const id = order.product_id || order.vendor_product_id;
 
-        const newQuantity = (product.quantity ?? 0) - order.quantity;
-        if (newQuantity < 0) {
-            return { error: `Order status NOT updated. Not enough stock to complete order. Only ${product.quantity ?? 0} available.` };
+        if (id) {
+            const { data: product, error: productError } = await supabase
+                .from(table)
+                .select('quantity')
+                .eq('id', id)
+                .single();
+            
+            if (!productError && product !== null) {
+                const newQuantity = (product.quantity ?? 0) - order.quantity;
+                await supabase.from(table).update({ quantity: Math.max(0, newQuantity) }).eq('id', id);
+            }
         }
+    } 
+    // Handle stock replenishment for cancelled or rolled back orders
+    else if (oldStatus === 'completed' && newStatus !== 'completed') {
+        const table = order.product_id ? 'products' : 'vendor_products';
+        const id = order.product_id || order.vendor_product_id;
 
-        await supabase.from('products').update({ quantity: newQuantity }).eq('id', order.product_id);
-    } else if (oldStatus === 'completed' && newStatus !== 'completed') {
-        const { data: product } = await supabase.from('products').select('quantity').eq('id', order.product_id).single();
-        if (product) {
-            await supabase.from('products').update({ quantity: (product.quantity ?? 0) + order.quantity }).eq('id', order.product_id);
+        if (id) {
+            const { data: product } = await supabase.from(table).select('quantity').eq('id', id).single();
+            if (product) {
+                await supabase.from(table).update({ quantity: (product.quantity ?? 0) + order.quantity }).eq('id', id);
+            }
         }
     }
 
@@ -56,12 +64,12 @@ export async function updateOrderStatus(formData: FormData) {
     
     if (updateError) return { error: 'Failed to update order status.' };
 
-    // --- SMS Notifications ---
-    if (newStatus === 'ready' && oldStatus !== 'ready') {
-        const buyerPhoneNumber = order.profiles?.phone_number;
-        const productName = order.products?.name;
-        const pickupDate = getPickupDateString();
+    // --- Notifications ---
+    const buyerPhoneNumber = order.profiles?.phone_number;
+    const productName = order.products?.name || order.vendor_products?.name || 'Your order';
+    const pickupDate = getPickupDateString();
 
+    if (newStatus === 'ready' && oldStatus !== 'ready') {
         if (buyerPhoneNumber) {
             const message = `DEFIMART: Order #${order.id.substring(0, 8)} for '${productName}' is ready! Pick it up on ${pickupDate}. Payment is on pickup. Thank you!`;
             await sendSms({ phoneNumber: buyerPhoneNumber, message });
@@ -69,7 +77,6 @@ export async function updateOrderStatus(formData: FormData) {
     }
 
     if (newStatus === 'completed' && oldStatus !== 'completed') {
-        const buyerPhoneNumber = order.profiles?.phone_number;
         if (buyerPhoneNumber) {
             const message = `DEFIMART: Order #${order.id.substring(0, 8)} is now complete! Thank you for shopping with us. We hope to see you again soon!`;
             await sendSms({ phoneNumber: buyerPhoneNumber, message });
