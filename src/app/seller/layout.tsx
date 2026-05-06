@@ -51,13 +51,14 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
 
   if (seller.status === 'pending') {
     return (
-      <div className="flex-1 p-8 flex items-center justify-center bg-muted/20">
-        <Alert className="max-w-md">
-          <Clock className="h-5 w-5" />
-          <AlertTitle>Application Pending</AlertTitle>
-          <AlertDescription>
-            Your seller application for <strong>{seller.shop_name}</strong> is currently being reviewed by our team. You will be notified via <strong>SMS</strong> once approved.
+      <div className="flex-1 min-h-screen flex items-center justify-center bg-muted/20 p-6">
+        <Alert className="max-w-md bg-background shadow-xl border-none p-8 rounded-3xl">
+          <Clock className="h-8 w-8 text-primary mb-4" />
+          <AlertTitle className="text-xl font-black uppercase tracking-widest mb-2">Application Pending</AlertTitle>
+          <AlertDescription className="text-muted-foreground font-medium leading-relaxed">
+            The board is reviewing your application for <strong>{seller.shop_name}</strong>. You will receive an SMS confirmation once your shop is ready for launch.
           </AlertDescription>
+          <Button asChild variant="outline" className="mt-8 w-full font-bold h-12 rounded-xl"><Link href="/">Back to Main Site</Link></Button>
         </Alert>
       </div>
     );
@@ -65,35 +66,22 @@ export default function SellerLayout({ children }: { children: React.ReactNode }
 
   if (seller.status === 'rejected') {
     return (
-      <div className="flex-1 p-8 flex items-center justify-center bg-muted/20">
-        <Alert variant="destructive" className="max-w-md">
-          <Ban className="h-5 w-5" />
-          <AlertTitle>Application Rejected</AlertTitle>
-          <AlertDescription>
-            We regret to inform you that your seller application has been rejected. We have sent you an <strong>SMS</strong> with more details. Please contact support if you have questions.
+      <div className="flex-1 min-h-screen flex items-center justify-center bg-muted/20 p-6">
+        <Alert variant="destructive" className="max-w-md bg-background shadow-xl border-none p-8 rounded-3xl">
+          <Ban className="h-8 w-8 text-destructive mb-4" />
+          <AlertTitle className="text-xl font-black uppercase tracking-widest mb-2">Launch Denied</AlertTitle>
+          <AlertDescription className="text-muted-foreground font-medium leading-relaxed">
+            We regret to inform you that your shop application for <strong>{seller.shop_name}</strong> was not approved at this time. Please contact corporate support for further details.
           </AlertDescription>
+          <Button asChild variant="outline" className="mt-8 w-full font-bold h-12 rounded-xl"><Link href="/contact">Contact Support</Link></Button>
         </Alert>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col">
-      <header className="border-b bg-background px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <CheckCircle className="h-6 w-6 text-green-500" />
-          <div>
-            <h1 className="font-bold text-lg">{seller.shop_name}</h1>
-            <p className="text-xs text-muted-foreground">Seller Dashboard</p>
-          </div>
-        </div>
-        <Button asChild variant="outline" size="sm">
-            <Link href="/">Storefront</Link>
-        </Button>
-      </header>
-      <main className="flex-1 bg-muted/10">
-        {children}
-      </main>
+    <div className="min-h-screen w-full flex flex-col bg-background">
+      {children}
     </div>
   );
 }
