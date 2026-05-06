@@ -177,9 +177,10 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
     const hasImage = product.image_urls && product.image_urls.length > 0;
     
     return (
-    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/10 flex flex-col relative h-full">
-        <div className="absolute -top-16 -left-16 w-48 h-48 bg-[var(--gold)]/20 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125" />
-        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-primary/20 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125" />
+    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-primary/5 via-background to-red-500/5 border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/20 flex flex-col relative h-full">
+        {/* Deep Orange and Faint Red Auras */}
+        <div className="absolute -top-16 -left-16 w-48 h-48 bg-[var(--gold)]/25 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125" />
+        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-red-500/10 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125" />
         
         {product.is_featured && (
             <div className="absolute top-2 right-2 z-20 bg-yellow-400 text-white rounded-full p-1.5 shadow-md">
@@ -189,7 +190,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
 
         <div className="relative z-10 flex flex-col h-full">
             <div className="p-3">
-                <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden rounded-2xl bg-[var(--surface-2)]">
+                <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 to-red-500/5">
                     {hasImage ? (
                         <Image
                             src={product.image_urls![0]}
@@ -208,7 +209,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
             
             <div className="p-4 pt-0 flex flex-col justify-between flex-grow">
                 <div>
-                    <h3 className="font-syne font-bold text-sm md:text-base leading-tight text-[var(--dark)] mb-1">
+                    <h3 className="font-syne font-bold text-sm md:text-base leading-tight text-[var(--dark)] mb-1 group-hover:text-primary transition-colors">
                         {product.name}
                     </h3>
                      <div className="text-[11px] md:text-xs text-[var(--muted)] font-dm line-clamp-2 h-8 overflow-hidden mb-2">
@@ -223,7 +224,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                 <div className="flex items-center justify-between mt-auto">
                      <div className="text-left flex flex-col">
                         {isDiscountActive && (
-                            <p className="text-[10px] text-[var(--muted)] line-through">GHS {formatPrice(product.price)}</p>
+                            <p className="text-[10px] text-red-500/70 line-through">GHS {formatPrice(product.price)}</p>
                         )}
                         <p className="font-syne font-bold text-base md:text-lg text-[var(--dark)]">GHS {formatPrice(discountedPrice)}</p>
                     </div>
@@ -240,7 +241,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                         </Button>
 
                         <Sheet open={showShareFallback} onOpenChange={setShowShareFallback}>
-                            <SheetContent side="bottom" className="rounded-t-3xl border-t-0 p-0 overflow-hidden bg-[var(--gold)] z-[150]">
+                            <SheetContent side="bottom" className="rounded-t-3xl border-t-0 p-0 overflow-hidden bg-gradient-to-b from-[var(--gold)] to-red-500 z-[150]">
                                 <div className="w-12 h-1.5 bg-white/30 rounded-full mx-auto mt-3 mb-1" />
                                 <SheetHeader className="px-6 py-4 border-b border-white/10">
                                     <SheetTitle className="text-left text-sm font-syne font-black uppercase tracking-widest text-white">Share with friends</SheetTitle>
@@ -287,7 +288,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                 <Button 
                     onClick={handleAddToCart}
                     disabled={isPending || product.quantity === 0} 
-                    className="w-full mt-3 bg-[var(--gold)] hover:bg-[var(--dark)] text-white transition-all duration-300 shadow-lg shadow-[var(--gold)]/20"
+                    className="w-full mt-3 bg-gradient-to-r from-[var(--gold)] to-orange-600 hover:from-orange-600 hover:to-red-600 text-white transition-all duration-500 shadow-lg shadow-[var(--gold)]/20 border-none"
                 >
                     <ShoppingCart className="mr-2 h-4 w-4" />
                     {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
