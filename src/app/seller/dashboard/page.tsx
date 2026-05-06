@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { toggleShopStatus, addSellerProduct, updateShopInfo } from '../actions';
+import { toggleShopStatus, addSellerProduct, updateShopInfo, updateSellerProduct } from '../actions';
 import { updateOrderStatus } from '@/app/admin/sales/actions';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -33,7 +33,8 @@ import {
     Home,
     LogOut,
     ArrowLeft,
-    Heart
+    Heart,
+    Edit
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -61,6 +62,116 @@ const categories = [
     "Groceries & Food",
     "Other"
 ];
+
+function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdateSuccess: () => void }) {
+    const { toast } = useToast();
+    const [isOpen, setIsOpen] = useState(false);
+    const [uploadCategory, setUploadCategory] = useState(categories.includes(product.category) ? product.category : 'Other');
+    const [imagePreview, setImagePreview] = useState<string | null>(product.image_urls?.[0] || null);
+    
+    const [state, action, isPending] = useActionState(updateSellerProduct, { success: false, error: null });
+
+    useEffect(() => {
+        if (state.success) {
+            setIsOpen(false);
+            toast({ variant: 'success', title: 'Listing Updated', description: 'Changes saved successfully.' });
+            onUpdateSuccess();
+        } else if (state.error) {
+            toast({ title: 'Update Failed', description: state.error, variant: 'destructive' });
+        }
+    }, [state, toast, onUpdateSuccess]);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full mt-3 h-8 md:h-9 rounded-xl font-black uppercase text-[8px] md:text-[10px] tracking-widest border-2 hover:bg-primary hover:text-white transition-all">
+                    <Edit className="h-3 w-3 mr-1" /> Edit
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="w-[95%] max-w-[600px] p-0 overflow-hidden rounded-3xl flex flex-col h-[90vh] md:h-auto md:max-h-[85vh]">
+                <div className="bg-primary p-5 md:p-6 text-primary-foreground flex-shrink-0">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl md:text-2xl font-black tracking-tight text-white">Edit Listing</DialogTitle>
+                        <DialogDescription className="text-primary-foreground/80 text-xs md:text-sm">
+                            Modify your product details and availability.
+                        </DialogDescription>
+                    </DialogHeader>
+                </div>
+                <form action={action} className="flex flex-col flex-1 overflow-hidden bg-background">
+                    <input type="hidden" name="id" value={product.id} />
+                    <div className="flex-1 overflow-y-auto px-5 md:px-8 py-6 md:py-8 space-y-6">
+                        <div className="grid gap-2">
+                            <Label htmlFor="name" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Name</Label>
+                            <Input id="name" name="name" defaultValue={product.name} required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="price" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Selling Price (GHS)</Label>
+                                <Input id="price" name="price" type="number" step="0.01" defaultValue={product.price} required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Category</Label>
+                                <Select name="category" defaultValue={categories.includes(product.category) ? product.category : 'Other'} required onValueChange={setUploadCategory}>
+                                    <SelectTrigger className="bg-muted/30 border-2 h-12 text-base rounded-xl">
+                                        <SelectValue placeholder="Select" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl">
+                                        {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        {uploadCategory === 'Other' && (
+                            <div className="grid gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <Label htmlFor="custom_category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Custom Category Name</Label>
+                                <Input id="custom_category" name="custom_category" defaultValue={!categories.includes(product.category) ? product.category : ''} placeholder="Custom category" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
+                            </div>
+                        )}
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="description" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Detailed Description</Label>
+                            <Textarea id="description" name="description" defaultValue={product.description} rows={4} className="bg-muted/30 border-2 text-base rounded-xl resize-none" />
+                        </div>
+                        
+                        <div className="space-y-3">
+                            <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Update Image (Optional)</Label>
+                            <div className="flex flex-col gap-4">
+                                <Input 
+                                    id="image" 
+                                    name="image" 
+                                    type="file" 
+                                    accept="image/*" 
+                                    onChange={handleImageChange}
+                                    className="bg-muted/30 border-2 h-12 text-sm rounded-xl cursor-pointer pt-3"
+                                />
+                                {imagePreview && (
+                                    <div className="relative aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner">
+                                        <Image src={imagePreview} alt="Preview" fill className="object-contain" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-5 md:p-6 border-t bg-background flex-shrink-0">
+                        <Button type="submit" className="w-full h-14 text-lg font-black uppercase tracking-widest shadow-xl shadow-primary/20 rounded-2xl" disabled={isPending}>
+                            {isPending ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : 'Save Changes'}
+                        </Button>
+                    </div>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 export default function SellerDashboardPage() {
   const router = useRouter();
@@ -429,6 +540,7 @@ export default function SellerDashboardPage() {
           </div>
       </div>
 
+      {/* Dashboard Content */}
       <main className="flex-1 w-full p-4 md:p-10 space-y-8 max-w-full">
           <Tabs defaultValue="overview" className="w-full">
             <div className="bg-background p-1 md:p-2 rounded-2xl border shadow-sm sticky top-[120px] md:top-[100px] z-20 w-full overflow-x-auto no-scrollbar">
@@ -707,7 +819,7 @@ export default function SellerDashboardPage() {
                                 ) : (
                                     <ImageIcon className="h-8 md:h-12 w-8 md:w-12 text-muted-foreground/30" />
                                 )}
-                                <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
                                      <Button 
                                         variant="destructive" 
                                         size="icon" 
@@ -724,9 +836,7 @@ export default function SellerDashboardPage() {
                             <CardContent className="p-3 md:p-4">
                                 <h3 className="font-bold truncate text-xs md:text-sm leading-tight text-foreground">{product.name}</h3>
                                 <p className="text-primary font-black mt-1 text-sm md:text-lg">GHS {formatPrice(product.price)}</p>
-                                <Button variant="outline" size="sm" className="w-full mt-3 h-8 md:h-9 rounded-xl font-black uppercase text-[8px] md:text-[10px] tracking-widest border-2 hover:bg-primary hover:text-white transition-all" asChild>
-                                    <Link href={`/products/${product.id}`} target="_blank">Review</Link>
-                                </Button>
+                                <EditProductDialog product={product} onUpdateSuccess={handleSync} />
                             </CardContent>
                         </Card>
                     ))}

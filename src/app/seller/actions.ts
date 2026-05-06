@@ -122,6 +122,63 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
 }
 
 /**
+ * Updates an existing vendor product.
+ */
+export async function updateSellerProduct(prevState: any, formData: FormData) {
+  const supabase = await createClient();
+
+  try {
+    const id = formData.get('id') as string;
+    const file = formData.get('image') as File | null;
+    const name = formData.get('name') as string;
+    const price = Number(formData.get('price'));
+    const description = formData.get('description') as string;
+    const category = formData.get('category') as string;
+    const customCategory = formData.get('custom_category') as string;
+
+    if (!id) return { success: false, error: 'Product ID is missing' };
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Authentication required' };
+
+    const finalCategory = category === 'Other' ? customCategory : category;
+    const updateData: any = {
+      name,
+      description: description || '',
+      price,
+      category: finalCategory || 'Other',
+    };
+
+    if (file && file.size > 0) {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('vendor-images')
+        .upload(fileName, file);
+
+      if (uploadError) return { success: false, error: `Upload failed: ${uploadError.message}` };
+
+      const { data: urlData } = supabase.storage.from('vendor-images').getPublicUrl(fileName);
+      updateData.image_urls = [urlData.publicUrl];
+    }
+
+    const { error: dbError } = await (supabase as any)
+      .from('vendor_products')
+      .update(updateData)
+      .eq('id', id)
+      .eq('seller_id', user.id);
+
+    if (dbError) return { success: false, error: `Update failed: ${dbError.message}` };
+
+    revalidatePath('/seller/dashboard');
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Unexpected failure' };
+  }
+}
+
+/**
  * Toggles the open/closed status of a shop.
  */
 export async function toggleShopStatus(sellerId: string, isOpen: boolean) {
