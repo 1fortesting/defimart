@@ -27,7 +27,8 @@ import {
     CheckCircle,
     Store,
     RefreshCw,
-    UploadCloud
+    UploadCloud,
+    ExternalLink
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -210,25 +211,26 @@ export default function SellerDashboardPage() {
 
   return (
     <div className="min-h-screen bg-muted/10 flex flex-col w-full">
-      <div className="bg-background border-b sticky top-0 z-30 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm w-full">
-          <div className="flex items-center gap-4">
-              <div className="relative group">
+      {/* Dynamic Header */}
+      <div className="bg-background border-b sticky top-0 z-30 px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm w-full">
+          <div className="flex items-center gap-3 md:gap-4">
+              <div className="relative group shrink-0">
                   <Avatar className="h-12 w-12 border-2 border-primary/20">
                       <AvatarImage src={logoPreview || user?.user_metadata?.avatar_url || undefined} />
                       <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">{seller.shop_name?.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className={cn("absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background", seller.is_open ? "bg-emerald-500" : "bg-destructive")} />
               </div>
-              <div>
+              <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                      <h1 className="text-xl font-black tracking-tight">{seller.shop_name}</h1>
-                      <Badge variant="outline" className="text-[10px] uppercase font-bold text-muted-foreground border-muted-foreground/20">VENDOR</Badge>
+                      <h1 className="text-lg md:text-xl font-black tracking-tight truncate">{seller.shop_name}</h1>
+                      <Badge variant="outline" className="text-[9px] px-1.5 h-4 uppercase font-bold text-muted-foreground border-muted-foreground/20 shrink-0">VENDOR</Badge>
                   </div>
-                  <div className="flex items-center gap-3 mt-0.5">
-                       <p className="text-muted-foreground text-xs font-medium flex items-center gap-1">
-                          <CheckCircle className="h-3 w-3 text-emerald-500" /> Verified Seller
+                  <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-0.5">
+                       <p className="text-muted-foreground text-[10px] md:text-xs font-medium flex items-center gap-1">
+                          <CheckCircle className="h-3 w-3 text-emerald-500" /> Verified
                        </p>
-                       <Separator orientation="vertical" className="h-3" />
+                       <Separator orientation="vertical" className="h-3 hidden sm:block" />
                        <div className="flex items-center gap-2">
                           <Switch 
                               id="shop-toggle-top" 
@@ -237,40 +239,42 @@ export default function SellerDashboardPage() {
                               disabled={isPending}
                               className="scale-75"
                           />
-                          <Label htmlFor="shop-toggle-top" className={cn("text-[10px] font-black uppercase tracking-widest", seller.is_open ? "text-emerald-600" : "text-destructive")}>
-                              {seller.is_open ? 'SHOP OPEN' : 'SHOP CLOSED'}
+                          <Label htmlFor="shop-toggle-top" className={cn("text-[9px] md:text-[10px] font-black uppercase tracking-widest", seller.is_open ? "text-emerald-600" : "text-destructive")}>
+                              {seller.is_open ? 'OPEN' : 'CLOSED'}
                           </Label>
                        </div>
                   </div>
               </div>
           </div>
-          <div className="flex items-center gap-3">
-              <Button asChild variant="outline" size="sm" className="hidden sm:flex rounded-xl font-bold h-10 border-2">
-                  <Link href={`/shops/${seller.id}`} target="_blank">
-                      <Eye className="h-4 w-4 mr-2" /> View Public Shop
+          <div className="flex items-center gap-2 md:gap-3">
+              <Button asChild variant="outline" size="sm" className="flex-1 md:flex-none rounded-xl font-bold h-10 border-2 text-xs">
+                  <Link href={`/shops/${seller.id}`}>
+                      <Eye className="h-4 w-4 mr-2" /> <span className="hidden sm:inline">View Public Shop</span><span className="sm:hidden">Live View</span>
                   </Link>
               </Button>
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button size="lg" className="h-10 rounded-xl font-bold shadow-lg shadow-primary/20"><Plus className="h-4 w-4 mr-2" /> List New Product</Button>
+                      <Button size="lg" className="flex-1 md:flex-none h-10 rounded-xl font-bold shadow-lg shadow-primary/20 text-xs md:text-sm">
+                        <Plus className="h-4 w-4 mr-1 md:mr-2" /> List Item
+                      </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px] p-0 overflow-hidden rounded-3xl flex flex-col h-[90vh] md:h-auto md:max-h-[85vh]">
-                      <div className="bg-primary p-6 text-primary-foreground flex-shrink-0">
+                    <DialogContent className="w-[95%] max-w-[600px] p-0 overflow-hidden rounded-3xl flex flex-col h-[90vh] md:h-auto md:max-h-[85vh]">
+                      <div className="bg-primary p-5 md:p-6 text-primary-foreground flex-shrink-0">
                         <DialogHeader>
-                            <DialogTitle className="text-2xl font-black tracking-tight text-white">Create New Listing</DialogTitle>
-                            <DialogDescription className="text-primary-foreground/80">
+                            <DialogTitle className="text-xl md:text-2xl font-black tracking-tight text-white">Create New Listing</DialogTitle>
+                            <DialogDescription className="text-primary-foreground/80 text-xs md:text-sm">
                                 This product will appear in your shop instantly.
                             </DialogDescription>
                         </DialogHeader>
                       </div>
                       <form action={addAction} className="flex flex-col flex-1 overflow-hidden bg-background">
-                          <div className="flex-1 overflow-y-auto px-8 py-8 space-y-6">
+                          <div className="flex-1 overflow-y-auto px-5 md:px-8 py-6 md:py-8 space-y-6">
                                   <div className="grid gap-2">
                                     <Label htmlFor="name" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Name</Label>
                                     <Input id="name" name="name" placeholder="Name" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
                                   </div>
 
-                                  <div className="grid grid-cols-2 gap-4">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                       <Label htmlFor="price" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Selling Price (GHS)</Label>
                                       <Input id="price" name="price" type="number" step="0.01" placeholder="Price" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
@@ -310,7 +314,7 @@ export default function SellerDashboardPage() {
                                             accept="image/*" 
                                             required 
                                             onChange={handleProductImageChange}
-                                            className="bg-muted/30 border-2 h-12 text-sm rounded-xl cursor-pointer"
+                                            className="bg-muted/30 border-2 h-12 text-sm rounded-xl cursor-pointer pt-3"
                                         />
                                         {productImagePreview && (
                                             <div className="relative aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner">
@@ -321,9 +325,9 @@ export default function SellerDashboardPage() {
                                   </div>
                           </div>
 
-                          <div className="p-6 border-t bg-background sticky bottom-0 z-20">
+                          <div className="p-5 md:p-6 border-t bg-background flex-shrink-0">
                             <Button type="submit" className="w-full h-14 text-lg font-black uppercase tracking-widest shadow-xl shadow-primary/20 rounded-2xl" disabled={isAddPending}>
-                              {isAddPending ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : 'Upload'}
+                              {isAddPending ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : 'Publish Listing'}
                             </Button>
                           </div>
                       </form>
@@ -332,133 +336,130 @@ export default function SellerDashboardPage() {
           </div>
       </div>
 
-      <main className="flex-1 w-full p-6 md:p-10 space-y-10 max-w-full">
+      <main className="flex-1 w-full p-4 md:p-10 space-y-8 max-w-full">
           <Tabs defaultValue="overview" className="w-full">
-            <div className="flex justify-between items-center mb-8 bg-background p-2 rounded-2xl border shadow-sm sticky top-[100px] z-20">
-                <TabsList className="bg-transparent h-auto gap-2">
-                <TabsTrigger value="overview" className="rounded-xl gap-2 py-3 px-6 text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-                    <LayoutDashboard className="h-4 w-4" /> Overview
-                </TabsTrigger>
-                <TabsTrigger value="orders" className="rounded-xl gap-2 py-3 px-6 text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-                    <ShoppingBag className="h-4 w-4" /> Orders 
-                    {pendingOrdersCount > 0 && <Badge className="ml-1 bg-white text-primary text-[10px] font-black">{pendingOrdersCount}</Badge>}
-                </TabsTrigger>
-                <TabsTrigger value="products" className="rounded-xl gap-2 py-3 px-6 text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-                    <Package className="h-4 w-4" /> Products
-                </TabsTrigger>
-                <TabsTrigger value="customers" className="rounded-xl gap-2 py-3 px-6 text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-                    <Users className="h-4 w-4" /> Customers
-                </TabsTrigger>
-                <TabsTrigger value="settings" className="rounded-xl gap-2 py-3 px-6 text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-                    <Settings className="h-4 w-4" /> Shop Profile
-                </TabsTrigger>
+            <div className="bg-background p-1 md:p-2 rounded-2xl border shadow-sm sticky top-[160px] md:top-[100px] z-20 w-full overflow-x-auto no-scrollbar">
+                <TabsList className="bg-transparent h-auto gap-1 md:gap-2 flex w-max min-w-full">
+                    <TabsTrigger value="overview" className="rounded-xl gap-2 py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all whitespace-nowrap">
+                        <LayoutDashboard className="h-4 w-4" /> Overview
+                    </TabsTrigger>
+                    <TabsTrigger value="orders" className="rounded-xl gap-2 py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all whitespace-nowrap">
+                        <ShoppingBag className="h-4 w-4" /> Orders 
+                        {pendingOrdersCount > 0 && <Badge className="ml-1 bg-white text-primary text-[10px] font-black">{pendingOrdersCount}</Badge>}
+                    </TabsTrigger>
+                    <TabsTrigger value="products" className="rounded-xl gap-2 py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all whitespace-nowrap">
+                        <Package className="h-4 w-4" /> Products
+                    </TabsTrigger>
+                    <TabsTrigger value="customers" className="rounded-xl gap-2 py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all whitespace-nowrap">
+                        <Users className="h-4 w-4" /> Customers
+                    </TabsTrigger>
+                    <TabsTrigger value="settings" className="rounded-xl gap-2 py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all whitespace-nowrap">
+                        <Settings className="h-4 w-4" /> Profile
+                    </TabsTrigger>
                 </TabsList>
-                <div className="pr-2 hidden lg:block">
-                     <p className="text-[10px] font-black uppercase tracking-[2px] text-muted-foreground">Vendor Command Console</p>
-                </div>
             </div>
 
-            <TabsContent value="overview" className="space-y-8 animate-in fade-in duration-500">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <TabsContent value="overview" className="space-y-6 md:space-y-8 animate-in fade-in duration-500 mt-6">
+                <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                     <Card className="bg-emerald-500 text-white border-none shadow-xl shadow-emerald-500/20">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-[2px] opacity-80 flex items-center gap-2">
+                            <CardTitle className="text-[9px] md:text-[10px] font-black uppercase tracking-[2px] opacity-80 flex items-center gap-2">
                                 <TrendingUp className="h-3 w-3" /> Net Revenue
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-4xl font-black">GHS {formatPrice(totalRevenue)}</p>
-                            <p className="text-xs font-bold mt-2 opacity-80">Lifetime earnings</p>
+                            <p className="text-3xl md:text-4xl font-black">GHS {formatPrice(totalRevenue)}</p>
+                            <p className="text-[10px] font-bold mt-2 opacity-80 uppercase">Lifetime earnings</p>
                         </CardContent>
                     </Card>
                     <Card className="bg-primary text-white border-none shadow-xl shadow-primary/20">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-[2px] opacity-80 flex items-center gap-2">
+                            <CardTitle className="text-[9px] md:text-[10px] font-black uppercase tracking-[2px] opacity-80 flex items-center gap-2">
                                 <ShoppingBag className="h-3 w-3" /> Total Volume
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-4xl font-black">{orders.length}</p>
-                            <p className="text-xs font-bold mt-2 opacity-80">Lifetime orders</p>
+                            <p className="text-3xl md:text-4xl font-black">{orders.length}</p>
+                            <p className="text-[10px] font-bold mt-2 opacity-80 uppercase">Lifetime orders</p>
                         </CardContent>
                     </Card>
                     <Card className="bg-white dark:bg-slate-900 shadow-xl border-none">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-[2px] text-muted-foreground flex items-center gap-2">
+                            <CardTitle className="text-[9px] md:text-[10px] font-black uppercase tracking-[2px] text-muted-foreground flex items-center gap-2">
                                 <Clock className="h-3 w-3 text-orange-500" /> Pending Action
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-4xl font-black text-orange-500">{pendingOrdersCount}</p>
-                            <p className="text-xs font-bold mt-2 text-muted-foreground">New/Ready orders</p>
+                            <p className="text-3xl md:text-4xl font-black text-orange-500">{pendingOrdersCount}</p>
+                            <p className="text-[10px] font-bold mt-2 text-muted-foreground uppercase">New/Ready orders</p>
                         </CardContent>
                     </Card>
                     <Card className="bg-white dark:bg-slate-900 shadow-xl border-none">
                         <CardHeader className="pb-2">
-                            <CardTitle className="text-[10px] font-black uppercase tracking-[2px] text-muted-foreground flex items-center gap-2">
+                            <CardTitle className="text-[9px] md:text-[10px] font-black uppercase tracking-[2px] text-muted-foreground flex items-center gap-2">
                                 <Users className="h-3 w-3 text-primary" /> Active Clients
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-4xl font-black">{uniqueCustomers.length}</p>
-                            <p className="text-xs font-bold mt-2 text-muted-foreground">Unique buyers</p>
+                            <p className="text-3xl md:text-4xl font-black">{uniqueCustomers.length}</p>
+                            <p className="text-[10px] font-bold mt-2 text-muted-foreground uppercase">Unique buyers</p>
                         </CardContent>
                     </Card>
                 </div>
                 
-                <div className="grid lg:grid-cols-2 gap-8">
-                     <Card className="border-none shadow-lg bg-background">
-                        <CardHeader className="border-b bg-muted/5">
-                            <CardTitle className="text-base font-black uppercase tracking-widest">Awaiting Logistics</CardTitle>
+                <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
+                     <Card className="border-none shadow-lg bg-background overflow-hidden">
+                        <CardHeader className="border-b bg-muted/5 py-4">
+                            <CardTitle className="text-sm font-black uppercase tracking-widest">Awaiting Logistics</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                              <div className="divide-y">
                                 {orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').slice(0, 5).map(order => (
-                                     <div key={order.id} className="p-4 flex items-center justify-between hover:bg-muted/10 transition-colors">
-                                        <div className="flex items-center gap-4">
-                                            <Avatar className="h-10 w-10">
-                                                <AvatarFallback className="bg-primary/10 text-primary font-bold">{order.profiles?.display_name?.charAt(0)}</AvatarFallback>
+                                     <div key={order.id} className="p-4 flex items-center justify-between hover:bg-muted/5 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <Avatar className="h-9 w-9">
+                                                <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">{order.profiles?.display_name?.charAt(0)}</AvatarFallback>
                                             </Avatar>
-                                            <div>
-                                                <p className="text-sm font-black">{order.profiles?.display_name}</p>
-                                                <p className="text-xs text-muted-foreground truncate max-w-[150px]">{order.products?.name || order.vendor_products?.name}</p>
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-black truncate">{order.profiles?.display_name}</p>
+                                                <p className="text-[10px] text-muted-foreground truncate max-w-[120px] md:max-w-[150px]">{order.products?.name || order.vendor_products?.name}</p>
                                             </div>
                                         </div>
-                                        <Badge variant={order.status === 'ready' ? 'secondary' : 'outline'} className="font-black text-[10px] uppercase">{order.status}</Badge>
+                                        <Badge variant={order.status === 'ready' ? 'secondary' : 'outline'} className="font-black text-[9px] uppercase px-1.5 h-5">{order.status}</Badge>
                                      </div>
                                 ))}
                                 {orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').length === 0 && (
-                                    <div className="p-12 text-center text-muted-foreground">
+                                    <div className="py-12 text-center text-muted-foreground">
                                         <CheckCircle className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                                        <p className="text-xs font-bold uppercase">All caught up!</p>
+                                        <p className="text-[10px] font-black uppercase tracking-widest">All caught up!</p>
                                     </div>
                                 )}
                              </div>
                         </CardContent>
                      </Card>
 
-                     <Card className="border-none shadow-lg bg-background">
-                        <CardHeader className="border-b bg-muted/5">
-                            <CardTitle className="text-base font-black uppercase tracking-widest">New Inventory</CardTitle>
+                     <Card className="border-none shadow-lg bg-background overflow-hidden">
+                        <CardHeader className="border-b bg-muted/5 py-4">
+                            <CardTitle className="text-sm font-black uppercase tracking-widest">New Inventory</CardTitle>
                         </CardHeader>
-                        <CardContent className="p-0">
-                             <div className="grid grid-cols-4 gap-1 p-2">
-                                {products.slice(0, 8).map(product => (
-                                    <div key={product.id} className="relative aspect-square rounded-xl overflow-hidden group bg-muted flex items-center justify-center">
+                        <CardContent className="p-2">
+                             <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 lg:grid-cols-4 gap-2">
+                                {products.slice(0, 12).map(product => (
+                                    <Link href={`/products/${product.id}`} key={product.id} className="relative aspect-square rounded-xl overflow-hidden group bg-muted flex items-center justify-center border hover:border-primary/50 transition-all">
                                         {product.image_urls?.[0] ? (
                                             <Image src={product.image_urls[0]} alt="" fill className="object-cover group-hover:scale-110 transition-transform" />
                                         ) : (
                                             <ImageIcon className="h-4 w-4 text-muted-foreground/30" />
                                         )}
                                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 text-center">
-                                            <p className="text-[10px] text-white font-bold truncate w-full">{product.name}</p>
+                                            <p className="text-[9px] text-white font-bold line-clamp-2 w-full">{product.name}</p>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ))}
                                 {products.length === 0 && (
-                                     <div className="col-span-full p-12 text-center text-muted-foreground">
+                                     <div className="col-span-full py-12 text-center text-muted-foreground w-full">
                                         <Package className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                                        <p className="text-xs font-bold uppercase">No items listed</p>
+                                        <p className="text-[10px] font-black uppercase tracking-widest">No items listed</p>
                                     </div>
                                 )}
                              </div>
@@ -467,77 +468,132 @@ export default function SellerDashboardPage() {
                 </div>
             </TabsContent>
 
-            <TabsContent value="orders" className="animate-in fade-in duration-500">
-                <Card className="border-none shadow-xl bg-background overflow-hidden w-full">
-                    <CardHeader className="bg-muted/5 border-b p-6 flex flex-row items-center justify-between">
-                        <div>
-                            <CardTitle className="text-lg font-black uppercase tracking-widest">Transaction Ledger</CardTitle>
-                            <CardDescription>Comprehensive list of all shop orders.</CardDescription>
-                        </div>
-                        <Button variant="outline" size="sm" onClick={fetchData} className="h-8 font-bold border-2"><RefreshCw className="h-3 w-3 mr-2" />Sync</Button>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        <Table>
-                            <TableHeader className="bg-muted/20">
-                                <TableRow>
-                                    <TableHead className="font-black uppercase text-[10px] tracking-wider">Client Identity</TableHead>
-                                    <TableHead className="font-black uppercase text-[10px] tracking-wider">Product Segment</TableHead>
-                                    <TableHead className="font-black uppercase text-[10px] tracking-wider">Amount</TableHead>
-                                    <TableHead className="font-black uppercase text-[10px] tracking-wider">Current Phase</TableHead>
-                                    <TableHead className="font-black uppercase text-[10px] tracking-wider text-right">Logistics Update</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {orders.map((order) => {
-                                    const productName = order.products?.name || order.vendor_products?.name || 'Unknown Product';
-                                    return (
-                                        <TableRow key={order.id} className="hover:bg-muted/10 transition-colors group">
-                                            <TableCell>
-                                                <div className="font-black text-sm">{order.profiles?.display_name}</div>
-                                                <div className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 mt-0.5"><Phone className="h-2 w-2" /> {order.profiles?.phone_number}</div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="text-sm font-medium max-w-[400px] truncate">{productName}</div>
-                                                <div className="text-[10px] text-muted-foreground font-bold">ID: {order.id.substring(0, 8)}</div>
-                                            </TableCell>
-                                            <TableCell className="font-black text-sm">GHS {formatPrice(order.price_per_item * order.quantity)}</TableCell>
-                                            <TableCell>
-                                                <Badge className="font-black text-[10px] px-2 py-0.5 uppercase tracking-tighter" variant={
-                                                    order.status === 'completed' ? 'default' :
-                                                    order.status === 'ready' ? 'secondary' : 'outline'
-                                                }>
-                                                    {order.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end items-center gap-2">
-                                                    {order.status === 'pending' && (
-                                                        <Button size="sm" className="h-8 font-black uppercase text-[10px] px-4 rounded-lg" onClick={() => handleUpdateStatus(order.id, 'ready')} disabled={isPending}>Mark Ready</Button>
-                                                    )}
-                                                    {order.status === 'ready' && (
-                                                        <Button size="sm" variant="outline" className="h-8 font-black uppercase text-[10px] px-4 rounded-lg bg-emerald-50 text-emerald-700 border-emerald-200" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Handover</Button>
-                                                    )}
-                                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all rounded-lg" asChild>
-                                                        <Link href={`/admin/sales/${order.id}`}><Eye className="h-4 w-4" /></Link>
-                                                    </Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                                {orders.length === 0 && (
+            <TabsContent value="orders" className="animate-in fade-in duration-500 mt-6">
+                <div className="flex flex-col gap-6">
+                    <Card className="border-none shadow-xl bg-background overflow-hidden w-full">
+                        <CardHeader className="bg-muted/5 border-b p-5 md:p-6 flex flex-row items-center justify-between gap-4">
+                            <div className="min-w-0">
+                                <CardTitle className="text-base md:text-lg font-black uppercase tracking-widest truncate">Transaction Ledger</CardTitle>
+                                <CardDescription className="text-xs font-medium">Manage your shop orders.</CardDescription>
+                            </div>
+                            <Button variant="outline" size="sm" onClick={fetchData} className="h-9 font-bold border-2 shrink-0"><RefreshCw className="h-3 w-3 mr-2" />Sync</Button>
+                        </CardHeader>
+                        
+                        {/* Desktop View Table */}
+                        <div className="hidden md:block">
+                            <Table>
+                                <TableHeader className="bg-muted/20">
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-24 text-muted-foreground italic font-medium">No orders yet.</TableCell>
+                                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Client Identity</TableHead>
+                                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Product Segment</TableHead>
+                                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Amount</TableHead>
+                                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Current Phase</TableHead>
+                                        <TableHead className="font-black uppercase text-[10px] tracking-wider text-right">Logistics Update</TableHead>
                                     </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                                </TableHeader>
+                                <TableBody>
+                                    {orders.map((order) => {
+                                        const productName = order.products?.name || order.vendor_products?.name || 'Unknown Product';
+                                        return (
+                                            <TableRow key={order.id} className="hover:bg-muted/10 transition-colors group">
+                                                <TableCell>
+                                                    <div className="font-black text-sm">{order.profiles?.display_name}</div>
+                                                    <div className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 mt-0.5"><Phone className="h-2 w-2" /> {order.profiles?.phone_number}</div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="text-sm font-medium max-w-[200px] lg:max-w-[400px] truncate">{productName}</div>
+                                                    <div className="text-[10px] text-muted-foreground font-bold">ID: {order.id.substring(0, 8)}</div>
+                                                </TableCell>
+                                                <TableCell className="font-black text-sm">GHS {formatPrice(order.price_per_item * order.quantity)}</TableCell>
+                                                <TableCell>
+                                                    <Badge className="font-black text-[9px] px-2 py-0.5 uppercase tracking-tighter" variant={
+                                                        order.status === 'completed' ? 'default' :
+                                                        order.status === 'ready' ? 'secondary' : 'outline'
+                                                    }>
+                                                        {order.status}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end items-center gap-2">
+                                                        {order.status === 'pending' && (
+                                                            <Button size="sm" className="h-8 font-black uppercase text-[10px] px-4 rounded-lg" onClick={() => handleUpdateStatus(order.id, 'ready')} disabled={isPending}>Mark Ready</Button>
+                                                        )}
+                                                        {order.status === 'ready' && (
+                                                            <Button size="sm" variant="outline" className="h-8 font-black uppercase text-[10px] px-4 rounded-lg bg-emerald-50 text-emerald-700 border-emerald-200" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Handover</Button>
+                                                        )}
+                                                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all rounded-lg" asChild>
+                                                            <Link href={`/admin/sales/${order.id}`}><Eye className="h-4 w-4" /></Link>
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                    {orders.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={5} className="text-center py-24 text-muted-foreground italic font-medium">No orders yet.</TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+
+                        {/* Mobile Card View */}
+                        <div className="md:hidden divide-y">
+                            {orders.map((order) => {
+                                const productName = order.products?.name || order.vendor_products?.name || 'Unknown Product';
+                                return (
+                                    <div key={order.id} className="p-5 space-y-4 hover:bg-muted/5 transition-colors">
+                                        <div className="flex justify-between items-start">
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-10 w-10">
+                                                    <AvatarFallback className="bg-primary/10 text-primary font-black text-sm">{order.profiles?.display_name?.charAt(0)}</AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="font-black text-sm">{order.profiles?.display_name}</p>
+                                                    <a href={`tel:${order.profiles?.phone_number}`} className="text-[10px] font-bold text-primary flex items-center gap-1"><Phone className="h-2 w-2" /> {order.profiles?.phone_number}</a>
+                                                </div>
+                                            </div>
+                                            <Badge className="font-black text-[9px] px-1.5 py-0.5 uppercase tracking-tighter" variant={
+                                                order.status === 'completed' ? 'default' :
+                                                order.status === 'ready' ? 'secondary' : 'outline'
+                                            }>
+                                                {order.status}
+                                            </Badge>
+                                        </div>
+
+                                        <div className="bg-muted/30 p-3 rounded-xl space-y-1">
+                                            <p className="text-xs font-bold truncate">{productName}</p>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-[10px] text-muted-foreground font-bold">QTY: {order.quantity}</span>
+                                                <span className="font-black text-xs">GHS {formatPrice(order.price_per_item * order.quantity)}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                            {order.status === 'pending' && (
+                                                <Button size="sm" className="flex-1 h-10 font-black uppercase text-[10px] rounded-xl" onClick={() => handleUpdateStatus(order.id, 'ready')} disabled={isPending}>Mark Ready</Button>
+                                            )}
+                                            {order.status === 'ready' && (
+                                                <Button size="sm" variant="outline" className="flex-1 h-10 font-black uppercase text-[10px] rounded-xl bg-emerald-50 text-emerald-700 border-emerald-200" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Complete Handover</Button>
+                                            )}
+                                            <Button size="sm" variant="secondary" className="h-10 px-4 rounded-xl font-black uppercase text-[10px]" asChild>
+                                                <Link href={`/admin/sales/${order.id}`}>Details</Link>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            {orders.length === 0 && (
+                                <div className="py-20 text-center text-muted-foreground italic text-sm">No transactions yet.</div>
+                            )}
+                        </div>
+                    </Card>
+                </div>
             </TabsContent>
 
-            <TabsContent value="products" className="animate-in fade-in duration-500">
-                <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 w-full">
+            <TabsContent value="products" className="animate-in fade-in duration-500 mt-6">
+                <div className="grid gap-4 md:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 w-full">
                     {products.map((product) => (
                         <Card key={product.id} className="overflow-hidden border-none shadow-lg bg-background group ring-1 ring-border/50 hover:ring-primary/40 transition-all duration-300">
                             <div className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden">
@@ -549,7 +605,7 @@ export default function SellerDashboardPage() {
                                         className="object-cover group-hover:scale-110 transition-transform duration-500"
                                     />
                                 ) : (
-                                    <ImageIcon className="h-12 w-12 text-muted-foreground/30" />
+                                    <ImageIcon className="h-8 md:h-12 w-8 md:w-12 text-muted-foreground/30" />
                                 )}
                                 <div className="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                      <Button 
@@ -562,56 +618,56 @@ export default function SellerDashboardPage() {
                                     </Button>
                                 </div>
                                 <div className="absolute bottom-2 left-2">
-                                     <Badge className="bg-black/60 backdrop-blur-md border-none text-white text-[9px] font-black uppercase">{product.category}</Badge>
+                                     <Badge className="bg-black/60 backdrop-blur-md border-none text-white text-[8px] md:text-[9px] font-black uppercase">{product.category}</Badge>
                                 </div>
                             </div>
-                            <CardContent className="p-4">
-                                <h3 className="font-bold truncate text-sm leading-tight text-foreground">{product.name}</h3>
-                                <p className="text-primary font-black mt-1 text-lg">GHS {formatPrice(product.price)}</p>
-                                <Button variant="outline" size="sm" className="w-full mt-4 h-9 rounded-xl font-black uppercase text-[10px] tracking-widest border-2 hover:bg-primary hover:text-white transition-all" asChild>
-                                    <Link href={`/products/${product.id}`} target="_blank">Review Listing</Link>
+                            <CardContent className="p-3 md:p-4">
+                                <h3 className="font-bold truncate text-xs md:text-sm leading-tight text-foreground">{product.name}</h3>
+                                <p className="text-primary font-black mt-1 text-sm md:text-lg">GHS {formatPrice(product.price)}</p>
+                                <Button variant="outline" size="sm" className="w-full mt-3 h-8 md:h-9 rounded-xl font-black uppercase text-[8px] md:text-[10px] tracking-widest border-2 hover:bg-primary hover:text-white transition-all" asChild>
+                                    <Link href={`/products/${product.id}`} target="_blank">Review</Link>
                                 </Button>
                             </CardContent>
                         </Card>
                     ))}
                     {products.length === 0 && (
-                        <div className="col-span-full py-32 text-center bg-muted/10 rounded-3xl border-2 border-dashed border-muted-foreground/20 w-full">
-                            <Package className="h-16 w-16 text-muted-foreground/10 mx-auto mb-4" />
-                            <h3 className="text-lg font-black uppercase tracking-widest text-muted-foreground opacity-30">Inventory Empty</h3>
-                            <Button className="mt-6 font-bold rounded-xl" onClick={() => setIsAddDialogOpen(true)}><Plus className="h-4 w-4 mr-2" /> Start Selling</Button>
+                        <div className="col-span-full py-24 md:py-32 text-center bg-muted/10 rounded-3xl border-2 border-dashed border-muted-foreground/20 w-full">
+                            <Package className="h-12 md:h-16 text-muted-foreground/10 mx-auto mb-4" />
+                            <h3 className="text-sm md:text-lg font-black uppercase tracking-widest text-muted-foreground opacity-30">Inventory Empty</h3>
+                            <Button className="mt-4 md:mt-6 font-bold rounded-xl text-xs" onClick={() => setIsAddDialogOpen(true)}><Plus className="h-4 w-4 mr-2" /> Start Selling</Button>
                         </div>
                     )}
                 </div>
             </TabsContent>
 
-            <TabsContent value="customers" className="animate-in fade-in duration-500">
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 w-full">
+            <TabsContent value="customers" className="animate-in fade-in duration-500 mt-6">
+                <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 w-full">
                     {uniqueCustomers.map((cust) => (
-                        <Card key={cust.id} className="p-6 border-none shadow-lg bg-background hover:translate-y-[-4px] transition-all">
+                        <Card key={cust.id} className="p-5 md:p-6 border-none shadow-lg bg-background hover:translate-y-[-4px] transition-all">
                             <div className="flex flex-col items-center text-center space-y-4">
                                 <div className="relative">
-                                    <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center font-black text-primary text-3xl shadow-inner border">
+                                    <div className="h-16 md:h-20 w-16 md:w-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center font-black text-primary text-2xl md:text-3xl shadow-inner border">
                                         {cust.name.charAt(0)}
                                     </div>
                                     <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-1 rounded-full border-4 border-background">
                                         <CheckCircle className="h-3 w-3" />
                                     </div>
                                 </div>
-                                <div>
-                                    <p className="font-black text-lg leading-tight">{cust.name}</p>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mt-1">{cust.totalOrders} orders</p>
+                                <div className="min-w-0 w-full">
+                                    <p className="font-black text-base md:text-lg leading-tight truncate">{cust.name}</p>
+                                    <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-primary mt-1">{cust.totalOrders} orders</p>
                                 </div>
                                 <div className="w-full space-y-2 pt-2">
-                                     <div className="flex items-center justify-center gap-2 text-xs font-bold text-muted-foreground">
+                                     <a href={`tel:${cust.phone}`} className="flex items-center justify-center gap-2 text-[11px] font-bold text-muted-foreground hover:text-primary transition-colors">
                                         <Phone className="h-3 w-3" /> {cust.phone}
-                                    </div>
+                                    </a>
                                     <Separator className="opacity-50" />
                                     <div className="flex gap-2">
-                                        <Button variant="outline" size="sm" className="flex-1 h-10 font-bold border-2 rounded-xl" asChild>
-                                            <a href={`tel:${cust.phone}`}><Phone className="h-3.5 w-3.5 mr-2" /> Call</a>
+                                        <Button variant="outline" size="sm" className="flex-1 h-10 font-bold border-2 rounded-xl text-[10px] md:text-xs" asChild>
+                                            <a href={`tel:${cust.phone}`}><Phone className="h-3.5 w-3.5 mr-1.5" /> Call</a>
                                         </Button>
-                                        <Button variant="secondary" size="sm" className="flex-1 h-10 font-bold rounded-xl" asChild>
-                                            <Link href={`/admin/sales/customers/${cust.id}`}><Eye className="h-3.5 w-3.5 mr-2" /> Data</Link>
+                                        <Button variant="secondary" size="sm" className="flex-1 h-10 font-bold rounded-xl text-[10px] md:text-xs" asChild>
+                                            <Link href={`/admin/sales/customers/${cust.id}`}><TrendingUp className="h-3.5 w-3.5 mr-1.5" /> Data</Link>
                                         </Button>
                                     </div>
                                 </div>
@@ -619,60 +675,60 @@ export default function SellerDashboardPage() {
                         </Card>
                     ))}
                     {uniqueCustomers.length === 0 && (
-                        <div className="col-span-full py-32 text-center bg-muted/10 rounded-3xl border-2 border-dashed w-full">
-                             <p className="text-sm font-black uppercase tracking-[3px] text-muted-foreground opacity-20 italic">No Clients</p>
+                        <div className="col-span-full py-20 md:py-32 text-center bg-muted/10 rounded-3xl border-2 border-dashed w-full">
+                             <p className="text-[10px] md:text-sm font-black uppercase tracking-[3px] text-muted-foreground opacity-20 italic">No Clients Found</p>
                         </div>
                     )}
                 </div>
             </TabsContent>
 
-            <TabsContent value="settings" className="animate-in fade-in duration-500">
+            <TabsContent value="settings" className="animate-in fade-in duration-500 mt-6">
                 <div className="max-w-4xl w-full mx-auto">
                     <Card className="border-none shadow-xl bg-background overflow-hidden">
-                        <CardHeader className="bg-muted/5 border-b p-8">
-                            <CardTitle className="text-xl font-black uppercase tracking-widest">Business Identity</CardTitle>
-                            <CardDescription className="font-medium">Maintain profile and hours.</CardDescription>
+                        <CardHeader className="bg-muted/5 border-b p-6 md:p-8">
+                            <CardTitle className="text-lg md:text-xl font-black uppercase tracking-widest">Business Identity</CardTitle>
+                            <CardDescription className="text-xs md:text-sm font-medium">Maintain shop profile and operational hours.</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-8">
+                        <CardContent className="p-6 md:p-8">
                             <form action={handleUpdateShop} className="space-y-8">
                                 <div className="space-y-6">
-                                    <div className="flex flex-col sm:flex-row sm:items-center gap-8 p-8 bg-muted/10 rounded-3xl border-2 border-dashed border-muted-foreground/10">
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-6 md:gap-8 p-6 md:p-8 bg-muted/10 rounded-3xl border-2 border-dashed border-muted-foreground/10">
                                         <div className="relative group mx-auto sm:mx-0">
-                                            <Avatar className="h-32 w-32 border-4 border-background shadow-2xl ring-1 ring-primary/20">
+                                            <Avatar className="h-24 md:h-32 w-24 md:w-32 border-4 border-background shadow-2xl ring-1 ring-primary/20">
                                                 <AvatarImage src={logoPreview || user?.user_metadata?.avatar_url || undefined} />
-                                                <AvatarFallback className="text-4xl font-black bg-primary/10 text-primary">{seller.shop_name?.charAt(0)}</AvatarFallback>
+                                                <AvatarFallback className="text-3xl md:text-4xl font-black bg-primary/10 text-primary">{seller.shop_name?.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <Label htmlFor="logo" className="absolute inset-0 flex items-center justify-center bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-sm">
-                                                <UploadCloud className="h-10 w-10 animate-bounce" />
+                                                <UploadCloud className="h-8 md:h-10 w-8 md:w-10 animate-bounce" />
                                             </Label>
                                             <Input id="logo" name="logo" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
                                         </div>
                                         <div className="text-center sm:text-left space-y-1">
                                             <h4 className="font-black uppercase tracking-widest text-sm">Shop Branding</h4>
-                                            <p className="text-xs text-muted-foreground font-medium">Stand out in the vendor gallery.</p>
+                                            <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Stand out in the vendor gallery.</p>
                                         </div>
                                     </div>
 
                                     <div className="grid gap-3">
-                                        <Label htmlFor="shop_name" className="font-black text-[10px] uppercase tracking-[3px] text-muted-foreground">Registered Shop Name</Label>
-                                        <Input id="shop_name" name="shop_name" defaultValue={seller.shop_name} required className="h-14 border-2 rounded-xl text-lg font-bold px-6 focus:border-primary/50" />
+                                        <Label htmlFor="shop_name" className="font-black text-[9px] md:text-[10px] uppercase tracking-[3px] text-muted-foreground">Registered Shop Name</Label>
+                                        <Input id="shop_name" name="shop_name" defaultValue={seller.shop_name} required className="h-12 md:h-14 border-2 rounded-xl text-base md:text-lg font-bold px-4 md:px-6 focus:border-primary/50" />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-2 gap-4 md:gap-6">
                                         <div className="grid gap-3">
-                                            <Label htmlFor="open_time" className="font-black text-[10px] uppercase tracking-[3px] text-muted-foreground">Daily Open Time</Label>
-                                            <Input id="open_time" name="open_time" type="time" defaultValue={seller.open_time || "08:00"} className="h-14 border-2 rounded-xl font-bold px-6" />
+                                            <Label htmlFor="open_time" className="font-black text-[9px] md:text-[10px] uppercase tracking-[3px] text-muted-foreground">Open Time</Label>
+                                            <Input id="open_time" name="open_time" type="time" defaultValue={seller.open_time || "08:00"} className="h-12 md:h-14 border-2 rounded-xl font-bold px-4 md:px-6" />
                                         </div>
                                         <div className="grid gap-3">
-                                            <Label htmlFor="close_time" className="font-black text-[10px] uppercase tracking-[3px] text-muted-foreground">Daily Close Time</Label>
-                                            <Input id="close_time" name="close_time" type="time" defaultValue={seller.close_time || "20:00"} className="h-14 border-2 rounded-xl font-bold px-6" />
+                                            <Label htmlFor="close_time" className="font-black text-[9px] md:text-[10px] uppercase tracking-[3px] text-muted-foreground">Close Time</Label>
+                                            <Input id="close_time" name="close_time" type="time" defaultValue={seller.close_time || "20:00"} className="h-12 md:h-14 border-2 rounded-xl font-bold px-4 md:px-6" />
                                         </div>
                                     </div>
                                 </div>
 
-                                <Button type="submit" className="w-full h-16 text-lg font-black uppercase tracking-[4px] shadow-2xl shadow-primary/20 rounded-2xl transition-all" disabled={isUpdatePending}>
-                                    {isUpdatePending ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : <Settings className="mr-3 h-6 w-6" />}
-                                    Update Profile
+                                <Button type="submit" className="w-full h-14 md:h-16 text-base md:text-lg font-black uppercase tracking-[3px] md:tracking-[4px] shadow-2xl shadow-primary/20 rounded-2xl transition-all mt-4" disabled={isUpdatePending}>
+                                    {isUpdatePending ? <Loader2 className="animate-spin mr-3 h-5 md:h-6 w-5 md:w-6" /> : <Settings className="mr-3 h-5 md:h-6 w-5 md:w-6" />}
+                                    Update Business Identity
                                 </Button>
                             </form>
                         </CardContent>
@@ -682,12 +738,20 @@ export default function SellerDashboardPage() {
           </Tabs>
       </main>
 
-      <div className="md:hidden fixed bottom-4 left-4 right-4 bg-background/95 backdrop-blur-md border p-3 rounded-2xl shadow-2xl flex items-center justify-between z-40">
-          <div className="flex items-center gap-3">
-               <Badge className={cn("h-3 w-3 p-0 rounded-full", seller.is_open ? "bg-emerald-500" : "bg-destructive")} />
-               <p className="text-[10px] font-black uppercase tracking-widest">Shop {seller.is_open ? 'Live' : 'Hidden'}</p>
+      {/* Mobile-Friendly Utility Bar */}
+      <div className="md:hidden fixed bottom-20 left-4 right-4 bg-background/95 backdrop-blur-md border p-3 rounded-2xl shadow-2xl flex items-center justify-between z-40">
+          <div className="flex items-center gap-2">
+               <Badge className={cn("h-2.5 w-2.5 p-0 rounded-full shrink-0", seller.is_open ? "bg-emerald-500" : "bg-destructive")} />
+               <p className="text-[9px] font-black uppercase tracking-widest">{seller.is_open ? 'Shop Live' : 'Shop Hidden'}</p>
           </div>
-          <Button asChild size="sm" variant="ghost" className="h-8 font-black uppercase text-[10px]"><Link href="/shops">Go to Shops</Link></Button>
+          <div className="flex gap-2">
+            <Button asChild size="sm" variant="ghost" className="h-8 font-black uppercase text-[9px] px-2 rounded-lg border">
+                <Link href={`/shops/${seller.id}`}><ExternalLink className="h-3 w-3 mr-1" /> View Shop</Link>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={fetchData} className="h-8 font-black uppercase text-[9px] px-2 rounded-lg border">
+                <RefreshCw className={cn("h-3 w-3 mr-1", isPending && "animate-spin")} /> Sync
+            </Button>
+          </div>
       </div>
     </div>
   );
