@@ -1,4 +1,3 @@
-
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -113,13 +112,13 @@ export async function updateShopInfo(formData: FormData) {
 
 /**
  * Submits a new product to the vendor_products table.
- * Specifically uses the 'vendor-images' bucket for image storage.
+ * Strictly validates image upload success before database insertion.
  */
 export async function addSellerProduct(formData: FormData) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized.' };
+    if (!user) return { success: false, error: 'Authentication required. Please log in again.' };
 
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
@@ -132,57 +131,73 @@ export async function addSellerProduct(formData: FormData) {
         category = customCategory || 'Other';
     }
 
-    const imageFile = formData.get('image');
+    const imageFile = formData.get('image') as File;
 
+    // 1. Basic Field Validation
     if (!name || isNaN(price)) {
       return { success: false, error: 'Product name and price are required.' };
     }
 
-    let image_url = null;
-
-    if (imageFile && typeof imageFile === 'object' && 'size' in imageFile && (imageFile as File).size > 0) {
-      const file = imageFile as File;
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `uploads/${fileName}`;
-
-      // Uploading to the dedicated vendor-images bucket
-      const { error: uploadError } = await supabase.storage
-        .from('vendor-images')
-        .upload(filePath, file);
-
-      if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('vendor-images')
-        .getPublicUrl(filePath);
-      
-      image_url = publicUrl;
+    // 2. Strict Image Presence Validation
+    if (!imageFile || imageFile.size === 0) {
+      return { success: false, error: 'Product image is mandatory. Please select a photo for your listing.' };
     }
 
-    // Explicitly inserting into the vendor_products table
-    // Removed cost_price as it doesn't exist in the current vendor_products schema
-    const { error } = await (supabase as any)
+    // 3. Image Upload to vendor-images bucket
+    const fileExt = imageFile.name.split('.').pop() || 'jpg';
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+    const filePath = `uploads/${fileName}`;
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('vendor-images')
+      .upload(filePath, imageFile, {
+          cacheControl: '3600',
+          upsert: false
+      });
+
+    if (uploadError) {
+      console.error('Supabase Storage Error:', uploadError);
+      return { success: false, error: `Image upload failed: ${uploadError.message}. Check your internet and try again.` };
+    }
+
+    // 4. Retrieve Public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('vendor-images')
+      .getPublicUrl(filePath);
+    
+    if (!publicUrl) {
+      // Cleanup orphaned image if URL generation fails
+      await supabase.storage.from('vendor-images').remove([filePath]);
+      return { success: false, error: 'Security Error: Could not generate a public link for the uploaded image.' };
+    }
+
+    // 5. Database Insertion into vendor_products
+    const { error: dbError } = await (supabase as any)
       .from('vendor_products')
       .insert({
         name,
-        description,
+        description: description || '',
         price,
-        category,
-        image_urls: image_url ? [image_url] : [],
+        category: category || 'Uncategorized',
+        image_urls: [publicUrl], // Array of strings
         seller_id: user.id,
-        is_approved: true, // Auto-display on platform as requested
-        quantity: 1, // Default quantity
+        is_approved: true, // Display instantly on platform
+        quantity: 1,
         tags: []
       });
 
-    if (error) throw new Error(`Failed to list product: ${error.message}`);
+    if (dbError) {
+      console.error('Database Insertion Error:', dbError);
+      // Cleanup orphaned image if DB insert fails
+      await supabase.storage.from('vendor-images').remove([filePath]);
+      return { success: false, error: `Product Listing Failed: ${dbError.message}. Please try again.` };
+    }
 
     revalidatePath('/seller/dashboard');
     revalidatePath('/shops');
     return { success: true };
   } catch (err: any) {
-    console.error('Add Vendor Product Error:', err);
-    return { success: false, error: err.message };
+    console.error('Critical Add Product Error:', err);
+    return { success: false, error: 'A system error occurred. Please refresh the page and try again.' };
   }
 }

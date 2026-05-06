@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
@@ -172,7 +171,7 @@ export default function SellerDashboardPage() {
             toast({ variant: 'success', title: 'Product listed successfully' });
             fetchData();
         } else {
-            toast({ title: 'Failed to add product', description: result.error, variant: 'destructive' });
+            toast({ title: 'Upload Error', description: result.error, variant: 'destructive' });
         }
     });
   };
@@ -213,7 +212,7 @@ export default function SellerDashboardPage() {
 
   return (
     <div className="min-h-screen bg-muted/10 flex flex-col w-full">
-      {/* Immersive Header */}
+      {/* Immersive Header - Full Screen Layout */}
       <div className="bg-background border-b sticky top-0 z-30 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm w-full">
           <div className="flex items-center gap-4">
               <div className="relative group">
@@ -237,7 +236,7 @@ export default function SellerDashboardPage() {
                           <Switch 
                               id="shop-toggle-top" 
                               checked={seller.is_open} 
-                              onCheckedChange={handleToggle}
+                              onValueChange={(checked) => handleToggle(checked)}
                               disabled={isPending}
                               className="scale-75"
                           />
@@ -366,7 +365,7 @@ export default function SellerDashboardPage() {
                 </TabsTrigger>
                 </TabsList>
                 <div className="pr-2 hidden lg:block">
-                     <p className="text-[10px] font-black uppercase tracking-[2px] text-muted-foreground">Admin Console v2.5</p>
+                     <p className="text-[10px] font-black uppercase tracking-[2px] text-muted-foreground">Vendor Command Console</p>
                 </div>
             </div>
 
