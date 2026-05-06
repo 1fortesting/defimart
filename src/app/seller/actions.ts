@@ -112,92 +112,91 @@ export async function updateShopInfo(formData: FormData) {
 
 /**
  * Submits a new product to the vendor_products table.
- * Strictly validates image upload success before database insertion.
+ * Uses FormData and Server Actions to strictly validate and upload images.
  */
 export async function addSellerProduct(prevState: any, formData: FormData) {
+  const supabase = await createClient();
+
   try {
-    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: 'Authentication required.' };
 
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
-    const priceRaw = formData.get('price');
-    const price = priceRaw ? parseFloat(priceRaw as string) : 0;
-    
-    let category = formData.get('category') as string;
-    if (category === 'Other') {
-        const customCategory = formData.get('custom_category') as string;
-        category = customCategory || 'Other';
-    }
+    const price = Number(formData.get('price'));
+    const categoryRaw = formData.get('category') as string;
+    const file = formData.get('image') as File;
 
-    const imageFile = formData.get('image') as File | null;
+    // Server-side verification of the file object
+    console.log('Server Action received file:', { name: file?.name, size: file?.size, type: file?.type });
+
+    if (!file || file.size === 0) {
+      return { success: false, error: 'Product image is required.' };
+    }
 
     if (!name || isNaN(price)) {
       return { success: false, error: 'Name and price are required.' };
     }
 
-    // Mandatory Image Validation: Ensure it's a file and has content
-    if (!imageFile || !(imageFile instanceof File) || imageFile.size === 0) {
-      return { success: false, error: 'Product image is required.' };
-    }
+    // 1. Storage Path Preparation
+    const fileExt = file.name.split('.').pop() || 'jpg';
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-    // 1. Prepare Storage Path
-    const fileExt = imageFile.name.split('.').pop() || 'jpg';
-    const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `${user.id}/${fileName}`; // Correct path structure for RLS
-
-    // 2. Perform Upload to vendor-images bucket
+    // 2. Upload to vendor-images bucket
     const { error: uploadError } = await supabase.storage
       .from('vendor-images')
-      .upload(filePath, imageFile, {
-          cacheControl: '3600',
-          upsert: false
+      .upload(fileName, file, {
+        contentType: file.type,
+        upsert: false
       });
 
     if (uploadError) {
-      console.error('Image Upload Error:', uploadError);
-      return { success: false, error: `Image upload failed: ${uploadError.message}` };
+      console.error('Supabase Storage Error:', uploadError);
+      return { success: false, error: `Storage upload failed: ${uploadError.message}` };
     }
 
     // 3. Retrieve Public URL
-    const { data: urlData } = supabase.storage
+    const { data: { publicUrl } } = supabase.storage
       .from('vendor-images')
-      .getPublicUrl(filePath);
-    
-    const publicUrl = urlData?.publicUrl;
-    
+      .getPublicUrl(fileName);
+
     if (!publicUrl) {
-      await supabase.storage.from('vendor-images').remove([filePath]);
-      return { success: false, error: 'Could not generate public URL for image.' };
+       await supabase.storage.from('vendor-images').remove([fileName]);
+       return { success: false, error: 'Failed to generate image link.' };
     }
 
-    // 4. Insert into vendor_products
+    // 4. Determine final category
+    const finalCategory = categoryRaw === 'Other' ? (formData.get('custom_category') as string) : categoryRaw;
+
+    // 5. Database insertion into vendor_products
     const { error: dbError } = await (supabase as any)
       .from('vendor_products')
       .insert({
         name,
         description: description || '',
         price,
-        category: category || 'Uncategorized',
+        category: finalCategory || 'Other',
         image_urls: [publicUrl],
         seller_id: user.id,
         is_approved: true,
-        quantity: 1
+        quantity: 1,
+        tags: []
       });
 
     if (dbError) {
-      // Cleanup orphan image if DB insertion fails
-      console.error('Database Error:', dbError);
-      await supabase.storage.from('vendor-images').remove([filePath]);
+      console.error('Database Insertion Error:', dbError);
+      // Cleanup orphan image
+      await supabase.storage.from('vendor-images').remove([fileName]);
       return { success: false, error: `Database error: ${dbError.message}` };
     }
 
     revalidatePath('/seller/dashboard');
-    revalidatePath('/shops');
+    revalidatePath(`/shops`);
+    
     return { success: true };
+
   } catch (err: any) {
-    console.error('Unexpected Error in addSellerProduct:', err);
-    return { success: false, error: err.message || 'An unexpected error occurred during upload.' };
+    console.error('Unhandled upload error:', err);
+    return { success: false, error: err.message || 'A critical error occurred during upload.' };
   }
 }
