@@ -16,6 +16,7 @@ import {
   LogIn,
   Info,
   Store,
+  X,
 } from 'lucide-react';
 import { HeaderNav } from './header-nav';
 import Image from 'next/image';
@@ -72,27 +73,21 @@ export async function Header() {
     { title: "My Shop", description: "Manage products & shop status", href: "/seller/dashboard", icon: Store },
   ] : [];
 
-  const generalLinks = isAdmin ? [
+  const generalLinks = [
     { title: "Request a Product", description: "Tell us what you want to see", href: "/request-product", icon: PackagePlus },
-  ] : [];
-
-  const infoLinks = [
     { title: "About Us", description: "Learn more about DEFIMART", href: "/about", icon: Info },
     { title: "FAQ", description: "Find answers to common questions", href: "/faq", icon: HelpCircle },
-    { title: "Contact", description: "Get in touch with our team", href: "/contact", icon: Phone },
-    { title: "Terms of Service", description: "Read our terms of use", href: "/terms", icon: FileText },
-    { title: "Privacy Policy", description: "How we handle your data", href: "/privacy", icon: Shield },
   ];
 
   const MobileNavLink = ({ href, icon: Icon, title, description }: { href: string; icon: React.ElementType; title: string, description: string }) => (
     <SheetClose asChild>
-        <Link href={href} className="flex items-center gap-4 p-3 rounded-lg hover:bg-[var(--surface-2)]">
-            <div className="p-2 bg-[var(--surface-2)] rounded-md">
+        <Link href={href} className="flex items-center gap-4 p-4 rounded-xl transition-all active:bg-muted/50">
+            <div className="p-2.5 bg-muted/60 rounded-xl flex items-center justify-center">
                 <Icon className="h-5 w-5 text-[var(--gold)]" />
             </div>
-            <div>
-                <p className="font-semibold text-[var(--dark)]">{title}</p>
-                <p className="text-sm text-[var(--muted)]">{description}</p>
+            <div className="flex-1">
+                <p className="font-bold text-[15px] text-foreground leading-tight">{title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
             </div>
         </Link>
     </SheetClose>
@@ -135,64 +130,59 @@ export async function Header() {
                     <span className="sr-only">Open menu</span>
                 </Button>
             </SheetTrigger>
-                    <SheetContent side="left" className="w-[85%] max-w-sm p-0 flex flex-col bg-[var(--surface)] border-r-0">
-                <div className="p-4 bg-[var(--gold)] text-white">
-                  <SheetHeader>
-                      <SheetTitle className="text-white">
-                        <div className="flex justify-between items-center">
-                          <Link href="/" className="flex items-center gap-2 font-semibold">
-                              <Image src="https://iili.io/qO5Jeou.png" alt="DEFIMART Logo" width={120} height={28} className="brightness-0 invert" />
-                          </Link>
-                           {user && (
-                              <div className="flex items-center gap-2 text-right">
-                                  <div>
-                                      <p className="font-semibold text-sm leading-tight truncate max-w-28">{user.user_metadata.display_name}</p>
-                                  </div>
-                                  <Avatar className="h-9 w-9 border-2 border-white/20">
-                                      <AvatarImage src={user.user_metadata.avatar_url ?? undefined} />
-                                      <AvatarFallback className="bg-white text-[var(--gold)]">
-                                          {user.user_metadata.display_name?.[0] || user.email?.[0]}
-                                      </AvatarFallback>
-                                  </Avatar>
-                              </div>
-                          )}
+            <SheetContent side="left" className="w-3/4 max-w-sm p-0 flex flex-col bg-background border-r-0 shadow-2xl">
+                <div className="relative p-6 bg-[var(--gold)] text-white overflow-hidden h-[160px] flex items-center">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16" />
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-2xl -ml-12 -mb-12" />
+                  
+                  <div className="relative z-10 flex justify-between items-center w-full mt-4">
+                    <Link href="/" className="flex items-center gap-2 font-semibold">
+                        <Image src="https://iili.io/qO5Jeou.png" alt="DEFIMART Logo" width={110} height={24} className="brightness-0 invert" />
+                    </Link>
+                    
+                    <div className="flex items-center gap-2">
+                        <p className="font-bold text-sm tracking-tight">Defimart</p>
+                        <div className="h-10 w-10 rounded-full border-2 border-white/30 bg-white overflow-hidden shadow-md flex items-center justify-center">
+                            {user?.user_metadata.avatar_url ? (
+                                <Image src={user.user_metadata.avatar_url} alt="Profile" width={40} height={40} className="object-cover" />
+                            ) : (
+                                <Image src="https://iili.io/qO5Jeou.png" alt="Profile" width={24} height={24} className="object-contain p-1" />
+                            )}
                         </div>
-                      </SheetTitle>
-                  </SheetHeader>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
-                    <nav className="flex flex-col gap-1 p-2">
+                    <nav className="flex flex-col py-4">
                         {user && (
                             <>
                                 {userLinks.map(link => <MobileNavLink key={link.href} {...link} />)}
                                 {sellerLinks.map(link => <MobileNavLink key={link.href} {...link} />)}
-                                <Separator className="my-2" />
+                                <Separator className="my-2 mx-6 opacity-50" />
                             </>
                         )}
                         {generalLinks.map(link => <MobileNavLink key={link.href} {...link} />)}
-                        <Separator className="my-2" />
-                        {infoLinks.map(link => <MobileNavLink key={link.href} {...link} />)}
                     </nav>
                 </div>
 
-                <div className="p-4 mt-auto border-t space-y-4">
+                <div className="p-6 mt-auto border-t bg-muted/20 space-y-4">
                     {user ? (
                         <form action={logout}>
-                             <Button className="w-full text-base py-6">
-                                <LogOut className="mr-2 h-5 w-5" /> Logout
+                             <Button className="w-full h-12 text-sm font-black uppercase tracking-widest bg-[var(--gold)] hover:bg-[var(--gold)]/90 shadow-md rounded-2xl">
+                                <LogOut className="mr-2 h-4 w-4" /> Logout
                             </Button>
                         </form>
                     ) : (
                         <SheetClose asChild>
-                             <Button asChild className="w-full text-base py-6">
+                             <Button asChild className="w-full h-12 text-sm font-black uppercase tracking-widest bg-[var(--gold)] hover:bg-[var(--gold)]/90 shadow-md rounded-2xl">
                                 <Link href="/login">
-                                    <LogIn className="mr-2 h-5 w-5" /> Login / Register
+                                    <LogIn className="mr-2 h-4 w-4" /> Login / Register
                                 </Link>
                             </Button>
                         </SheetClose>
                     )}
-                     <p className="text-xs text-center text-muted-foreground pt-2">
+                     <p className="text-[10px] text-center font-bold text-muted-foreground uppercase tracking-widest opacity-60">
                         &copy; {new Date().getFullYear()} DEFIMART. All Rights Reserved.
                     </p>
                 </div>
