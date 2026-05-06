@@ -50,7 +50,7 @@ export function BottomNav() {
   navItems.push({ label: 'Profile', href: '/profile', icon: User });
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[var(--surface)] border-t border-[var(--border)] h-[72px] z-[100] flex items-center justify-around px-1 overflow-x-auto no-scrollbar">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-t from-primary/10 via-background/95 to-red-500/5 backdrop-blur-xl border-t border-primary/10 h-[72px] z-[100] flex items-center justify-around px-1 overflow-x-auto no-scrollbar shadow-[0_-8px_30px_rgba(0,0,0,0.04)]">
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         const Icon = item.icon;
@@ -61,15 +61,20 @@ export function BottomNav() {
             href={item.href}
             className="flex flex-col items-center justify-center gap-1 min-w-[60px] transition-transform active:scale-90"
           >
-            <Icon 
-              className={cn(
-                "w-[20px] h-[20px] stroke-[1.5px]",
-                isActive ? "text-[var(--gold)]" : "text-[var(--muted)]"
-              )} 
-            />
+            <div className={cn(
+              "p-1.5 rounded-xl transition-all duration-300",
+              isActive ? "bg-primary/10 scale-110" : "bg-transparent"
+            )}>
+              <Icon 
+                className={cn(
+                  "w-[20px] h-[20px] stroke-[2px]",
+                  isActive ? "text-[var(--gold)]" : "text-[var(--muted)]"
+                )} 
+              />
+            </div>
             <span 
               className={cn(
-                "text-[9px] font-dm font-medium leading-none",
+                "text-[9px] font-dm font-bold leading-none uppercase tracking-tighter",
                 isActive ? "text-[var(--gold)]" : "text-[var(--muted)]"
               )}
             >
