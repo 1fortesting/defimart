@@ -42,10 +42,10 @@ export function DefimartCard({ product, isSaved, onToggleSave, onAddToCart }: De
 
   return (
     <Link href={`/products/${product.id}`} className="group h-full">
-      <Card className="bg-gradient-to-br from-primary/[0.03] via-background to-red-500/[0.02] border-[1.5px] border-[var(--border)] rounded-[16px] overflow-hidden transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_12px_24px_rgba(245,166,35,0.1)] h-full flex flex-col relative group">
-        {/* Subtle Decorative Background Elements */}
+      <Card className="bg-gradient-to-br from-primary/[0.03] via-background to-blue-500/[0.02] border-[1.5px] border-[var(--border)] rounded-[16px] overflow-hidden transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_12px_24px_rgba(245,166,35,0.1)] h-full flex flex-col relative group">
+        {/* Subtle Decorative Blue Auras */}
         <div className="absolute -top-16 -left-16 w-48 h-48 bg-[var(--gold)]/10 rounded-full blur-3xl transition-all duration-700 opacity-40 group-hover:opacity-70 group-hover:scale-125 z-0" />
-        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-red-500/[0.05] rounded-full blur-3xl transition-all duration-700 opacity-40 group-hover:opacity-70 group-hover:scale-125 z-0" />
+        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-blue-500/[0.05] rounded-full blur-3xl transition-all duration-700 opacity-40 group-hover:opacity-70 group-hover:scale-125 z-0" />
         
         <div className="relative z-10 flex flex-col h-full">
           {/* Image Area */}

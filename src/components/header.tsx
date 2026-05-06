@@ -95,10 +95,10 @@ export async function Header() {
   );
 
   return (
-    <header className="relative bg-gradient-to-r from-primary/10 via-background to-red-500/5 backdrop-blur-md border-b border-[var(--border)] p-4 flex flex-col gap-2 overflow-hidden">
-      {/* Decorative Aura for Header */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-48 h-48 bg-red-500/5 rounded-full blur-[60px] -ml-24 -mb-24 pointer-events-none" />
+    <header className="relative bg-gradient-to-r from-primary/5 via-background to-blue-500/2 backdrop-blur-md border-b border-[var(--border)] p-4 flex flex-col gap-2 overflow-hidden">
+      {/* Softened Decorative Aura for Header */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/2 rounded-full blur-[60px] -ml-24 -mb-24 pointer-events-none" />
 
       {/* Desktop Header */}
       <div className="hidden md:flex justify-between items-center gap-4 relative z-10">

@@ -177,10 +177,10 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
     const hasImage = product.image_urls && product.image_urls.length > 0;
     
     return (
-    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-primary/[0.03] via-background to-red-500/[0.02] border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/10 flex flex-col relative h-full">
-        {/* Subtle Decorative Auras */}
+    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-primary/[0.03] via-background to-blue-500/[0.02] border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/10 flex flex-col relative h-full">
+        {/* Subtle Decorative Blue Auras */}
         <div className="absolute -top-16 -left-16 w-48 h-48 bg-primary/10 rounded-full blur-3xl transition-all duration-700 opacity-40 group-hover:opacity-60 group-hover:scale-125 z-0" />
-        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-red-500/[0.05] rounded-full blur-3xl transition-all duration-700 opacity-40 group-hover:opacity-60 group-hover:scale-125 z-0" />
+        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-blue-500/[0.05] rounded-full blur-3xl transition-all duration-700 opacity-40 group-hover:opacity-60 group-hover:scale-125 z-0" />
         
         {product.is_featured && (
             <div className="absolute top-2 right-2 z-20 bg-yellow-400 text-white rounded-full p-1.5 shadow-md">
@@ -241,7 +241,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                         </Button>
 
                         <Sheet open={showShareFallback} onOpenChange={setShowShareFallback}>
-                            <SheetContent side="bottom" className="rounded-t-3xl border-t-0 p-0 overflow-hidden bg-gradient-to-b from-[var(--gold)] to-red-500 z-[150]">
+                            <SheetContent side="bottom" className="rounded-t-3xl border-t-0 p-0 overflow-hidden bg-gradient-to-b from-[var(--gold)] to-blue-500 z-[150]">
                                 <div className="w-12 h-1.5 bg-white/30 rounded-full mx-auto mt-3 mb-1" />
                                 <SheetHeader className="px-6 py-4 border-b border-white/10">
                                     <SheetTitle className="text-left text-sm font-syne font-black uppercase tracking-widest text-white">Share with friends</SheetTitle>

@@ -78,9 +78,9 @@ export function FlashSaleProductCard({ product }: FlashSaleProductCardProps) {
 
     return (
     <Link href={`/products/${product.id}`} className="block w-36 md:w-48 flex-shrink-0">
-        <Card className="relative overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-orange-500/[0.04] via-background to-red-500/[0.03] border border-white/20 dark:border-slate-800/50 shadow-lg hover:shadow-primary/10 flex flex-col h-full">
-            {/* Decorative elements */}
-            <div className="absolute -top-12 -left-12 w-32 h-32 bg-red-500/[0.05] rounded-full blur-2xl transition-all duration-700 opacity-50 group-hover:opacity-80 group-hover:w-40 group-hover:h-40 z-0" />
+        <Card className="relative overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-orange-500/[0.04] via-background to-blue-500/[0.03] border border-white/20 dark:border-slate-800/50 shadow-lg hover:shadow-primary/10 flex flex-col h-full">
+            {/* Decorative Blue Auras */}
+            <div className="absolute -top-12 -left-12 w-32 h-32 bg-blue-500/[0.05] rounded-full blur-2xl transition-all duration-700 opacity-50 group-hover:opacity-80 group-hover:w-40 group-hover:h-40 z-0" />
             <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-primary/[0.05] rounded-full blur-2xl transition-all duration-700 opacity-50 group-hover:opacity-80 group-hover:w-40 group-hover:h-40 z-0" />
 
             <div className="relative z-10 flex flex-col h-full">
