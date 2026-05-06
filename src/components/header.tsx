@@ -99,9 +99,13 @@ export async function Header() {
   );
 
   return (
-    <header className="bg-[var(--surface)] border-b border-[var(--border)] p-4 flex flex-col gap-2">
+    <header className="relative bg-gradient-to-r from-primary/10 via-background to-red-500/5 backdrop-blur-md border-b border-[var(--border)] p-4 flex flex-col gap-2 overflow-hidden">
+      {/* Decorative Aura for Header */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-red-500/5 rounded-full blur-[60px] -ml-24 -mb-24 pointer-events-none" />
+
       {/* Desktop Header */}
-      <div className="hidden md:flex justify-between items-center gap-4">
+      <div className="hidden md:flex justify-between items-center gap-4 relative z-10">
         <div className="font-bold text-3xl text-primary tracking-tight">
            <Link href="/">
             <Image
@@ -123,7 +127,7 @@ export async function Header() {
       </div>
       
        {/* Mobile Header */}
-      <div className="md:hidden flex justify-between items-center">
+      <div className="md:hidden flex justify-between items-center relative z-10">
          <Sheet>
             <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -217,7 +221,7 @@ export async function Header() {
       </div>
 
       {/* Desktop Nav */}
-      <div className="hidden md:flex justify-center">
+      <div className="hidden md:flex justify-center relative z-10">
         <HeaderNav user={user} cartItemCount={cartItemCount} isSeller={isSeller} />
       </div>
     </header>

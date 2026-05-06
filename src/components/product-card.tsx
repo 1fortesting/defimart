@@ -178,9 +178,9 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
     
     return (
     <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-primary/5 via-background to-red-500/5 border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/20 flex flex-col relative h-full">
-        {/* Deep Orange and Faint Red Auras */}
-        <div className="absolute -top-16 -left-16 w-48 h-48 bg-[var(--gold)]/25 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125" />
-        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-red-500/10 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125" />
+        {/* Glowing Auras */}
+        <div className="absolute -top-16 -left-16 w-48 h-48 bg-primary/20 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125 z-0" />
+        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-red-500/10 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125 z-0" />
         
         {product.is_featured && (
             <div className="absolute top-2 right-2 z-20 bg-yellow-400 text-white rounded-full p-1.5 shadow-md">
@@ -190,7 +190,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
 
         <div className="relative z-10 flex flex-col h-full">
             <div className="p-3">
-                <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 to-red-500/5">
+                <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden rounded-2xl bg-primary/5">
                     {hasImage ? (
                         <Image
                             src={product.image_urls![0]}

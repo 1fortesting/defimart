@@ -49,7 +49,7 @@ export function DefimartCard({ product, isSaved, onToggleSave, onAddToCart }: De
         
         <div className="relative z-10 flex flex-col h-full">
           {/* Image Area */}
-          <div className="h-[140px] md:h-[180px] bg-gradient-to-b from-primary/10 to-transparent relative flex items-center justify-center overflow-hidden">
+          <div className="h-[140px] md:h-[180px] bg-primary/5 relative flex items-center justify-center overflow-hidden">
             <div className="relative w-[100px] h-[100px] md:w-[130px] md:h-[130px] transition-transform duration-300 group-hover:scale-[1.1] drop-shadow-[0_8px_16px_rgba(0,0,0,0.08)]">
               <Image
                 src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'}
