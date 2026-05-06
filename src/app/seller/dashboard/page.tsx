@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, useActionState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -62,15 +62,17 @@ export default function SellerDashboardPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
-  const [isAddPending, startAddTransition] = useTransition();
   const [isUpdatePending, startUpdateTransition] = useTransition();
-  const [isDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   
   const [uploadCategory, setUploadCategory] = useState('');
   const [productImagePreview, setProductImagePreview] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
   const { toast } = useToast();
+
+  // useActionState for robust product upload
+  const [addState, addAction, isAddPending] = useActionState(addSellerProduct, { success: false, error: null });
 
   const fetchData = async () => {
     const supabase = createClient();
@@ -101,6 +103,19 @@ export default function SellerDashboardPage() {
   useEffect(() => {
     fetchData();
   }, [user?.id]);
+
+  // Sync effect for upload result
+  useEffect(() => {
+    if (addState.success) {
+        setIsAddDialogOpen(false);
+        setProductImagePreview(null);
+        setUploadCategory('');
+        toast({ variant: 'success', title: 'Product listed successfully' });
+        fetchData();
+    } else if (addState.error) {
+        toast({ title: 'Upload Error', description: addState.error, variant: 'destructive' });
+    }
+  }, [addState, toast]);
 
   const handleToggle = (isOpen: boolean) => {
     startTransition(async () => {
@@ -159,21 +174,6 @@ export default function SellerDashboardPage() {
     } else {
       setLogoPreview(null);
     }
-  };
-
-  const handleAddProduct = async (formData: FormData) => {
-    startAddTransition(async () => {
-        const result = await addSellerProduct(formData);
-        if (result.success) {
-            setIsAddDialogOpen(false);
-            setProductImagePreview(null);
-            setUploadCategory('');
-            toast({ variant: 'success', title: 'Product listed successfully' });
-            fetchData();
-        } else {
-            toast({ title: 'Upload Error', description: result.error, variant: 'destructive' });
-        }
-    });
   };
 
   const handleUpdateShop = async (formData: FormData) => {
@@ -253,7 +253,7 @@ export default function SellerDashboardPage() {
                       <Eye className="h-4 w-4 mr-2" /> View Public Shop
                   </Link>
               </Button>
-              <Dialog open={isDialogOpen} onOpenChange={setIsAddDialogOpen}>
+              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                     <DialogTrigger asChild>
                       <Button size="lg" className="h-10 rounded-xl font-bold shadow-lg shadow-primary/20"><Plus className="h-4 w-4 mr-2" /> List New Product</Button>
                     </DialogTrigger>
@@ -266,7 +266,7 @@ export default function SellerDashboardPage() {
                             </DialogDescription>
                         </DialogHeader>
                       </div>
-                      <form action={handleAddProduct} className="flex flex-col flex-1 overflow-hidden bg-background">
+                      <form action={addAction} className="flex flex-col flex-1 overflow-hidden bg-background">
                           <div className="flex-1 overflow-y-auto px-8 py-8 space-y-6">
                                   <div className="grid gap-2">
                                     <Label htmlFor="name" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Name</Label>
@@ -325,7 +325,8 @@ export default function SellerDashboardPage() {
                                               <p className="text-sm font-black uppercase tracking-widest">Select Product Photo</p>
                                               <p className="text-[10px] text-muted-foreground mt-1 font-bold">PNG, JPG or WEBP (Max 5MB)</p>
                                           </div>
-                                          <Input id="image" name="image" type="file" accept="image/*" className="hidden" required onChange={handleProductImageChange} />
+                                          {/* Use standard input here for maximum formData reliability */}
+                                          <input id="image" name="image" type="file" accept="image/*" className="hidden" required onChange={handleProductImageChange} />
                                       </label>
                                     )}
                                   </div>

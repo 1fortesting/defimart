@@ -114,7 +114,7 @@ export async function updateShopInfo(formData: FormData) {
  * Submits a new product to the vendor_products table.
  * Strictly validates image upload success before database insertion.
  */
-export async function addSellerProduct(formData: FormData) {
+export async function addSellerProduct(prevState: any, formData: FormData) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -131,30 +131,36 @@ export async function addSellerProduct(formData: FormData) {
         category = customCategory || 'Other';
     }
 
-    const imageFile = formData.get('image') as File;
+    const imageFile = formData.get('image') as File | null;
 
     if (!name || isNaN(price)) {
       return { success: false, error: 'Name and price are required.' };
     }
 
-    // Mandatory Image Validation
-    if (!imageFile || imageFile.size === 0) {
+    // Mandatory Image Validation: Ensure it's a file and has content
+    if (!imageFile || !(imageFile instanceof File) || imageFile.size === 0) {
       return { success: false, error: 'Product image is required.' };
     }
 
-    // Upload to vendor-images bucket
+    // 1. Prepare Storage Path
     const fileExt = imageFile.name.split('.').pop() || 'jpg';
-    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-    const filePath = `uploads/${fileName}`;
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${user.id}/${fileName}`; // Correct path structure for RLS
 
+    // 2. Perform Upload to vendor-images bucket
     const { error: uploadError } = await supabase.storage
       .from('vendor-images')
-      .upload(filePath, imageFile);
+      .upload(filePath, imageFile, {
+          cacheControl: '3600',
+          upsert: false
+      });
 
     if (uploadError) {
+      console.error('Image Upload Error:', uploadError);
       return { success: false, error: `Image upload failed: ${uploadError.message}` };
     }
 
+    // 3. Retrieve Public URL
     const { data: urlData } = supabase.storage
       .from('vendor-images')
       .getPublicUrl(filePath);
@@ -163,10 +169,10 @@ export async function addSellerProduct(formData: FormData) {
     
     if (!publicUrl) {
       await supabase.storage.from('vendor-images').remove([filePath]);
-      return { success: false, error: 'Could not generate image link.' };
+      return { success: false, error: 'Could not generate public URL for image.' };
     }
 
-    // Insert into vendor_products
+    // 4. Insert into vendor_products
     const { error: dbError } = await (supabase as any)
       .from('vendor_products')
       .insert({
@@ -182,14 +188,16 @@ export async function addSellerProduct(formData: FormData) {
 
     if (dbError) {
       // Cleanup orphan image if DB insertion fails
+      console.error('Database Error:', dbError);
       await supabase.storage.from('vendor-images').remove([filePath]);
-      return { success: false, error: `Database Error: ${dbError.message}` };
+      return { success: false, error: `Database error: ${dbError.message}` };
     }
 
     revalidatePath('/seller/dashboard');
     revalidatePath('/shops');
     return { success: true };
   } catch (err: any) {
-    return { success: false, error: err.message || 'An unexpected error occurred.' };
+    console.error('Unexpected Error in addSellerProduct:', err);
+    return { success: false, error: err.message || 'An unexpected error occurred during upload.' };
   }
 }
