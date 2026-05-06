@@ -56,10 +56,11 @@ export function StorefrontShell({
   return (
     <>
       <div className="pb-20 md:pb-0 min-h-screen flex flex-col relative overflow-x-hidden">
-        {/* Decorative Background Auroras */}
+        {/* Deeper Decorative Background Auroras */}
         <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[-1] overflow-hidden">
-            <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
-            <div className="absolute bottom-[10%] left-[-5%] w-[40%] h-[40%] bg-orange-400/5 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '12s' }} />
+            <div className="absolute top-[-5%] right-[-10%] w-[60%] h-[60%] bg-primary/15 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
+            <div className="absolute bottom-[5%] left-[-10%] w-[50%] h-[50%] bg-orange-400/12 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '12s' }} />
+            <div className="absolute top-[30%] left-[20%] w-[30%] h-[30%] bg-gold/5 rounded-full blur-[80px]" />
         </div>
         
         <InstallPrompt />
