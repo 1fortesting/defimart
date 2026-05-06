@@ -538,7 +538,7 @@ export default function SellerDashboardPage() {
                                 })}
                                 {orders.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan(5) className="text-center py-24 text-muted-foreground italic font-medium">No orders yet.</TableCell>
+                                        <TableCell colSpan={5} className="text-center py-24 text-muted-foreground italic font-medium">No orders yet.</TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
