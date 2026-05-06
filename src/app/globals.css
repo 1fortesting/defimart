@@ -8,14 +8,14 @@
     --gold-light: #FFB84D;
     --dark: #0F172A;
     --surface: #FFFFFF;
-    --surface-2: #F8FAFC;
+    --surface-2: #FFFAF5; /* Faint orange tint */
     --muted: #64748B;
     --border: #E2E8F0;
     --radius: 16px;
     --brand-dark: #0F172A;
     
     /* Shadcn compatibility (light) */
-    --background: 210 40% 98%;
+    --background: 30 40% 99%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
@@ -35,9 +35,9 @@
     /* Brand variables in Dark Mode */
     --gold: #F5A623;
     --gold-light: #FFB84D;
-    --dark: #F8FAFC; /* Swap dark text to light */
-    --surface: #0F172A; /* Swap white to dark */
-    --surface-2: #020617; /* Darker background */
+    --dark: #F8FAFC; 
+    --surface: #0F172A; 
+    --surface-2: #020617; 
     --muted: #94A3B8;
     --border: #1E293B;
     --brand-dark: #0F172A;
@@ -67,6 +67,12 @@
   
   body {
     background-color: var(--surface-2);
+    /* Ambient Orange Mesh Gradient */
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(38, 92%, 55%, 0.05) 0, transparent 50%), 
+      radial-gradient(at 50% 0%, hsla(30, 100%, 50%, 0.03) 0, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(38, 92%, 55%, 0.05) 0, transparent 50%);
+    background-attachment: fixed;
     color: var(--dark);
     font-family: 'Inter', sans-serif;
     transition: background-color 0.3s ease, color 0.3s ease;

@@ -21,7 +21,6 @@ export function StorefrontShell({
   useEffect(() => {
     const supabase = createClient();
     
-    // This function ensures that the local storage is in sync with the user's auth state.
     const syncAuthState = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -32,17 +31,11 @@ export function StorefrontShell({
       }
     };
 
-    // Check on initial load
     syncAuthState();
     
-    // And listen for subsequent changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === 'SIGNED_OUT' || event === 'SIGNED_IN') {
-          // When a user signs in or out, we clear the local storage.
-          // For sign-out, this prevents showing stale data.
-          // For sign-in, it ensures the app relies on the database as the source of truth,
-          // preventing conflicts with a previous anonymous session.
           localStorage.removeItem('cart');
           localStorage.removeItem('saved');
           window.dispatchEvent(new Event('cart-updated'));
@@ -62,10 +55,18 @@ export function StorefrontShell({
 
   return (
     <>
-      <div className="pb-20 md:pb-0 min-h-screen flex flex-col">
+      <div className="pb-20 md:pb-0 min-h-screen flex flex-col relative overflow-x-hidden">
+        {/* Decorative Background Auroras */}
+        <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[-1] overflow-hidden">
+            <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
+            <div className="absolute bottom-[10%] left-[-5%] w-[40%] h-[40%] bg-orange-400/5 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '12s' }} />
+        </div>
+        
         <InstallPrompt />
         {header}
-        {children}
+        <div className="relative z-10 flex-1 flex flex-col">
+          {children}
+        </div>
       </div>
       {bottomNav}
       <ScrollToTopButton />

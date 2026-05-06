@@ -82,7 +82,7 @@ export function HomePageContent({ products, user, savedProductIds, categoriesDat
     );
 
     return (
-        <div className="container mx-auto max-w-7xl pt-6 px-4 pb-12 bg-[var(--surface-2)] min-h-screen">
+        <div className="container mx-auto max-w-7xl pt-6 px-4 pb-12 bg-transparent min-h-screen">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <h1 className="font-syne font-[700] text-[var(--dark)] text-2xl md:text-3xl">Discover Products</h1>
@@ -98,7 +98,7 @@ export function HomePageContent({ products, user, savedProductIds, categoriesDat
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
                         className={cn(
-                            "px-5 py-2.5 rounded-full text-[13px] font-dm transition-all whitespace-nowrap",
+                            "px-5 py-2.5 rounded-full text-[13px] font-dm transition-all whitespace-nowrap shadow-sm",
                             selectedCategory === cat 
                                 ? "bg-[var(--gold)] text-white font-[600]" 
                                 : "bg-[var(--surface)] text-[var(--muted)] font-[500] border border-[var(--border)]"
