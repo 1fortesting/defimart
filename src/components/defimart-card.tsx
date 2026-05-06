@@ -42,15 +42,15 @@ export function DefimartCard({ product, isSaved, onToggleSave, onAddToCart }: De
 
   return (
     <Link href={`/products/${product.id}`} className="group h-full">
-      <Card className="bg-gradient-to-br from-primary/5 via-background to-red-500/5 border-[1.5px] border-[var(--border)] rounded-[16px] overflow-hidden transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_12px_24px_rgba(245,166,35,0.15)] h-full flex flex-col relative group">
-        {/* Decorative Background Elements */}
-        <div className="absolute -top-16 -left-16 w-48 h-48 bg-[var(--gold)]/20 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125 z-0" />
-        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-red-500/10 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125 z-0" />
+      <Card className="bg-gradient-to-br from-primary/[0.03] via-background to-red-500/[0.02] border-[1.5px] border-[var(--border)] rounded-[16px] overflow-hidden transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_12px_24px_rgba(245,166,35,0.1)] h-full flex flex-col relative group">
+        {/* Subtle Decorative Background Elements */}
+        <div className="absolute -top-16 -left-16 w-48 h-48 bg-[var(--gold)]/10 rounded-full blur-3xl transition-all duration-700 opacity-40 group-hover:opacity-70 group-hover:scale-125 z-0" />
+        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-red-500/[0.05] rounded-full blur-3xl transition-all duration-700 opacity-40 group-hover:opacity-70 group-hover:scale-125 z-0" />
         
         <div className="relative z-10 flex flex-col h-full">
           {/* Image Area */}
-          <div className="h-[140px] md:h-[180px] bg-primary/5 relative flex items-center justify-center overflow-hidden">
-            <div className="relative w-[100px] h-[100px] md:w-[130px] md:h-[130px] transition-transform duration-300 group-hover:scale-[1.1] drop-shadow-[0_8px_16px_rgba(0,0,0,0.08)]">
+          <div className="h-[140px] md:h-[180px] bg-primary/[0.03] relative flex items-center justify-center overflow-hidden">
+            <div className="relative w-[100px] h-[100px] md:w-[130px] md:h-[130px] transition-transform duration-300 group-hover:scale-[1.1] drop-shadow-[0_8px_16px_rgba(0,0,0,0.05)]">
               <Image
                 src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'}
                 alt={product.name}
@@ -63,13 +63,13 @@ export function DefimartCard({ product, isSaved, onToggleSave, onAddToCart }: De
             <div className="absolute top-2 right-2 flex flex-col gap-2">
               <button 
                 onClick={handleShare}
-                className="w-[30px] h-[30px] rounded-full bg-white/92 shadow-sm flex items-center justify-center transition-all hover:bg-[#e0f0ff] hover:scale-[1.1]"
+                className="w-[30px] h-[30px] rounded-full bg-white/95 shadow-sm flex items-center justify-center transition-all hover:bg-[#e0f0ff] hover:scale-[1.1]"
               >
                 <Share2 className="w-[14px] h-[14px] text-[#4A90D9] stroke-[2px]" />
               </button>
               <button 
                 onClick={handleSave}
-                className="w-[30px] h-[30px] rounded-full bg-white/92 shadow-sm flex items-center justify-center transition-all hover:bg-[#ffe0e0] hover:scale-[1.1]"
+                className="w-[30px] h-[30px] rounded-full bg-white/95 shadow-sm flex items-center justify-center transition-all hover:bg-[#ffe0e0] hover:scale-[1.1]"
               >
                 <Heart className={cn("w-[14px] h-[14px] stroke-[2px] text-[var(--gold)]", saved && "fill-[var(--gold)]")} />
               </button>
@@ -99,7 +99,7 @@ export function DefimartCard({ product, isSaved, onToggleSave, onAddToCart }: De
               </div>
               <button 
                 onClick={handleAddToCart}
-                className="bg-gradient-to-r from-[var(--gold)] to-orange-600 text-white w-[54px] h-[28px] md:w-[64px] md:h-[32px] rounded-[10px] flex items-center justify-center gap-1 transition-all hover:scale-105 shadow-md shadow-orange-500/20"
+                className="bg-gradient-to-r from-[var(--gold)] to-orange-600 text-white w-[54px] h-[28px] md:w-[64px] md:h-[32px] rounded-[10px] flex items-center justify-center gap-1 transition-all hover:scale-105 shadow-md shadow-orange-500/10"
               >
                 <ShoppingCart className="w-[12px] h-[12px] md:w-[14px] md:h-[14px] stroke-[2.5px]" />
                 <span className="text-[12px] md:text-[13px] font-[600]">Add</span>

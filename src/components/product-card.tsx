@@ -177,10 +177,10 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
     const hasImage = product.image_urls && product.image_urls.length > 0;
     
     return (
-    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-primary/5 via-background to-red-500/5 border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/20 flex flex-col relative h-full">
-        {/* Glowing Auras */}
-        <div className="absolute -top-16 -left-16 w-48 h-48 bg-primary/20 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125 z-0" />
-        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-red-500/10 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125 z-0" />
+    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-primary/[0.03] via-background to-red-500/[0.02] border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/10 flex flex-col relative h-full">
+        {/* Subtle Decorative Auras */}
+        <div className="absolute -top-16 -left-16 w-48 h-48 bg-primary/10 rounded-full blur-3xl transition-all duration-700 opacity-40 group-hover:opacity-60 group-hover:scale-125 z-0" />
+        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-red-500/[0.05] rounded-full blur-3xl transition-all duration-700 opacity-40 group-hover:opacity-60 group-hover:scale-125 z-0" />
         
         {product.is_featured && (
             <div className="absolute top-2 right-2 z-20 bg-yellow-400 text-white rounded-full p-1.5 shadow-md">
@@ -190,7 +190,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
 
         <div className="relative z-10 flex flex-col h-full">
             <div className="p-3">
-                <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden rounded-2xl bg-primary/5">
+                <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden rounded-2xl bg-primary/[0.03]">
                     {hasImage ? (
                         <Image
                             src={product.image_urls![0]}

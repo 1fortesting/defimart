@@ -78,14 +78,14 @@ export function FlashSaleProductCard({ product }: FlashSaleProductCardProps) {
 
     return (
     <Link href={`/products/${product.id}`} className="block w-36 md:w-48 flex-shrink-0">
-        <Card className="relative overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-orange-500/10 via-background to-red-500/5 backdrop-blur-lg border border-white/20 dark:border-slate-800/50 shadow-lg hover:shadow-primary/20 flex flex-col h-full">
+        <Card className="relative overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-orange-500/[0.04] via-background to-red-500/[0.03] border border-white/20 dark:border-slate-800/50 shadow-lg hover:shadow-primary/10 flex flex-col h-full">
             {/* Decorative elements */}
-            <div className="absolute -top-12 -left-12 w-32 h-32 bg-red-500/15 rounded-full blur-2xl transition-all duration-700 opacity-70 group-hover:opacity-100 group-hover:w-40 group-hover:h-40 z-0" />
-            <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-primary/15 rounded-full blur-2xl transition-all duration-700 opacity-70 group-hover:opacity-100 group-hover:w-40 group-hover:h-40 z-0" />
+            <div className="absolute -top-12 -left-12 w-32 h-32 bg-red-500/[0.05] rounded-full blur-2xl transition-all duration-700 opacity-50 group-hover:opacity-80 group-hover:w-40 group-hover:h-40 z-0" />
+            <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-primary/[0.05] rounded-full blur-2xl transition-all duration-700 opacity-50 group-hover:opacity-80 group-hover:w-40 group-hover:h-40 z-0" />
 
             <div className="relative z-10 flex flex-col h-full">
                 <div className="relative p-2">
-                    <div className="relative aspect-[4/3] bg-primary/5 rounded-md overflow-hidden">
+                    <div className="relative aspect-[4/3] bg-primary/[0.03] rounded-md overflow-hidden">
                         <Image
                             src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'}
                             alt={product.name}
@@ -111,7 +111,7 @@ export function FlashSaleProductCard({ product }: FlashSaleProductCardProps) {
                         {product.quantity !== null && product.quantity > 0 && (
                             <div>
                                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{product.quantity.toLocaleString('en-US')} units left</p>
-                                 <Progress value={getProgressValue(product.quantity)} className="h-1 mt-1 bg-orange-200/20 [&>div]:bg-gradient-to-r [&>div]:from-orange-500 [&>div]:to-red-500"/>
+                                 <Progress value={getProgressValue(product.quantity)} className="h-1 mt-1 bg-orange-200/10 [&>div]:bg-gradient-to-r [&>div]:from-orange-500 [&>div]:to-red-500"/>
                             </div>
                         )}
                         {timeLeft && (

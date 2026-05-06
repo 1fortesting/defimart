@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, LayoutGrid, ShoppingCart, Heart, User, Newspaper, Store } from 'lucide-react';
+import { Home, ShoppingCart, Heart, User, Newspaper, Store } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -50,7 +50,10 @@ export function BottomNav() {
   navItems.push({ label: 'Profile', href: '/profile', icon: User });
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-t from-primary/10 via-background/95 to-red-500/5 backdrop-blur-xl border-t border-primary/10 h-[72px] z-[100] flex items-center justify-around px-1 overflow-x-auto no-scrollbar shadow-[0_-8px_30px_rgba(0,0,0,0.04)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-primary/10 h-[72px] z-[100] flex items-center justify-around px-1 overflow-x-auto no-scrollbar shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+      {/* Opaque Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-primary/[0.05] via-transparent to-red-500/[0.03] pointer-events-none" />
+      
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         const Icon = item.icon;
@@ -59,7 +62,7 @@ export function BottomNav() {
           <Link 
             key={item.href} 
             href={item.href}
-            className="flex flex-col items-center justify-center gap-1 min-w-[60px] transition-transform active:scale-90"
+            className="flex flex-col items-center justify-center gap-1 min-w-[60px] relative z-10 transition-transform active:scale-90"
           >
             <div className={cn(
               "p-1.5 rounded-xl transition-all duration-300",
