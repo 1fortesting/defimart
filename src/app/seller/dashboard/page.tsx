@@ -124,6 +124,14 @@ export default function SellerDashboardPage() {
     }
   }, [addState, toast, router]);
 
+  const handleSync = () => {
+    startTransition(async () => {
+        await fetchData();
+        router.refresh();
+        toast({ title: 'Data Synchronized', description: 'Your shop information is now up to date.' });
+    });
+  };
+
   const handleToggle = (isOpen: boolean) => {
     startTransition(async () => {
       try {
@@ -293,7 +301,7 @@ export default function SellerDashboardPage() {
           </div>
           
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-10 w-10" onClick={fetchData} disabled={isPending}>
+            <Button variant="ghost" size="icon" className="h-10 w-10" onClick={handleSync} disabled={isPending}>
                 <RefreshCw className={cn("h-5 w-5 text-primary", isPending && "animate-spin")} />
             </Button>
             <ThemeToggle />
@@ -561,7 +569,16 @@ export default function SellerDashboardPage() {
                                 <CardTitle className="text-base md:text-lg font-black uppercase tracking-widest truncate">Transaction Ledger</CardTitle>
                                 <CardDescription className="text-xs font-medium">Manage your shop orders.</CardDescription>
                             </div>
-                            <Button variant="outline" size="sm" onClick={fetchData} className="h-9 font-bold border-2 shrink-0"><RefreshCw className="h-3 w-3 mr-2" />Sync</Button>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={handleSync} 
+                                disabled={isPending}
+                                className="h-9 font-bold border-2 shrink-0"
+                            >
+                                <RefreshCw className={cn("h-3 w-3 mr-2", isPending && "animate-spin")} />
+                                Sync
+                            </Button>
                         </CardHeader>
                         
                         <div className="hidden md:block">
@@ -788,7 +805,7 @@ export default function SellerDashboardPage() {
                                         </div>
                                         <div className="text-center sm:text-left space-y-1">
                                             <h4 className="font-black uppercase tracking-widest text-sm">Shop Branding</h4>
-                                            <p className="text-[10px] md:text-xs text-muted-foreground font-medium">Stand out in the vendor gallery.</p>
+                                            <p className="text-[10px] md:text-[12px] text-muted-foreground font-medium">Stand out in the vendor gallery.</p>
                                         </div>
                                     </div>
 
