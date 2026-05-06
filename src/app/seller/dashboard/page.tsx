@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useTransition, useActionState } from 'react';
@@ -95,7 +96,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                     <Edit className="h-3 w-3 mr-1" /> Edit
                 </Button>
             </DialogTrigger>
-            <DialogContent className="w-[95%] max-w-[600px] p-0 overflow-hidden rounded-3xl flex flex-col h-[90vh] md:h-auto md:max-h-[85vh]">
+            <DialogContent className="w-[95%] max-w-[550px] p-0 overflow-hidden rounded-3xl flex flex-col max-h-[80vh] border-none shadow-2xl">
                 <div className="bg-primary p-5 md:p-6 text-primary-foreground flex-shrink-0">
                     <DialogHeader>
                         <DialogTitle className="text-xl md:text-2xl font-black tracking-tight text-white">Edit Listing</DialogTitle>
@@ -106,21 +107,21 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                 </div>
                 <form action={action} className="flex flex-col flex-1 overflow-hidden bg-background">
                     <input type="hidden" name="id" value={product.id} />
-                    <div className="flex-1 overflow-y-auto px-5 md:px-8 py-6 md:py-8 space-y-6">
+                    <div className="flex-1 overflow-y-auto px-5 md:px-8 py-4 space-y-5 hide-scrollbar">
                         <div className="grid gap-2">
                             <Label htmlFor="name" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Name</Label>
-                            <Input id="name" name="name" defaultValue={product.name} required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
+                            <Input id="name" name="name" defaultValue={product.name} required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="grid gap-2">
                                 <Label htmlFor="price" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Selling Price (GHS)</Label>
-                                <Input id="price" name="price" type="number" step="0.01" defaultValue={product.price} required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
+                                <Input id="price" name="price" type="number" step="0.01" defaultValue={product.price} required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Category</Label>
                                 <Select name="category" defaultValue={categories.includes(product.category) ? product.category : 'Other'} required onValueChange={setUploadCategory}>
-                                    <SelectTrigger className="bg-muted/30 border-2 h-12 text-base rounded-xl">
+                                    <SelectTrigger className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl">
                                         <SelectValue placeholder="Select" />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl">
@@ -133,13 +134,13 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                         {uploadCategory === 'Other' && (
                             <div className="grid gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
                                 <Label htmlFor="custom_category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Custom Category Name</Label>
-                                <Input id="custom_category" name="custom_category" defaultValue={!categories.includes(product.category) ? product.category : ''} placeholder="Custom category" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
+                                <Input id="custom_category" name="custom_category" defaultValue={!categories.includes(product.category) ? product.category : ''} placeholder="Custom category" required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
                             </div>
                         )}
 
                         <div className="grid gap-2">
                             <Label htmlFor="description" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Detailed Description</Label>
-                            <Textarea id="description" name="description" defaultValue={product.description} rows={4} className="bg-muted/30 border-2 text-base rounded-xl resize-none" />
+                            <Textarea id="description" name="description" defaultValue={product.description} rows={3} className="bg-muted/30 border-2 text-sm md:text-base rounded-xl resize-none" />
                         </div>
                         
                         <div className="space-y-3">
@@ -151,7 +152,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                                     type="file" 
                                     accept="image/*" 
                                     onChange={handleImageChange}
-                                    className="bg-muted/30 border-2 h-12 text-sm rounded-xl cursor-pointer pt-3"
+                                    className="bg-muted/30 border-2 h-11 text-xs rounded-xl cursor-pointer pt-3"
                                 />
                                 {imagePreview && (
                                     <div className="relative aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner">
@@ -163,8 +164,8 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                     </div>
 
                     <div className="p-5 md:p-6 border-t bg-background flex-shrink-0">
-                        <Button type="submit" className="w-full h-14 text-lg font-black uppercase tracking-widest shadow-xl shadow-primary/20 rounded-2xl" disabled={isPending}>
-                            {isPending ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : 'Save Changes'}
+                        <Button type="submit" className="w-full h-12 md:h-14 text-sm md:text-base font-black uppercase tracking-widest shadow-xl shadow-primary/20 rounded-2xl" disabled={isPending}>
+                            {isPending ? <Loader2 className="animate-spin mr-3 h-5 w-5" /> : 'Save Changes'}
                         </Button>
                     </div>
                 </form>
@@ -466,7 +467,7 @@ export default function SellerDashboardPage() {
                         <Plus className="h-4 w-4 mr-1 md:mr-2" /> List Item
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="w-[95%] max-w-[600px] p-0 overflow-hidden rounded-3xl flex flex-col h-[90vh] md:h-auto md:max-h-[85vh]">
+                    <DialogContent className="w-[95%] max-w-[550px] p-0 overflow-hidden rounded-3xl flex flex-col max-h-[80vh] border-none shadow-2xl">
                       <div className="bg-primary p-5 md:p-6 text-primary-foreground flex-shrink-0">
                         <DialogHeader>
                             <DialogTitle className="text-xl md:text-2xl font-black tracking-tight text-white">Create New Listing</DialogTitle>
@@ -476,21 +477,21 @@ export default function SellerDashboardPage() {
                         </DialogHeader>
                       </div>
                       <form action={addAction} className="flex flex-col flex-1 overflow-hidden bg-background">
-                          <div className="flex-1 overflow-y-auto px-5 md:px-8 py-6 md:py-8 space-y-6">
+                          <div className="flex-1 overflow-y-auto px-5 md:px-8 py-4 space-y-5 hide-scrollbar">
                                   <div className="grid gap-2">
                                     <Label htmlFor="name" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Name</Label>
-                                    <Input id="name" name="name" placeholder="Name" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
+                                    <Input id="name" name="name" placeholder="Name" required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
                                   </div>
 
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                       <Label htmlFor="price" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Selling Price (GHS)</Label>
-                                      <Input id="price" name="price" type="number" step="0.01" placeholder="Price" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
+                                      <Input id="price" name="price" type="number" step="0.01" placeholder="Price" required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
                                     </div>
                                     <div className="grid gap-2">
                                       <Label htmlFor="category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Category</Label>
                                       <Select name="category" required onValueChange={setUploadCategory}>
-                                          <SelectTrigger className="bg-muted/30 border-2 h-12 text-base rounded-xl">
+                                          <SelectTrigger className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl">
                                               <SelectValue placeholder="Select" />
                                           </SelectTrigger>
                                           <SelectContent className="rounded-xl">
@@ -503,13 +504,13 @@ export default function SellerDashboardPage() {
                                   {uploadCategory === 'Other' && (
                                       <div className="grid gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
                                           <Label htmlFor="custom_category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Custom Category Name</Label>
-                                          <Input id="custom_category" name="custom_category" placeholder="Custom category" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
+                                          <Input id="custom_category" name="custom_category" placeholder="Custom category" required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
                                       </div>
                                   )}
 
                                   <div className="grid gap-2">
                                     <Label htmlFor="description" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Detailed Description</Label>
-                                    <Textarea id="description" name="description" placeholder="Description" rows={4} className="bg-muted/30 border-2 text-base rounded-xl resize-none" />
+                                    <Textarea id="description" name="description" placeholder="Description" rows={3} className="bg-muted/30 border-2 text-sm md:text-base rounded-xl resize-none" />
                                   </div>
                                   
                                   <div className="space-y-3">
@@ -522,7 +523,7 @@ export default function SellerDashboardPage() {
                                             accept="image/*" 
                                             required 
                                             onChange={handleProductImageChange}
-                                            className="bg-muted/30 border-2 h-12 text-sm rounded-xl cursor-pointer pt-3"
+                                            className="bg-muted/30 border-2 h-11 text-xs rounded-xl cursor-pointer pt-3"
                                         />
                                         {productImagePreview && (
                                             <div className="relative aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner">
@@ -534,8 +535,8 @@ export default function SellerDashboardPage() {
                           </div>
 
                           <div className="p-5 md:p-6 border-t bg-background flex-shrink-0">
-                            <Button type="submit" className="w-full h-14 text-lg font-black uppercase tracking-widest shadow-xl shadow-primary/20 rounded-2xl" disabled={isAddPending}>
-                              {isAddPending ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : 'Publish Listing'}
+                            <Button type="submit" className="w-full h-12 md:h-14 text-sm md:text-base font-black uppercase tracking-widest shadow-xl shadow-primary/20 rounded-2xl" disabled={isAddPending}>
+                              {isAddPending ? <Loader2 className="animate-spin mr-3 h-5 w-5" /> : 'Publish Listing'}
                             </Button>
                           </div>
                       </form>
