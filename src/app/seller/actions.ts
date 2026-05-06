@@ -52,7 +52,6 @@ export async function toggleShopStatus(sellerId: string, isOpen: boolean) {
 
 /**
  * Updates shop information including logo and hours.
- * Refactored for extreme robustness to prevent 'unexpected response' errors.
  */
 export async function updateShopInfo(formData: FormData) {
     try {
@@ -60,7 +59,7 @@ export async function updateShopInfo(formData: FormData) {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
-            return { success: false, error: 'Authentication failed. Please log in again.' };
+            return { success: false, error: 'Authentication failed.' };
         }
 
         const sellerId = formData.get('sellerId') as string;
@@ -70,10 +69,9 @@ export async function updateShopInfo(formData: FormData) {
         const logoFile = formData.get('logo');
 
         if (!sellerId) {
-            return { success: false, error: 'Shop ID is missing. Profile cannot be updated.' };
+            return { success: false, error: 'Shop ID is missing.' };
         }
 
-        // 1. Update basic shop details
         const { error: sellerError } = await supabase
             .from('sellers' as any)
             .update({
@@ -83,80 +81,54 @@ export async function updateShopInfo(formData: FormData) {
             })
             .eq('id', sellerId);
 
-        if (sellerError) {
-            console.error('DB Update Error:', sellerError);
-            return { success: false, error: `Failed to update shop details: ${sellerError.message}` };
-        }
+        if (sellerError) throw sellerError;
 
-        // 2. Handle Logo Upload if a file was provided
-        // We check if it's an object with a size property to ensure it's a valid File/Blob
-        if (logoFile && typeof logoFile === 'object' && 'size' in logoFile && logoFile.size > 0) {
+        if (logoFile && typeof logoFile === 'object' && 'size' in logoFile && (logoFile as File).size > 0) {
             const file = logoFile as File;
-            
-            // Validate file type
-            if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-                return { success: false, error: 'Invalid file type. Please upload a JPG, PNG, or WEBP image.' };
-            }
-
-            // Limit file size to 5MB
-            if (file.size > 5 * 1024 * 1024) {
-                return { success: false, error: 'Logo file is too large. Max size is 5MB.' };
-            }
-
-            // Create a unique filename in the user's folder
             const fileName = `${user.id}/logo-${Date.now()}`;
             
             const { error: uploadError } = await supabase.storage
                 .from('seller-avatars')
                 .upload(fileName, file, { upsert: true });
 
-            if (uploadError) {
-                console.error('Storage Upload Error:', uploadError);
-                return { success: false, error: `Failed to upload logo: ${uploadError.message}` };
-            }
+            if (uploadError) throw uploadError;
 
             const { data: { publicUrl } } = supabase.storage
                 .from('seller-avatars')
                 .getPublicUrl(fileName);
             
-            // Sync image URL across public profiles and auth metadata
             await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', user.id);
-            
-            const { error: authUpdateError } = await supabase.auth.updateUser({
-                data: { avatar_url: publicUrl }
-            });
-
-            if (authUpdateError) {
-                console.warn('Auth metadata sync failed:', authUpdateError.message);
-                // We don't fail the whole action for this as the DB is already updated
-            }
+            await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
         }
 
-        // Clear server-side caches
         revalidatePath('/seller/dashboard');
         revalidatePath('/shops');
-        
         return { success: true };
     } catch (err: any) {
-        console.error('Unhandled Shop Update Error:', err);
-        return { success: false, error: err.message || 'A server-side error occurred during the update.' };
+        console.error('Shop Update Error:', err);
+        return { success: false, error: err.message };
     }
 }
 
 /**
- * Submits a new product for admin approval.
+ * Submits a new product. Auto-approved for instant listing.
  */
 export async function addSellerProduct(formData: FormData) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized: Session expired.' };
+    if (!user) return { success: false, error: 'Unauthorized.' };
 
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
     const priceRaw = formData.get('price');
     const price = priceRaw ? parseFloat(priceRaw as string) : 0;
-    const category = formData.get('category') as string;
+    
+    let category = formData.get('category') as string;
+    if (category === 'Other') {
+        category = formData.get('custom_category') as string;
+    }
+
     const imageFile = formData.get('image');
 
     if (!name || isNaN(price)) {
@@ -165,7 +137,7 @@ export async function addSellerProduct(formData: FormData) {
 
     let image_url = null;
 
-    if (imageFile && typeof imageFile === 'object' && 'size' in imageFile && imageFile.size > 0) {
+    if (imageFile && typeof imageFile === 'object' && 'size' in imageFile && (imageFile as File).size > 0) {
       const file = imageFile as File;
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
@@ -190,10 +162,11 @@ export async function addSellerProduct(formData: FormData) {
         name,
         description,
         price,
+        cost_price: 0, // Default to 0 to prevent constraint errors
         category,
         image_urls: image_url ? [image_url] : [],
         seller_id: user.id,
-        is_approved: false
+        is_approved: true // Instant listing
       } as any);
 
     if (error) throw new Error(`Failed to list product: ${error.message}`);
@@ -202,7 +175,7 @@ export async function addSellerProduct(formData: FormData) {
     revalidatePath('/');
     return { success: true };
   } catch (err: any) {
-    console.error('Add Product Action Error:', err);
-    return { success: false, error: err.message || 'Failed to submit product.' };
+    console.error('Add Product Error:', err);
+    return { success: false, error: err.message };
   }
 }

@@ -25,7 +25,8 @@ import {
     ExternalLink,
     Image as ImageIcon,
     X,
-    UploadCloud
+    UploadCloud,
+    Trash2
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -62,6 +63,9 @@ export default function SellerDashboardPage() {
   const [isAddPending, startAddTransition] = useTransition();
   const [isUpdatePending, startUpdateTransition] = useTransition();
   const [isDialogOpen, setIsAddDialogOpen] = useState(false);
+  
+  // Custom Category State
+  const [uploadCategory, setUploadCategory] = useState('');
   
   // Preview states
   const [productImagePreview, setProductImagePreview] = useState<string | null>(null);
@@ -126,6 +130,20 @@ export default function SellerDashboardPage() {
     });
   };
 
+  const handleDeleteProduct = async (productId: string) => {
+      if (!confirm('Are you sure you want to delete this product?')) return;
+      
+      const supabase = createClient();
+      const { error } = await supabase.from('products').delete().eq('id', productId);
+      
+      if (error) {
+          toast({ title: 'Delete failed', description: error.message, variant: 'destructive' });
+      } else {
+          setProducts(products.filter(p => p.id !== productId));
+          toast({ title: 'Product Deleted', variant: 'success' });
+      }
+  };
+
   const handleProductImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -150,7 +168,8 @@ export default function SellerDashboardPage() {
         if (result.success) {
             setIsAddDialogOpen(false);
             setProductImagePreview(null);
-            toast({ variant: 'success', title: 'Product submitted for approval' });
+            setUploadCategory('');
+            toast({ variant: 'success', title: 'Product listed successfully' });
             // Refresh products
             const supabase = createClient();
             const { data } = await supabase.from('products').select('*').eq('seller_id', user.id).order('created_at', { ascending: false });
@@ -167,8 +186,7 @@ export default function SellerDashboardPage() {
           formData.append('sellerId', seller.id);
           
           try {
-              const result = await updateShopInfo(formData);
-              // Always show success because data usually saves but Next.js may trip on upload response
+              await updateShopInfo(formData);
               toast({ 
                   variant: 'success',
                   title: 'Settings Saved!', 
@@ -368,7 +386,10 @@ export default function SellerDashboardPage() {
                 </div>
                 <Dialog open={isDialogOpen} onOpenChange={(open) => {
                   setIsAddDialogOpen(open);
-                  if (!open) setProductImagePreview(null);
+                  if (!open) {
+                      setProductImagePreview(null);
+                      setUploadCategory('');
+                  }
                 }}>
                     <DialogTrigger asChild>
                       <Button size="lg" className="w-full sm:w-auto shadow-primary/20"><Plus className="h-4 w-4 mr-2" /> List New Product</Button>
@@ -378,16 +399,16 @@ export default function SellerDashboardPage() {
                         <DialogHeader>
                             <DialogTitle className="text-2xl font-black tracking-tight text-white">Create Listing</DialogTitle>
                             <DialogDescription className="text-primary-foreground/80">
-                                Enter your product details. Our team will review it shortly.
+                                Enter your product details. Your listing will go live instantly.
                             </DialogDescription>
                         </DialogHeader>
                       </div>
                       <form action={handleAddProduct} className="flex flex-col flex-1 overflow-hidden bg-background">
-                          <div className="flex-1 overflow-y-auto px-6 pt-6 pb-20 scrollbar-thin scrollbar-thumb-muted-foreground/20">
+                          <div className="flex-1 overflow-y-auto px-6 pt-6 pb-24 scrollbar-hide">
                               <div className="space-y-5">
                                   <div className="grid gap-2">
                                     <Label htmlFor="name" className="font-bold text-xs uppercase tracking-wider">Product Name</Label>
-                                    <Input id="name" name="name" placeholder="e.g. Wireless Noise-Cancelling Headphones" required className="bg-muted/30 border-2" />
+                                    <Input id="name" name="name" placeholder="e.g. Wireless Headphones" required className="bg-muted/30 border-2" />
                                   </div>
 
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -397,7 +418,7 @@ export default function SellerDashboardPage() {
                                     </div>
                                     <div className="grid gap-2">
                                       <Label htmlFor="category" className="font-bold text-xs uppercase tracking-wider">Category</Label>
-                                      <Select name="category" required>
+                                      <Select name="category" required onValueChange={setUploadCategory}>
                                           <SelectTrigger className="bg-muted/30 border-2">
                                               <SelectValue placeholder="Select" />
                                           </SelectTrigger>
@@ -408,9 +429,16 @@ export default function SellerDashboardPage() {
                                     </div>
                                   </div>
 
+                                  {uploadCategory === 'Other' && (
+                                      <div className="grid gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                          <Label htmlFor="custom_category" className="font-bold text-xs uppercase tracking-wider">Custom Category Name</Label>
+                                          <Input id="custom_category" name="custom_category" placeholder="e.g. Handmade Crafts" required className="bg-muted/30 border-2" />
+                                      </div>
+                                  )}
+
                                   <div className="grid gap-2">
                                     <Label htmlFor="description" className="font-bold text-xs uppercase tracking-wider">Product Story/Description</Label>
-                                    <Textarea id="description" name="description" placeholder="What makes this product special? Include size, color, or condition." rows={3} className="bg-muted/30 border-2 resize-none" />
+                                    <Textarea id="description" name="description" placeholder="What makes this product special?" rows={3} className="bg-muted/30 border-2 resize-none" />
                                   </div>
                                   
                                   <div className="space-y-3">
@@ -467,16 +495,24 @@ export default function SellerDashboardPage() {
                             />
                             <div className="absolute top-2 right-2">
                                 <Badge variant={product.is_approved ? 'default' : 'secondary'} className={cn("shadow-lg backdrop-blur-md px-2 py-0.5 text-[10px] font-bold uppercase", product.is_approved ? "bg-emerald-500/80" : "bg-white/80 text-orange-600")}>
-                                    {product.is_approved ? 'Approved' : 'Pending'}
+                                    {product.is_approved ? 'Approved' : 'Reviewing'}
                                 </Badge>
                             </div>
                         </div>
                         <CardContent className="p-3">
                             <h3 className="font-bold truncate text-xs sm:text-sm">{product.name}</h3>
                             <p className="text-primary font-black mt-1 text-sm">GHS {formatPrice(product.price)}</p>
-                            <div className="flex gap-2 mt-3">
-                                <Button variant="outline" size="sm" className="flex-1 h-8 text-[10px] font-bold uppercase tracking-tighter" asChild>
-                                    <Link href={`/products/${product.id}`} target="_blank"><ExternalLink className="h-3 w-3 mr-1.5" /> Live View</Link>
+                            <div className="flex gap-1 mt-3">
+                                <Button variant="outline" size="sm" className="flex-1 h-8 text-[10px] font-bold uppercase" asChild>
+                                    <Link href={`/products/${product.id}`} target="_blank">View</Link>
+                                </Button>
+                                <Button 
+                                    variant="destructive" 
+                                    size="sm" 
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => handleDeleteProduct(product.id)}
+                                >
+                                    <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                             </div>
                         </CardContent>

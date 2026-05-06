@@ -90,7 +90,7 @@ export default function ShopsClientPage({ initialSellers }: { initialSellers: Se
                     {filteredSellers.map((seller) => {
                         const open = isShopOpen(seller);
                         return (
-                            <Link key={seller.id} href={`/search?q=${encodeURIComponent(seller.shop_name)}`} className="group">
+                            <Link key={seller.id} href={`/shops/${seller.id}`} className="group">
                                 <Card className="overflow-hidden border-2 border-transparent hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-xl bg-background rounded-2xl h-full flex flex-col">
                                     <div className="relative h-24 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
                                         <div className="absolute -bottom-6 left-4">

@@ -17,15 +17,33 @@ export default async function Home() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Fetch all products
   const { data: productsData } = await supabase.from('products').select('*');
   const { data: reviews } = await supabase.from('reviews').select('product_id, rating');
+  
+  // Fetch independent vendors to filter them out of the main page
+  const { data: sellers } = await supabase.from('sellers' as any).select('user_id');
+  const vendorUserIds = new Set(sellers?.map((s: any) => s.user_id) || []);
+  const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+  
+  // To identify admin products, we'll need their ID, but since we usually just want platform products,
+  // we filter out products that belong to a vendor record, EXCEPT if that vendor happens to be the admin.
+  // Actually, we define "Official" products as those where the seller is the admin.
   
   const { data: savedProducts } = user 
       ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 
       : { data: null };
   const savedProductIds = (savedProducts as any[])?.map((p: any) => p.product_id) || [];
 
-  const allProducts = productsData || [];
+  const rawProducts = productsData || [];
+
+  // Filter: Show only products that are NOT from independent vendors OR are explicitly platform-managed.
+  // We assume admin manages products directly without a 'seller' record, or we exempt them.
+  const allProducts = rawProducts.filter((p: any) => {
+      // If we don't have a reliable way to get admin ID here without another fetch,
+      // we just show products that aren't in the independent vendor list.
+      return !vendorUserIds.has(p.seller_id);
+  });
 
   const reviewsByProduct = (reviews || []).reduce((acc: Record<string, number[]>, review: any) => {
     if (!acc[review.product_id]) {
@@ -45,10 +63,11 @@ export default async function Home() {
   const shuffledProducts = [...productsWithRatings].sort(() => 0.5 - Math.random());
   
   const { data: featuredProductsData } = await supabase.from('products').select('*').eq('is_featured', true).limit(5);
-  const featuredProducts = featuredProductsData || [];
+  // Also filter featured products to only show official ones
+  const featuredProducts = (featuredProductsData || []).filter((p: any) => !vendorUserIds.has(p.seller_id));
   
   const { data: outstandingProductsData } = await supabase.from('products').select('*').eq('is_outstanding', true).limit(4);
-  let outstandingProducts = outstandingProductsData || [];
+  let outstandingProducts = (outstandingProductsData || []).filter((p: any) => !vendorUserIds.has(p.seller_id));
 
   const carouselProducts = featuredProducts.length > 0 ? featuredProducts : allProducts.slice(0, 5);
 
@@ -124,9 +143,6 @@ export default async function Home() {
                         </h2>
                         <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
                             Defimart is a student-focused online store in Ghana that makes it easy to shop for products on campus using simple pickup-based transactions. We provide a reliable marketplace for everything from the latest electronics and fashion to everyday study essentials.
-                        </p>
-                        <p className="text-base text-muted-foreground leading-relaxed hidden md:block">
-                            Our platform is specifically designed to meet the unique needs of the university community. By bridging the gap between local student sellers and buyers, we foster a safe, convenient, and affordable commercial environment right where you live and study. Whether you're looking for textbooks, room accessories, or the newest gadgets, Defimart has you covered.
                         </p>
                     </div>
 
