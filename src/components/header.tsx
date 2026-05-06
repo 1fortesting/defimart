@@ -131,6 +131,10 @@ export async function Header() {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-3/4 max-w-sm p-0 flex flex-col bg-background border-r-0 shadow-2xl">
+                <SheetHeader className="sr-only">
+                    <SheetTitle>Navigation Menu</SheetTitle>
+                </SheetHeader>
+                
                 <div className="relative p-6 bg-[var(--gold)] text-white overflow-hidden h-[160px] flex items-center">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16" />
                   <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-2xl -ml-12 -mb-12" />
@@ -143,10 +147,22 @@ export async function Header() {
                     <div className="flex items-center gap-2">
                         <p className="font-bold text-sm tracking-tight">Defimart</p>
                         <div className="h-10 w-10 rounded-full border-2 border-white/30 bg-white overflow-hidden shadow-md flex items-center justify-center">
-                            {user?.user_metadata.avatar_url ? (
-                                <Image src={user.user_metadata.avatar_url} alt="Profile" width={40} height={40} className="object-cover" />
+                            {user ? (
+                                user.user_metadata.avatar_url ? (
+                                    <Image 
+                                        src={user.user_metadata.avatar_url} 
+                                        alt="Profile" 
+                                        width={40} 
+                                        height={40} 
+                                        className="object-cover h-full w-full" 
+                                    />
+                                ) : (
+                                    <span className="text-[var(--gold)] font-black text-lg">
+                                        {user.user_metadata.display_name?.[0]?.toUpperCase() || 'U'}
+                                    </span>
+                                )
                             ) : (
-                                <Image src="https://iili.io/qO5Jeou.png" alt="Profile" width={24} height={24} className="object-contain p-1" />
+                                <span className="text-[var(--gold)] font-black text-lg">U</span>
                             )}
                         </div>
                     </div>
@@ -169,13 +185,13 @@ export async function Header() {
                 <div className="p-6 mt-auto border-t bg-muted/20 space-y-4">
                     {user ? (
                         <form action={logout}>
-                             <Button className="w-full h-12 text-sm font-black uppercase tracking-widest bg-[var(--gold)] hover:bg-[var(--gold)]/90 shadow-md rounded-2xl">
+                             <Button className="w-full h-12 text-sm font-black uppercase tracking-widest bg-[var(--gold)] hover:bg-[var(--gold)]/90 shadow-md rounded-2xl text-white">
                                 <LogOut className="mr-2 h-4 w-4" /> Logout
                             </Button>
                         </form>
                     ) : (
                         <SheetClose asChild>
-                             <Button asChild className="w-full h-12 text-sm font-black uppercase tracking-widest bg-[var(--gold)] hover:bg-[var(--gold)]/90 shadow-md rounded-2xl">
+                             <Button asChild className="w-full h-12 text-sm font-black uppercase tracking-widest bg-[var(--gold)] hover:bg-[var(--gold)]/90 shadow-md rounded-2xl text-white">
                                 <Link href="/login">
                                     <LogIn className="mr-2 h-4 w-4" /> Login / Register
                                 </Link>
