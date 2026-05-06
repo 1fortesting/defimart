@@ -18,6 +18,7 @@ const getProgressValue = (quantity: number | null) => {
     if (quantity === null) return 0;
     if (quantity > 20) return 80 + Math.min(15, quantity / 20);
     if (quantity > 10) return 50 + (quantity - 10) * 3;
+    if (quantity > 10) return 50 + (quantity - 10) * 3;
     if (quantity > 5) return 25 + (quantity - 5) * 5;
     if (quantity > 0) return Math.max(5, quantity * 5);
     return 0;
@@ -78,14 +79,14 @@ export function FlashSaleProductCard({ product }: FlashSaleProductCardProps) {
 
     return (
     <Link href={`/products/${product.id}`} className="block w-36 md:w-48 flex-shrink-0">
-        <Card className="relative overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-orange-500/[0.04] via-background to-blue-500/[0.03] border border-white/20 dark:border-slate-800/50 shadow-lg hover:shadow-primary/10 flex flex-col h-full">
+        <Card className="relative overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-orange-500/[0.02] via-background to-blue-500/[0.01] border border-white/20 dark:border-slate-800/50 shadow-lg hover:shadow-primary/10 flex flex-col h-full">
             {/* Decorative Blue Auras */}
-            <div className="absolute -top-12 -left-12 w-32 h-32 bg-blue-500/[0.05] rounded-full blur-2xl transition-all duration-700 opacity-50 group-hover:opacity-80 group-hover:w-40 group-hover:h-40 z-0" />
-            <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-primary/[0.05] rounded-full blur-2xl transition-all duration-700 opacity-50 group-hover:opacity-80 group-hover:w-40 group-hover:h-40 z-0" />
+            <div className="absolute -top-12 -left-12 w-32 h-32 bg-blue-500/[0.02] rounded-full blur-2xl transition-all duration-700 opacity-40 group-hover:opacity-70 group-hover:w-40 group-hover:h-40 z-0" />
+            <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-primary/[0.02] rounded-full blur-2xl transition-all duration-700 opacity-40 group-hover:opacity-70 group-hover:w-40 group-hover:h-40 z-0" />
 
             <div className="relative z-10 flex flex-col h-full">
                 <div className="relative p-2">
-                    <div className="relative aspect-[4/3] bg-primary/[0.03] rounded-md overflow-hidden">
+                    <div className="relative aspect-[4/3] bg-primary/[0.02] rounded-md overflow-hidden">
                         <Image
                             src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'}
                             alt={product.name}

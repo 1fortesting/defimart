@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { format } from 'date-fns';
 
 export default function TermsAndConditionsPage() {
-  const lastUpdated = new Date(2026, 6, 26); // July 26, 2026 (Month index 6 is July)
+  const lastUpdated = new Date(2026, 6, 26); // July 26, 2026
 
   const Section = ({ title, children }: { title: string, children: React.ReactNode }) => (
     <div className="space-y-2">

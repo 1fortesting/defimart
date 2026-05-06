@@ -50,9 +50,9 @@ export function BottomNav() {
   navItems.push({ label: 'Profile', href: '/profile', icon: User });
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-primary/10 h-[72px] z-[100] flex items-center justify-around px-1 overflow-x-auto no-scrollbar shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
-      {/* Opaque Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-primary/[0.05] via-transparent to-red-500/[0.03] pointer-events-none" />
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-primary/10 h-[72px] z-[100] flex items-center justify-around px-1 overflow-x-auto no-scrollbar shadow-[0_-8px_30px_rgba(0,0,0,0.15)] opacity-100">
+      {/* Subtle Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-primary/[0.05] via-transparent to-blue-500/[0.01] pointer-events-none" />
       
       {navItems.map((item) => {
         const isActive = pathname === item.href;

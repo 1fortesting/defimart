@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import Link from 'next/link';
 
 export default function PrivacyPolicyPage() {
-  const lastUpdated = new Date(2026, 6, 26); // July 26, 2026 (Month index 6 is July)
+  const lastUpdated = new Date(2026, 6, 26); // July 26, 2026
 
   const Section = ({ title, children }: { title: string, children: React.ReactNode }) => (
     <div className="space-y-2">

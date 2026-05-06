@@ -193,29 +193,33 @@ export default function SellerDashboardPage() {
   const [addState, addAction, isAddPending] = useActionState(addSellerProduct, { success: false, error: null });
 
   const fetchData = async () => {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    setUser(user);
+    try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        setUser(user);
 
-    const { data: sellerData } = await supabase.from('sellers' as any).select('*').eq('user_id', user.id).single();
-    setSeller(sellerData);
+        const { data: sellerData } = await supabase.from('sellers' as any).select('*').eq('user_id', user.id).single();
+        setSeller(sellerData);
 
-    const { data: productsData } = await supabase
-      .from('vendor_products' as any)
-      .select('*')
-      .eq('seller_id', user.id)
-      .order('created_at', { ascending: false });
-    setProducts(productsData || []);
+        const { data: productsData } = await supabase
+          .from('vendor_products' as any)
+          .select('*')
+          .eq('seller_id', user.id)
+          .order('created_at', { ascending: false });
+        setProducts(productsData || []);
 
-    const { data: ordersData } = await supabase
-      .from('orders')
-      .select('*, products:product_id(name, image_urls), vendor_products:vendor_product_id(name, image_urls), profiles:buyer_id(display_name, phone_number, id)')
-      .eq('seller_id', user.id)
-      .order('created_at', { ascending: false });
-    setOrders(ordersData || []);
-    
-    setLoading(false);
+        const { data: ordersData } = await supabase
+          .from('orders')
+          .select('*, products:product_id(name, image_urls), vendor_products:vendor_product_id(name, image_urls), profiles:buyer_id(display_name, phone_number, id)')
+          .eq('seller_id', user.id)
+          .order('created_at', { ascending: false });
+        setOrders(ordersData || []);
+        
+        setLoading(false);
+    } catch (err) {
+        console.error('Fetch error:', err);
+    }
   };
 
   useEffect(() => {
