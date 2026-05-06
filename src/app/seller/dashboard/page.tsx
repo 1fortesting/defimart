@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useTransition, useActionState } from 'react';
+import { useEffect, useState, useTransition, useActionState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -193,39 +193,45 @@ export default function SellerDashboardPage() {
 
   const [addState, addAction, isAddPending] = useActionState(addSellerProduct, { success: false, error: null });
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+            setLoading(false);
+            return;
+        }
         setUser(user);
 
-        const { data: sellerData } = await supabase.from('sellers' as any).select('*').eq('user_id', user.id).single();
+        const { data: sellerData } = await supabase.from('sellers' as any).select('*').eq('user_id', user.id).maybeSingle();
         setSeller(sellerData);
 
-        const { data: productsData } = await supabase
-          .from('vendor_products' as any)
-          .select('*')
-          .eq('seller_id', user.id)
-          .order('created_at', { ascending: false });
-        setProducts(productsData || []);
+        if (sellerData) {
+            const { data: productsData } = await supabase
+              .from('vendor_products' as any)
+              .select('*')
+              .eq('seller_id', user.id)
+              .order('created_at', { ascending: false });
+            setProducts(productsData || []);
 
-        const { data: ordersData } = await supabase
-          .from('orders')
-          .select('*, products:product_id(name, image_urls), vendor_products:vendor_product_id(name, image_urls), profiles:buyer_id(display_name, phone_number, id)')
-          .eq('seller_id', user.id)
-          .order('created_at', { ascending: false });
-        setOrders(ordersData || []);
+            const { data: ordersData } = await supabase
+              .from('orders')
+              .select('*, products:product_id(name, image_urls), vendor_products:vendor_product_id(name, image_urls), profiles:buyer_id(display_name, phone_number, id)')
+              .eq('seller_id', user.id)
+              .order('created_at', { ascending: false });
+            setOrders(ordersData || []);
+        }
         
         setLoading(false);
     } catch (err) {
         console.error('Fetch error:', err);
+        setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, [user?.id]);
+  }, [fetchData]);
 
   useEffect(() => {
     if (addState.success) {
@@ -238,7 +244,7 @@ export default function SellerDashboardPage() {
     } else if (addState.error) {
         toast({ title: 'Listing Failed', description: addState.error, variant: 'destructive' });
     }
-  }, [addState, toast, router]);
+  }, [addState, toast, router, fetchData]);
 
   const handleSync = () => {
     startTransition(async () => {
