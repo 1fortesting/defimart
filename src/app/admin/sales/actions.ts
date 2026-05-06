@@ -1,4 +1,3 @@
-
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -29,33 +28,33 @@ export async function updateOrderStatus(formData: FormData) {
     
     const oldStatus = order.status;
 
-    // Handle stock adjustments for completed orders
+    // Handle stock adjustments for completed orders (Platform and Vendor)
     if (newStatus === 'completed' && oldStatus !== 'completed') {
         const table = order.product_id ? 'products' : 'vendor_products';
-        const id = order.product_id || order.vendor_product_id;
+        const targetId = order.product_id || order.vendor_product_id;
 
-        if (id) {
+        if (targetId) {
             const { data: product, error: productError } = await supabase
                 .from(table)
                 .select('quantity')
-                .eq('id', id)
+                .eq('id', targetId)
                 .single();
             
             if (!productError && product !== null) {
                 const newQuantity = (product.quantity ?? 0) - order.quantity;
-                await supabase.from(table).update({ quantity: Math.max(0, newQuantity) }).eq('id', id);
+                await supabase.from(table).update({ quantity: Math.max(0, newQuantity) }).eq('id', targetId);
             }
         }
     } 
-    // Handle stock replenishment for cancelled or rolled back orders
+    // Handle stock replenishment for cancelled/rolled back orders
     else if (oldStatus === 'completed' && newStatus !== 'completed') {
         const table = order.product_id ? 'products' : 'vendor_products';
-        const id = order.product_id || order.vendor_product_id;
+        const targetId = order.product_id || order.vendor_product_id;
 
-        if (id) {
-            const { data: product } = await supabase.from(table).select('quantity').eq('id', id).single();
+        if (targetId) {
+            const { data: product } = await supabase.from(table).select('quantity').eq('id', targetId).single();
             if (product) {
-                await supabase.from(table).update({ quantity: (product.quantity ?? 0) + order.quantity }).eq('id', id);
+                await supabase.from(table).update({ quantity: (product.quantity ?? 0) + order.quantity }).eq('id', targetId);
             }
         }
     }
@@ -71,7 +70,7 @@ export async function updateOrderStatus(formData: FormData) {
 
     if (newStatus === 'ready' && oldStatus !== 'ready') {
         if (buyerPhoneNumber) {
-            const message = `DEFIMART: Order #${order.id.substring(0, 8)} for '${productName}' is ready! Pick it up on ${pickupDate}. Payment is on pickup. Thank you!`;
+            const message = `DEFIMART: Order #${order.id.substring(0, 8)} for '${productName}' is ready! Pick it up on ${pickupDate}. Payment on pickup. Thank you!`;
             await sendSms({ phoneNumber: buyerPhoneNumber, message });
         }
     }

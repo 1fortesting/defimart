@@ -109,7 +109,7 @@ export default function SellerDashboardPage() {
         setSeller({ ...seller, is_open: isOpen });
         toast({ title: isOpen ? 'Shop is now OPEN' : 'Shop is now CLOSED', variant: isOpen ? 'success' : 'default' });
       } catch (e: any) {
-        toast({ title: 'Update failed', description: 'Please check your internet connection.', variant: 'destructive' });
+        toast({ title: 'Update failed', description: 'Check your internet connection.', variant: 'destructive' });
       }
     });
   };
@@ -185,7 +185,7 @@ export default function SellerDashboardPage() {
             toast({ 
                 variant: 'success',
                 title: 'Settings Saved!', 
-                description: 'Changes applied. Please refresh the page manually to update all profile icons across the platform.',
+                description: 'Changes applied. Refresh to see updates across the site.',
             });
           } else {
               toast({ title: 'Error', description: result.error, variant: 'destructive' });
@@ -212,7 +212,7 @@ export default function SellerDashboardPage() {
 
   return (
     <div className="min-h-screen bg-muted/10 flex flex-col w-full">
-      {/* Immersive Header - Full Screen Layout */}
+      {/* Immersive Header */}
       <div className="bg-background border-b sticky top-0 z-30 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm w-full">
           <div className="flex items-center gap-4">
               <div className="relative group">
@@ -236,7 +236,7 @@ export default function SellerDashboardPage() {
                           <Switch 
                               id="shop-toggle-top" 
                               checked={seller.is_open} 
-                              onValueChange={(checked) => handleToggle(checked)}
+                              onCheckedChange={(checked) => handleToggle(checked)}
                               disabled={isPending}
                               className="scale-75"
                           />
@@ -417,7 +417,6 @@ export default function SellerDashboardPage() {
                     </Card>
                 </div>
                 
-                {/* Recent Activity Mini-Section */}
                 <div className="grid lg:grid-cols-2 gap-8">
                      <Card className="border-none shadow-lg bg-background">
                         <CardHeader className="border-b bg-muted/5">
@@ -535,7 +534,7 @@ export default function SellerDashboardPage() {
                                 })}
                                 {orders.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-24 text-muted-foreground italic font-medium">Your shop has not processed any orders yet.</TableCell>
+                                        <TableCell colSpan={5} className="text-center py-24 text-muted-foreground italic font-medium">No orders yet.</TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
@@ -585,7 +584,7 @@ export default function SellerDashboardPage() {
                     {products.length === 0 && (
                         <div className="col-span-full py-32 text-center bg-muted/10 rounded-3xl border-2 border-dashed border-muted-foreground/20 w-full">
                             <Package className="h-16 w-16 text-muted-foreground/10 mx-auto mb-4" />
-                            <h3 className="text-lg font-black uppercase tracking-widest text-muted-foreground opacity-30">Your Inventory is Empty</h3>
+                            <h3 className="text-lg font-black uppercase tracking-widest text-muted-foreground opacity-30">Inventory Empty</h3>
                             <Button className="mt-6 font-bold rounded-xl" onClick={() => setIsAddDialogOpen(true)}><Plus className="h-4 w-4 mr-2" /> Start Selling</Button>
                         </div>
                     )}
@@ -607,7 +606,7 @@ export default function SellerDashboardPage() {
                                 </div>
                                 <div>
                                     <p className="font-black text-lg leading-tight">{cust.name}</p>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mt-1">{cust.totalOrders} completed orders</p>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mt-1">{cust.totalOrders} orders</p>
                                 </div>
                                 <div className="w-full space-y-2 pt-2">
                                      <div className="flex items-center justify-center gap-2 text-xs font-bold text-muted-foreground">
@@ -628,7 +627,7 @@ export default function SellerDashboardPage() {
                     ))}
                     {uniqueCustomers.length === 0 && (
                         <div className="col-span-full py-32 text-center bg-muted/10 rounded-3xl border-2 border-dashed w-full">
-                             <p className="text-sm font-black uppercase tracking-[3px] text-muted-foreground opacity-20 italic">No Client Records Found</p>
+                             <p className="text-sm font-black uppercase tracking-[3px] text-muted-foreground opacity-20 italic">No Clients</p>
                         </div>
                     )}
                 </div>
@@ -639,7 +638,7 @@ export default function SellerDashboardPage() {
                     <Card className="border-none shadow-xl bg-background overflow-hidden">
                         <CardHeader className="bg-muted/5 border-b p-8">
                             <CardTitle className="text-xl font-black uppercase tracking-widest">Business Identity</CardTitle>
-                            <CardDescription className="font-medium">Maintain your public shop profile and operating hours.</CardDescription>
+                            <CardDescription className="font-medium">Maintain profile and hours.</CardDescription>
                         </CardHeader>
                         <CardContent className="p-8">
                             <form action={handleUpdateShop} className="space-y-8">
@@ -657,8 +656,7 @@ export default function SellerDashboardPage() {
                                         </div>
                                         <div className="text-center sm:text-left space-y-1">
                                             <h4 className="font-black uppercase tracking-widest text-sm">Shop Branding</h4>
-                                            <p className="text-xs text-muted-foreground font-medium max-w-[400px]">Upload a high-resolution logo to stand out in the vendor gallery.</p>
-                                            <p className="text-[10px] font-black text-primary uppercase mt-2">Recommended: 512x512 PNG</p>
+                                            <p className="text-xs text-muted-foreground font-medium">Stand out in the vendor gallery.</p>
                                         </div>
                                     </div>
 
@@ -679,9 +677,9 @@ export default function SellerDashboardPage() {
                                     </div>
                                 </div>
 
-                                <Button type="submit" className="w-full h-16 text-lg font-black uppercase tracking-[4px] shadow-2xl shadow-primary/20 rounded-2xl transition-all hover:scale-[1.01]" disabled={isUpdatePending}>
+                                <Button type="submit" className="w-full h-16 text-lg font-black uppercase tracking-[4px] shadow-2xl shadow-primary/20 rounded-2xl transition-all" disabled={isUpdatePending}>
                                     {isUpdatePending ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : <Settings className="mr-3 h-6 w-6" />}
-                                    Update Shop Profile
+                                    Update Profile
                                 </Button>
                             </form>
                         </CardContent>
@@ -691,7 +689,6 @@ export default function SellerDashboardPage() {
           </Tabs>
       </main>
 
-      {/* Floating Bottom Info (Mobile Only) */}
       <div className="md:hidden fixed bottom-4 left-4 right-4 bg-background/95 backdrop-blur-md border p-3 rounded-2xl shadow-2xl flex items-center justify-between z-40">
           <div className="flex items-center gap-3">
                <Badge className={cn("h-3 w-3 p-0 rounded-full", seller.is_open ? "bg-emerald-500" : "bg-destructive")} />

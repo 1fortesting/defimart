@@ -118,7 +118,7 @@ export async function addSellerProduct(formData: FormData) {
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Authentication required. Please log in again.' };
+    if (!user) return { success: false, error: 'Authentication required.' };
 
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
@@ -133,45 +133,37 @@ export async function addSellerProduct(formData: FormData) {
 
     const imageFile = formData.get('image') as File;
 
-    // 1. Basic Field Validation
     if (!name || isNaN(price)) {
-      return { success: false, error: 'Product name and price are required.' };
+      return { success: false, error: 'Name and price are required.' };
     }
 
-    // 2. Strict Image Presence Validation
+    // Mandatory Image Validation
     if (!imageFile || imageFile.size === 0) {
-      return { success: false, error: 'Product image is mandatory. Please select a photo for your listing.' };
+      return { success: false, error: 'Product image is required.' };
     }
 
-    // 3. Image Upload to vendor-images bucket
+    // Upload to vendor-images bucket
     const fileExt = imageFile.name.split('.').pop() || 'jpg';
     const fileName = `${user.id}/${Date.now()}.${fileExt}`;
     const filePath = `uploads/${fileName}`;
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('vendor-images')
-      .upload(filePath, imageFile, {
-          cacheControl: '3600',
-          upsert: false
-      });
+      .upload(filePath, imageFile);
 
     if (uploadError) {
-      console.error('Supabase Storage Error:', uploadError);
-      return { success: false, error: `Image upload failed: ${uploadError.message}. Check your internet and try again.` };
+      return { success: false, error: `Image upload failed: ${uploadError.message}` };
     }
 
-    // 4. Retrieve Public URL
     const { data: { publicUrl } } = supabase.storage
       .from('vendor-images')
       .getPublicUrl(filePath);
     
     if (!publicUrl) {
-      // Cleanup orphaned image if URL generation fails
-      await supabase.storage.from('vendor-images').remove([filePath]);
-      return { success: false, error: 'Security Error: Could not generate a public link for the uploaded image.' };
+      return { success: false, error: 'Could not generate image link.' };
     }
 
-    // 5. Database Insertion into vendor_products
+    // Insert into vendor_products (No cost_price column)
     const { error: dbError } = await (supabase as any)
       .from('vendor_products')
       .insert({
@@ -179,25 +171,22 @@ export async function addSellerProduct(formData: FormData) {
         description: description || '',
         price,
         category: category || 'Uncategorized',
-        image_urls: [publicUrl], // Array of strings
+        image_urls: [publicUrl],
         seller_id: user.id,
-        is_approved: true, // Display instantly on platform
-        quantity: 1,
-        tags: []
+        is_approved: true,
+        quantity: 1
       });
 
     if (dbError) {
-      console.error('Database Insertion Error:', dbError);
-      // Cleanup orphaned image if DB insert fails
+      // Cleanup orphan
       await supabase.storage.from('vendor-images').remove([filePath]);
-      return { success: false, error: `Product Listing Failed: ${dbError.message}. Please try again.` };
+      return { success: false, error: `Database Error: ${dbError.message}` };
     }
 
     revalidatePath('/seller/dashboard');
     revalidatePath('/shops');
     return { success: true };
   } catch (err: any) {
-    console.error('Critical Add Product Error:', err);
-    return { success: false, error: 'A system error occurred. Please refresh the page and try again.' };
+    return { success: false, error: err.message || 'An unexpected error occurred.' };
   }
 }
