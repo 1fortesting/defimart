@@ -35,7 +35,6 @@ export async function Header() {
 
   let cartItemCount = 0;
   let isSeller = false;
-  const isAdmin = user?.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL;
 
   if (user) {
     // Fetch cart count
@@ -67,6 +66,7 @@ export async function Header() {
     { title: "My Orders", description: "Track your past and current orders", href: "/orders", icon: Package },
     { title: "Wishlist", description: "View your saved products", href: "/saved", icon: Heart },
     { title: "Messages", description: "Your conversations with sellers", href: "/messages", icon: MessageSquare },
+    { title: "Request a Product", description: "Tell us what you want to see", href: "/request-product", icon: PackagePlus },
   ];
 
   const sellerLinks = isSeller ? [
@@ -74,9 +74,10 @@ export async function Header() {
   ] : [];
 
   const generalLinks = [
-    { title: "Request a Product", description: "Tell us what you want to see", href: "/request-product", icon: PackagePlus },
     { title: "About Us", description: "Learn more about DEFIMART", href: "/about", icon: Info },
     { title: "FAQ", description: "Find answers to common questions", href: "/faq", icon: HelpCircle },
+    { title: "Terms of Service", description: "Legal terms and conditions", href: "/terms", icon: FileText },
+    { title: "Privacy Policy", description: "Our commitment to your privacy", href: "/privacy", icon: Shield },
   ];
 
   const MobileNavLink = ({ href, icon: Icon, title, description }: { href: string; icon: React.ElementType; title: string, description: string }) => (
@@ -145,7 +146,9 @@ export async function Header() {
                     </Link>
                     
                     <div className="flex items-center gap-2">
-                        <p className="font-bold text-sm tracking-tight">Defimart</p>
+                        <p className="font-bold text-sm tracking-tight">
+                            {user ? (user.user_metadata.display_name || 'Account') : 'User'}
+                        </p>
                         <div className="h-10 w-10 rounded-full border-2 border-white/30 bg-white overflow-hidden shadow-md flex items-center justify-center">
                             {user ? (
                                 user.user_metadata.avatar_url ? (
@@ -158,7 +161,7 @@ export async function Header() {
                                     />
                                 ) : (
                                     <span className="text-[var(--gold)] font-black text-lg">
-                                        {user.user_metadata.display_name?.[0]?.toUpperCase() || 'U'}
+                                        {user.user_metadata.display_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                                     </span>
                                 )
                             ) : (
