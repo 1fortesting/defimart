@@ -71,7 +71,6 @@ export default function SellerDashboardPage() {
 
   const { toast } = useToast();
 
-  // useActionState for robust product upload using direct FormData
   const [addState, addAction, isAddPending] = useActionState(addSellerProduct, { success: false, error: null });
 
   const fetchData = async () => {
@@ -104,7 +103,6 @@ export default function SellerDashboardPage() {
     fetchData();
   }, [user?.id]);
 
-  // Sync effect for upload result
   useEffect(() => {
     if (addState.success) {
         setIsAddDialogOpen(false);
@@ -213,7 +211,6 @@ export default function SellerDashboardPage() {
 
   return (
     <div className="min-h-screen bg-muted/10 flex flex-col w-full">
-      {/* Immersive Header */}
       <div className="bg-background border-b sticky top-0 z-30 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm w-full">
           <div className="flex items-center gap-4">
               <div className="relative group">
@@ -267,7 +264,7 @@ export default function SellerDashboardPage() {
                             </DialogDescription>
                         </DialogHeader>
                       </div>
-                      <form action={addAction} className="flex flex-col flex-1 overflow-hidden bg-background" encType="multipart/form-data">
+                      <form action={addAction} className="flex flex-col flex-1 overflow-hidden bg-background">
                           <div className="flex-1 overflow-y-auto px-8 py-8 space-y-6">
                                   <div className="grid gap-2">
                                     <Label htmlFor="name" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Name</Label>
