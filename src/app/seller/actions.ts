@@ -155,15 +155,18 @@ export async function addSellerProduct(formData: FormData) {
       return { success: false, error: `Image upload failed: ${uploadError.message}` };
     }
 
-    const { data: { publicUrl } } = supabase.storage
+    const { data: urlData } = supabase.storage
       .from('vendor-images')
       .getPublicUrl(filePath);
     
+    const publicUrl = urlData?.publicUrl;
+    
     if (!publicUrl) {
+      await supabase.storage.from('vendor-images').remove([filePath]);
       return { success: false, error: 'Could not generate image link.' };
     }
 
-    // Insert into vendor_products (No cost_price column)
+    // Insert into vendor_products
     const { error: dbError } = await (supabase as any)
       .from('vendor_products')
       .insert({
@@ -178,7 +181,7 @@ export async function addSellerProduct(formData: FormData) {
       });
 
     if (dbError) {
-      // Cleanup orphan
+      // Cleanup orphan image if DB insertion fails
       await supabase.storage.from('vendor-images').remove([filePath]);
       return { success: false, error: `Database Error: ${dbError.message}` };
     }

@@ -1,4 +1,3 @@
-
 export const dynamic = 'force-dynamic';
 
 import { createClient } from '@/lib/supabase/server';
@@ -18,28 +17,17 @@ export default async function Home() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Fetch all products
+  // Fetch only platform-managed products
+  // Vendor products live in vendor_products and are excluded by querying the 'products' table directly
   const { data: productsData } = await supabase.from('products').select('*');
   const { data: reviews } = await supabase.from('reviews').select('product_id, rating');
-  
-  // Fetch all registered seller user IDs to filter them out of the main homepage experience
-  const { data: sellers } = await supabase.from('sellers' as any).select('user_id');
-  const vendorUserIds = new Set(sellers?.map((s: any) => s.user_id) || []);
   
   const { data: savedProducts } = user 
       ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 
       : { data: null };
   const savedProductIds = (savedProducts as any[])?.map((p: any) => p.product_id) || [];
 
-  const rawProducts = productsData || [];
-
-  /**
-   * Home Page Logic: Only show products that do NOT belong to independent vendors.
-   * This reserves the main landing page for Official Platform (Admin) products.
-   */
-  const allProducts = rawProducts.filter((p: any) => {
-      return !vendorUserIds.has(p.seller_id);
-  });
+  const allProducts = productsData || [];
 
   const reviewsByProduct = (reviews || []).reduce((acc: Record<string, number[]>, review: any) => {
     if (!acc[review.product_id]) {
@@ -58,15 +46,14 @@ export default async function Home() {
 
   const shuffledProducts = [...productsWithRatings].sort(() => 0.5 - Math.random());
   
-  // Featured products filtered to official platform items only
-  const { data: featuredProductsData } = await supabase.from('products').select('*').eq('is_featured', true);
-  const featuredProducts = (featuredProductsData || []).filter((p: any) => !vendorUserIds.has(p.seller_id)).slice(0, 5);
+  // Featured products filtered to official platform items
+  const { data: featuredProductsData } = await supabase.from('products').select('*').eq('is_featured', true).limit(5);
   
-  // Outstanding products filtered to official platform items only
-  const { data: outstandingProductsData } = await supabase.from('products').select('*').eq('is_outstanding', true);
-  let outstandingProducts = (outstandingProductsData || []).filter((p: any) => !vendorUserIds.has(p.seller_id)).slice(0, 4);
+  // Outstanding products filtered to official platform items
+  const { data: outstandingProductsData } = await supabase.from('products').select('*').eq('is_outstanding', true).limit(4);
 
-  const carouselProducts = featuredProducts.length > 0 ? featuredProducts : allProducts.slice(0, 5);
+  const carouselProducts = featuredProductsData && featuredProductsData.length > 0 ? featuredProductsData : allProducts.slice(0, 5);
+  let outstandingProducts = outstandingProductsData || [];
 
   if (outstandingProducts.length < 4) {
       const existingIds = new Set(outstandingProducts.map((p: any) => p.id));
@@ -118,8 +105,7 @@ export default async function Home() {
 
             <OutstandingProducts products={outstandingProducts} />
 
-            {/* Flash sales filtered to exclude vendors */}
-            <FlashSaleSection excludedSellerIds={Array.from(vendorUserIds)} />
+            <FlashSaleSection />
             
             <RecommendedForYouSection />
             
