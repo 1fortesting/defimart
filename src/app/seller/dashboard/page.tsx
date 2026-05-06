@@ -379,7 +379,7 @@ export default function SellerDashboardPage() {
                         </CardHeader>
                         <CardContent>
                             <p className="text-4xl font-black">GHS {formatPrice(totalRevenue)}</p>
-                            <p className="text-xs font-bold mt-2 opacity-80">+12% from last week</p>
+                            <p className="text-xs font-bold mt-2 opacity-80">Lifetime earnings</p>
                         </CardContent>
                     </Card>
                     <Card className="bg-primary text-white border-none shadow-xl shadow-primary/20">
@@ -455,8 +455,12 @@ export default function SellerDashboardPage() {
                         <CardContent className="p-0">
                              <div className="grid grid-cols-4 gap-1 p-2">
                                 {products.slice(0, 8).map(product => (
-                                    <div key={product.id} className="relative aspect-square rounded-xl overflow-hidden group">
-                                        <Image src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'} alt="" fill className="object-cover group-hover:scale-110 transition-transform" />
+                                    <div key={product.id} className="relative aspect-square rounded-xl overflow-hidden group bg-muted flex items-center justify-center">
+                                        {product.image_urls?.[0] ? (
+                                            <Image src={product.image_urls[0]} alt="" fill className="object-cover group-hover:scale-110 transition-transform" />
+                                        ) : (
+                                            <ImageIcon className="h-4 w-4 text-muted-foreground/30" />
+                                        )}
                                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 text-center">
                                             <p className="text-[10px] text-white font-bold truncate w-full">{product.name}</p>
                                         </div>
@@ -476,7 +480,7 @@ export default function SellerDashboardPage() {
 
             <TabsContent value="orders" className="animate-in fade-in duration-500">
                 <Card className="border-none shadow-xl bg-background overflow-hidden w-full">
-                    <CardHeader className="bg-muted/5 border-b flex flex-row items-center justify-between">
+                    <CardHeader className="bg-muted/5 border-b p-6 flex flex-row items-center justify-between">
                         <div>
                             <CardTitle className="text-lg font-black uppercase tracking-widest">Transaction Ledger</CardTitle>
                             <CardDescription>Comprehensive list of all shop orders.</CardDescription>
@@ -534,7 +538,7 @@ export default function SellerDashboardPage() {
                                 })}
                                 {orders.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-24 text-muted-foreground italic font-medium">No orders yet.</TableCell>
+                                        <TableCell colSpan(5) className="text-center py-24 text-muted-foreground italic font-medium">No orders yet.</TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
