@@ -4,13 +4,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProductCard } from '@/components/product-card';
-import { Clock, Store, MapPin, Info } from 'lucide-react';
+import { Clock, Store, Info, Package, ImageIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default async function ShopProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     const supabase = await createClient();
 
-    // 1. Fetch seller details
     const { data: seller, error: sellerError } = await supabase
         .from('sellers' as any)
         .select('*')
@@ -21,24 +21,20 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
         notFound();
     }
 
-    // 2. Fetch seller's profile (for avatar)
     const { data: profile } = await supabase
         .from('profiles')
         .select('avatar_url, display_name')
         .eq('id', seller.user_id)
         .single();
 
-    // 3. Fetch seller's products
     const { data: products } = await supabase
         .from('products')
         .select('*')
         .eq('seller_id', seller.user_id)
         .order('created_at', { ascending: false });
 
-    // 4. Fetch current user context
     const { data: { user } } = await supabase.auth.getUser();
     
-    // 5. Check shop status (Is it currently business hours?)
     const isShopOpen = () => {
         if (!seller.is_open) return false;
         if (!seller.open_time || !seller.close_time) return seller.is_open;
@@ -60,14 +56,12 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
 
     return (
         <main className="flex-1 bg-muted/20 pb-20">
-            {/* Shop Header Banner */}
             <div className="relative h-48 md:h-64 bg-gradient-to-r from-primary via-orange-500 to-amber-600">
                 <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px]" />
             </div>
 
             <div className="container mx-auto px-4 -mt-16 relative z-10">
                 <div className="flex flex-col md:flex-row gap-6 items-start">
-                    {/* Shop Sidebar Info */}
                     <div className="w-full md:w-80 space-y-6">
                         <Card className="overflow-hidden border-none shadow-xl bg-background rounded-3xl">
                             <CardContent className="p-6">
@@ -121,7 +115,6 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
                         </Card>
                     </div>
 
-                    {/* Shop Products Grid */}
                     <div className="flex-1 space-y-6">
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-bold uppercase tracking-widest text-muted-foreground">Product Catalog</h2>
@@ -152,9 +145,3 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
         </main>
     );
 }
-
-function cn(...inputs: any[]) {
-    return inputs.filter(Boolean).join(' ');
-}
-
-import { Package } from 'lucide-react';

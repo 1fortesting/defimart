@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Tables } from '@/types/supabase';
-import { Heart, ShoppingCart, Star, Share2, Copy, Check, MessageCircle, Facebook } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Share2, Copy, Check, MessageCircle, Facebook, ImageIcon } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { toggleSaveProduct } from '@/app/saved/actions';
@@ -173,14 +173,14 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(productUrl)}`, '_blank');
         setShowShareFallback(false);
     };
+
+    const hasImage = product.image_urls && product.image_urls.length > 0;
     
     return (
     <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/10 flex flex-col relative h-full">
-        {/* Decorative elements */}
         <div className="absolute -top-16 -left-16 w-48 h-48 bg-[var(--gold)]/20 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125" />
         <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-primary/20 rounded-full blur-3xl transition-all duration-700 opacity-60 group-hover:opacity-100 group-hover:scale-125" />
         
-        {/* Featured Badge */}
         {product.is_featured && (
             <div className="absolute top-2 right-2 z-20 bg-yellow-400 text-white rounded-full p-1.5 shadow-md">
                 <Star className="h-4 w-4 fill-current" />
@@ -188,19 +188,24 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         )}
 
         <div className="relative z-10 flex flex-col h-full">
-            {/* Image Section */}
             <div className="p-3">
                 <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden rounded-2xl bg-[var(--surface-2)]">
-                    <Image
-                        src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/400/400'}
-                        alt={product.name}
-                        fill
-                        className="object-contain p-2 group-hover:scale-110 transition-transform duration-500 drop-shadow-sm rounded-2xl"
-                    />
+                    {hasImage ? (
+                        <Image
+                            src={product.image_urls![0]}
+                            alt={product.name}
+                            fill
+                            className="object-contain p-2 group-hover:scale-110 transition-transform duration-500 drop-shadow-sm rounded-2xl"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/30">
+                            <ImageIcon className="h-12 w-12 mb-1" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">No Image</span>
+                        </div>
+                    )}
                 </Link>
             </div>
             
-            {/* Content Section */}
             <div className="p-4 pt-0 flex flex-col justify-between flex-grow">
                 <div>
                     <h3 className="font-syne font-bold text-sm md:text-base leading-tight text-[var(--dark)] mb-1">
@@ -224,7 +229,6 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                     </div>
                     
                     <div className="flex items-center gap-1">
-                        {/* Share Logic */}
                         <Button 
                             size="icon" 
                             variant="ghost" 
@@ -235,7 +239,6 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                             <Share2 className="h-4 w-4" />
                         </Button>
 
-                        {/* Fallback Share Menu */}
                         <Sheet open={showShareFallback} onOpenChange={setShowShareFallback}>
                             <SheetContent side="bottom" className="rounded-t-3xl border-t-0 p-0 overflow-hidden bg-[var(--gold)] z-[150]">
                                 <div className="w-12 h-1.5 bg-white/30 rounded-full mx-auto mt-3 mb-1" />
@@ -270,7 +273,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                                         <div className="h-14 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
                                             {isCopied ? <Check className="h-7 w-7" /> : <Copy className="h-7 w-7" />}
                                         </div>
-                                        <span className="text-[10px] font-bold font-dm uppercase tracking-tighter text-white/90">{isCopied ? 'Copied' : 'Copy Link'}</span>
+                                        <span className="text-[10px] font-bold font-dm uppercase tracking-tighter text-white/90">{isCopied ? 'Copied!' : 'Copy Link'}</span>
                                     </button>
                                 </div>
                             </SheetContent>

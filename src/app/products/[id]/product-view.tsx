@@ -14,7 +14,7 @@ import { StarRating } from '@/components/star-rating';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, ShoppingCart, Star, Calendar, Info, MessageSquare, Loader2, Share2, Copy, Check, MessageCircle, Facebook, Store } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Calendar, Info, MessageSquare, Loader2, Share2, Copy, Check, MessageCircle, Facebook, Store, ImageIcon } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { Tables } from '@/types/supabase';
 import type { ReviewWithProfile } from './page';
@@ -48,12 +48,11 @@ function getNextPickupInfo() {
     let pickupDate = new Date(today);
     let pickupDayString = '';
 
-    // Logic: Pickup on Wed for orders Sun-Wed, pickup on Sat for orders Thu-Sat.
-    if (currentDay >= 0 && currentDay <= 3) { // Sunday, Monday, Tuesday, Wednesday
+    if (currentDay >= 0 && currentDay <= 3) {
       const daysToAdd = (3 - currentDay + 7) % 7;
       pickupDate.setDate(today.getDate() + daysToAdd);
       pickupDayString = 'Wednesday';
-    } else { // Thursday, Friday, Saturday
+    } else {
       const daysToAdd = (6 - currentDay + 7) % 7;
       pickupDate.setDate(today.getDate() + daysToAdd);
       pickupDayString = 'Saturday';
@@ -156,17 +155,27 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
     const productUrl = typeof window !== 'undefined' ? `${window.location.origin}/products/${product.id}` : '';
     const shareText = `Check out ${product.name} on Defimart! GHS ${formatPrice(discountedPrice)}\n\n${productUrl}`;
     
+    const hasImage = product.image_urls && product.image_urls.length > 0;
+
     return (
         <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
             <div>
-                 <Card className="overflow-hidden">
-                    <Image
-                        src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/600/600'}
-                        alt={product.name}
-                        width={600}
-                        height={600}
-                        className="object-cover w-full aspect-square"
-                    />
+                 <Card className="overflow-hidden bg-muted flex items-center justify-center aspect-square relative">
+                    {hasImage ? (
+                        <Image
+                            src={product.image_urls![0]}
+                            alt={product.name}
+                            width={600}
+                            height={600}
+                            className="object-contain w-full h-full"
+                            priority
+                        />
+                    ) : (
+                        <div className="flex flex-col items-center justify-center text-muted-foreground/30">
+                            <ImageIcon className="h-24 w-24 mb-2" />
+                            <span className="text-sm font-black uppercase tracking-widest">No Image Available</span>
+                        </div>
+                    )}
                  </Card>
             </div>
             <div className="space-y-6">

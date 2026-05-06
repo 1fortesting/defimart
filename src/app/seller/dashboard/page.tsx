@@ -64,10 +64,7 @@ export default function SellerDashboardPage() {
   const [isUpdatePending, startUpdateTransition] = useTransition();
   const [isDialogOpen, setIsAddDialogOpen] = useState(false);
   
-  // Custom Category State
   const [uploadCategory, setUploadCategory] = useState('');
-  
-  // Preview states
   const [productImagePreview, setProductImagePreview] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
@@ -170,7 +167,6 @@ export default function SellerDashboardPage() {
             setProductImagePreview(null);
             setUploadCategory('');
             toast({ variant: 'success', title: 'Product listed successfully' });
-            // Refresh products
             const supabase = createClient();
             const { data } = await supabase.from('products').select('*').eq('seller_id', user.id).order('created_at', { ascending: false });
             setProducts(data || []);
@@ -190,13 +186,13 @@ export default function SellerDashboardPage() {
               toast({ 
                   variant: 'success',
                   title: 'Settings Saved!', 
-                  description: 'Changes applied. Please refresh the page manually to update all profile icons across the site.',
+                  description: 'Changes applied. Please refresh the page manually to update all profile icons across the platform.',
               });
           } catch (err) {
               toast({ 
                   variant: 'success',
                   title: 'Settings Saved!', 
-                  description: 'Changes applied. Please refresh the page manually to update all profile icons across the site.',
+                  description: 'Changes applied. Please refresh the page manually to update all profile icons across the platform.',
               });
           }
       });
@@ -221,7 +217,6 @@ export default function SellerDashboardPage() {
 
   return (
     <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto pb-24">
-      {/* Header Info */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-background p-6 rounded-2xl border shadow-sm">
           <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16 border-2 border-primary/20">
@@ -486,13 +481,20 @@ export default function SellerDashboardPage() {
             <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
                 {products.map((product) => (
                     <Card key={product.id} className="overflow-hidden group hover:shadow-lg transition-all border-none bg-background shadow-sm ring-1 ring-border">
-                        <div className="relative aspect-square bg-muted">
-                            <Image 
-                                src={product.image_urls?.[0] || 'https://picsum.photos/seed/prod/400/400'} 
-                                alt={product.name} 
-                                fill 
-                                className="object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
+                        <div className="relative aspect-square bg-muted flex items-center justify-center">
+                            {product.image_urls && product.image_urls.length > 0 ? (
+                                <Image 
+                                    src={product.image_urls[0]} 
+                                    alt={product.name} 
+                                    fill 
+                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                            ) : (
+                                <div className="flex flex-col items-center justify-center text-muted-foreground/30">
+                                    <ImageIcon className="h-10 w-10 mb-1" />
+                                    <span className="text-[10px] font-bold">NO IMAGE</span>
+                                </div>
+                            )}
                             <div className="absolute top-2 right-2">
                                 <Badge variant={product.is_approved ? 'default' : 'secondary'} className={cn("shadow-lg backdrop-blur-md px-2 py-0.5 text-[10px] font-bold uppercase", product.is_approved ? "bg-emerald-500/80" : "bg-white/80 text-orange-600")}>
                                     {product.is_approved ? 'Approved' : 'Reviewing'}
