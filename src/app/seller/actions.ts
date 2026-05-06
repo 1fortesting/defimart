@@ -113,6 +113,7 @@ export async function updateShopInfo(formData: FormData) {
 
 /**
  * Submits a new product to the vendor_products table.
+ * Specifically uses the 'vendor-images' bucket for image storage.
  */
 export async function addSellerProduct(formData: FormData) {
   try {
@@ -127,7 +128,8 @@ export async function addSellerProduct(formData: FormData) {
     
     let category = formData.get('category') as string;
     if (category === 'Other') {
-        category = formData.get('custom_category') as string;
+        const customCategory = formData.get('custom_category') as string;
+        category = customCategory || 'Other';
     }
 
     const imageFile = formData.get('image');
@@ -142,8 +144,9 @@ export async function addSellerProduct(formData: FormData) {
       const file = imageFile as File;
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `seller-uploads/${fileName}`;
+      const filePath = `uploads/${fileName}`;
 
+      // Uploading to the dedicated vendor-images bucket
       const { error: uploadError } = await supabase.storage
         .from('vendor-images')
         .upload(filePath, file);
@@ -157,8 +160,9 @@ export async function addSellerProduct(formData: FormData) {
       image_url = publicUrl;
     }
 
-    const { error } = await supabase
-      .from('vendor_products' as any)
+    // Explicitly inserting into the vendor_products table
+    const { error } = await (supabase as any)
+      .from('vendor_products')
       .insert({
         name,
         description,
@@ -166,7 +170,9 @@ export async function addSellerProduct(formData: FormData) {
         category,
         image_urls: image_url ? [image_url] : [],
         seller_id: user.id,
-        is_approved: true 
+        is_approved: true, // Auto-display on platform as requested
+        quantity: 1, // Default quantity
+        cost_price: 0 // Default to prevent constraint errors
       });
 
     if (error) throw new Error(`Failed to list product: ${error.message}`);
@@ -175,7 +181,7 @@ export async function addSellerProduct(formData: FormData) {
     revalidatePath('/shops');
     return { success: true };
   } catch (err: any) {
-    console.error('Add Product Error:', err);
+    console.error('Add Vendor Product Error:', err);
     return { success: false, error: err.message };
   }
 }

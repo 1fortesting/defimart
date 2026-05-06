@@ -14,33 +14,35 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    // Try fetching from platform products first
+    // 1. Try fetching from the primary platform products table
     let { data: product } = await supabase
         .from('products')
         .select('*')
         .eq('id', id)
         .single();
 
-    // If not found, try fetching from vendor_products
+    // 2. If not found in primary table, check the vendor_products table
     if (!product) {
-        const { data: vendorProduct } = await supabase
-            .from('vendor_products' as any)
+        const { data: vendorProduct } = await (supabase as any)
+            .from('vendor_products')
             .select('*')
             .eq('id', id)
             .single();
-        product = vendorProduct as any;
+        product = vendorProduct;
     }
 
     if (!product) {
         notFound();
     }
     
+    // Check if the current user has saved this product
     const { data: savedProducts } = user 
       ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id).eq('product_id', product.id).single() 
       : { data: null };
     
     const isSaved = !!savedProducts;
 
+    // Fetch reviews associated with this product ID (works for both tables)
     const { data: reviews } = await supabase
         .from('reviews')
         .select('*, profiles(display_name, avatar_url)')
@@ -57,12 +59,12 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
     return (
         <main className="flex-1 bg-muted/40">
-            <div className="container mx-auto py-4 md:py-8">
+            <div className="container mx-auto py-4 md:py-8 px-4">
                  <div className="mb-4">
                     <BackButton />
                 </div>
                 <ProductView 
-                    product={product}
+                    product={product as any}
                     isSaved={isSaved}
                     reviews={(reviews as any[]) || []}
                     averageRating={averageRating}

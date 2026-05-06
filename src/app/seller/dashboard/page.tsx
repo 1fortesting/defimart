@@ -4,7 +4,7 @@
 import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -23,12 +23,11 @@ import {
     Settings, 
     TrendingUp, 
     Phone, 
-    ExternalLink,
     Image as ImageIcon,
     X,
     UploadCloud,
     Trash2
-} from 'lucide-react';
+} from 'lucide-center';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -71,34 +70,35 @@ export default function SellerDashboardPage() {
 
   const { toast } = useToast();
 
+  const fetchData = async () => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setUser(user);
+
+    const { data: sellerData } = await supabase.from('sellers' as any).select('*').eq('user_id', user.id).single();
+    setSeller(sellerData);
+
+    // Fetch exclusively from the vendor_products table
+    const { data: productsData } = await supabase
+      .from('vendor_products' as any)
+      .select('*')
+      .eq('seller_id', user.id)
+      .order('created_at', { ascending: false });
+    setProducts(productsData || []);
+
+    // Fetch orders relevant to this seller (both platform and vendor products)
+    const { data: ordersData } = await supabase
+      .from('orders')
+      .select('*, products:product_id(name, image_urls), vendor_products:vendor_product_id(name, image_urls), profiles:buyer_id(display_name, phone_number, id)')
+      .eq('seller_id', user.id)
+      .order('created_at', { ascending: false });
+    setOrders(ordersData || []);
+    
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      setUser(user);
-
-      const { data: sellerData } = await supabase.from('sellers' as any).select('*').eq('user_id', user.id).single();
-      setSeller(sellerData);
-
-      // Fetch from vendor_products
-      const { data: productsData } = await supabase
-        .from('vendor_products' as any)
-        .select('*')
-        .eq('seller_id', user.id)
-        .order('created_at', { ascending: false });
-      setProducts(productsData || []);
-
-      const { data: ordersData } = await supabase
-        .from('orders')
-        .select('*, products:product_id(name, image_urls), vendor_products:vendor_product_id(name, image_urls), profiles:buyer_id(display_name, phone_number, id)')
-        .eq('seller_id', user.id)
-        .order('created_at', { ascending: false });
-      setOrders(ordersData || []);
-      
-      setLoading(false);
-    };
-
     fetchData();
   }, [user?.id]);
 
@@ -109,7 +109,7 @@ export default function SellerDashboardPage() {
         setSeller({ ...seller, is_open: isOpen });
         toast({ title: isOpen ? 'Shop is now OPEN' : 'Shop is now CLOSED', variant: isOpen ? 'success' : 'default' });
       } catch (e: any) {
-        toast({ title: 'Update failed', description: e.message || 'Check your internet connection.', variant: 'destructive' });
+        toast({ title: 'Update failed', description: 'Please check your internet connection.', variant: 'destructive' });
       }
     });
   };
@@ -169,9 +169,7 @@ export default function SellerDashboardPage() {
             setProductImagePreview(null);
             setUploadCategory('');
             toast({ variant: 'success', title: 'Product listed successfully' });
-            const supabase = createClient();
-            const { data } = await supabase.from('vendor_products' as any).select('*').eq('seller_id', user.id).order('created_at', { ascending: false });
-            setProducts(data || []);
+            fetchData(); // Refresh all data
         } else {
             toast({ title: 'Failed to add product', description: result.error, variant: 'destructive' });
         }
@@ -182,20 +180,15 @@ export default function SellerDashboardPage() {
       startUpdateTransition(async () => {
           if (!seller) return;
           formData.append('sellerId', seller.id);
-          
-          try {
-              await updateShopInfo(formData);
-              toast({ 
-                  variant: 'success',
-                  title: 'Settings Saved!', 
-                  description: 'Changes applied. Please refresh the page manually to update all profile icons across the platform.',
-              });
-          } catch (err) {
-              toast({ 
-                  variant: 'success',
-                  title: 'Settings Saved!', 
-                  description: 'Changes applied. Please refresh the page manually to update all profile icons across the platform.',
-              });
+          const result = await updateShopInfo(formData);
+          if (result.success) {
+            toast({ 
+                variant: 'success',
+                title: 'Settings Saved!', 
+                description: 'Changes applied. Please refresh the page manually to update all profile icons across the platform.',
+            });
+          } else {
+              toast({ title: 'Error', description: result.error, variant: 'destructive' });
           }
       });
   };
@@ -227,7 +220,7 @@ export default function SellerDashboardPage() {
               </Avatar>
               <div>
                   <h1 className="text-2xl font-black tracking-tight">{seller.shop_name}</h1>
-                  <p className="text-muted-foreground text-sm">Welcome back to your shop manager.</p>
+                  <p className="text-muted-foreground text-sm">Manage your listings and orders.</p>
               </div>
           </div>
           <div className="flex items-center gap-3 bg-muted/30 p-3 rounded-xl border">
@@ -246,20 +239,20 @@ export default function SellerDashboardPage() {
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="bg-muted/50 p-1 rounded-xl w-full justify-start overflow-x-auto hide-scrollbar h-auto gap-1">
-          <TabsTrigger value="overview" className="rounded-lg gap-2 py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="overview" className="rounded-lg gap-2 py-2 px-4 data-[state=active]:bg-background">
               <LayoutDashboard className="h-4 w-4" /> Overview
           </TabsTrigger>
-          <TabsTrigger value="orders" className="rounded-lg gap-2 py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="orders" className="rounded-lg gap-2 py-2 px-4 data-[state=active]:bg-background">
               <ShoppingBag className="h-4 w-4" /> Orders 
-              {pendingOrdersCount > 0 && <Badge className="ml-1 px-1.5 h-4 min-w-4 flex items-center justify-center bg-primary text-white text-[10px]">{pendingOrdersCount}</Badge>}
+              {pendingOrdersCount > 0 && <Badge className="ml-1 bg-primary text-white text-[10px]">{pendingOrdersCount}</Badge>}
           </TabsTrigger>
-          <TabsTrigger value="products" className="rounded-lg gap-2 py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="products" className="rounded-lg gap-2 py-2 px-4 data-[state=active]:bg-background">
               <Package className="h-4 w-4" /> Products
           </TabsTrigger>
-          <TabsTrigger value="customers" className="rounded-lg gap-2 py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="customers" className="rounded-lg gap-2 py-2 px-4 data-[state=active]:bg-background">
               <Users className="h-4 w-4" /> Customers
           </TabsTrigger>
-          <TabsTrigger value="settings" className="rounded-lg gap-2 py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsTrigger value="settings" className="rounded-lg gap-2 py-2 px-4 data-[state=active]:bg-background">
               <Settings className="h-4 w-4" /> Shop Settings
           </TabsTrigger>
         </TabsList>
@@ -274,7 +267,7 @@ export default function SellerDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <p className="text-3xl font-black">GHS {formatPrice(totalRevenue)}</p>
-                        <p className="text-xs text-muted-foreground mt-1">From completed orders</p>
+                        <p className="text-xs text-muted-foreground mt-1">Completed sales</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -285,7 +278,7 @@ export default function SellerDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <p className="text-3xl font-black">{orders.length}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Lifetime orders received</p>
+                        <p className="text-xs text-muted-foreground mt-1">Lifetime orders</p>
                     </CardContent>
                 </Card>
                 <Card className={cn(pendingOrdersCount > 0 ? "border-orange-200 bg-orange-50" : "")}>
@@ -296,27 +289,17 @@ export default function SellerDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <p className="text-3xl font-black">{pendingOrdersCount}</p>
-                        <p className="text-xs text-muted-foreground mt-1">Orders requiring attention</p>
+                        <p className="text-xs text-muted-foreground mt-1">Orders requiring action</p>
                     </CardContent>
                 </Card>
             </div>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Performance Insights</CardTitle>
-                    <CardDescription>Visual summary of your shop activity.</CardDescription>
-                </CardHeader>
-                <CardContent className="h-40 flex items-center justify-center text-muted-foreground italic border-t pt-6 text-center">
-                    <p className="text-sm">Sales trend visualization coming soon... <br/> Keep track of your daily completions to grow your vendor rank.</p>
-                </CardContent>
-            </Card>
         </TabsContent>
 
         <TabsContent value="orders" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <Card>
                 <CardHeader>
-                    <CardTitle>Manage Orders</CardTitle>
-                    <CardDescription>Track and update customer order statuses.</CardDescription>
+                    <CardTitle>Orders</CardTitle>
+                    <CardDescription>Track customer order statuses.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0 sm:p-6">
                     <div className="overflow-x-auto">
@@ -325,7 +308,6 @@ export default function SellerDashboardPage() {
                                 <TableRow>
                                     <TableHead>Customer</TableHead>
                                     <TableHead>Product</TableHead>
-                                    <TableHead className="hidden sm:table-cell">Qty</TableHead>
                                     <TableHead>Total</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
@@ -341,23 +323,21 @@ export default function SellerDashboardPage() {
                                                 <div className="text-[10px] sm:text-xs text-muted-foreground">{order.profiles?.phone_number}</div>
                                             </TableCell>
                                             <TableCell className="max-w-[120px] truncate text-xs sm:text-sm">{productName}</TableCell>
-                                            <TableCell className="hidden sm:table-cell">{order.quantity}</TableCell>
                                             <TableCell className="font-bold text-xs sm:text-sm">GHS {formatPrice(order.price_per_item * order.quantity)}</TableCell>
                                             <TableCell>
                                                 <Badge className="text-[10px] px-1.5 py-0" variant={
                                                     order.status === 'completed' ? 'default' :
-                                                    order.status === 'ready' ? 'secondary' :
-                                                    order.status === 'pending' ? 'outline' : 'destructive'
+                                                    order.status === 'ready' ? 'secondary' : 'outline'
                                                 }>
                                                     {order.status}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right space-x-1">
                                                 {order.status === 'pending' && (
-                                                    <Button size="sm" className="h-7 text-[10px] px-2" onClick={() => handleUpdateStatus(order.id, 'ready')} disabled={isPending}>Mark Ready</Button>
+                                                    <Button size="sm" className="h-7 text-[10px]" onClick={() => handleUpdateStatus(order.id, 'ready')} disabled={isPending}>Ready</Button>
                                                 )}
                                                 {order.status === 'ready' && (
-                                                    <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-emerald-50 text-emerald-700 border-emerald-200" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Mark Complete</Button>
+                                                    <Button size="sm" variant="outline" className="h-7 text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Complete</Button>
                                                 )}
                                                 <Button size="sm" variant="ghost" className="h-7 w-7 p-0" asChild>
                                                     <Link href={`/admin/sales/${order.id}`}><Eye className="h-3 w-3" /></Link>
@@ -368,7 +348,7 @@ export default function SellerDashboardPage() {
                                 })}
                                 {orders.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">No orders received yet.</TableCell>
+                                        <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">No orders received.</TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
@@ -381,7 +361,7 @@ export default function SellerDashboardPage() {
         <TabsContent value="products" className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-black flex items-center gap-2">My Catalog</h2>
+                  <h2 className="text-xl font-black">My Catalog</h2>
                   <p className="text-xs text-muted-foreground">{products.length} products listed</p>
                 </div>
                 <Dialog open={isDialogOpen} onOpenChange={(open) => {
@@ -392,19 +372,19 @@ export default function SellerDashboardPage() {
                   }
                 }}>
                     <DialogTrigger asChild>
-                      <Button size="lg" className="w-full sm:w-auto shadow-primary/20"><Plus className="h-4 w-4 mr-2" /> List New Product</Button>
+                      <Button size="lg" className="w-full sm:w-auto"><Plus className="h-4 w-4 mr-2" /> List New Product</Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-[550px] p-0 overflow-hidden rounded-2xl flex flex-col h-[90vh] max-h-[90vh] md:h-auto md:max-h-[85vh]">
                       <div className="bg-primary p-6 text-primary-foreground flex-shrink-0">
                         <DialogHeader>
                             <DialogTitle className="text-2xl font-black tracking-tight text-white">Create Listing</DialogTitle>
                             <DialogDescription className="text-primary-foreground/80">
-                                Enter your product details. Your listing will go live instantly.
+                                Your product will be stored in the vendor catalog and visible in your shop instantly.
                             </DialogDescription>
                         </DialogHeader>
                       </div>
                       <form action={handleAddProduct} className="flex flex-col flex-1 overflow-hidden bg-background">
-                          <div className="flex-1 overflow-y-auto px-6 pt-6 pb-24 scrollbar-hide">
+                          <div className="flex-1 overflow-y-auto px-6 pt-6 pb-24">
                               <div className="space-y-5">
                                   <div className="grid gap-2">
                                     <Label htmlFor="name" className="font-bold text-xs uppercase tracking-wider">Product Name</Label>
@@ -437,33 +417,30 @@ export default function SellerDashboardPage() {
                                   )}
 
                                   <div className="grid gap-2">
-                                    <Label htmlFor="description" className="font-bold text-xs uppercase tracking-wider">Product Story/Description</Label>
-                                    <Textarea id="description" name="description" placeholder="What makes this product special?" rows={3} className="bg-muted/30 border-2 resize-none" />
+                                    <Label htmlFor="description" className="font-bold text-xs uppercase tracking-wider">Description</Label>
+                                    <Textarea id="description" name="description" placeholder="Product details..." rows={3} className="bg-muted/30 border-2 resize-none" />
                                   </div>
                                   
                                   <div className="space-y-3">
-                                    <Label className="font-bold text-xs uppercase tracking-wider">Product Showcase</Label>
+                                    <Label className="font-bold text-xs uppercase tracking-wider">Product Image</Label>
                                     {productImagePreview ? (
-                                      <div className="relative group aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner">
+                                      <div className="relative group aspect-square w-full max-w-[200px] mx-auto rounded-2xl overflow-hidden border-2 bg-muted shadow-inner">
                                         <Image src={productImagePreview} alt="Preview" fill className="object-contain" />
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                             <button 
                                                 type="button" 
                                                 onClick={() => setProductImagePreview(null)}
-                                                className="bg-white text-destructive p-3 rounded-full shadow-2xl hover:scale-110 transition-transform"
+                                                className="bg-white text-destructive p-2 rounded-full"
                                             >
-                                                <X className="h-6 w-6" />
+                                                <X className="h-5 w-5" />
                                             </button>
                                         </div>
                                       </div>
                                     ) : (
-                                      <label htmlFor="image" className="flex flex-col items-center justify-center w-full aspect-video border-2 border-dashed rounded-2xl cursor-pointer hover:bg-primary/5 hover:border-primary/50 transition-all bg-muted/20 border-muted-foreground/20 group">
-                                          <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
-                                              <div className="p-4 bg-primary/10 rounded-full mb-4 group-hover:scale-110 transition-transform">
-                                                <UploadCloud className="w-8 h-8 text-primary" />
-                                              </div>
-                                              <p className="mb-1 text-sm font-black text-foreground">Click to upload photo</p>
-                                              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">PNG or JPG up to 5MB</p>
+                                      <label htmlFor="image" className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-2xl cursor-pointer hover:bg-primary/5 hover:border-primary/50 transition-all bg-muted/20 border-muted-foreground/20 group text-center">
+                                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                              <UploadCloud className="w-8 h-8 text-primary mb-2" />
+                                              <p className="text-sm font-bold">Click to upload photo</p>
                                           </div>
                                           <Input id="image" name="image" type="file" accept="image/*" className="hidden" required onChange={handleProductImageChange} />
                                       </label>
@@ -472,7 +449,7 @@ export default function SellerDashboardPage() {
                               </div>
                           </div>
 
-                          <div className="p-6 pt-3 border-t bg-background flex-shrink-0 absolute bottom-0 left-0 right-0 z-20">
+                          <div className="p-6 border-t bg-background sticky bottom-0 z-20">
                             <Button type="submit" className="w-full h-12 text-base font-bold shadow-xl shadow-primary/20" disabled={isAddPending}>
                               {isAddPending ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
                               Publish Listing
@@ -492,19 +469,11 @@ export default function SellerDashboardPage() {
                                     src={product.image_urls[0]} 
                                     alt={product.name} 
                                     fill 
-                                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                    className="object-cover"
                                 />
                             ) : (
-                                <div className="flex flex-col items-center justify-center text-muted-foreground/30">
-                                    <ImageIcon className="h-10 w-10 mb-1" />
-                                    <span className="text-[10px] font-bold">NO IMAGE</span>
-                                </div>
+                                <ImageIcon className="h-10 w-10 text-muted-foreground/30" />
                             )}
-                            <div className="absolute top-2 right-2">
-                                <Badge variant={product.is_approved ? 'default' : 'secondary'} className={cn("shadow-lg backdrop-blur-md px-2 py-0.5 text-[10px] font-bold uppercase", product.is_approved ? "bg-emerald-500/80" : "bg-white/80 text-orange-600")}>
-                                    {product.is_approved ? 'Approved' : 'Reviewing'}
-                                </Badge>
-                            </div>
                         </div>
                         <CardContent className="p-3">
                             <h3 className="font-bold truncate text-xs sm:text-sm">{product.name}</h3>
@@ -528,8 +497,7 @@ export default function SellerDashboardPage() {
                 {products.length === 0 && (
                     <div className="col-span-full py-20 text-center bg-muted/20 rounded-3xl border-2 border-dashed">
                         <Package className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                        <p className="text-sm font-bold text-muted-foreground">You haven't added any products yet.</p>
-                        <Button variant="link" onClick={() => setIsAddDialogOpen(true)}>Start selling now</Button>
+                        <p className="text-sm font-bold text-muted-foreground">Empty catalog.</p>
                     </div>
                 )}
             </div>
@@ -538,8 +506,8 @@ export default function SellerDashboardPage() {
         <TabsContent value="customers" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <Card>
                 <CardHeader>
-                    <CardTitle>Client Directory</CardTitle>
-                    <CardDescription>Customers who have purchased from your shop.</CardDescription>
+                    <CardTitle>Directory</CardTitle>
+                    <CardDescription>Customers who have purchased from you.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -556,10 +524,8 @@ export default function SellerDashboardPage() {
                                         </div>
                                     </div>
                                     <Separator className="opacity-50" />
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                            <Phone className="h-3 w-3" /> {cust.phone}
-                                        </div>
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                        <Phone className="h-3 w-3" /> {cust.phone}
                                     </div>
                                 </div>
                                 <div className="mt-4 flex gap-2">
@@ -573,7 +539,7 @@ export default function SellerDashboardPage() {
                             </Card>
                         ))}
                         {uniqueCustomers.length === 0 && (
-                            <div className="col-span-full py-12 text-center text-muted-foreground italic">No customer records yet.</div>
+                            <div className="col-span-full py-12 text-center text-muted-foreground italic">No customer records.</div>
                         )}
                     </div>
                 </CardContent>
@@ -583,8 +549,8 @@ export default function SellerDashboardPage() {
         <TabsContent value="settings" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <Card>
                 <CardHeader>
-                    <CardTitle>Shop Profile</CardTitle>
-                    <CardDescription>Manage your store identity and operating hours.</CardDescription>
+                    <CardTitle>Settings</CardTitle>
+                    <CardDescription>Manage store identity and hours.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form action={handleUpdateShop} className="space-y-6 max-w-2xl">
@@ -601,8 +567,8 @@ export default function SellerDashboardPage() {
                                     <Input id="logo" name="logo" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
                                 </div>
                                 <div className="text-center sm:text-left">
-                                    <p className="font-bold text-sm">Update Shop Identity</p>
-                                    <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">Tap the image to upload a new logo. We recommend a 1:1 aspect ratio.</p>
+                                    <p className="font-bold text-sm">Shop Logo</p>
+                                    <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">Tap icon to upload.</p>
                                 </div>
                             </div>
 
@@ -613,11 +579,11 @@ export default function SellerDashboardPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-2">
-                                    <Label htmlFor="open_time" className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Opens At</Label>
+                                    <Label htmlFor="open_time" className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Opens</Label>
                                     <Input id="open_time" name="open_time" type="time" defaultValue={seller.open_time || "08:00"} className="h-12 border-2" />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="close_time" className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Closes At</Label>
+                                    <Label htmlFor="close_time" className="font-bold text-xs uppercase tracking-widest text-muted-foreground">Closes</Label>
                                     <Input id="close_time" name="close_time" type="time" defaultValue={seller.close_time || "20:00"} className="h-12 border-2" />
                                 </div>
                             </div>
