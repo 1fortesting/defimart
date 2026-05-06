@@ -17,6 +17,7 @@ export function StorefrontShell({
 }) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith('/admin');
+  const isDashboardRoute = pathname === '/seller/dashboard';
 
   useEffect(() => {
     const supabase = createClient();
@@ -64,7 +65,7 @@ export function StorefrontShell({
         </div>
         
         <InstallPrompt />
-        {header}
+        {!isDashboardRoute && header}
         <div className="relative z-10 flex-1 flex flex-col">
           {children}
         </div>

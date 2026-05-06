@@ -28,7 +28,11 @@ import {
     Store,
     RefreshCw,
     UploadCloud,
-    ExternalLink
+    ExternalLink,
+    Menu,
+    Home,
+    LogOut,
+    ArrowLeft
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -42,6 +46,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { logout } from '@/app/auth/actions';
 
 const categories = [
     "Electronics & Gadgets",
@@ -209,10 +216,88 @@ export default function SellerDashboardPage() {
       };
   });
 
+  const userLinks = [
+    { title: "Profile", description: "View and edit your profile", href: "/profile", icon: Users },
+    { title: "My Orders", description: "Track your past and current orders", href: "/orders", icon: ShoppingBag },
+    { title: "Wishlist", description: "View your saved products", href: "/saved", icon: Heart },
+    { title: "Request a Product", description: "Tell us what you want to see", href: "/request-product", icon: Package },
+  ];
+
   return (
     <div className="min-h-screen bg-muted/10 flex flex-col w-full">
-      {/* Dynamic Header */}
-      <div className="bg-background border-b sticky top-0 z-30 px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm w-full">
+      {/* Mobile-Friendly Slim Command Bar */}
+      <div className="md:hidden bg-background/95 backdrop-blur-md border-b sticky top-0 z-50 px-4 h-14 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2">
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-10 w-10 text-primary">
+                        <Menu className="h-6 w-6" />
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-3/4 max-w-sm p-0 flex flex-col bg-background border-r-0 shadow-2xl">
+                    <SheetHeader className="sr-only">
+                        <SheetTitle>Dashboard Navigation</SheetTitle>
+                    </SheetHeader>
+                    
+                    <div className="relative p-6 bg-[var(--gold)] text-white h-[140px] flex items-center">
+                        <div className="relative z-10 flex items-center gap-3 w-full">
+                            <div className="h-12 w-12 rounded-full border-2 border-white/30 bg-white overflow-hidden shadow-md flex items-center justify-center">
+                                {user?.user_metadata?.avatar_url ? (
+                                    <Image src={user.user_metadata.avatar_url} alt="Profile" width={48} height={48} className="object-cover h-full w-full" />
+                                ) : (
+                                    <span className="text-[var(--gold)] font-black text-xl">{seller.shop_name.charAt(0)}</span>
+                                )}
+                            </div>
+                            <div className="min-w-0">
+                                <p className="font-black text-base truncate">{seller.shop_name}</p>
+                                <p className="text-xs text-white/80 font-medium">Vendor Console</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto py-4">
+                        <nav className="flex flex-col">
+                            <SheetClose asChild>
+                                <Link href="/" className="flex items-center gap-4 p-4 hover:bg-muted/50">
+                                    <div className="p-2 bg-muted rounded-xl"><Home className="h-5 w-5 text-primary" /></div>
+                                    <div><p className="font-bold text-sm">Storefront</p><p className="text-[10px] text-muted-foreground">Return to main market</p></div>
+                                </Link>
+                            </SheetClose>
+                            {userLinks.map(link => (
+                                <SheetClose asChild key={link.href}>
+                                    <Link href={link.href} className="flex items-center gap-4 p-4 hover:bg-muted/50">
+                                        <div className="p-2 bg-muted rounded-xl"><link.icon className="h-5 w-5 text-primary" /></div>
+                                        <div><p className="font-bold text-sm">{link.title}</p><p className="text-[10px] text-muted-foreground">{link.description}</p></div>
+                                    </Link>
+                                </SheetClose>
+                            ))}
+                        </nav>
+                    </div>
+
+                    <div className="p-6 mt-auto border-t">
+                        <form action={logout}>
+                            <Button className="w-full h-12 font-black uppercase tracking-widest rounded-2xl bg-[var(--gold)]">
+                                <LogOut className="mr-2 h-4 w-4" /> Logout
+                            </Button>
+                        </form>
+                    </div>
+                </SheetContent>
+            </Sheet>
+            <Button variant="ghost" size="icon" className="h-10 w-10" asChild>
+                <Link href="/"><Home className="h-5 w-5 text-muted-foreground" /></Link>
+            </Button>
+          </div>
+          
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-10 w-10" onClick={fetchData} disabled={isPending}>
+                <RefreshCw className={cn("h-5 w-5 text-primary", isPending && "animate-spin")} />
+            </Button>
+            <ThemeToggle />
+          </div>
+      </div>
+
+      {/* Main Header (Desktop version stays mostly same, Mobile gets slimmed down) */}
+      <div className="bg-background border-b px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm w-full">
           <div className="flex items-center gap-3 md:gap-4">
               <div className="relative group shrink-0">
                   <Avatar className="h-12 w-12 border-2 border-primary/20">
@@ -226,35 +311,31 @@ export default function SellerDashboardPage() {
                       <h1 className="text-lg md:text-xl font-black tracking-tight truncate">{seller.shop_name}</h1>
                       <Badge variant="outline" className="text-[9px] px-1.5 h-4 uppercase font-bold text-muted-foreground border-muted-foreground/20 shrink-0">VENDOR</Badge>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-0.5">
-                       <p className="text-muted-foreground text-[10px] md:text-xs font-medium flex items-center gap-1">
-                          <CheckCircle className="h-3 w-3 text-emerald-500" /> Verified
-                       </p>
-                       <Separator orientation="vertical" className="h-3 hidden sm:block" />
+                  <div className="flex items-center gap-3 mt-0.5">
                        <div className="flex items-center gap-2">
                           <Switch 
-                              id="shop-toggle-top" 
+                              id="shop-toggle" 
                               checked={seller.is_open} 
                               onCheckedChange={(checked) => handleToggle(checked)}
                               disabled={isPending}
                               className="scale-75"
                           />
-                          <Label htmlFor="shop-toggle-top" className={cn("text-[9px] md:text-[10px] font-black uppercase tracking-widest", seller.is_open ? "text-emerald-600" : "text-destructive")}>
+                          <Label htmlFor="shop-toggle" className={cn("text-[9px] font-black uppercase tracking-widest", seller.is_open ? "text-emerald-600" : "text-destructive")}>
                               {seller.is_open ? 'OPEN' : 'CLOSED'}
                           </Label>
                        </div>
                   </div>
               </div>
           </div>
-          <div className="flex items-center gap-2 md:gap-3">
-              <Button asChild variant="outline" size="sm" className="flex-1 md:flex-none rounded-xl font-bold h-10 border-2 text-xs">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3">
+              <Button asChild variant="outline" size="sm" className="rounded-xl font-bold h-10 border-2 text-xs order-2 sm:order-1">
                   <Link href={`/shops/${seller.id}`}>
-                      <Eye className="h-4 w-4 mr-2" /> <span className="hidden sm:inline">View Public Shop</span><span className="sm:hidden">Live View</span>
+                      <Eye className="h-4 w-4 mr-2" /> View Shop
                   </Link>
               </Button>
               <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button size="lg" className="flex-1 md:flex-none h-10 rounded-xl font-bold shadow-lg shadow-primary/20 text-xs md:text-sm">
+                      <Button size="lg" className="h-10 rounded-xl font-bold shadow-lg shadow-primary/20 text-xs md:text-sm order-1 sm:order-2">
                         <Plus className="h-4 w-4 mr-1 md:mr-2" /> List Item
                       </Button>
                     </DialogTrigger>
@@ -338,7 +419,7 @@ export default function SellerDashboardPage() {
 
       <main className="flex-1 w-full p-4 md:p-10 space-y-8 max-w-full">
           <Tabs defaultValue="overview" className="w-full">
-            <div className="bg-background p-1 md:p-2 rounded-2xl border shadow-sm sticky top-[160px] md:top-[100px] z-20 w-full overflow-x-auto no-scrollbar">
+            <div className="bg-background p-1 md:p-2 rounded-2xl border shadow-sm sticky top-[120px] md:top-[100px] z-20 w-full overflow-x-auto no-scrollbar">
                 <TabsList className="bg-transparent h-auto gap-1 md:gap-2 flex w-max min-w-full">
                     <TabsTrigger value="overview" className="rounded-xl gap-2 py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all whitespace-nowrap">
                         <LayoutDashboard className="h-4 w-4" /> Overview
@@ -479,7 +560,6 @@ export default function SellerDashboardPage() {
                             <Button variant="outline" size="sm" onClick={fetchData} className="h-9 font-bold border-2 shrink-0"><RefreshCw className="h-3 w-3 mr-2" />Sync</Button>
                         </CardHeader>
                         
-                        {/* Desktop View Table */}
                         <div className="hidden md:block">
                             <Table>
                                 <TableHeader className="bg-muted/20">
@@ -538,7 +618,6 @@ export default function SellerDashboardPage() {
                             </Table>
                         </div>
 
-                        {/* Mobile Card View */}
                         <div className="md:hidden divide-y">
                             {orders.map((order) => {
                                 const productName = order.products?.name || order.vendor_products?.name || 'Unknown Product';
@@ -737,22 +816,6 @@ export default function SellerDashboardPage() {
             </TabsContent>
           </Tabs>
       </main>
-
-      {/* Mobile-Friendly Utility Bar */}
-      <div className="md:hidden fixed bottom-20 left-4 right-4 bg-background/95 backdrop-blur-md border p-3 rounded-2xl shadow-2xl flex items-center justify-between z-40">
-          <div className="flex items-center gap-2">
-               <Badge className={cn("h-2.5 w-2.5 p-0 rounded-full shrink-0", seller.is_open ? "bg-emerald-500" : "bg-destructive")} />
-               <p className="text-[9px] font-black uppercase tracking-widest">{seller.is_open ? 'Shop Live' : 'Shop Hidden'}</p>
-          </div>
-          <div className="flex gap-2">
-            <Button asChild size="sm" variant="ghost" className="h-8 font-black uppercase text-[9px] px-2 rounded-lg border">
-                <Link href={`/shops/${seller.id}`}><ExternalLink className="h-3 w-3 mr-1" /> View Shop</Link>
-            </Button>
-            <Button variant="ghost" size="sm" onClick={fetchData} className="h-8 font-black uppercase text-[9px] px-2 rounded-lg border">
-                <RefreshCw className={cn("h-3 w-3 mr-1", isPending && "animate-spin")} /> Sync
-            </Button>
-          </div>
-      </div>
     </div>
   );
 }
