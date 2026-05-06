@@ -23,12 +23,11 @@ import {
     TrendingUp, 
     Phone, 
     Image as ImageIcon,
-    X,
-    UploadCloud,
     Trash2,
     CheckCircle,
     Store,
-    RefreshCw
+    RefreshCw,
+    UploadCloud
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -268,13 +267,13 @@ export default function SellerDashboardPage() {
                           <div className="flex-1 overflow-y-auto px-8 py-8 space-y-6">
                                   <div className="grid gap-2">
                                     <Label htmlFor="name" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Name</Label>
-                                    <Input id="name" name="name" placeholder="What are you selling?" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
+                                    <Input id="name" name="name" placeholder="Name" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
                                   </div>
 
                                   <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                       <Label htmlFor="price" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Selling Price (GHS)</Label>
-                                      <Input id="price" name="price" type="number" step="0.01" placeholder="0.00" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
+                                      <Input id="price" name="price" type="number" step="0.01" placeholder="Price" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
                                     </div>
                                     <div className="grid gap-2">
                                       <Label htmlFor="category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Category</Label>
@@ -292,55 +291,39 @@ export default function SellerDashboardPage() {
                                   {uploadCategory === 'Other' && (
                                       <div className="grid gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
                                           <Label htmlFor="custom_category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Custom Category Name</Label>
-                                          <Input id="custom_category" name="custom_category" placeholder="e.g. Vintage Apparel" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
+                                          <Input id="custom_category" name="custom_category" placeholder="Custom category" required className="bg-muted/30 border-2 h-12 text-base rounded-xl" />
                                       </div>
                                   )}
 
                                   <div className="grid gap-2">
                                     <Label htmlFor="description" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Detailed Description</Label>
-                                    <Textarea id="description" name="description" placeholder="Share features, condition, size etc..." rows={4} className="bg-muted/30 border-2 text-base rounded-xl resize-none" />
+                                    <Textarea id="description" name="description" placeholder="Description" rows={4} className="bg-muted/30 border-2 text-base rounded-xl resize-none" />
                                   </div>
                                   
                                   <div className="space-y-3">
                                     <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Image</Label>
-                                    {productImagePreview ? (
-                                      <div className="relative group aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner">
-                                        <Image src={productImagePreview} alt="Preview" fill className="object-contain" />
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <button 
-                                                type="button" 
-                                                onClick={() => setProductImagePreview(null)}
-                                                className="bg-white text-destructive p-3 rounded-full shadow-lg"
-                                            >
-                                                <Trash2 className="h-6 w-6" />
-                                            </button>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <label htmlFor="image" className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-2xl cursor-pointer hover:bg-primary/5 hover:border-primary/50 transition-all bg-muted/20 border-muted-foreground/20 group text-center">
-                                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                              <UploadCloud className="w-10 h-10 text-primary mb-3 transition-transform group-hover:scale-110" />
-                                              <p className="text-sm font-black uppercase tracking-widest">Select Product Photo</p>
-                                              <p className="text-[10px] text-muted-foreground mt-1 font-bold">PNG, JPG or WEBP (Max 5MB)</p>
-                                          </div>
-                                          <input 
+                                    <div className="flex flex-col gap-4">
+                                        <Input 
                                             id="image" 
                                             name="image" 
                                             type="file" 
                                             accept="image/*" 
-                                            className="hidden" 
                                             required 
-                                            onChange={handleProductImageChange} 
-                                          />
-                                      </label>
-                                    )}
+                                            onChange={handleProductImageChange}
+                                            className="bg-muted/30 border-2 h-12 text-sm rounded-xl cursor-pointer"
+                                        />
+                                        {productImagePreview && (
+                                            <div className="relative aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner">
+                                                <Image src={productImagePreview} alt="Preview" fill className="object-contain" />
+                                            </div>
+                                        )}
+                                    </div>
                                   </div>
                           </div>
 
-                          <div className="p-6 border-t bg-background sticky bottom-0 z-20 flex flex-col gap-3">
+                          <div className="p-6 border-t bg-background sticky bottom-0 z-20">
                             <Button type="submit" className="w-full h-14 text-lg font-black uppercase tracking-widest shadow-xl shadow-primary/20 rounded-2xl" disabled={isAddPending}>
-                              {isAddPending ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : <ShoppingBag className="mr-3 h-6 w-6" />}
-                              Publish Listing
+                              {isAddPending ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : 'Upload'}
                             </Button>
                           </div>
                       </form>
