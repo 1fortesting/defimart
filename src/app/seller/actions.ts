@@ -112,37 +112,34 @@ export async function updateShopInfo(formData: FormData) {
 
 /**
  * Submits a new product to the vendor_products table.
- * Uses FormData and Server Actions to strictly validate and upload images.
+ * Implements a strict "Image-First" verification policy.
  */
 export async function addSellerProduct(prevState: any, formData: FormData) {
   const supabase = await createClient();
 
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Authentication required.' };
-
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
     const price = Number(formData.get('price'));
     const categoryRaw = formData.get('category') as string;
     const file = formData.get('image') as File;
 
-    // Server-side verification of the file object
-    console.log('Server Action received file:', { name: file?.name, size: file?.size, type: file?.type });
-
-    if (!file || file.size === 0) {
-      return { success: false, error: 'Product image is required.' };
+    // STEP 1: Validate file properly
+    if (!file || file.size === 0 || file.name === 'undefined') {
+      return { success: false, error: 'Image is required' };
     }
 
     if (!name || isNaN(price)) {
-      return { success: false, error: 'Name and price are required.' };
+      return { success: false, error: 'Name and price are required' };
     }
 
-    // 1. Storage Path Preparation
-    const fileExt = file.name.split('.').pop() || 'jpg';
-    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+    console.log('FILE RECEIVED:', file.name, file.size);
 
-    // 2. Upload to vendor-images bucket
+    // STEP 2: Generate safe file name
+    const fileExt = file.name.split('.').pop() || 'jpg';
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+    // STEP 3: Upload to Supabase Storage (vendor-images bucket)
     const { error: uploadError } = await supabase.storage
       .from('vendor-images')
       .upload(fileName, file, {
@@ -151,24 +148,31 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
       });
 
     if (uploadError) {
-      console.error('Supabase Storage Error:', uploadError);
-      return { success: false, error: `Storage upload failed: ${uploadError.message}` };
+      console.error('UPLOAD ERROR:', uploadError);
+      return { success: false, error: 'Image upload failed' };
     }
 
-    // 3. Retrieve Public URL
-    const { data: { publicUrl } } = supabase.storage
+    // STEP 4: Get public URL
+    const { data: urlData } = supabase.storage
       .from('vendor-images')
       .getPublicUrl(fileName);
 
-    if (!publicUrl) {
-       await supabase.storage.from('vendor-images').remove([fileName]);
-       return { success: false, error: 'Failed to generate image link.' };
+    const imageUrl = urlData?.publicUrl;
+
+    if (!imageUrl) {
+      return { success: false, error: 'Failed to generate image link' };
     }
 
-    // 4. Determine final category
+    // STEP 5: Get authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { success: false, error: 'Authentication failed' };
+    }
+
+    // STEP 6: Determine final category
     const finalCategory = categoryRaw === 'Other' ? (formData.get('custom_category') as string) : categoryRaw;
 
-    // 5. Database insertion into vendor_products
+    // STEP 7: INSERT ONLY AFTER IMAGE SUCCESS
     const { error: dbError } = await (supabase as any)
       .from('vendor_products')
       .insert({
@@ -176,7 +180,7 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
         description: description || '',
         price,
         category: finalCategory || 'Other',
-        image_urls: [publicUrl],
+        image_urls: [imageUrl],
         seller_id: user.id,
         is_approved: true,
         quantity: 1,
@@ -184,19 +188,20 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
       });
 
     if (dbError) {
-      console.error('Database Insertion Error:', dbError);
-      // Cleanup orphan image
+      console.error('DB ERROR:', dbError);
+      // Cleanup orphan image from storage to maintain integrity
       await supabase.storage.from('vendor-images').remove([fileName]);
-      return { success: false, error: `Database error: ${dbError.message}` };
+      return { success: false, error: 'Database insertion failed' };
     }
 
+    // 🔄 Refresh relevant paths
     revalidatePath('/seller/dashboard');
-    revalidatePath(`/shops`);
-    
+    revalidatePath('/shops');
+
     return { success: true };
 
   } catch (err: any) {
-    console.error('Unhandled upload error:', err);
-    return { success: false, error: err.message || 'A critical error occurred during upload.' };
+    console.error('UNHANDLED ERROR:', err);
+    return { success: false, error: err.message || 'A critical error occurred' };
   }
 }
