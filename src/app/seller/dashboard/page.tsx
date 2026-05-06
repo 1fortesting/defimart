@@ -32,7 +32,8 @@ import {
     Menu,
     Home,
     LogOut,
-    ArrowLeft
+    ArrowLeft,
+    Heart
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -240,6 +241,9 @@ export default function SellerDashboardPage() {
                     </SheetHeader>
                     
                     <div className="relative p-6 bg-[var(--gold)] text-white h-[140px] flex items-center">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16" />
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-2xl -ml-12 -mb-12" />
+                        
                         <div className="relative z-10 flex items-center gap-3 w-full">
                             <div className="h-12 w-12 rounded-full border-2 border-white/30 bg-white overflow-hidden shadow-md flex items-center justify-center">
                                 {user?.user_metadata?.avatar_url ? (
@@ -276,7 +280,7 @@ export default function SellerDashboardPage() {
 
                     <div className="p-6 mt-auto border-t">
                         <form action={logout}>
-                            <Button className="w-full h-12 font-black uppercase tracking-widest rounded-2xl bg-[var(--gold)]">
+                            <Button className="w-full h-12 font-black uppercase tracking-widest rounded-2xl bg-[var(--gold)] text-white">
                                 <LogOut className="mr-2 h-4 w-4" /> Logout
                             </Button>
                         </form>
@@ -296,7 +300,7 @@ export default function SellerDashboardPage() {
           </div>
       </div>
 
-      {/* Main Header (Desktop version stays mostly same, Mobile gets slimmed down) */}
+      {/* Main Header */}
       <div className="bg-background border-b px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm w-full">
           <div className="flex items-center gap-3 md:gap-4">
               <div className="relative group shrink-0">
