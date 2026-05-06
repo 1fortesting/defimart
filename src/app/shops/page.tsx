@@ -27,9 +27,9 @@ export default async function ShopsPage() {
         ? await supabase.from('profiles').select('id, avatar_url').in('id', userIds)
         : { data: [] };
 
-    // 3. Fetch all products to calculate counts in memory
+    // 3. Fetch count from vendor_products table
     const { data: productsData } = await supabase
-        .from('products')
+        .from('vendor_products' as any)
         .select('id, seller_id');
 
     // 4. Process and merge data

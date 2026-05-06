@@ -112,8 +112,7 @@ export async function updateShopInfo(formData: FormData) {
 }
 
 /**
- * Submits a new product. Auto-approved for instant listing.
- * Seller products only show in their shop, not the home page.
+ * Submits a new product to the vendor_products table.
  */
 export async function addSellerProduct(formData: FormData) {
   try {
@@ -145,7 +144,6 @@ export async function addSellerProduct(formData: FormData) {
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const filePath = `seller-uploads/${fileName}`;
 
-      // Upload explicitly to vendor-images bucket
       const { error: uploadError } = await supabase.storage
         .from('vendor-images')
         .upload(filePath, file);
@@ -160,22 +158,21 @@ export async function addSellerProduct(formData: FormData) {
     }
 
     const { error } = await supabase
-      .from('products')
+      .from('vendor_products' as any)
       .insert({
         name,
         description,
         price,
-        cost_price: 0, 
         category,
         image_urls: image_url ? [image_url] : [],
         seller_id: user.id,
         is_approved: true 
-      } as any);
+      });
 
     if (error) throw new Error(`Failed to list product: ${error.message}`);
 
     revalidatePath('/seller/dashboard');
-    revalidatePath('/');
+    revalidatePath('/shops');
     return { success: true };
   } catch (err: any) {
     console.error('Add Product Error:', err);

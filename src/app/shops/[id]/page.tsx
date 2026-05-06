@@ -1,3 +1,4 @@
+
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,10 +28,12 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
         .eq('id', seller.user_id)
         .single();
 
+    // Fetch exclusively from vendor_products table
     const { data: products } = await supabase
-        .from('products')
+        .from('vendor_products' as any)
         .select('*')
         .eq('seller_id', seller.user_id)
+        .eq('is_approved', true)
         .order('created_at', { ascending: false });
 
     const { data: { user } } = await supabase.auth.getUser();

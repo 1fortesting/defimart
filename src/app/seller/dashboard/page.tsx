@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
@@ -80,8 +81,9 @@ export default function SellerDashboardPage() {
       const { data: sellerData } = await supabase.from('sellers' as any).select('*').eq('user_id', user.id).single();
       setSeller(sellerData);
 
+      // Fetch from vendor_products
       const { data: productsData } = await supabase
-        .from('products')
+        .from('vendor_products' as any)
         .select('*')
         .eq('seller_id', user.id)
         .order('created_at', { ascending: false });
@@ -89,7 +91,7 @@ export default function SellerDashboardPage() {
 
       const { data: ordersData } = await supabase
         .from('orders')
-        .select('*, products(name, image_urls), profiles:buyer_id(display_name, phone_number, id)')
+        .select('*, products:product_id(name, image_urls), vendor_products:vendor_product_id(name, image_urls), profiles:buyer_id(display_name, phone_number, id)')
         .eq('seller_id', user.id)
         .order('created_at', { ascending: false });
       setOrders(ordersData || []);
@@ -131,7 +133,7 @@ export default function SellerDashboardPage() {
       if (!confirm('Are you sure you want to delete this product?')) return;
       
       const supabase = createClient();
-      const { error } = await supabase.from('products').delete().eq('id', productId);
+      const { error } = await supabase.from('vendor_products' as any).delete().eq('id', productId);
       
       if (error) {
           toast({ title: 'Delete failed', description: error.message, variant: 'destructive' });
@@ -168,7 +170,7 @@ export default function SellerDashboardPage() {
             setUploadCategory('');
             toast({ variant: 'success', title: 'Product listed successfully' });
             const supabase = createClient();
-            const { data } = await supabase.from('products').select('*').eq('seller_id', user.id).order('created_at', { ascending: false });
+            const { data } = await supabase.from('vendor_products' as any).select('*').eq('seller_id', user.id).order('created_at', { ascending: false });
             setProducts(data || []);
         } else {
             toast({ title: 'Failed to add product', description: result.error, variant: 'destructive' });
@@ -330,37 +332,40 @@ export default function SellerDashboardPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {orders.map((order) => (
-                                    <TableRow key={order.id}>
-                                        <TableCell>
-                                            <div className="font-bold text-xs sm:text-sm">{order.profiles?.display_name}</div>
-                                            <div className="text-[10px] sm:text-xs text-muted-foreground">{order.profiles?.phone_number}</div>
-                                        </TableCell>
-                                        <TableCell className="max-w-[120px] truncate text-xs sm:text-sm">{order.products?.name}</TableCell>
-                                        <TableCell className="hidden sm:table-cell">{order.quantity}</TableCell>
-                                        <TableCell className="font-bold text-xs sm:text-sm">GHS {formatPrice(order.price_per_item * order.quantity)}</TableCell>
-                                        <TableCell>
-                                            <Badge className="text-[10px] px-1.5 py-0" variant={
-                                                order.status === 'completed' ? 'default' :
-                                                order.status === 'ready' ? 'secondary' :
-                                                order.status === 'pending' ? 'outline' : 'destructive'
-                                            }>
-                                                {order.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right space-x-1">
-                                            {order.status === 'pending' && (
-                                                <Button size="sm" className="h-7 text-[10px] px-2" onClick={() => handleUpdateStatus(order.id, 'ready')} disabled={isPending}>Mark Ready</Button>
-                                            )}
-                                            {order.status === 'ready' && (
-                                                <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-emerald-50 text-emerald-700 border-emerald-200" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Mark Complete</Button>
-                                            )}
-                                            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" asChild>
-                                                <Link href={`/admin/sales/${order.id}`}><Eye className="h-3 w-3" /></Link>
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                {orders.map((order) => {
+                                    const productName = order.products?.name || order.vendor_products?.name || 'Unknown Product';
+                                    return (
+                                        <TableRow key={order.id}>
+                                            <TableCell>
+                                                <div className="font-bold text-xs sm:text-sm">{order.profiles?.display_name}</div>
+                                                <div className="text-[10px] sm:text-xs text-muted-foreground">{order.profiles?.phone_number}</div>
+                                            </TableCell>
+                                            <TableCell className="max-w-[120px] truncate text-xs sm:text-sm">{productName}</TableCell>
+                                            <TableCell className="hidden sm:table-cell">{order.quantity}</TableCell>
+                                            <TableCell className="font-bold text-xs sm:text-sm">GHS {formatPrice(order.price_per_item * order.quantity)}</TableCell>
+                                            <TableCell>
+                                                <Badge className="text-[10px] px-1.5 py-0" variant={
+                                                    order.status === 'completed' ? 'default' :
+                                                    order.status === 'ready' ? 'secondary' :
+                                                    order.status === 'pending' ? 'outline' : 'destructive'
+                                                }>
+                                                    {order.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right space-x-1">
+                                                {order.status === 'pending' && (
+                                                    <Button size="sm" className="h-7 text-[10px] px-2" onClick={() => handleUpdateStatus(order.id, 'ready')} disabled={isPending}>Mark Ready</Button>
+                                                )}
+                                                {order.status === 'ready' && (
+                                                    <Button size="sm" variant="outline" className="h-7 text-[10px] px-2 bg-emerald-50 text-emerald-700 border-emerald-200" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Mark Complete</Button>
+                                                )}
+                                                <Button size="sm" variant="ghost" className="h-7 w-7 p-0" asChild>
+                                                    <Link href={`/admin/sales/${order.id}`}><Eye className="h-3 w-3" /></Link>
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                                 {orders.length === 0 && (
                                     <TableRow>
                                         <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">No orders received yet.</TableCell>

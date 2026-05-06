@@ -1,3 +1,4 @@
+
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { Tables } from '@/types/supabase';
@@ -10,14 +11,25 @@ export type ReviewWithProfile = Tables<'reviews'> & {
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
-    const supabase = await (await createClient()) as any;
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { data: product } = await supabase
+    // Try fetching from platform products first
+    let { data: product } = await supabase
         .from('products')
         .select('*')
         .eq('id', id)
         .single();
+
+    // If not found, try fetching from vendor_products
+    if (!product) {
+        const { data: vendorProduct } = await supabase
+            .from('vendor_products' as any)
+            .select('*')
+            .eq('id', id)
+            .single();
+        product = vendorProduct as any;
+    }
 
     if (!product) {
         notFound();
@@ -29,15 +41,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     
     const isSaved = !!savedProducts;
 
-    const { data: reviews, error: reviewsError } = await (supabase
+    const { data: reviews } = await supabase
         .from('reviews')
         .select('*, profiles(display_name, avatar_url)')
         .eq('product_id', id)
-        .order('created_at', { ascending: false }) as any);
-
-    if (reviewsError) {
-        console.error('Error fetching reviews:', reviewsError);
-    }
+        .order('created_at', { ascending: false });
     
     const totalRating = (reviews as any[])?.reduce((acc: number, review: any) => acc + review.rating, 0) ?? 0;
     const averageRating = reviews && reviews.length > 0 ? totalRating / reviews.length : 0;
@@ -56,7 +64,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 <ProductView 
                     product={product}
                     isSaved={isSaved}
-                    reviews={reviews || []}
+                    reviews={(reviews as any[]) || []}
                     averageRating={averageRating}
                     user={user}
                     userReview={userReview}
