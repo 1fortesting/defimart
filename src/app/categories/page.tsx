@@ -1,3 +1,4 @@
+
 export const dynamic = 'force-dynamic';
 
 import { createClient } from '@/lib/supabase/server';
@@ -8,10 +9,16 @@ import { Suspense } from 'react';
 export default async function CategoriesPage() {
     const supabase = await createClient() as any;
 
-    const { data: products } = await supabase
+    const { data: productsData } = await supabase
         .from('products')
         .select('*')
         .order('created_at', { ascending: false });
+
+    // Fetch vendors to exclude their products
+    const { data: sellers } = await supabase.from('sellers' as any).select('user_id');
+    const vendorUserIds = new Set(sellers?.map((s: any) => s.user_id) || []);
+
+    const products = (productsData || []).filter((p: any) => !vendorUserIds.has(p.seller_id));
 
     const { data: { user } } = await supabase.auth.getUser();
 

@@ -1,3 +1,4 @@
+
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -9,6 +10,10 @@ export async function getRecommendations(): Promise<{ title: string; products: P
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Fetch all seller IDs to ensure recommendations only include official platform products
+    const { data: sellers } = await supabase.from('sellers' as any).select('user_id');
+    const vendorUserIds = new Set(sellers?.map((s: any) => s.user_id) || []);
+
     const { data: productsData } = await supabase.from('products').select('*');
     const { data: reviewsData } = await supabase.from('reviews').select('product_id, rating');
 
@@ -16,13 +21,16 @@ export async function getRecommendations(): Promise<{ title: string; products: P
         return { title: "Explore These Items", products: [] };
     }
 
+    // Filter: Only Official Products
+    const officialProducts = productsData.filter(p => !vendorUserIds.has(p.seller_id));
+
     const reviewsByProduct = (reviewsData || []).reduce((acc, review) => {
         if (!acc[review.product_id]) acc[review.product_id] = [];
         acc[review.product_id].push(review.rating);
         return acc;
     }, {} as Record<string, number[]>);
 
-    const allProductsWithRatings: ProductWithRating[] = productsData.map(p => {
+    const allProductsWithRatings: ProductWithRating[] = officialProducts.map(p => {
         const ratings = reviewsByProduct[p.id] || [];
         return { ...p, review_count: ratings.length, average_rating: ratings.length > 0 ? ratings.reduce((s, r) => s + r, 0) / ratings.length : 0 };
     });

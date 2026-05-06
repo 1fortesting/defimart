@@ -1,3 +1,4 @@
+
 import { createClient } from '@/lib/supabase/server';
 import { Tables } from '@/types/supabase';
 import { ProductCard } from '@/components/product-card';
@@ -7,12 +8,18 @@ export default async function DiscountsPage() {
     const supabase = await createClient() as any;
     const { data: { user } } = await supabase.auth.getUser();
 
-    const { data: discountedProducts } = await supabase
+    // Fetch vendors to exclude their products
+    const { data: sellers } = await supabase.from('sellers' as any).select('user_id');
+    const vendorUserIds = new Set(sellers?.map((s: any) => s.user_id) || []);
+
+    const { data: productsData } = await supabase
         .from('products')
         .select('*')
         .gt('discount_percentage', 0)
         .gt('discount_end_date', new Date().toISOString())
         .order('created_at', { ascending: false });
+
+    const discountedProducts = (productsData || []).filter((p: any) => !vendorUserIds.has(p.seller_id));
 
     const { data: savedProducts } = user 
       ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 

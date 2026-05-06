@@ -1,20 +1,26 @@
+
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { Tables } from '@/types/supabase';
 import { Zap, ChevronRight } from 'lucide-react';
 import { FlashSaleProductCard } from './flash-sale-product-card';
 
-export async function FlashSaleSection() {
+export async function FlashSaleSection({ excludedSellerIds = [] }: { excludedSellerIds?: string[] }) {
     const supabase = await createClient();
 
-    const { data: discountedProducts } = await supabase
+    let query = supabase
         .from('products')
         .select('*')
         .gt('discount_percentage', 0)
         .gt('discount_end_date', new Date().toISOString())
-        .order('created_at', { ascending: false })
-        .limit(10) // Let's limit it to 10 for the homepage
-        .returns<Tables<'products'>[]>();
+        .order('created_at', { ascending: false });
+
+    // Exclude independent vendor products from flash sales if requested
+    if (excludedSellerIds.length > 0) {
+        query = query.not('seller_id', 'in', `(${excludedSellerIds.join(',')})`);
+    }
+
+    const { data: discountedProducts } = await query.limit(10).returns<Tables<'products'>[]>();
 
     if (!discountedProducts || discountedProducts.length === 0) {
         return (
@@ -38,7 +44,6 @@ export async function FlashSaleSection() {
         );
     }
     
-    // Shuffle the products for randomness
     const shuffledProducts = [...discountedProducts].sort(() => 0.5 - Math.random());
 
     return (

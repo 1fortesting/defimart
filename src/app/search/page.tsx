@@ -1,3 +1,4 @@
+
 export const dynamic = 'force-dynamic';
 
 import { createClient } from '@/lib/supabase/server';
@@ -18,21 +19,27 @@ export default async function SearchPage({
   // Fetch all products
   const { data: products } = await supabase.from('products').select('*');
   
-  // Fetch approved sellers to link shop names for intelligent searching
+  // Fetch approved sellers 
   const { data: sellers } = await supabase
     .from('sellers' as any)
     .select('user_id, shop_name')
     .eq('status', 'approved');
 
+  const vendorUserIds = new Set(sellers?.map((s: any) => s.user_id) || []);
   const sellerMap = (sellers || []).reduce((acc: any, s: any) => {
     acc[s.user_id] = s.shop_name;
     return acc;
   }, {});
 
-  // Enrich products with shop names so we can search by vendor name
-  const productsWithSellers = (products || []).map((p: any) => ({
+  /**
+   * Catalog Filter: Exclude vendor products from general search results.
+   * Customers find vendor products via the /shops section.
+   */
+  const officialProducts = (products || []).filter((p: any) => !vendorUserIds.has(p.seller_id));
+
+  const productsEnriched = officialProducts.map((p: any) => ({
     ...p,
-    shop_name: sellerMap[p.seller_id] || ''
+    shop_name: sellerMap[p.seller_id] || 'Official Store'
   }));
 
   const { data: savedProducts } = user 
@@ -40,14 +47,14 @@ export default async function SearchPage({
       : { data: null };
   const savedProductIds = new Set((savedProducts as any[])?.map((p: any) => p.product_id) || []);
 
-  const allCategories = [...new Set(productsWithSellers.map((p: any) => p.category).filter(Boolean) as string[])].sort();
+  const allCategories = [...new Set(productsEnriched.map((p: any) => p.category).filter(Boolean) as string[])].sort();
 
   return (
     <main className="flex-1 p-4 md:p-8">
       <Suspense fallback={<div>Loading...</div>}>
         <SearchClientPage
           initialQuery={query}
-          allProducts={productsWithSellers}
+          allProducts={productsEnriched}
           allCategories={allCategories}
           user={user}
           savedProductIds={Array.from(savedProductIds) as string[]}
