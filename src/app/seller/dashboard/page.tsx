@@ -27,7 +27,8 @@ import {
     UploadCloud,
     Trash2,
     CheckCircle,
-    Store
+    Store,
+    RefreshCw
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -210,9 +211,9 @@ export default function SellerDashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-muted/10 flex flex-col">
+    <div className="min-h-screen bg-muted/10 flex flex-col w-full">
       {/* Immersive Header */}
-      <div className="bg-background border-b sticky top-0 z-30 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
+      <div className="bg-background border-b sticky top-0 z-30 px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm w-full">
           <div className="flex items-center gap-4">
               <div className="relative group">
                   <Avatar className="h-12 w-12 border-2 border-primary/20">
@@ -342,7 +343,7 @@ export default function SellerDashboardPage() {
           </div>
       </div>
 
-      <main className="flex-1 w-full p-6 md:p-10 space-y-10">
+      <main className="flex-1 w-full p-6 md:p-10 space-y-10 max-w-full">
           <Tabs defaultValue="overview" className="w-full">
             <div className="flex justify-between items-center mb-8 bg-background p-2 rounded-2xl border shadow-sm sticky top-[100px] z-20">
                 <TabsList className="bg-transparent h-auto gap-2">
@@ -475,7 +476,7 @@ export default function SellerDashboardPage() {
             </TabsContent>
 
             <TabsContent value="orders" className="animate-in fade-in duration-500">
-                <Card className="border-none shadow-xl bg-background overflow-hidden">
+                <Card className="border-none shadow-xl bg-background overflow-hidden w-full">
                     <CardHeader className="bg-muted/5 border-b flex flex-row items-center justify-between">
                         <div>
                             <CardTitle className="text-lg font-black uppercase tracking-widest">Transaction Ledger</CardTitle>
@@ -504,7 +505,7 @@ export default function SellerDashboardPage() {
                                                 <div className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 mt-0.5"><Phone className="h-2 w-2" /> {order.profiles?.phone_number}</div>
                                             </TableCell>
                                             <TableCell>
-                                                <div className="text-sm font-medium max-w-[250px] truncate">{productName}</div>
+                                                <div className="text-sm font-medium max-w-[400px] truncate">{productName}</div>
                                                 <div className="text-[10px] text-muted-foreground font-bold">ID: {order.id.substring(0, 8)}</div>
                                             </TableCell>
                                             <TableCell className="font-black text-sm">GHS {formatPrice(order.price_per_item * order.quantity)}</TableCell>
@@ -544,7 +545,7 @@ export default function SellerDashboardPage() {
             </TabsContent>
 
             <TabsContent value="products" className="animate-in fade-in duration-500">
-                <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+                <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 w-full">
                     {products.map((product) => (
                         <Card key={product.id} className="overflow-hidden border-none shadow-lg bg-background group ring-1 ring-border/50 hover:ring-primary/40 transition-all duration-300">
                             <div className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden">
@@ -582,7 +583,7 @@ export default function SellerDashboardPage() {
                         </Card>
                     ))}
                     {products.length === 0 && (
-                        <div className="col-span-full py-32 text-center bg-muted/10 rounded-3xl border-2 border-dashed border-muted-foreground/20">
+                        <div className="col-span-full py-32 text-center bg-muted/10 rounded-3xl border-2 border-dashed border-muted-foreground/20 w-full">
                             <Package className="h-16 w-16 text-muted-foreground/10 mx-auto mb-4" />
                             <h3 className="text-lg font-black uppercase tracking-widest text-muted-foreground opacity-30">Your Inventory is Empty</h3>
                             <Button className="mt-6 font-bold rounded-xl" onClick={() => setIsAddDialogOpen(true)}><Plus className="h-4 w-4 mr-2" /> Start Selling</Button>
@@ -592,7 +593,7 @@ export default function SellerDashboardPage() {
             </TabsContent>
 
             <TabsContent value="customers" className="animate-in fade-in duration-500">
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 w-full">
                     {uniqueCustomers.map((cust) => (
                         <Card key={cust.id} className="p-6 border-none shadow-lg bg-background hover:translate-y-[-4px] transition-all">
                             <div className="flex flex-col items-center text-center space-y-4">
@@ -626,7 +627,7 @@ export default function SellerDashboardPage() {
                         </Card>
                     ))}
                     {uniqueCustomers.length === 0 && (
-                        <div className="col-span-full py-32 text-center bg-muted/10 rounded-3xl border-2 border-dashed">
+                        <div className="col-span-full py-32 text-center bg-muted/10 rounded-3xl border-2 border-dashed w-full">
                              <p className="text-sm font-black uppercase tracking-[3px] text-muted-foreground opacity-20 italic">No Client Records Found</p>
                         </div>
                     )}
@@ -634,7 +635,7 @@ export default function SellerDashboardPage() {
             </TabsContent>
 
             <TabsContent value="settings" className="animate-in fade-in duration-500">
-                <div className="max-w-3xl">
+                <div className="max-w-4xl w-full mx-auto">
                     <Card className="border-none shadow-xl bg-background overflow-hidden">
                         <CardHeader className="bg-muted/5 border-b p-8">
                             <CardTitle className="text-xl font-black uppercase tracking-widest">Business Identity</CardTitle>
@@ -656,7 +657,7 @@ export default function SellerDashboardPage() {
                                         </div>
                                         <div className="text-center sm:text-left space-y-1">
                                             <h4 className="font-black uppercase tracking-widest text-sm">Shop Branding</h4>
-                                            <p className="text-xs text-muted-foreground font-medium max-w-[250px]">Upload a high-resolution logo to stand out in the vendor gallery.</p>
+                                            <p className="text-xs text-muted-foreground font-medium max-w-[400px]">Upload a high-resolution logo to stand out in the vendor gallery.</p>
                                             <p className="text-[10px] font-black text-primary uppercase mt-2">Recommended: 512x512 PNG</p>
                                         </div>
                                     </div>
