@@ -15,8 +15,9 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OutstandingProductsCard } from '@/components/admin/outstanding-products-card';
 import type { ProductWithSalesAndReviews } from '@/app/admin/central-admin/product-performance/page';
-import { bulkEnhanceDescriptions } from '../actions';
+import { getProductsNeedingEnhancement, enhanceSingleProduct } from '../actions';
 import { useToast } from '@/hooks/use-toast';
+import { Progress } from '@/components/ui/progress';
 
 
 const ProductRow = ({ product }: { product: Tables<'products'> }) => {
@@ -150,7 +151,12 @@ export default function ProcurementProductsClientPage({ products, outstandingPro
     const router = useRouter();
     const { toast } = useToast();
     const [isRefreshing, startTransition] = useTransition();
-    const [isAIPending, startAITransition] = useTransition();
+    
+    // Bulk processing state
+    const [isBulkProcessing, setIsBulkProcessing] = useState(false);
+    const [progressCount, setProgressCount] = useState(0);
+    const [totalToProcess, setTotalToProcess] = useState(0);
+
     const [searchQuery, setSearchQuery] = useState('');
 
     const applySearch = (p: Tables<'products'>[]) => p.filter(product => product.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -159,21 +165,48 @@ export default function ProcurementProductsClientPage({ products, outstandingPro
     const discountedProducts = applySearch(products.filter(p => p.discount_percentage && p.discount_end_date && new Date(p.discount_end_date) > new Date()));
     const lowStockProducts = applySearch(products.filter(p => p.quantity !== null && p.quantity <= 5));
 
-    const handleAutoDescription = () => {
-        startAITransition(async () => {
-            const result = await bulkEnhanceDescriptions();
-            if (result.success) {
-                toast({ 
-                    variant: 'success', 
-                    title: 'Auto-Enhance Complete', 
-                    description: `Updated ${result.count} products. ${result.totalFound - result.count} products already have enhanced descriptions.` 
-                });
-                router.refresh();
-            } else {
-                toast({ variant: 'destructive', title: 'Enhancement Failed', description: result.error });
+    const handleAutoDescription = async () => {
+        setIsBulkProcessing(true);
+        setProgressCount(0);
+        
+        // 1. Get the list of products that need enhancement
+        const result = await getProductsNeedingEnhancement();
+        
+        if (!result.success || !result.products) {
+            toast({ variant: 'destructive', title: 'Fetch Failed', description: result.error || 'Could not retrieve items.' });
+            setIsBulkProcessing(false);
+            return;
+        }
+
+        const items = result.products;
+        if (items.length === 0) {
+            toast({ title: 'Already Optimized', description: 'All products already have enhanced descriptions.' });
+            setIsBulkProcessing(false);
+            return;
+        }
+
+        setTotalToProcess(items.length);
+        let successCount = 0;
+
+        // 2. Loop through each product and call the single enhancement action
+        // Processing sequentially to avoid timeouts and manage rate limits
+        for (const item of items) {
+            const res = await enhanceSingleProduct(item);
+            if (res.success) {
+                successCount++;
             }
+            setProgressCount(prev => prev + 1);
+        }
+
+        toast({ 
+            variant: 'success', 
+            title: 'Bulk AI Enhancement Complete', 
+            description: `Successfully updated ${successCount} products using Groq AI.` 
         });
-    }
+        
+        setIsBulkProcessing(false);
+        router.refresh();
+    };
 
   return (
     <div className="flex flex-col gap-4">
@@ -182,12 +215,12 @@ export default function ProcurementProductsClientPage({ products, outstandingPro
         <div className="flex items-center gap-2">
             <Button 
                 onClick={handleAutoDescription} 
-                disabled={isAIPending} 
+                disabled={isBulkProcessing} 
                 variant="outline" 
                 size="sm" 
-                className="hidden sm:flex border-primary/30 text-primary hover:bg-primary/10"
+                className="hidden sm:flex border-primary/30 text-primary hover:bg-primary/10 font-bold"
             >
-                {isAIPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                {isBulkProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                 Auto Description
             </Button>
             <Button asChild variant="outline" size="sm" className="hidden sm:flex border-primary/30 text-primary hover:bg-primary/10">
@@ -207,7 +240,24 @@ export default function ProcurementProductsClientPage({ products, outstandingPro
             </Button>
         </div>
       </div>
+
+      {/* Progress Bar UI */}
+      {isBulkProcessing && (
+          <div className="mb-4 p-5 bg-primary/5 rounded-3xl border-2 border-dashed border-primary/20 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="flex justify-between items-center mb-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+                    <span className="text-xs font-black uppercase tracking-[2px] text-primary">Groq AI Processing...</span>
+                  </div>
+                  <span className="text-[10px] font-black font-mono bg-primary text-white px-2 py-0.5 rounded-full">{progressCount} / {totalToProcess}</span>
+              </div>
+              <Progress value={(progressCount / totalToProcess) * 100} className="h-2 bg-primary/10" />
+              <p className="text-[10px] text-muted-foreground mt-3 font-medium italic">Please remain on this page while we optimize your inventory descriptions.</p>
+          </div>
+      )}
+
       <OutstandingProductsCard products={outstandingProducts} />
+      
       <Card>
         <CardHeader>
             <CardTitle>Product Management</CardTitle>

@@ -179,62 +179,52 @@ export async function deleteProduct(formData: FormData) {
 }
 
 /**
- * AI BULK ENHANCEMENT (GROQ POWERED)
- * Scans ONLY admin-uploaded products ('products' table) for weak descriptions and replaces them.
- * Explicitly skips vendor_products.
+ * Fetches all admin products that need AI description enhancement.
  */
-export async function bulkEnhanceDescriptions() {
+export async function getProductsNeedingEnhancement() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: 'Unauthorized' };
 
-    let enhancedCount = 0;
-
-    // 1. Process ONLY Platform Products (Admin Only)
-    // Select products that have no description or a very short one (< 50 chars)
-    // AND don't already have the AI tag.
-    const { data: platformToProcess, error: fetchError } = await supabase
+    const { data, error } = await supabase
         .from('products')
         .select('id, name, description, category')
         .not('description', 'like', '%(AI Enhanced)%');
     
-    if (fetchError) {
-        console.error('Fetch error:', fetchError);
-        return { success: false, error: 'Database connection issue.' };
-    }
+    if (error) return { success: false, error: error.message };
 
-    // Filter to only items needing improvement (null, empty, or very short)
-    const filteredToProcess = (platformToProcess || []).filter(p => 
+    // Find items that have no description or a very short/weak one
+    const filtered = (data || []).filter(p => 
         !p.description || p.description.trim().length < 50
     );
 
-    // Limit to 10 at a time to prevent server timeout with the higher-quality Groq model
-    const subset = filteredToProcess.slice(0, 10);
+    return { success: true, products: filtered };
+}
 
-    for (const item of subset) {
-        try {
-            const aiResult = await generateProductDescription({
-                productName: item.name,
-                category: item.category || 'General',
-                shortDescription: item.description || ''
-            });
+/**
+ * Enhances a single product description using Groq.
+ */
+export async function enhanceSingleProduct(product: { id: string, name: string, description: string | null, category: string | null }) {
+    const supabase = await createClient();
+    try {
+        const aiResult = await generateProductDescription({
+            productName: product.name,
+            category: product.category || 'General',
+            shortDescription: product.description || ''
+        });
 
-            if (aiResult.description) {
-                await supabase
-                    .from('products')
-                    .update({ description: aiResult.description })
-                    .eq('id', item.id);
-                enhancedCount++;
-            }
-        } catch (e) {
-            console.error(`Groq AI Enhancement failed for admin product ${item.id}:`, e);
+        if (aiResult.description) {
+            const { error } = await supabase
+                .from('products')
+                .update({ description: aiResult.description })
+                .eq('id', product.id);
+            
+            if (error) throw error;
+            return { success: true };
         }
+        return { success: false, error: 'No description returned from AI' };
+    } catch (e: any) {
+        console.error(`AI Enhancement failed for product ${product.id}:`, e);
+        return { success: false, error: e.message || 'AI processing error' };
     }
-
-    revalidatePath('/admin/procurement/products');
-    return { 
-        success: true, 
-        count: enhancedCount, 
-        totalRemaining: filteredToProcess.length - enhancedCount 
-    };
 }
