@@ -171,6 +171,9 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
 
     const hasImage = product.image_urls && product.image_urls.length > 0;
     
+    // Sanitize description for UI
+    const displayDescription = product.description?.replace(' (AI Enhanced)', '') || (product.category || 'General');
+
     return (
     <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-primary/[0.01] via-background to-blue-500/[0.01] border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/5 flex flex-col relative h-full cursor-pointer" onClick={() => window.location.href = `/products/${product.id}`}>
         {/* Subtle Decorative Blue Auras */}
@@ -208,7 +211,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                         {product.name}
                     </h3>
                      <div className="text-[11px] md:text-xs text-[var(--muted)] font-dm line-clamp-2 h-8 overflow-hidden mb-2">
-                        {product.description || (product.category || 'General')}
+                        {displayDescription}
                     </div>
                     <div className="flex items-center gap-2 mb-3">
                         <StarRating rating={product.average_rating || 0} size={14} showText={false} />

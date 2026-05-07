@@ -40,6 +40,9 @@ export function DefimartCard({ product, isSaved, onToggleSave, onAddToCart }: De
     if (onAddToCart) onAddToCart(product);
   };
 
+  // Sanitize description for UI
+  const displayDescription = product.description?.replace(' (AI Enhanced)', '') || 'No description available.';
+
   return (
     <Link href={`/products/${product.id}`} className="group h-full">
       <Card className="bg-gradient-to-br from-primary/[0.01] via-background to-blue-500/[0.01] border-[1.5px] border-[var(--border)] rounded-[16px] overflow-hidden transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_12px_24px_rgba(245,166,35,0.05)] h-full flex flex-col relative group">
@@ -86,7 +89,7 @@ export function DefimartCard({ product, isSaved, onToggleSave, onAddToCart }: De
                 {product.name}
               </h3>
               <p className="text-[var(--muted)] text-[11px] leading-relaxed line-clamp-2">
-                {product.description || 'No description available.'}
+                {displayDescription}
               </p>
             </div>
 

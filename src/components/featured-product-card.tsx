@@ -79,6 +79,9 @@ export function FeaturedProductCard({ product, isSaved, onToggleSave, onAddToCar
     if (onAddToCart) onAddToCart(product);
   };
 
+  // Sanitize description for UI
+  const displayDescription = product.description?.replace(' (AI Enhanced)', '') || 'Exclusive item selected for the community.';
+
   return (
     <div className="block w-full h-full">
       <Card className="bg-[var(--brand-dark)] rounded-[16px] overflow-hidden p-4 md:p-6 relative shadow-[0_8px_32px_rgba(0,0,0,0.2)] border-none h-full flex flex-col justify-between cursor-pointer" onClick={() => window.location.href = `/products/${product.id}`}>
@@ -131,7 +134,7 @@ export function FeaturedProductCard({ product, isSaved, onToggleSave, onAddToCar
              </div>
              
              <p className="text-white/55 text-[12px] md:text-[14px] leading-normal mt-2 mb-4 line-clamp-2 sm:pr-8">
-                {product.description || 'Exclusive item selected for the community.'}
+                {displayDescription}
              </p>
           </div>
         </div>

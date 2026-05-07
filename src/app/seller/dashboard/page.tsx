@@ -71,8 +71,9 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
     const [uploadCategory, setUploadCategory] = useState(categories.includes(product.category) ? product.category : 'Other');
     const [imagePreview, setImagePreview] = useState<string | null>(product.image_urls?.[0] || null);
     
+    // Sanitize description for editing while keeping backend tag
     const [productName, setProductName] = useState(product.name || '');
-    const [description, setDescription] = useState(product.description || '');
+    const [description, setDescription] = useState(product.description?.replace(' (AI Enhanced)', '') || '');
     const [isGenerating, startGeneratingTransition] = useTransition();
 
     const [state, action, isPending] = useActionState(updateSellerProduct, { success: false, error: null });
@@ -106,7 +107,8 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                     category: uploadCategory || 'General',
                 });
                 if (result.description) {
-                    setDescription(result.description);
+                    // AI returns with tag, strip it for the editor but keep it for logic later
+                    setDescription(result.description.replace(' (AI Enhanced)', ''));
                     toast({ variant: 'success', title: 'AI Description Ready', description: 'Marketing copy has been enhanced.' });
                 }
             } catch (e) {
@@ -393,7 +395,8 @@ export default function SellerDashboardPage() {
                 category: uploadCategory || 'General',
             });
             if (result.description) {
-                setDescription(result.description);
+                // AI returns with tag, strip it for the UI
+                setDescription(result.description.replace(' (AI Enhanced)', ''));
                 toast({ variant: 'success', title: 'AI Content Ready', description: 'Description generated successfully.' });
             }
         } catch (e) {

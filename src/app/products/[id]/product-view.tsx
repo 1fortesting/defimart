@@ -160,6 +160,9 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
     const shareText = `Check out ${product.name} on Defimart! GHS ${formatPrice(discountedPrice)}\n\n${productUrl}`;
     const hasImage = product.image_urls && product.image_urls.length > 0;
 
+    // Sanitize description for UI
+    const displayDescription = product.description?.replace(' (AI Enhanced)', '') || 'No detailed specifications provided for this asset.';
+
     return (
         <div className="space-y-12">
             <div className="grid md:grid-cols-2 gap-8 lg:gap-16 items-start">
@@ -237,7 +240,7 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                                                 </div>
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-foreground">Facebook</span>
                                             </button>
-                                            <button onClick={handleCopyLink} className="flex flex-col items-center gap-3 group">
+                                            <button handleCopyLink className="flex flex-col items-center gap-3 group">
                                                 <div className="h-16 w-16 bg-muted/50 text-foreground rounded-3xl flex items-center justify-center shadow-sm group-hover:bg-primary group-hover:text-white transition-all duration-300">
                                                     {isCopied ? <Check className="h-8 w-8" /> : <Copy className="h-8 w-8" />}
                                                 </div>
@@ -302,7 +305,7 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                     <div className="space-y-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-muted-foreground border-b pb-2">Description</h3>
                         <p className="text-base text-muted-foreground leading-relaxed font-medium">
-                            {product.description || 'No detailed specifications provided for this asset.'}
+                            {displayDescription}
                         </p>
                     </div>
 
