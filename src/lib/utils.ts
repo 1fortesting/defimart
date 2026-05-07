@@ -6,8 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatPrice(price: number) {
-  return new Intl.NumberFormat('en-GH', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+  const formatted = new Intl.NumberFormat('en-GH', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(price);
+  
+  return `GHS ${formatted}`;
 }
