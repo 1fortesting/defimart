@@ -6,31 +6,46 @@ import { Home, ShoppingCart, Heart, User, Newspaper, Store } from 'lucide-react'
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export function BottomNav() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isSeller, setIsSeller] = useState(false);
 
   useEffect(() => {
     setMounted(true);
     
-    const checkSeller = async () => {
+    const initData = async () => {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        setUser(authUser);
 
-        const { data: seller } = await supabase
-            .from('sellers' as any)
-            .select('status')
-            .eq('user_id', user.id)
-            .eq('status', 'approved')
-            .maybeSingle();
-        
-        setIsSeller(!!seller);
+        if (authUser) {
+            const { data: seller } = await supabase
+                .from('sellers' as any)
+                .select('status')
+                .eq('user_id', authUser.id)
+                .eq('status', 'approved')
+                .maybeSingle();
+            
+            setIsSeller(!!seller);
+        }
     };
 
-    checkSeller();
+    initData();
+
+    // Listen for auth changes to update avatar immediately
+    const supabase = createClient();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+    });
+
+    return () => {
+        subscription.unsubscribe();
+    };
   }, []);
 
   if (!mounted) return null;
@@ -47,6 +62,7 @@ export function BottomNav() {
       navItems.push({ label: 'My Shop', href: '/seller/dashboard', icon: Store });
   }
 
+  // Always add Profile at the end
   navItems.push({ label: 'Profile', href: '/profile', icon: User });
 
   return (
@@ -56,6 +72,7 @@ export function BottomNav() {
       
       {navItems.map((item) => {
         const isActive = pathname === item.href;
+        const isProfile = item.label === 'Profile';
         const Icon = item.icon;
 
         return (
@@ -65,15 +82,35 @@ export function BottomNav() {
             className="flex flex-col items-center justify-center gap-1 min-w-[60px] relative z-10 transition-transform active:scale-90"
           >
             <div className={cn(
-              "p-1.5 rounded-xl transition-all duration-300",
+              "p-1.5 rounded-xl transition-all duration-300 flex items-center justify-center",
               isActive ? "bg-primary/10 scale-110" : "bg-transparent"
             )}>
-              <Icon 
-                className={cn(
-                  "w-[20px] h-[20px] stroke-[2px]",
-                  isActive ? "text-[var(--gold)]" : "text-[var(--muted)]"
-                )} 
-              />
+              {isProfile ? (
+                 <Avatar className={cn(
+                    "h-6 w-6 border-2 transition-all",
+                    isActive ? "border-[var(--gold)]" : "border-transparent"
+                )}>
+                    {user ? (
+                        <>
+                            <AvatarImage src={user.user_metadata.avatar_url || undefined} />
+                            <AvatarFallback className="text-[10px] bg-primary/5 text-primary font-bold">
+                                {user.user_metadata.display_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+                            </AvatarFallback>
+                        </>
+                    ) : (
+                        <AvatarFallback className="text-[10px] bg-muted text-muted-foreground font-bold uppercase">
+                            U
+                        </AvatarFallback>
+                    )}
+                </Avatar>
+              ) : (
+                <Icon 
+                    className={cn(
+                    "w-[20px] h-[20px] stroke-[2px]",
+                    isActive ? "text-[var(--gold)]" : "text-[var(--muted)]"
+                    )} 
+                />
+              )}
             </div>
             <span 
               className={cn(
