@@ -179,9 +179,9 @@ export async function deleteProduct(formData: FormData) {
 }
 
 /**
- * AI BULK ENHANCEMENT
- * Scans admin-uploaded products for weak descriptions and replaces them.
- * Excludes vendor_products as per latest directive.
+ * AI BULK ENHANCEMENT (GROQ POWERED)
+ * Scans ONLY admin-uploaded products ('products' table) for weak descriptions and replaces them.
+ * Explicitly skips vendor_products.
  */
 export async function bulkEnhanceDescriptions() {
     const supabase = await createClient();
@@ -190,28 +190,26 @@ export async function bulkEnhanceDescriptions() {
 
     let enhancedCount = 0;
 
-    // 1. Process Platform Products (Admin Only)
-    // Find products with missing descriptions
-    const { data: platformMissingDesc } = await supabase
-        .from('products')
-        .select('id, name, description, category')
-        .or('description.is.null, description.eq.""');
-    
-    // Find products with "weak" or non-AI descriptions
-    const { data: platformWeakDesc } = await supabase
+    // 1. Process ONLY Platform Products (Admin Only)
+    // Select products that have no description or a very short one (< 50 chars)
+    // AND don't already have the AI tag.
+    const { data: platformToProcess, error: fetchError } = await supabase
         .from('products')
         .select('id, name, description, category')
         .not('description', 'like', '%(AI Enhanced)%');
     
-    const platformToProcess = [
-        ...(platformMissingDesc || []), 
-        ...(platformWeakDesc || []).filter(p => (p.description?.length || 0) < 50)
-    ];
+    if (fetchError) {
+        console.error('Fetch error:', fetchError);
+        return { success: false, error: 'Database connection issue.' };
+    }
 
-    const allToProcess = platformToProcess.map(p => ({ ...p, table: 'products' }));
+    // Filter to only items needing improvement (null, empty, or very short)
+    const filteredToProcess = (platformToProcess || []).filter(p => 
+        !p.description || p.description.trim().length < 50
+    );
 
-    // Limit to 15 at a time to prevent server timeout
-    const subset = allToProcess.slice(0, 15);
+    // Limit to 10 at a time to prevent server timeout with the higher-quality Groq model
+    const subset = filteredToProcess.slice(0, 10);
 
     for (const item of subset) {
         try {
@@ -222,17 +220,21 @@ export async function bulkEnhanceDescriptions() {
             });
 
             if (aiResult.description) {
-                await (supabase as any)
-                    .from(item.table)
+                await supabase
+                    .from('products')
                     .update({ description: aiResult.description })
                     .eq('id', item.id);
                 enhancedCount++;
             }
         } catch (e) {
-            console.error(`AI Enhancement failed for product ${item.id}:`, e);
+            console.error(`Groq AI Enhancement failed for admin product ${item.id}:`, e);
         }
     }
 
     revalidatePath('/admin/procurement/products');
-    return { success: true, count: enhancedCount, totalFound: allToProcess.length };
+    return { 
+        success: true, 
+        count: enhancedCount, 
+        totalRemaining: filteredToProcess.length - enhancedCount 
+    };
 }
