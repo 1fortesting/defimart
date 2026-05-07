@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProductCard } from '@/components/product-card';
-import { Clock, Store, Info, Package, ImageIcon, Search, Zap, Star, LayoutGrid, Heart, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Clock, Store, Info, Package, ImageIcon, Search, Zap, Star, LayoutGrid, Heart, ShoppingBag, ArrowRight, MapPin } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
@@ -61,13 +61,6 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
 
     const isOpen = isShopOpen();
 
-    const quickLinks = [
-        { label: 'Discover', icon: Zap, color: 'bg-purple-100 text-purple-600' },
-        { label: 'New List', icon: ShoppingBag, color: 'bg-orange-100 text-orange-600' },
-        { label: 'Info', icon: Info, color: 'bg-blue-100 text-blue-600' },
-        { label: 'Categories', icon: LayoutGrid, color: 'bg-emerald-100 text-emerald-600' },
-    ];
-
     return (
         <main className="flex-1 bg-background pb-24 md:pb-12">
             {/* 1. Immersive Hero Section */}
@@ -89,19 +82,18 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
                         </div>
                         <h1 className="text-3xl md:text-5xl font-black text-white italic uppercase tracking-tighter leading-none drop-shadow-2xl">
                             {seller.shop_name}<br/>
-                            <span className="text-white/70 text-lg md:text-2xl not-italic font-medium tracking-normal">Buy Best Product Here</span>
+                            <span className="text-white/70 text-lg md:text-2xl not-italic font-medium tracking-normal">Marketplace Vendor</span>
                         </h1>
-                        <p className="text-white/60 text-xs md:text-sm font-bold uppercase tracking-widest">Starting from GHS 1.00</p>
                     </div>
                 </div>
             </div>
 
             {/* 2. Brand Identity Overlap */}
             <div className="container mx-auto px-4 -mt-10 relative z-20">
-                <div className="bg-background rounded-[40px] shadow-[0_20px_60px_rgba(0,0,0,0.06)] p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-8 border border-border/40">
+                <div className="bg-background rounded-[40px] shadow-[0_20px_60px_rgba(0,0,0,0.06)] p-6 md:p-8 flex flex-col md:flex-row md:items-start justify-between gap-8 border border-border/40">
                     <div className="flex items-center gap-4 md:gap-6">
                         <div className="relative">
-                            <Avatar className="h-20 w-24 md:h-24 md:w-24 border-4 border-background shadow-xl ring-1 ring-black/5 bg-white">
+                            <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-background shadow-xl ring-1 ring-black/5 bg-white">
                                 <AvatarImage src={profile?.avatar_url || undefined} />
                                 <AvatarFallback className="bg-primary/5 text-primary text-3xl font-black">
                                     {seller.shop_name.charAt(0)}
@@ -112,28 +104,34 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
                         <div className="space-y-1">
                             <h2 className="text-xl md:text-2xl font-black tracking-tight">{seller.shop_name}</h2>
                             <div className="flex items-center gap-3">
-                                <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground">
+                                <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground uppercase">
                                     <Clock className="h-3.5 w-3.5 text-primary" />
                                     <span>{seller.open_time} – {seller.close_time}</span>
                                 </div>
                                 <Separator orientation="vertical" className="h-3" />
-                                <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground">
-                                    <Star className="h-3.5 w-3.5 fill-primary text-primary" />
-                                    <span>4.9 (128 reviews)</span>
+                                <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground uppercase">
+                                    <Package className="h-3.5 w-3.5 text-primary" />
+                                    <span>{products?.length || 0} Listings</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2 md:pb-0">
-                        {quickLinks.map((link) => (
-                            <button key={link.label} className="flex flex-col items-center gap-2 shrink-0 group">
-                                <div className={cn("h-14 w-14 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-sm", link.color)}>
-                                    <link.icon className="h-6 w-6" />
-                                </div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">{link.label}</span>
-                            </button>
-                        ))}
+                    <div className="flex-1 md:max-w-md">
+                        {seller.description ? (
+                             <div className="bg-muted/30 p-5 rounded-3xl border-2 border-dashed border-muted-foreground/10 relative">
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-2">
+                                    <FileText className="h-3 w-3 text-primary" /> About Shop
+                                </p>
+                                <p className="text-sm leading-relaxed text-muted-foreground font-medium italic">
+                                    &ldquo;{seller.description}&rdquo;
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2 text-muted-foreground/40 text-xs font-bold uppercase tracking-widest md:justify-end">
+                                <Info className="h-4 w-4" /> Trusted Vendor Partner
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -144,9 +142,9 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
                     <h2 className="text-2xl font-black italic uppercase tracking-tighter text-foreground flex items-center gap-3">
                         Collection <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                     </h2>
-                    <Link href="#" className="text-primary text-xs font-black uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">
-                        See More <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
+                    <span className="text-muted-foreground text-[10px] font-black uppercase tracking-[2px]">
+                        {products?.length || 0} Total Items
+                    </span>
                 </div>
 
                 {(!products || products.length === 0) ? (
@@ -172,14 +170,11 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
                                                 <ImageIcon className="h-12 w-12" />
                                             </div>
                                         )}
-                                        {product.discount_percentage > 0 && (
-                                            <Badge variant="destructive" className="absolute top-4 left-4 font-black shadow-lg">-{product.discount_percentage}%</Badge>
-                                        )}
                                     </div>
                                     <CardContent className="p-5 space-y-2 flex flex-col flex-1">
                                         <div>
                                             <h3 className="font-black text-sm md:text-base leading-tight line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h3>
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Explore Collection</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Shop Collection</p>
                                         </div>
                                         <div className="pt-2 mt-auto">
                                             <p className="text-primary font-black text-lg md:text-xl">GHS {formatPrice(product.price).split(' ')[1]}</p>
@@ -193,11 +188,11 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
             </div>
 
             {/* Floating Action Button (Mobile) */}
-            <div className="fixed bottom-24 right-6 md:hidden z-[100]">
+            <Link href="/search" className="fixed bottom-24 right-6 md:hidden z-[100]">
                 <button className="h-16 w-16 rounded-full bg-primary text-white shadow-2xl shadow-primary/40 flex items-center justify-center animate-bounce">
                     <Search className="h-7 w-7" />
                 </button>
-            </div>
+            </Link>
         </main>
     );
 }

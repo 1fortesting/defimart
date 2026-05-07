@@ -194,7 +194,7 @@ export async function toggleShopStatus(sellerId: string, isOpen: boolean) {
 }
 
 /**
- * Updates shop information including logo and hours.
+ * Updates shop information including logo, hours, and description.
  */
 export async function updateShopInfo(formData: FormData) {
     try {
@@ -209,6 +209,7 @@ export async function updateShopInfo(formData: FormData) {
         const shopName = formData.get('shop_name') as string;
         const openTime = formData.get('open_time') as string;
         const closeTime = formData.get('close_time') as string;
+        const description = formData.get('description') as string;
         const logoFile = formData.get('logo');
 
         if (!sellerId) {
@@ -220,7 +221,8 @@ export async function updateShopInfo(formData: FormData) {
             .update({
                 shop_name: shopName,
                 open_time: openTime,
-                close_time: closeTime
+                close_time: closeTime,
+                description: description || null
             })
             .eq('id', sellerId);
 

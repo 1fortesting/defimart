@@ -35,7 +35,8 @@ import {
     ArrowLeft,
     Heart,
     Edit,
-    Sparkles
+    Sparkles,
+    FileText
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -377,6 +378,7 @@ export default function SellerDashboardPage() {
                 title: 'Settings Saved!', 
                 description: 'Changes applied. Refresh to see updates across the site.',
             });
+            fetchData();
           } else {
               toast({ title: 'Error', description: result.error, variant: 'destructive' });
           }
@@ -948,6 +950,11 @@ export default function SellerDashboardPage() {
                                     <div className="grid gap-3">
                                         <Label htmlFor="shop_name" className="font-black text-[9px] md:text-[10px] uppercase tracking-[3px] text-muted-foreground">Registered Shop Name</Label>
                                         <Input id="shop_name" name="shop_name" defaultValue={seller.shop_name} required className="h-12 md:h-14 border-2 rounded-xl text-base md:text-lg font-bold px-4 md:px-6 focus:border-primary/50" />
+                                    </div>
+
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="description" className="font-black text-[9px] md:text-[10px] uppercase tracking-[3px] text-muted-foreground">Shop Bio / Description</Label>
+                                        <Textarea id="description" name="description" defaultValue={seller.description || ''} placeholder="Describe what you sell and your shop mission..." className="min-h-[120px] border-2 rounded-xl text-sm md:text-base font-medium px-4 md:px-6 resize-none" />
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4 md:gap-6">
