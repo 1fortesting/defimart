@@ -180,7 +180,8 @@ export async function deleteProduct(formData: FormData) {
 
 /**
  * AI BULK ENHANCEMENT
- * Scans products and vendor_products for weak descriptions and replaces them.
+ * Scans admin-uploaded products for weak descriptions and replaces them.
+ * Excludes vendor_products as per latest directive.
  */
 export async function bulkEnhanceDescriptions() {
     const supabase = await createClient();
@@ -189,31 +190,27 @@ export async function bulkEnhanceDescriptions() {
 
     let enhancedCount = 0;
 
-    // 1. Process Platform Products
-    const { data: platformProducts } = await supabase
+    // 1. Process Platform Products (Admin Only)
+    // Find products with missing descriptions
+    const { data: platformMissingDesc } = await supabase
         .from('products')
         .select('id, name, description, category')
-        .or('description.is.null, description.eq.""'); // Start with empty ones
+        .or('description.is.null, description.eq.""');
     
+    // Find products with "weak" or non-AI descriptions
     const { data: platformWeakDesc } = await supabase
         .from('products')
         .select('id, name, description, category')
         .not('description', 'like', '%(AI Enhanced)%');
     
-    const platformToProcess = [...(platformProducts || []), ...(platformWeakDesc || []).filter(p => (p.description?.length || 0) < 50)];
-
-    // 2. Process Vendor Products
-    const { data: vendorToProcess } = await (supabase as any)
-        .from('vendor_products')
-        .select('id, name, description, category')
-        .not('description', 'like', '%(AI Enhanced)%');
-
-    const allToProcess = [
-        ...platformToProcess.map(p => ({ ...p, table: 'products' })),
-        ...(vendorToProcess || []).filter(p => (p.description?.length || 0) < 50).map(p => ({ ...p, table: 'vendor_products' }))
+    const platformToProcess = [
+        ...(platformMissingDesc || []), 
+        ...(platformWeakDesc || []).filter(p => (p.description?.length || 0) < 50)
     ];
 
-    // Limit to 10 at a time to prevent timeout in one go
+    const allToProcess = platformToProcess.map(p => ({ ...p, table: 'products' }));
+
+    // Limit to 15 at a time to prevent server timeout
     const subset = allToProcess.slice(0, 15);
 
     for (const item of subset) {
