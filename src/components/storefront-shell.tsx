@@ -1,10 +1,12 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { InstallPrompt } from './install-prompt';
 import { ScrollToTopButton } from './scroll-to-top-button';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileShopHeader } from './mobile-shop-header';
 
 export function StorefrontShell({
   header,
@@ -16,15 +18,15 @@ export function StorefrontShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isAdminRoute = pathname.startsWith('/admin');
-  const isDashboardRoute = pathname === '/seller/dashboard';
+  const isMobile = useIsMobile();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const supabase = createClient();
     
     const syncAuthState = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      // Safety: If no session, clear all local state to prevent account leakage
       if (!session) {
         localStorage.removeItem('cart');
         localStorage.removeItem('saved');
@@ -37,7 +39,6 @@ export function StorefrontShell({
     
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        // Clear local storage on core state changes to keep UX predictable
         if (event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
           localStorage.removeItem('cart');
           localStorage.removeItem('saved');
@@ -51,7 +52,21 @@ export function StorefrontShell({
       authListener.subscription.unsubscribe();
     };
   }, []);
+
+  if (!mounted) return null;
+
+  const isAdminRoute = pathname.startsWith('/admin');
+  const isDashboardRoute = pathname === '/seller/dashboard';
+  const isShopRoute = pathname.startsWith('/shops');
+
+  // Removal Logic: Create more room for shops and dashboard on mobile
+  // Hide main header for shops (on mobile) and dashboard (always, as it has its own)
+  const hideMainHeader = isDashboardRoute || (isShopRoute && isMobile);
   
+  // Replacment Logic: Show the slim replacement bar only for these specific mobile views
+  // Note: Dashboard on mobile handles its own internal header to maximize room
+  const showSlimMobileHeader = isMobile && isShopRoute;
+
   if (isAdminRoute) {
     return <>{children}</>;
   }
@@ -67,7 +82,14 @@ export function StorefrontShell({
         </div>
         
         <InstallPrompt />
-        {!isDashboardRoute && header}
+        
+        {/* Replacement Header for Shops / Dashboard on Mobile */}
+        {showSlimMobileHeader ? (
+            <MobileShopHeader />
+        ) : (
+            !hideMainHeader && header
+        )}
+
         <div className="relative z-10 flex-1 flex flex-col">
           {children}
         </div>

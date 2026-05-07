@@ -422,90 +422,9 @@ export default function SellerDashboardPage() {
       };
   });
 
-  const userLinks = [
-    { title: "Profile", description: "View and edit your profile", href: "/profile", icon: Users },
-    { title: "My Orders", description: "Track your past and current orders", href: "/orders", icon: ShoppingBag },
-    { title: "Wishlist", description: "View your saved products", href: "/saved", icon: Heart },
-    { title: "Request a Product", description: "Tell us what you want to see", href: "/request-product", icon: Package },
-  ];
-
   return (
     <div className="min-h-screen bg-muted/10 flex flex-col w-full">
-      {/* Mobile-Friendly Slim Command Bar */}
-      <div className="md:hidden bg-background/95 backdrop-blur-md border-b sticky top-0 z-50 px-4 h-14 flex items-center justify-between shadow-sm">
-          <div className="flex items-center gap-2">
-            <Sheet>
-                <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-10 w-10 text-primary">
-                        <Menu className="h-6 w-6" />
-                    </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-3/4 max-w-sm p-0 flex flex-col bg-background border-r-0 shadow-2xl">
-                    <SheetHeader className="sr-only">
-                        <SheetTitle>Dashboard Navigation</SheetTitle>
-                    </SheetHeader>
-                    
-                    <div className="relative p-6 bg-[var(--gold)] text-white h-[140px] flex items-center">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16" />
-                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full blur-2xl -ml-12 -mb-12" />
-                        
-                        <div className="relative z-10 flex items-center gap-3 w-full">
-                            <div className="h-12 w-12 rounded-full border-2 border-white/30 bg-white overflow-hidden shadow-md flex items-center justify-center">
-                                {user?.user_metadata?.avatar_url ? (
-                                    <Image src={user.user_metadata.avatar_url} alt="Profile" width={48} height={48} className="object-cover h-full w-full" />
-                                ) : (
-                                    <span className="text-[var(--gold)] font-black text-xl">{seller.shop_name.charAt(0)}</span>
-                                )}
-                            </div>
-                            <div className="min-w-0">
-                                <p className="font-black text-base truncate">{seller.shop_name}</p>
-                                <p className="text-xs text-white/80 font-medium">Vendor Console</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto py-4">
-                        <nav className="flex flex-col">
-                            <SheetClose asChild>
-                                <Link href="/" className="flex items-center gap-4 p-4 hover:bg-muted/50">
-                                    <div className="p-2 bg-muted rounded-xl"><Home className="h-5 w-5 text-primary" /></div>
-                                    <div><p className="font-bold text-sm">Storefront</p><p className="text-[10px] text-muted-foreground">Return to main market</p></div>
-                                </Link>
-                            </SheetClose>
-                            {userLinks.map(link => (
-                                <SheetClose asChild key={link.href}>
-                                    <Link href={link.href} className="flex items-center gap-4 p-4 hover:bg-muted/50">
-                                        <div className="p-2 bg-muted rounded-xl"><link.icon className="h-5 w-5 text-primary" /></div>
-                                        <div><p className="font-bold text-sm">{link.title}</p><p className="text-[10px] text-muted-foreground">{link.description}</p></div>
-                                    </Link>
-                                </SheetClose>
-                            ))}
-                        </nav>
-                    </div>
-
-                    <div className="p-6 mt-auto border-t">
-                        <form action={logout}>
-                            <Button className="w-full h-12 font-black uppercase tracking-widest rounded-2xl bg-[var(--gold)] text-white">
-                                <LogOut className="mr-2 h-4 w-4" /> Logout
-                            </Button>
-                        </form>
-                    </div>
-                </SheetContent>
-            </Sheet>
-            <Button variant="ghost" size="icon" className="h-10 w-10" asChild>
-                <Link href="/"><Home className="h-5 w-5 text-muted-foreground" /></Link>
-            </Button>
-          </div>
-          
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-10 w-10" onClick={handleSync} disabled={isPending}>
-                <RefreshCw className={cn("h-5 w-5 text-primary", isPending && "animate-spin")} />
-            </Button>
-            <ThemeToggle />
-          </div>
-      </div>
-
-      {/* Main Header */}
+      {/* Main Header (Sticky slim bar managed by StorefrontShell on mobile) */}
       <div className="bg-background border-b px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm w-full">
           <div className="flex items-center gap-3 md:gap-4">
               <div className="relative group shrink-0">
@@ -650,7 +569,7 @@ export default function SellerDashboardPage() {
       {/* Dashboard Content */}
       <main className="flex-1 w-full p-4 md:p-10 space-y-8 max-w-full">
           <Tabs defaultValue="overview" className="w-full">
-            <div className="bg-background p-1 md:p-2 rounded-2xl border shadow-sm sticky top-[120px] md:top-[100px] z-20 w-full overflow-x-auto no-scrollbar">
+            <div className="bg-background p-1 md:p-2 rounded-2xl border shadow-sm sticky top-[72px] md:top-[100px] z-20 w-full overflow-x-auto no-scrollbar">
                 <TabsList className="bg-transparent h-auto gap-1 md:gap-2 flex w-max min-w-full">
                     <TabsTrigger value="overview" className="rounded-xl gap-2 py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all whitespace-nowrap">
                         <LayoutDashboard className="h-4 w-4" /> Overview
