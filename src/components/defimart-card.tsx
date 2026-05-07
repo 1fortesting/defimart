@@ -42,14 +42,14 @@ export function DefimartCard({ product, isSaved, onToggleSave, onAddToCart }: De
 
   return (
     <Link href={`/products/${product.id}`} className="group h-full">
-      <Card className="bg-gradient-to-br from-primary/[0.02] via-background to-blue-500/[0.01] border-[1.5px] border-[var(--border)] rounded-[16px] overflow-hidden transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_12px_24px_rgba(245,166,35,0.08)] h-full flex flex-col relative group">
+      <Card className="bg-gradient-to-br from-primary/[0.01] via-background to-blue-500/[0.01] border-[1.5px] border-[var(--border)] rounded-[16px] overflow-hidden transition-all duration-300 hover:-translate-y-[3px] hover:shadow-[0_12px_24px_rgba(245,166,35,0.05)] h-full flex flex-col relative group">
         {/* Subtle Decorative Blue Auras */}
-        <div className="absolute -top-16 -left-16 w-48 h-48 bg-[var(--gold)]/5 rounded-full blur-3xl transition-all duration-700 opacity-30 group-hover:opacity-50 group-hover:scale-125 z-0" />
-        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-blue-500/[0.03] rounded-full blur-3xl transition-all duration-700 opacity-30 group-hover:opacity-50 group-hover:scale-125 z-0" />
+        <div className="absolute -top-16 -left-16 w-48 h-48 bg-[var(--gold)]/3 rounded-full blur-3xl transition-all duration-700 opacity-20 group-hover:opacity-40 group-hover:scale-125 z-0" />
+        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-blue-500/[0.01] rounded-full blur-3xl transition-all duration-700 opacity-20 group-hover:opacity-40 group-hover:scale-125 z-0" />
         
         <div className="relative z-10 flex flex-col h-full">
           {/* Image Area */}
-          <div className="h-[140px] md:h-[180px] bg-primary/[0.02] relative flex items-center justify-center overflow-hidden">
+          <div className="h-[140px] md:h-[180px] bg-primary/[0.01] relative flex items-center justify-center overflow-hidden">
             <div className="relative w-[100px] h-[100px] md:w-[130px] md:h-[130px] transition-transform duration-300 group-hover:scale-[1.1] drop-shadow-[0_8px_16px_rgba(0,0,0,0.05)]">
               <Image
                 src={product.image_urls?.[0] || 'https://picsum.photos/seed/1/200/200'}

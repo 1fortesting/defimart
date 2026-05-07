@@ -36,25 +36,24 @@ export function NetworkStatus() {
     <AnimatePresence>
       {showStatus && !isOnline && (
         <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 50, opacity: 0 }}
-          className="fixed bottom-20 md:top-6 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:right-auto z-[10000] px-4 py-2.5 md:px-6 md:py-3 rounded-2xl md:rounded-full shadow-2xl flex items-center justify-between md:justify-start gap-3 border bg-destructive/95 text-destructive-foreground backdrop-blur-xl"
+          initial={{ y: 100, opacity: 0, scale: 0.95 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          exit={{ y: 100, opacity: 0, scale: 0.95 }}
+          className="fixed bottom-24 left-4 right-4 md:left-auto md:right-8 md:bottom-8 md:w-auto z-[10000] p-1 pr-2 rounded-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] flex items-center gap-3 border border-white/20 bg-background/80 backdrop-blur-2xl ring-1 ring-black/5"
         >
-          <div className="flex items-center gap-3">
-            <div className="bg-white/20 p-1.5 rounded-lg">
-                <WifiOff className="h-4 w-4 md:h-5 md:w-5 animate-pulse" />
-            </div>
-            <span className="font-bold text-xs md:text-sm tracking-tight">
-              Connection lost. Reconnecting...
-            </span>
+          <div className="bg-destructive p-2.5 rounded-full shadow-lg shadow-destructive/20 flex-shrink-0">
+              <WifiOff className="h-4 w-4 text-white animate-pulse" />
+          </div>
+          <div className="flex flex-col pr-2 min-w-0">
+              <span className="text-[10px] font-black uppercase tracking-[2px] text-destructive leading-none">Offline Mode</span>
+              <span className="text-xs font-bold text-muted-foreground mt-1 whitespace-nowrap overflow-hidden text-ellipsis">Check your connection</span>
           </div>
           <button 
             onClick={() => setShowStatus(false)}
-            className="p-1.5 hover:bg-white/10 rounded-xl transition-colors"
-            aria-label="Close status"
+            className="p-1.5 hover:bg-muted rounded-full transition-colors ml-auto flex-shrink-0"
+            aria-label="Close alert"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4 text-muted-foreground" />
           </button>
         </motion.div>
       )}
