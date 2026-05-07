@@ -1,12 +1,13 @@
-
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProductCard } from '@/components/product-card';
-import { Clock, Store, Info, Package, ImageIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Clock, Store, Info, Package, ImageIcon, Search, Zap, Star, LayoutGrid, Heart, ShoppingBag, ArrowRight } from 'lucide-react';
+import { cn, formatPrice } from '@/lib/utils';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default async function ShopProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -28,7 +29,6 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
         .eq('id', seller.user_id)
         .single();
 
-    // Fetch exclusively from vendor_products table for this vendor
     const { data: products } = await (supabase as any)
         .from('vendor_products')
         .select('*')
@@ -39,6 +39,9 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
     const { data: { user } } = await supabase.auth.getUser();
     
     const isShopOpen = () => {
+        // Official stores are always open
+        if (seller.user_id === process.env.NEXT_PUBLIC_ADMIN_ID) return true;
+        
         if (!seller.is_open) return false;
         if (!seller.open_time || !seller.close_time) return seller.is_open;
 
@@ -57,92 +60,142 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
 
     const isOpen = isShopOpen();
 
+    const quickLinks = [
+        { label: 'Discover', icon: Zap, color: 'bg-purple-100 text-purple-600' },
+        { label: 'New List', icon: ShoppingBag, color: 'bg-orange-100 text-orange-600' },
+        { label: 'Info', icon: Info, color: 'bg-blue-100 text-blue-600' },
+        { label: 'Categories', icon: LayoutGrid, color: 'bg-emerald-100 text-emerald-600' },
+    ];
+
     return (
-        <main className="flex-1 bg-muted/20 pb-20">
-            <div className="relative h-48 md:h-64 bg-gradient-to-r from-primary via-orange-500 to-amber-600">
-                <div className="absolute inset-0 bg-black/10 backdrop-blur-[2px]" />
-            </div>
-
-            <div className="container mx-auto px-4 -mt-16 relative z-10">
-                <div className="flex flex-col md:flex-row gap-6 items-start">
-                    <div className="w-full md:w-80 space-y-6">
-                        <Card className="overflow-hidden border-none shadow-xl bg-background rounded-3xl">
-                            <CardContent className="p-6">
-                                <div className="flex flex-col items-center text-center">
-                                    <Avatar className="h-24 w-24 border-4 border-background shadow-lg -mt-16">
-                                        <AvatarImage src={profile?.avatar_url || undefined} />
-                                        <AvatarFallback className="bg-primary text-white text-3xl font-bold">
-                                            {seller.shop_name.charAt(0)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <h1 className="mt-4 text-2xl font-black tracking-tight">{seller.shop_name}</h1>
-                                    <Badge 
-                                        className={cn(
-                                            "mt-2 px-4 py-1 font-bold",
-                                            isOpen ? "bg-emerald-500 hover:bg-emerald-600" : "bg-destructive hover:bg-destructive/90"
-                                        )}
-                                    >
-                                        {isOpen ? 'OPEN FOR ORDERS' : 'SHOP CLOSED'}
-                                    </Badge>
-                                    
-                                    <div className="mt-6 w-full space-y-4">
-                                        <div className="flex items-center gap-3 text-sm text-muted-foreground p-3 bg-muted/30 rounded-xl">
-                                            <Clock className="h-4 w-4 text-primary" />
-                                            <div className="text-left">
-                                                <p className="font-bold text-foreground">Hours</p>
-                                                <p>{seller.open_time} - {seller.close_time}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-3 text-sm text-muted-foreground p-3 bg-muted/30 rounded-xl">
-                                            <Store className="h-4 w-4 text-primary" />
-                                            <div className="text-left">
-                                                <p className="font-bold text-foreground">Vendor</p>
-                                                <p>{seller.full_name}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border-none shadow-lg bg-primary text-primary-foreground rounded-3xl overflow-hidden">
-                            <CardContent className="p-6 space-y-4">
-                                <div className="flex items-center gap-2">
-                                    <Info className="h-5 w-5" />
-                                    <h3 className="font-bold">Vendor Info</h3>
-                                </div>
-                                <p className="text-sm opacity-90 italic">
-                                    "Verified campus entrepreneur. Support student businesses!"
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    <div className="flex-1 space-y-6">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-bold uppercase tracking-widest text-muted-foreground">Catalog</h2>
-                            <span className="text-sm font-bold bg-muted px-3 py-1 rounded-full">{products?.length || 0} Items</span>
+        <main className="flex-1 bg-background pb-24 md:pb-12">
+            {/* 1. Immersive Hero Section */}
+            <div className="relative h-[220px] md:h-[300px] w-full overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary via-orange-500 to-amber-600">
+                    <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
+                    {/* Decorative Elements */}
+                    <div className="absolute top-[-10%] right-[-5%] w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
+                    <div className="absolute bottom-[-20%] left-[-10%] w-80 h-80 bg-black/10 rounded-full blur-3xl" />
+                </div>
+                
+                <div className="container mx-auto px-4 h-full flex flex-col justify-center relative z-10">
+                    <div className="max-w-xl space-y-4">
+                        <div className="flex items-center gap-3">
+                            <Badge className="bg-white/20 backdrop-blur-md text-white border-none font-black text-[10px] uppercase tracking-widest px-3 h-6">
+                                Verified Vendor
+                            </Badge>
+                            {isOpen && <div className="flex items-center gap-1.5"><div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_#10b981]" /><span className="text-white text-[10px] font-black uppercase tracking-tighter">Live Now</span></div>}
                         </div>
-
-                        {(!products || products.length === 0) ? (
-                            <div className="py-20 text-center bg-background rounded-3xl border-2 border-dashed">
-                                <Package className="h-12 w-12 text-muted-foreground/20 mx-auto mb-4" />
-                                <p className="text-lg font-bold">Empty catalog</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                                {products.map((product: any) => (
-                                    <ProductCard 
-                                        key={product.id} 
-                                        product={product} 
-                                        user={user} 
-                                        isSaved={false} 
-                                    />
-                                ))}
-                            </div>
-                        )}
+                        <h1 className="text-3xl md:text-5xl font-black text-white italic uppercase tracking-tighter leading-none drop-shadow-2xl">
+                            {seller.shop_name}<br/>
+                            <span className="text-white/70 text-lg md:text-2xl not-italic font-medium tracking-normal">Buy Best Product Here</span>
+                        </h1>
+                        <p className="text-white/60 text-xs md:text-sm font-bold uppercase tracking-widest">Starting from GHS 1.00</p>
                     </div>
                 </div>
+            </div>
+
+            {/* 2. Brand Identity Overlap */}
+            <div className="container mx-auto px-4 -mt-10 relative z-20">
+                <div className="bg-background rounded-[40px] shadow-[0_20px_60px_rgba(0,0,0,0.06)] p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-8 border border-border/40">
+                    <div className="flex items-center gap-4 md:gap-6">
+                        <div className="relative">
+                            <Avatar className="h-20 w-24 md:h-24 md:w-24 border-4 border-background shadow-xl ring-1 ring-black/5 bg-white">
+                                <AvatarImage src={profile?.avatar_url || undefined} />
+                                <AvatarFallback className="bg-primary/5 text-primary text-3xl font-black">
+                                    {seller.shop_name.charAt(0)}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className={cn("absolute -bottom-1 -right-1 h-6 w-6 rounded-full border-4 border-background shadow-lg", isOpen ? "bg-emerald-500" : "bg-red-500")} />
+                        </div>
+                        <div className="space-y-1">
+                            <h2 className="text-xl md:text-2xl font-black tracking-tight">{seller.shop_name}</h2>
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground">
+                                    <Clock className="h-3.5 w-3.5 text-primary" />
+                                    <span>{seller.open_time} – {seller.close_time}</span>
+                                </div>
+                                <Separator orientation="vertical" className="h-3" />
+                                <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground">
+                                    <Star className="h-3.5 w-3.5 fill-primary text-primary" />
+                                    <span>4.9 (128 reviews)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-2 md:pb-0">
+                        {quickLinks.map((link) => (
+                            <button key={link.label} className="flex flex-col items-center gap-2 shrink-0 group">
+                                <div className={cn("h-14 w-14 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-sm", link.color)}>
+                                    <link.icon className="h-6 w-6" />
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground group-hover:text-primary transition-colors">{link.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* 3. Catalog Section */}
+            <div className="container mx-auto px-4 mt-12 space-y-8">
+                <div className="flex items-center justify-between px-2">
+                    <h2 className="text-2xl font-black italic uppercase tracking-tighter text-foreground flex items-center gap-3">
+                        Collection <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                    </h2>
+                    <Link href="#" className="text-primary text-xs font-black uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all">
+                        See More <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                </div>
+
+                {(!products || products.length === 0) ? (
+                    <div className="py-32 text-center bg-muted/10 rounded-[40px] border-4 border-dashed border-muted-foreground/10 flex flex-col items-center">
+                        <ShoppingBag className="h-20 w-20 text-muted-foreground/20 mb-4" />
+                        <p className="text-xl font-black text-muted-foreground/40 uppercase tracking-widest italic">Catalog Empty</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8">
+                        {products.map((product: any) => (
+                            <Link href={`/products/${product.id}`} key={product.id} className="group">
+                                <Card className="border-none shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[24px] overflow-hidden transition-all duration-500 h-full bg-white flex flex-col group">
+                                    <div className="relative aspect-square p-4 bg-muted/20">
+                                        {product.image_urls?.[0] ? (
+                                            <Image 
+                                                src={product.image_urls[0]} 
+                                                alt={product.name} 
+                                                fill 
+                                                className="object-contain p-2 group-hover:scale-110 transition-transform duration-700" 
+                                            />
+                                        ) : (
+                                            <div className="h-full w-full flex items-center justify-center text-muted-foreground/20">
+                                                <ImageIcon className="h-12 w-12" />
+                                            </div>
+                                        )}
+                                        {product.discount_percentage > 0 && (
+                                            <Badge variant="destructive" className="absolute top-4 left-4 font-black shadow-lg">-{product.discount_percentage}%</Badge>
+                                        )}
+                                    </div>
+                                    <CardContent className="p-5 space-y-2 flex flex-col flex-1">
+                                        <div>
+                                            <h3 className="font-black text-sm md:text-base leading-tight line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h3>
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Explore Collection</p>
+                                        </div>
+                                        <div className="pt-2 mt-auto">
+                                            <p className="text-primary font-black text-lg md:text-xl">GHS {formatPrice(product.price).split(' ')[1]}</p>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Floating Action Button (Mobile) */}
+            <div className="fixed bottom-24 right-6 md:hidden z-[100]">
+                <button className="h-16 w-16 rounded-full bg-primary text-white shadow-2xl shadow-primary/40 flex items-center justify-center animate-bounce">
+                    <Search className="h-7 w-7" />
+                </button>
             </div>
         </main>
     );
