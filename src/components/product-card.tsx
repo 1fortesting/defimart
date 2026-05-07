@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Tables } from '@/types/supabase';
-import { Heart, ShoppingCart, Star, Share2, Copy, Check, MessageCircle, Facebook, ImageIcon } from 'lucide-react';
+import { Heart, ShoppingCart, Star, Share2, Copy, Check, MessageCircle, Facebook, ImageIcon, ArrowDown } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 import { toggleSaveProduct } from '@/app/saved/actions';
@@ -20,6 +20,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Badge } from './ui/badge';
 
 type ProductCardProps = {
   product: Tables<'products'> & { average_rating?: number; review_count?: number };
@@ -72,15 +73,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
     };
 
     const handleAddToCart = () => {
-        if (!navigator.onLine) {
-            toast({
-                title: 'Offline',
-                description: 'Please connect to the internet to add items to your cart.',
-                variant: 'destructive',
-            });
-            return;
-        }
-
+        // Optimistic UI: Update Local Storage instantly
         toast({
             title: 'Added to Cart',
             description: `${product.name} has been added.`,
@@ -105,20 +98,19 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                 cart.push(cartItem);
             }
             localStorage.setItem('cart', JSON.stringify(cart));
+            // Trigger instant update across components
+            window.dispatchEvent(new Event('cart-updated'));
         } catch (e) {
             console.error('Failed to update cart in local storage', e);
         }
-
-        window.dispatchEvent(new Event('cart-updated'));
         
+        // Silent Background Action: Push to DB if logged in
         if (user) {
             startTransition(async () => {
                 const formData = new FormData();
                 formData.append('productId', product.id);
-                const result = await addToCart(formData);
-                if (result.error) {
-                    toast({ variant: 'destructive', title: 'Error', description: result.error });
-                }
+                // We don't await this to keep the UI interaction silent and immediate
+                addToCart(formData);
             });
         }
     };

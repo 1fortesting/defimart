@@ -76,19 +76,7 @@ export function HeaderNav({ user, cartItemCount: initialCartCount, isMobile = fa
 
   useEffect(() => {
     // Immediate sync on client mount
-    const localCount = getCartCount();
-    
-    if (!user) {
-        // Logged out: rely entirely on local storage
-        setCartCount(localCount);
-    } else {
-        // Logged in: DB is authoritative but respect immediate local additions
-        if (localCount > initialCartCount) {
-            setCartCount(localCount);
-        } else {
-            setCartCount(initialCartCount);
-        }
-    }
+    setCartCount(getCartCount());
 
     const handleCartUpdate = () => {
         setCartCount(getCartCount());
@@ -101,7 +89,7 @@ export function HeaderNav({ user, cartItemCount: initialCartCount, isMobile = fa
         window.removeEventListener('cart-updated', handleCartUpdate);
         window.removeEventListener('storage', handleCartUpdate);
     };
-  }, [user, initialCartCount]);
+  }, []);
 
   const desktopLinks = [
     { href: "/", icon: Home, text: "Home" },

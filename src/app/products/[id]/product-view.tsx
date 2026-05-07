@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useEffect, useActionState, useTransition } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useState, useEffect, useTransition } from 'react';
 import type { User } from '@supabase/supabase-js';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -9,19 +8,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { StarRating } from '@/components/star-rating';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Heart, ShoppingCart, Star, Calendar, Info, MessageSquare, Loader2, Share2, Copy, Check, MessageCircle, Facebook, Store, ImageIcon } from 'lucide-react';
+import { Heart, ShoppingCart, Calendar, Info, Loader2, Share2, Copy, Check, MessageCircle, Facebook, Store, ImageIcon } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { Tables } from '@/types/supabase';
 import type { ReviewWithProfile } from './page';
-import { formatDistanceToNow } from 'date-fns';
-import { submitReview } from './actions';
-import { addToCart } from '@/app/cart/actions';
 import { toggleSaveProduct } from '@/app/saved/actions';
+import { addToCart } from '@/app/cart/actions';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -32,6 +26,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface ProductViewProps {
     product: Tables<'products'>;
@@ -105,6 +100,7 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
             return;
         }
 
+        // Optimistic UI update
         toast({
             title: 'Added to Cart',
             description: `${product.name} has been added.`,
@@ -129,17 +125,17 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                 cart.push(cartItem);
             }
             localStorage.setItem('cart', JSON.stringify(cart));
+            window.dispatchEvent(new Event('cart-updated'));
         } catch (e) {
             console.error('Failed to update cart in local storage', e);
         }
-
-        window.dispatchEvent(new Event('cart-updated'));
         
+        // Silent background sync
         if (user) {
             startTransition(async () => {
                 const formData = new FormData();
                 formData.append('productId', product.id);
-                await addToCart(formData);
+                addToCart(formData);
             });
         }
     };

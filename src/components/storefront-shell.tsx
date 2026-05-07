@@ -24,6 +24,7 @@ export function StorefrontShell({
     
     const syncAuthState = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      // Safety: If no session, clear all local state to prevent account leakage
       if (!session) {
         localStorage.removeItem('cart');
         localStorage.removeItem('saved');
@@ -36,7 +37,8 @@ export function StorefrontShell({
     
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        if (event === 'SIGNED_OUT' || event === 'SIGNED_IN') {
+        // Clear local storage on core state changes to keep UX predictable
+        if (event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
           localStorage.removeItem('cart');
           localStorage.removeItem('saved');
           window.dispatchEvent(new Event('cart-updated'));

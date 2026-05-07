@@ -1,20 +1,17 @@
-
 'use client';
 
 import { createClient } from '@/lib/supabase/client';
 import { Tables } from '@/types/supabase';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Trash2, Minus, Plus, CheckCircle, Loader2, WifiOff, ImageIcon } from 'lucide-react';
+import { ShoppingCart, Trash2, Minus, Plus, CheckCircle, Loader2, ImageIcon } from 'lucide-react';
 import { removeItem, updateItemQuantity } from './actions';
 import { AuthPrompt } from '@/components/auth-prompt';
 import { useEffect, useState, useTransition } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
   products?: any | null;
@@ -42,7 +39,7 @@ function QuantitySelector({ item, onQuantityChange, isPending }: { item: CartIte
                 size="icon"
                 variant="ghost"
                 className="h-6 w-6 rounded-full"
-                disabled={isPending || (product?.quantity ?? 0) <= item.quantity}
+                disabled={isPending || (product?.quantity !== null && product?.quantity <= item.quantity)}
             >
                 <Plus className="h-4 w-4" />
             </Button>
@@ -60,15 +57,15 @@ function CartItem({ item, onQuantityChange, onRemove, isPending }: { item: CartI
     : product.price;
   
   const stockStatus = product.quantity === null ? null :
-    product.quantity > 5 ? <p className="text-sm text-green-600">In Stock</p> :
-    product.quantity > 0 ? <p className="text-sm text-orange-500">Few units left</p> :
-    <p className="text-sm text-red-500">Out of Stock</p>;
+    product.quantity > 5 ? <p className="text-sm text-green-600 font-medium">In Stock</p> :
+    product.quantity > 0 ? <p className="text-sm text-orange-500 font-medium">Few units left</p> :
+    <p className="text-sm text-red-500 font-medium">Out of Stock</p>;
 
   const hasImage = product.image_urls && product.image_urls.length > 0;
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 py-4">
-      <div className="relative h-[100px] w-[100px] bg-muted rounded-md flex items-center justify-center overflow-hidden">
+    <div className="flex flex-col sm:flex-row gap-4 py-6 px-4 hover:bg-muted/5 transition-colors">
+      <div className="relative h-[100px] w-[100px] bg-muted rounded-xl flex items-center justify-center overflow-hidden border">
         {hasImage ? (
             <Image 
                 src={product.image_urls[0]} 
@@ -82,27 +79,27 @@ function CartItem({ item, onQuantityChange, onRemove, isPending }: { item: CartI
       </div>
       <div className="flex-1 flex flex-col justify-between">
         <div>
-          <h3 className="font-semibold text-base">{product.name}</h3>
+          <h3 className="font-bold text-base md:text-lg">{product.name}</h3>
           <div className="mt-1">{stockStatus}</div>
         </div>
-        <Button onClick={() => onRemove(item.id)} type="button" variant="ghost" size="sm" className="text-muted-foreground hover:text-red-500 hover:bg-transparent p-0 h-auto mt-2 self-start" disabled={isPending}>
+        <Button onClick={() => onRemove(item.id)} type="button" variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 p-2 h-auto mt-2 self-start rounded-lg transition-all" disabled={isPending}>
             <Trash2 className="mr-2 h-4 w-4" />
             Remove
         </Button>
       </div>
-      <div className="flex flex-col items-start sm:items-end justify-between text-right">
-        <div className="text-lg font-bold">
-            GHS {finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </div>
-        {isDiscountActive && (
-            <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground line-through">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                <Badge variant="destructive">-{product.discount_percentage}%</Badge>
+      <div className="flex flex-col items-start sm:items-end justify-between text-right gap-4">
+        <div className="space-y-1">
+            <div className="text-xl font-black">
+                GHS {finalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
-        )}
-        <div className="mt-2">
-          <QuantitySelector item={item} onQuantityChange={onQuantityChange} isPending={isPending} />
+            {isDiscountActive && (
+                <div className="flex items-center justify-end gap-2">
+                    <span className="text-xs text-muted-foreground line-through">GHS {product.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <Badge variant="destructive" className="h-5 px-1.5 text-[10px] font-black">-{product.discount_percentage}%</Badge>
+                </div>
+            )}
         </div>
+        <QuantitySelector item={item} onQuantityChange={onQuantityChange} isPending={isPending} />
       </div>
     </div>
   );
@@ -115,12 +112,18 @@ export default function CartPage() {
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    const syncCart = async () => {
+    const initCart = async () => {
       setLoading(true);
+      
+      // 1. Load from Local Storage immediately
+      const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
+      setCartItems(localCart);
+      
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
 
+      // 2. Silent Sync from DB if logged in
       if (user) {
         const { data: dbItems, error } = await supabase
           .from('cart_items')
@@ -129,13 +132,16 @@ export default function CartPage() {
           .order('created_at');
 
         if (!error && dbItems) {
+          // Robust reconciliation
           setCartItems(dbItems);
+          localStorage.setItem('cart', JSON.stringify(dbItems));
+          window.dispatchEvent(new Event('cart-updated'));
         }
       }
       setLoading(false);
     };
 
-    syncCart();
+    initCart();
   }, []);
   
   const handleQuantityChange = (itemId: string, newQuantity: number) => {
@@ -144,9 +150,14 @@ export default function CartPage() {
         return;
     }
 
-    setCartItems(prev => prev.map(item => item.id === itemId ? { ...item, quantity: newQuantity } : item));
+    // Update UI immediately
+    const updatedCart = cartItems.map(item => item.id === itemId ? { ...item, quantity: newQuantity } : item);
+    setCartItems(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    window.dispatchEvent(new Event('cart-updated'));
 
-    startTransition(() => {
+    // Silent background sync
+    startTransition(async () => {
         const formData = new FormData();
         formData.append('cartItemId', itemId);
         formData.append('quantity', String(newQuantity));
@@ -155,9 +166,14 @@ export default function CartPage() {
   };
 
   const handleRemoveItem = (itemId: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== itemId));
+    // Update UI immediately
+    const updatedCart = cartItems.filter(item => item.id !== itemId);
+    setCartItems(updatedCart);
+    localStorage.setItem('cart', JSON.stringify(updatedCart));
+    window.dispatchEvent(new Event('cart-updated'));
 
-    startTransition(() => {
+    // Silent background sync
+    startTransition(async () => {
         const formData = new FormData();
         formData.append('cartItemId', itemId);
         removeItem(formData);
@@ -183,41 +199,60 @@ export default function CartPage() {
   }, 0);
 
   return (
-      <main className="flex-1 p-4 md:p-8 bg-muted/20">
+      <main className="flex-1 p-4 md:p-8 bg-muted/5 min-h-screen">
         {cartItems.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-            <div className="lg:col-span-2">
-                <h1 className="text-2xl font-bold mb-4">Shopping Cart ({cartItems.length})</h1>
-              <Card>
-                <CardContent className="divide-y p-0">
-                    {cartItems.map(item => <div key={item.id} className="px-6"><CartItem item={item} onQuantityChange={handleQuantityChange} onRemove={handleRemoveItem} isPending={isPending} /></div>)}
-                </CardContent>
-              </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start max-w-7xl mx-auto">
+            <div className="lg:col-span-2 space-y-4">
+                <h1 className="text-3xl font-black tracking-tight italic uppercase">BAG ({cartItems.length})</h1>
+                <Card className="border-none shadow-xl bg-background rounded-3xl overflow-hidden">
+                    <div className="divide-y">
+                        {cartItems.map(item => <CartItem key={item.id} item={item} onQuantityChange={handleQuantityChange} onRemove={handleRemoveItem} isPending={isPending} />)}
+                    </div>
+                </Card>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold mb-4 uppercase text-muted-foreground">Summary</h2>
-              <Card>
-                <CardContent className="space-y-4 pt-6">
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>Subtotal</span>
-                    <span>GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <div className="space-y-4">
+              <h2 className="text-xs font-black uppercase tracking-[4px] text-muted-foreground ml-2">Checkout Details</h2>
+              <Card className="border-none shadow-xl bg-background rounded-3xl p-6 md:p-8 space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground font-medium">Subtotal</span>
+                        <span className="font-bold">GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-emerald-600 font-bold">
+                        <span>Platform Pickup</span>
+                        <span className="uppercase text-[10px] tracking-widest bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">Free</span>
+                    </div>
                   </div>
-                  <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm flex items-start gap-2">
+                  
+                  <div className="h-px bg-muted/50" />
+                  
+                  <div className="flex justify-between items-end">
+                    <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Order Total</span>
+                    <span className="text-3xl font-black text-primary leading-none">GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  </div>
+
+                  <div className="bg-primary/5 text-primary p-4 rounded-2xl text-xs font-medium flex items-start gap-3 border border-primary/10">
                       <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                      <span>Free campus pickup included!</span>
+                      <p>You pay in person upon product collection. No online payments required.</p>
                   </div>
-                </CardContent>
-                <CardFooter>
-                    <Button asChild className="w-full mt-4" size="lg" disabled={isPending}><Link href="/checkout">Checkout</Link></Button>
-                </CardFooter>
+
+                  <Button asChild className="w-full h-14 text-base md:text-lg font-black uppercase tracking-widest shadow-2xl shadow-primary/30 rounded-2xl" size="lg" disabled={isPending}>
+                      <Link href="/checkout">Checkout Now</Link>
+                  </Button>
               </Card>
             </div>
           </div>
         ) : (
-          <div className="text-center py-24">
-            <div className="bg-muted w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"><ShoppingCart className="h-10 w-10 text-muted-foreground/60" /></div>
-            <h1 className="text-2xl font-bold mb-2">Your cart is empty</h1>
-            <Button asChild className="mt-4 px-8"><Link href="/">Discover products</Link></Button>
+          <div className="text-center py-32 flex flex-col items-center">
+            <div className="bg-background w-24 h-24 rounded-full flex items-center justify-center shadow-2xl mb-8 relative">
+                <div className="absolute inset-0 bg-primary/10 rounded-full animate-ping opacity-20" />
+                <ShoppingCart className="h-12 w-12 text-primary relative z-10" />
+            </div>
+            <h1 className="text-2xl md:text-3xl font-black italic uppercase tracking-tight mb-2">The bag is empty</h1>
+            <p className="text-muted-foreground font-medium mb-10">Start discovery to find your next campus essential.</p>
+            <Button asChild size="lg" className="h-14 px-10 font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20">
+                <Link href="/">Discover Now</Link>
+            </Button>
           </div>
         )}
       </main>
