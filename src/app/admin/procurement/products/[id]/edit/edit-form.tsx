@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
-import React, { useActionState, useState, useEffect } from 'react';
+import React, { useActionState, useState, useEffect, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,8 +15,8 @@ import { Tables } from '@/types/supabase';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
+import { Loader2, Switch, Sparkles } from 'lucide-react';
+import { generateProductDescription } from '@/ai/flows/ai-product-description-assistant';
 
 const categories = [
     "Electronics & Gadgets",
@@ -41,7 +41,12 @@ function SubmitButton() {
 export function EditProductForm({ product }: { product: Tables<'products'>}) {
     const initialState = { message: null, errors: {}, success: false };
     const [state, dispatch] = useActionState(updateProduct, initialState);
+    const [isGenerating, startGeneratingTransition] = useTransition();
+
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [description, setDescription] = useState(product.description || '');
+    const [productName, setProductName] = useState(product.name || '');
+
     const router = useRouter();
     const { toast } = useToast();
 
@@ -64,6 +69,27 @@ export function EditProductForm({ product }: { product: Tables<'products'>}) {
       } else {
         setImagePreview(null);
       }
+    };
+
+    const handleGenerateDescription = () => {
+        if (!productName) {
+            toast({ variant: 'destructive', title: 'Name required', description: 'Please enter a product name first.' });
+            return;
+        }
+        startGeneratingTransition(async () => {
+            try {
+                const result = await generateProductDescription({
+                    productName,
+                    category: selectedCategory || 'General',
+                });
+                if (result.description) {
+                    setDescription(result.description);
+                    toast({ variant: 'success', title: 'AI Description Ready', description: 'Content successfully enhanced.' });
+                }
+            } catch (e) {
+                toast({ variant: 'destructive', title: 'Generation Failed', description: 'Could not connect to AI services.' });
+            }
+        });
     };
     
     const defaultEndDate = product.discount_end_date ? format(new Date(product.discount_end_date), "yyyy-MM-dd'T'HH:mm") : '';
@@ -95,7 +121,7 @@ export function EditProductForm({ product }: { product: Tables<'products'>}) {
                     <CardContent className="grid gap-6">
                         <div className="grid gap-3">
                             <Label htmlFor="name">Name</Label>
-                            <Input id="name" name="name" type="text" className="w-full" defaultValue={product.name} required />
+                            <Input id="name" name="name" type="text" className="w-full" value={productName} onChange={(e) => setProductName(e.target.value)} required />
                             {state.errors?.name && <p className="text-sm text-red-500">{state.errors.name[0]}</p>}
                         </div>
                         <div className="grid gap-3">
@@ -104,8 +130,27 @@ export function EditProductForm({ product }: { product: Tables<'products'>}) {
                             {state.errors?.brand && <p className="text-sm text-red-500">{state.errors.brand[0]}</p>}
                         </div>
                         <div className="grid gap-3">
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea id="description" name="description" className="min-h-32" defaultValue={product.description || ''} />
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="description">Description</Label>
+                                <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="h-8 gap-1.5 text-primary border-primary/20 hover:bg-primary/5"
+                                    onClick={handleGenerateDescription}
+                                    disabled={isGenerating}
+                                >
+                                    {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                                    AI Rewrite
+                                </Button>
+                            </div>
+                            <Textarea 
+                                id="description" 
+                                name="description" 
+                                className="min-h-32" 
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
                         </div>
                     </CardContent>
                 </Card>

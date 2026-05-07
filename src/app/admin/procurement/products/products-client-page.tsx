@@ -1,10 +1,9 @@
-
 'use client';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PlusCircle, Tag, RefreshCw, Search, Package, AlertCircle, Megaphone } from 'lucide-react';
+import { PlusCircle, Tag, RefreshCw, Search, Package, AlertCircle, Megaphone, Sparkles, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Tables } from '@/types/supabase';
@@ -16,6 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OutstandingProductsCard } from '@/components/admin/outstanding-products-card';
 import type { ProductWithSalesAndReviews } from '@/app/admin/central-admin/product-performance/page';
+import { bulkEnhanceDescriptions } from '../actions';
+import { useToast } from '@/hooks/use-toast';
 
 
 const ProductRow = ({ product }: { product: Tables<'products'> }) => {
@@ -147,7 +148,9 @@ const ProductTable = ({ products }: { products: Tables<'products'>[] }) => {
 
 export default function ProcurementProductsClientPage({ products, outstandingProducts }: { products: Tables<'products'>[], outstandingProducts: ProductWithSalesAndReviews[] }) {
     const router = useRouter();
+    const { toast } = useToast();
     const [isRefreshing, startTransition] = useTransition();
+    const [isAIPending, startAITransition] = useTransition();
     const [searchQuery, setSearchQuery] = useState('');
 
     const applySearch = (p: Tables<'products'>[]) => p.filter(product => product.name.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -156,11 +159,37 @@ export default function ProcurementProductsClientPage({ products, outstandingPro
     const discountedProducts = applySearch(products.filter(p => p.discount_percentage && p.discount_end_date && new Date(p.discount_end_date) > new Date()));
     const lowStockProducts = applySearch(products.filter(p => p.quantity !== null && p.quantity <= 5));
 
+    const handleAutoDescription = () => {
+        startAITransition(async () => {
+            const result = await bulkEnhanceDescriptions();
+            if (result.success) {
+                toast({ 
+                    variant: 'success', 
+                    title: 'Auto-Enhance Complete', 
+                    description: `Updated ${result.count} products. ${result.totalFound - result.count} products already have enhanced descriptions.` 
+                });
+                router.refresh();
+            } else {
+                toast({ variant: 'destructive', title: 'Enhancement Failed', description: result.error });
+            }
+        });
+    }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold md:text-2xl">Products</h1>
         <div className="flex items-center gap-2">
+            <Button 
+                onClick={handleAutoDescription} 
+                disabled={isAIPending} 
+                variant="outline" 
+                size="sm" 
+                className="hidden sm:flex border-primary/30 text-primary hover:bg-primary/10"
+            >
+                {isAIPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                Auto Description
+            </Button>
             <Button asChild variant="outline" size="sm" className="hidden sm:flex border-primary/30 text-primary hover:bg-primary/10">
                 <Link href="/admin/procurement/notifications">
                     <Megaphone className="mr-2 h-4 w-4" />

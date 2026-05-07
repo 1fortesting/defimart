@@ -7,14 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
-import React, { useActionState, useState, useEffect } from 'react';
+import React, { useActionState, useState, useEffect, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { generateProductDescription } from '@/ai/flows/ai-product-description-assistant';
 
 const categories = [
     "Electronics & Gadgets",
@@ -39,8 +40,13 @@ function SubmitButton() {
 export default function NewProductPage() {
     const initialState = { message: null, errors: {}, success: false };
     const [state, dispatch] = useActionState(createProduct, initialState);
+    const [isGenerating, startGeneratingTransition] = useTransition();
+    
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [productName, setProductName] = useState('');
+    const [description, setDescription] = useState('');
+    
     const router = useRouter();
     const { toast } = useToast();
 
@@ -60,6 +66,27 @@ export default function NewProductPage() {
       } else {
         setImagePreview(null);
       }
+    };
+
+    const handleGenerateDescription = () => {
+        if (!productName) {
+            toast({ variant: 'destructive', title: 'Name required', description: 'Please enter a product name first.' });
+            return;
+        }
+        startGeneratingTransition(async () => {
+            try {
+                const result = await generateProductDescription({
+                    productName,
+                    category: selectedCategory || 'General',
+                });
+                if (result.description) {
+                    setDescription(result.description);
+                    toast({ variant: 'success', title: 'AI Description Ready', description: 'Detailed marketing copy generated.' });
+                }
+            } catch (e) {
+                toast({ variant: 'destructive', title: 'Generation Failed', description: 'Could not connect to AI services.' });
+            }
+        });
     };
 
   return (
@@ -88,7 +115,7 @@ export default function NewProductPage() {
                     <CardContent className="grid gap-6">
                         <div className="grid gap-3">
                             <Label htmlFor="name">Name</Label>
-                            <Input id="name" name="name" type="text" className="w-full" required />
+                            <Input id="name" name="name" type="text" className="w-full" value={productName} onChange={(e) => setProductName(e.target.value)} required />
                             {state.errors?.name && <p className="text-sm text-red-500">{state.errors.name[0]}</p>}
                         </div>
                         <div className="grid gap-3">
@@ -97,8 +124,27 @@ export default function NewProductPage() {
                             {state.errors?.brand && <p className="text-sm text-red-500">{state.errors.brand[0]}</p>}
                         </div>
                         <div className="grid gap-3">
-                            <Label htmlFor="description">Description</Label>
-                            <Textarea id="description" name="description" className="min-h-32" />
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="description">Description</Label>
+                                <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="h-8 gap-1.5 text-primary border-primary/20 hover:bg-primary/5"
+                                    onClick={handleGenerateDescription}
+                                    disabled={isGenerating}
+                                >
+                                    {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                                    AI Generate
+                                </Button>
+                            </div>
+                            <Textarea 
+                                id="description" 
+                                name="description" 
+                                className="min-h-32" 
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                            />
                         </div>
                     </CardContent>
                 </Card>

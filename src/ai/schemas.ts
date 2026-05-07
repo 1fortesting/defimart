@@ -4,9 +4,9 @@ import { z } from 'genkit';
 export const AIProductDescriptionAssistantInputSchema = z.object({
   productName: z.string().describe('The name of the product.'),
   category: z.string().describe('The category of the product (e.g., electronics, apparel, books).'),
-  price: z.string().describe('The price of the product, including currency.'),
-  shortDescription: z.string().describe('A brief summary or key features of the product.'),
-  keywords: z.array(z.string()).describe('A list of keywords related to the product, separated by commas.'),
+  price: z.string().optional().describe('The price of the product, including currency.'),
+  shortDescription: z.string().optional().describe('A brief summary or key features of the product.'),
+  keywords: z.array(z.string()).optional().describe('A list of keywords related to the product.'),
 });
 export type AIProductDescriptionAssistantInput = z.infer<typeof AIProductDescriptionAssistantInputSchema>;
 

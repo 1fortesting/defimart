@@ -31,11 +31,13 @@ Use the following information to craft the description:
 
 Product Name: {{{productName}}}
 Category: {{{category}}}
-Price: {{{price}}}
-Short Description/Key Features: {{{shortDescription}}}
-Keywords: {{{#each keywords}}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}}
+{{#if price}}Price: {{{price}}}{{/if}}
+{{#if shortDescription}}Current Description/Key Features: {{{shortDescription}}}{{/if}}
+{{#if keywords}}Keywords: {{{#each keywords}}}{{{this}}}{{#unless @last}}, {{/unless}}{{/each}}}{{/if}}
 
-Craft a detailed product description that is engaging, informative, and persuasive. Focus on creating value and addressing potential customer needs. The description should be at least 150 words but no more than 300 words.
+Craft a detailed product description that is engaging, informative, and persuasive. Focus on creating value and addressing potential customer needs. The description should be professional and at least 60 words. 
+
+CRITICAL: End the description with exactly this string: " (AI Enhanced)"
 `,
 });
 

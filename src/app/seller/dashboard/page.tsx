@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useTransition, useActionState, useCallback } from 'react';
@@ -35,7 +34,8 @@ import {
     LogOut,
     ArrowLeft,
     Heart,
-    Edit
+    Edit,
+    Sparkles
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -52,6 +52,7 @@ import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { logout } from '@/app/auth/actions';
+import { generateProductDescription } from '@/ai/flows/ai-product-description-assistant';
 
 const categories = [
     "Electronics & Gadgets",
@@ -70,6 +71,10 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
     const [uploadCategory, setUploadCategory] = useState(categories.includes(product.category) ? product.category : 'Other');
     const [imagePreview, setImagePreview] = useState<string | null>(product.image_urls?.[0] || null);
     
+    const [productName, setProductName] = useState(product.name || '');
+    const [description, setDescription] = useState(product.description || '');
+    const [isGenerating, startGeneratingTransition] = useTransition();
+
     const [state, action, isPending] = useActionState(updateSellerProduct, { success: false, error: null });
 
     useEffect(() => {
@@ -87,6 +92,27 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
         if (file) {
             setImagePreview(URL.createObjectURL(file));
         }
+    };
+
+    const handleGenerateDescription = () => {
+        if (!productName) {
+            toast({ variant: 'destructive', title: 'Name required', description: 'Please enter a product name first.' });
+            return;
+        }
+        startGeneratingTransition(async () => {
+            try {
+                const result = await generateProductDescription({
+                    productName,
+                    category: uploadCategory || 'General',
+                });
+                if (result.description) {
+                    setDescription(result.description);
+                    toast({ variant: 'success', title: 'AI Description Ready', description: 'Marketing copy has been enhanced.' });
+                }
+            } catch (e) {
+                toast({ variant: 'destructive', title: 'Generation Failed', description: 'Could not connect to AI services.' });
+            }
+        });
     };
 
     return (
@@ -110,7 +136,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                     <div className="flex-1 overflow-y-auto px-5 md:px-8 py-4 space-y-5 hide-scrollbar">
                         <div className="grid gap-2">
                             <Label htmlFor="name" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Name</Label>
-                            <Input id="name" name="name" defaultValue={product.name} required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
+                            <Input id="name" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -139,8 +165,28 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                         )}
 
                         <div className="grid gap-2">
-                            <Label htmlFor="description" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Detailed Description</Label>
-                            <Textarea id="description" name="description" defaultValue={product.description} rows={3} className="bg-muted/30 border-2 text-sm md:text-base rounded-xl resize-none" />
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="description" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Detailed Description</Label>
+                                <Button 
+                                    type="button" 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="h-7 gap-1 px-3 text-[9px] font-black uppercase border-primary/20 text-primary hover:bg-primary/5 rounded-full"
+                                    onClick={handleGenerateDescription}
+                                    disabled={isGenerating}
+                                >
+                                    {isGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                                    AI Rewrite
+                                </Button>
+                            </div>
+                            <Textarea 
+                                id="description" 
+                                name="description" 
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                rows={3} 
+                                className="bg-muted/30 border-2 text-sm md:text-base rounded-xl resize-none" 
+                            />
                         </div>
                         
                         <div className="space-y-3">
@@ -183,9 +229,12 @@ export default function SellerDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [isUpdatePending, startUpdateTransition] = useTransition();
+  const [isGenerating, startGeneratingTransition] = useTransition();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   
   const [uploadCategory, setUploadCategory] = useState('');
+  const [productName, setProductName] = useState('');
+  const [description, setDescription] = useState('');
   const [productImagePreview, setProductImagePreview] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
@@ -238,6 +287,8 @@ export default function SellerDashboardPage() {
         setIsAddDialogOpen(false);
         setProductImagePreview(null);
         setUploadCategory('');
+        setProductName('');
+        setDescription('');
         toast({ variant: 'success', title: 'Listing Published!', description: 'Your product is now live in your shop.' });
         fetchData();
         router.refresh();
@@ -328,6 +379,27 @@ export default function SellerDashboardPage() {
               toast({ title: 'Error', description: result.error, variant: 'destructive' });
           }
       });
+  };
+
+  const handleGenerateDescription = () => {
+    if (!productName) {
+        toast({ variant: 'destructive', title: 'Name required', description: 'Enter a product name to generate description.' });
+        return;
+    }
+    startGeneratingTransition(async () => {
+        try {
+            const result = await generateProductDescription({
+                productName,
+                category: uploadCategory || 'General',
+            });
+            if (result.description) {
+                setDescription(result.description);
+                toast({ variant: 'success', title: 'AI Content Ready', description: 'Description generated successfully.' });
+            }
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'AI Error', description: 'Failed to generate description.' });
+        }
+    });
   };
 
   if (loading) return <div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin h-12 w-12 text-primary" /></div>;
@@ -486,7 +558,7 @@ export default function SellerDashboardPage() {
                           <div className="flex-1 overflow-y-auto px-5 md:px-8 py-4 space-y-5 hide-scrollbar">
                                   <div className="grid gap-2">
                                     <Label htmlFor="name" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Name</Label>
-                                    <Input id="name" name="name" placeholder="Name" required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
+                                    <Input id="name" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. Vintage Leather Bag" required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
                                   </div>
 
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -515,8 +587,29 @@ export default function SellerDashboardPage() {
                                   )}
 
                                   <div className="grid gap-2">
-                                    <Label htmlFor="description" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Detailed Description</Label>
-                                    <Textarea id="description" name="description" placeholder="Description" rows={3} className="bg-muted/30 border-2 text-sm md:text-base rounded-xl resize-none" />
+                                    <div className="flex items-center justify-between">
+                                        <Label htmlFor="description" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Detailed Description</Label>
+                                        <Button 
+                                            type="button" 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="h-7 gap-1 px-3 text-[9px] font-black uppercase border-primary/20 text-primary hover:bg-primary/5 rounded-full"
+                                            onClick={handleGenerateDescription}
+                                            disabled={isGenerating}
+                                        >
+                                            {isGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                                            AI Generate
+                                        </Button>
+                                    </div>
+                                    <Textarea 
+                                        id="description" 
+                                        name="description" 
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="Detailed specifications..." 
+                                        rows={3} 
+                                        className="bg-muted/30 border-2 text-sm md:text-base rounded-xl resize-none" 
+                                    />
                                   </div>
                                   
                                   <div className="space-y-3">

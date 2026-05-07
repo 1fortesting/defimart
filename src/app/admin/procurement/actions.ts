@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { generateProductTags } from '@/ai/flows/ai-product-tag-generator';
+import { generateProductDescription } from '@/ai/flows/ai-product-description-assistant';
 import { sendSms } from '@/lib/sendSms';
 
 const BaseProductSchema = z.object({
@@ -175,4 +176,66 @@ export async function deleteProduct(formData: FormData) {
     await supabase.from('products').delete().eq('id', productId);
     revalidatePath('/admin/procurement/products');
     revalidatePath('/');
+}
+
+/**
+ * AI BULK ENHANCEMENT
+ * Scans products and vendor_products for weak descriptions and replaces them.
+ */
+export async function bulkEnhanceDescriptions() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
+
+    let enhancedCount = 0;
+
+    // 1. Process Platform Products
+    const { data: platformProducts } = await supabase
+        .from('products')
+        .select('id, name, description, category')
+        .or('description.is.null, description.eq.""'); // Start with empty ones
+    
+    const { data: platformWeakDesc } = await supabase
+        .from('products')
+        .select('id, name, description, category')
+        .not('description', 'like', '%(AI Enhanced)%');
+    
+    const platformToProcess = [...(platformProducts || []), ...(platformWeakDesc || []).filter(p => (p.description?.length || 0) < 50)];
+
+    // 2. Process Vendor Products
+    const { data: vendorToProcess } = await (supabase as any)
+        .from('vendor_products')
+        .select('id, name, description, category')
+        .not('description', 'like', '%(AI Enhanced)%');
+
+    const allToProcess = [
+        ...platformToProcess.map(p => ({ ...p, table: 'products' })),
+        ...(vendorToProcess || []).filter(p => (p.description?.length || 0) < 50).map(p => ({ ...p, table: 'vendor_products' }))
+    ];
+
+    // Limit to 10 at a time to prevent timeout in one go
+    const subset = allToProcess.slice(0, 15);
+
+    for (const item of subset) {
+        try {
+            const aiResult = await generateProductDescription({
+                productName: item.name,
+                category: item.category || 'General',
+                shortDescription: item.description || ''
+            });
+
+            if (aiResult.description) {
+                await (supabase as any)
+                    .from(item.table)
+                    .update({ description: aiResult.description })
+                    .eq('id', item.id);
+                enhancedCount++;
+            }
+        } catch (e) {
+            console.error(`AI Enhancement failed for product ${item.id}:`, e);
+        }
+    }
+
+    revalidatePath('/admin/procurement/products');
+    return { success: true, count: enhancedCount, totalFound: allToProcess.length };
 }
