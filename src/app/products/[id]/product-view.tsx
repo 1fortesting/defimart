@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/sheet";
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 interface ProductViewProps {
     product: Tables<'products'>;
@@ -329,7 +330,7 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
             {/* Reviews Section */}
             <section id="reviews" className="max-w-4xl mx-auto w-full space-y-10">
                 <div className="text-center space-y-2">
-                    <h2 className="text-3xl font-black uppercase tracking-tighter italic italic">Community Feedback</h2>
+                    <h2 className="text-3xl font-black uppercase tracking-tighter italic">Community Feedback</h2>
                     <p className="text-muted-foreground font-medium">Verified purchases and experiences from campus.</p>
                 </div>
 
