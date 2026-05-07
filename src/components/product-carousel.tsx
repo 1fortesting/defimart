@@ -81,17 +81,17 @@ export function ProductCarousel({ products }: ProductCarouselProps) {
         </CarouselContent>
       </Carousel>
 
-      {/* Liquid Glass Dot Indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex justify-center items-center gap-2 bg-white/20 backdrop-blur-xl px-4 py-2 rounded-full border border-white/30 shadow-[0_8px_32px_rgba(0,0,0,0.3)] z-20">
+      {/* Refined Small Liquid Glass Dot Indicators */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex justify-center items-center gap-1.5 bg-white/10 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/10 shadow-xl z-20">
         {Array.from({ length: count }).map((_, index) => (
           <button
             key={index}
             onClick={() => handleDotClick(index)}
             className={cn(
-              "h-1.5 rounded-full transition-all duration-500",
+              "h-1 rounded-full transition-all duration-500",
               index === current - 1 
-                ? "bg-white w-6 shadow-[0_0_10px_rgba(255,255,255,0.8)]" 
-                : "bg-white/40 w-1.5 hover:bg-white/60"
+                ? "bg-primary w-4 shadow-[0_0_8px_rgba(245,166,35,0.4)]" 
+                : "bg-primary/30 w-1 hover:bg-primary/50"
             )}
             aria-label={`Go to slide ${index + 1}`}
           />
