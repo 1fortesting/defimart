@@ -72,11 +72,14 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         }
     };
 
-    const handleAddToCart = () => {
-        // Optimistic UI: Update Local Storage instantly
+    const handleAddToCart = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // 1. Instant UI Feedback (0ms delay)
         toast({
             title: 'Added to Cart',
-            description: `${product.name} has been added.`,
+            description: `${product.name} added successfully!`,
             variant: 'success',
         });
         
@@ -89,7 +92,6 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
             } else {
                  const cartItem = {
                     id: `local-${product.id}-${Date.now()}`,
-                    user_id: user?.id,
                     product_id: product.id,
                     quantity: 1,
                     created_at: new Date().toISOString(),
@@ -98,25 +100,26 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                 cart.push(cartItem);
             }
             localStorage.setItem('cart', JSON.stringify(cart));
-            // Trigger instant update across components
+            // Trigger instant UI update in Header/BottomNav
             window.dispatchEvent(new Event('cart-updated'));
         } catch (e) {
-            console.error('Failed to update cart in local storage', e);
+            console.error('Local cart update failed', e);
         }
         
-        // Silent Background Action: Push to DB if logged in
+        // 2. Silent Backend Sync (Non-blocking)
         if (user) {
             startTransition(async () => {
                 const formData = new FormData();
                 formData.append('productId', product.id);
-                // We don't await this to keep the UI interaction silent and immediate
-                addToCart(formData);
+                await addToCart(formData);
             });
         }
     };
 
+    const handleToggleSave = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-    const handleToggleSave = () => {
         if (!navigator.onLine) {
             toast({
                 title: 'Offline',
@@ -169,7 +172,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
     const hasImage = product.image_urls && product.image_urls.length > 0;
     
     return (
-    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-primary/[0.01] via-background to-blue-500/[0.01] border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/5 flex flex-col relative h-full">
+    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-primary/[0.01] via-background to-blue-500/[0.01] border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/5 flex flex-col relative h-full cursor-pointer" onClick={() => window.location.href = `/products/${product.id}`}>
         {/* Subtle Decorative Blue Auras */}
         <div className="absolute -top-16 -left-16 w-48 h-48 bg-primary/[0.03] rounded-full blur-3xl transition-all duration-700 opacity-20 group-hover:opacity-40 group-hover:scale-125 z-0" />
         <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-blue-500/[0.01] rounded-full blur-3xl transition-all duration-700 opacity-20 group-hover:opacity-40 group-hover:scale-125 z-0" />
@@ -182,7 +185,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
 
         <div className="relative z-10 flex flex-col h-full">
             <div className="p-3">
-                <Link href={`/products/${product.id}`} className="block relative aspect-square overflow-hidden rounded-2xl bg-primary/[0.01]">
+                <div className="block relative aspect-square overflow-hidden rounded-2xl bg-primary/[0.01]">
                     {hasImage ? (
                         <Image
                             src={product.image_urls![0]}
@@ -196,7 +199,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                             <span className="text-[10px] font-bold uppercase tracking-widest">No Image</span>
                         </div>
                     )}
-                </Link>
+                </div>
             </div>
             
             <div className="p-4 pt-0 flex flex-col justify-between flex-grow">
@@ -272,14 +275,14 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                             </SheetContent>
                         </Sheet>
 
-                        <Button onClick={handleToggleSave} disabled={isPending} size="icon" variant="ghost" className="h-8 w-8 rounded-full text-[var(--muted)] hover:text-[var(--gold)] hover:bg-[var(--gold)]/10" aria-label="Save for later">
+                        <Button onClick={handleToggleSave} size="icon" variant="ghost" className="h-8 w-8 rounded-full text-[var(--muted)] hover:text-[var(--gold)] hover:bg-[var(--gold)]/10" aria-label="Save for later">
                             <Heart className={cn("h-4 w-4", isSavedState && "fill-[var(--gold)] text-[var(--gold)]")} />
                         </Button>
                     </div>
                 </div>
                 <Button 
                     onClick={handleAddToCart}
-                    disabled={isPending || product.quantity === 0} 
+                    disabled={product.quantity === 0} 
                     className="w-full mt-3 bg-gradient-to-r from-[var(--gold)] to-orange-600 hover:from-orange-600 hover:to-red-600 text-white transition-all duration-500 shadow-lg shadow-[var(--gold)]/20 border-none"
                 >
                     <ShoppingCart className="mr-2 h-4 w-4" />

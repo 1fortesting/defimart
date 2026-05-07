@@ -46,6 +46,15 @@ interface NavLinkProps {
 
 const NavLink = ({ href, icon: Icon, children, active, badgeCount, isMobile }: NavLinkProps) => {
   const IconComponent = typeof Icon === 'function' ? Icon : null;
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    if (badgeCount && badgeCount > 0) {
+        setAnimate(true);
+        const timer = setTimeout(() => setAnimate(false), 300);
+        return () => clearTimeout(timer);
+    }
+  }, [badgeCount]);
   
   return (
     <Button 
@@ -61,7 +70,13 @@ const NavLink = ({ href, icon: Icon, children, active, badgeCount, isMobile }: N
         {IconComponent ? <IconComponent /> : <Icon className="h-5 w-5 md:h-4 md:w-4" />}
         <span className="truncate">{children}</span>
         {badgeCount !== undefined && badgeCount > 0 && (
-            <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] border-2 border-background animate-in zoom-in duration-300">
+            <Badge 
+                variant="destructive" 
+                className={cn(
+                    "absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px] border-2 border-background transition-transform duration-300",
+                    animate ? "scale-125 bg-red-600" : "scale-100"
+                )}
+            >
                 {badgeCount > 99 ? '99+' : badgeCount}
             </Badge>
         )}
@@ -72,10 +87,10 @@ const NavLink = ({ href, icon: Icon, children, active, badgeCount, isMobile }: N
 
 export function HeaderNav({ user, cartItemCount: initialCartCount, isMobile = false, isSeller = false }: { user: SupabaseUser | null, cartItemCount: number, isMobile?: boolean, isSeller?: boolean }) {
   const pathname = usePathname();
-  const [cartCount, setCartCount] = useState(initialCartCount);
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
-    // Immediate sync on client mount
+    // Initial sync
     setCartCount(getCartCount());
 
     const handleCartUpdate = () => {

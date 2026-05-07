@@ -132,7 +132,6 @@ export default function CartPage() {
           .order('created_at');
 
         if (!error && dbItems) {
-          // Robust reconciliation
           setCartItems(dbItems);
           localStorage.setItem('cart', JSON.stringify(dbItems));
           window.dispatchEvent(new Event('cart-updated'));
@@ -150,33 +149,29 @@ export default function CartPage() {
         return;
     }
 
-    // Update UI immediately
     const updatedCart = cartItems.map(item => item.id === itemId ? { ...item, quantity: newQuantity } : item);
     setCartItems(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
     window.dispatchEvent(new Event('cart-updated'));
 
-    // Silent background sync
     startTransition(async () => {
         const formData = new FormData();
         formData.append('cartItemId', itemId);
         formData.append('quantity', String(newQuantity));
-        updateItemQuantity(formData);
+        await updateItemQuantity(formData);
     });
   };
 
   const handleRemoveItem = (itemId: string) => {
-    // Update UI immediately
     const updatedCart = cartItems.filter(item => item.id !== itemId);
     setCartItems(updatedCart);
     localStorage.setItem('cart', JSON.stringify(updatedCart));
     window.dispatchEvent(new Event('cart-updated'));
 
-    // Silent background sync
     startTransition(async () => {
         const formData = new FormData();
         formData.append('cartItemId', itemId);
-        removeItem(formData);
+        await removeItem(formData);
     });
   };
 
@@ -236,7 +231,7 @@ export default function CartPage() {
                       <p>You pay in person upon product collection. No online payments required.</p>
                   </div>
 
-                  <Button asChild className="w-full h-14 text-base md:text-lg font-black uppercase tracking-widest shadow-2xl shadow-primary/30 rounded-2xl" size="lg" disabled={isPending}>
+                  <Button asChild className="w-full h-14 text-base md:text-lg font-black uppercase tracking-widest shadow-2xl shadow-primary/30 rounded-2xl" size="lg">
                       <Link href="/checkout">Checkout Now</Link>
                   </Button>
               </Card>

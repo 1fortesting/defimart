@@ -5,8 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Share2, Heart, ShoppingCart, Star } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
-import { useState } from 'react';
+import { useState, useTransition } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { addToCart } from '@/app/cart/actions';
 
 interface FeaturedProductCardProps {
   product: any;
@@ -18,6 +19,7 @@ interface FeaturedProductCardProps {
 export function FeaturedProductCard({ product, isSaved, onToggleSave, onAddToCart }: FeaturedProductCardProps) {
   const { toast } = useToast();
   const [saved, setSaved] = useState(isSaved);
+  const [isPending, startTransition] = useTransition();
 
   const handleShare = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -37,12 +39,49 @@ export function FeaturedProductCard({ product, isSaved, onToggleSave, onAddToCar
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // 1. Instant UI Response (Optimistic)
+    toast({
+      title: 'Added to Cart',
+      description: `${product.name} is in your bag!`,
+      variant: 'success',
+    });
+
+    try {
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const existingItemIndex = cart.findIndex((item: any) => item.product_id === product.id);
+
+        if (existingItemIndex > -1) {
+            cart[existingItemIndex].quantity += 1;
+        } else {
+             const cartItem = {
+                id: `local-${product.id}-${Date.now()}`,
+                product_id: product.id,
+                quantity: 1,
+                created_at: new Date().toISOString(),
+                products: { ...product }
+            };
+            cart.push(cartItem);
+        }
+        localStorage.setItem('cart', JSON.stringify(cart));
+        window.dispatchEvent(new Event('cart-updated'));
+    } catch (err) {
+        console.error('Local cart error:', err);
+    }
+
+    // 2. Silent Background Sync
+    startTransition(async () => {
+        const formData = new FormData();
+        formData.append('productId', product.id);
+        await addToCart(formData);
+    });
+
     if (onAddToCart) onAddToCart(product);
   };
 
   return (
-    <Link href={`/products/${product.id}`} className="block w-full h-full">
-      <Card className="bg-[var(--brand-dark)] rounded-[16px] overflow-hidden p-4 md:p-6 relative shadow-[0_8px_32px_rgba(0,0,0,0.2)] border-none h-full flex flex-col justify-between">
+    <div className="block w-full h-full">
+      <Card className="bg-[var(--brand-dark)] rounded-[16px] overflow-hidden p-4 md:p-6 relative shadow-[0_8px_32px_rgba(0,0,0,0.2)] border-none h-full flex flex-col justify-between cursor-pointer" onClick={() => window.location.href = `/products/${product.id}`}>
         {/* Top Badges */}
         <div className="absolute top-3 left-3 bg-[var(--gold)] rounded-full px-3 py-1 flex items-center gap-1 z-20">
           <Star className="w-[10px] h-[10px] fill-white text-white" />
@@ -99,7 +138,7 @@ export function FeaturedProductCard({ product, isSaved, onToggleSave, onAddToCar
 
         <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4">
            <span className="font-syne font-[700] text-[var(--gold-light)] text-[22px] md:text-[32px]">
-              {formatPrice(product.price)}
+              GHS {formatPrice(product.price)}
            </span>
            <button 
               onClick={handleAddToCart}
@@ -110,6 +149,6 @@ export function FeaturedProductCard({ product, isSaved, onToggleSave, onAddToCar
            </button>
         </div>
       </Card>
-    </Link>
+    </div>
   );
 }

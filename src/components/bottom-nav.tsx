@@ -7,16 +7,34 @@ import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+
+const getCartCount = () => {
+    if (typeof window === 'undefined') return 0;
+    try {
+        const cart = localStorage.getItem('cart');
+        if (!cart) return 0;
+        const cartItems = JSON.parse(cart);
+        if (Array.isArray(cartItems)) {
+            return cartItems.reduce((total: number, item: any) => total + (item.quantity || 0), 0);
+        }
+    } catch (error) {
+        return 0;
+    }
+    return 0;
+};
 
 export function BottomNav() {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isSeller, setIsSeller] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     setMounted(true);
+    setCartCount(getCartCount());
     
     const initData = async () => {
         const supabase = createClient();
@@ -37,7 +55,11 @@ export function BottomNav() {
 
     initData();
 
-    // Listen for auth changes to update avatar immediately
+    // Listen for events
+    const handleCartUpdate = () => setCartCount(getCartCount());
+    window.addEventListener('cart-updated', handleCartUpdate);
+    window.addEventListener('storage', handleCartUpdate);
+
     const supabase = createClient();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         setUser(session?.user ?? null);
@@ -45,6 +67,8 @@ export function BottomNav() {
 
     return () => {
         subscription.unsubscribe();
+        window.removeEventListener('cart-updated', handleCartUpdate);
+        window.removeEventListener('storage', handleCartUpdate);
     };
   }, []);
 
@@ -54,7 +78,7 @@ export function BottomNav() {
     { label: 'Home', href: '/', icon: Home },
     { label: 'Shops', href: '/shops', icon: Store },
     { label: 'Feeds', href: '/feeds', icon: Newspaper },
-    { label: 'Cart', href: '/cart', icon: ShoppingCart },
+    { label: 'Cart', href: '/cart', icon: ShoppingCart, badge: cartCount },
     { label: 'Wishlist', href: '/saved', icon: Heart },
   ];
 
@@ -62,27 +86,26 @@ export function BottomNav() {
       navItems.push({ label: 'My Shop', href: '/seller/dashboard', icon: Store });
   }
 
-  // Always add Profile at the end
   navItems.push({ label: 'Profile', href: '/profile', icon: User });
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-primary/10 h-[72px] z-[100] flex items-center justify-around px-1 overflow-x-auto no-scrollbar shadow-[0_-8px_30px_rgba(0,0,0,0.15)] opacity-100">
-      {/* Subtle Gradient Overlay */}
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-primary/10 h-[72px] z-[100] flex items-center justify-around px-1 overflow-x-auto no-scrollbar shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
       <div className="absolute inset-0 bg-gradient-to-t from-primary/[0.05] via-transparent to-blue-500/[0.01] pointer-events-none" />
       
       {navItems.map((item) => {
         const isActive = pathname === item.href;
         const isProfile = item.label === 'Profile';
+        const isCart = item.label === 'Cart';
         const Icon = item.icon;
 
         return (
           <Link 
             key={item.href} 
             href={item.href}
-            className="flex flex-col items-center justify-center gap-1 min-w-[60px] relative z-10 transition-transform active:scale-90"
+            className="flex flex-col items-center justify-center gap-1 min-w-[60px] relative z-10"
           >
             <div className={cn(
-              "p-1.5 rounded-xl transition-all duration-300 flex items-center justify-center",
+              "p-1.5 rounded-xl transition-all duration-300 flex items-center justify-center relative",
               isActive ? "bg-primary/10 scale-110" : "bg-transparent"
             )}>
               {isProfile ? (
@@ -104,12 +127,19 @@ export function BottomNav() {
                     )}
                 </Avatar>
               ) : (
-                <Icon 
-                    className={cn(
-                    "w-[20px] h-[20px] stroke-[2px]",
-                    isActive ? "text-[var(--gold)]" : "text-[var(--muted)]"
-                    )} 
-                />
+                <>
+                  <Icon 
+                      className={cn(
+                      "w-[20px] h-[20px] stroke-[2px]",
+                      isActive ? "text-[var(--gold)]" : "text-[var(--muted)]"
+                      )} 
+                  />
+                  {isCart && cartCount > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-4 min-w-4 flex items-center justify-center p-0 text-[8px] bg-red-600 text-white font-black border-2 border-background animate-in zoom-in duration-300">
+                      {cartCount}
+                    </Badge>
+                  )}
+                </>
               )}
             </div>
             <span 
