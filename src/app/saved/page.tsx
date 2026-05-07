@@ -7,9 +7,10 @@ import { FeedCard } from '@/components/feed-card';
 import { Tables } from '@/types/supabase';
 import { useEffect, useState, Suspense } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { Loader2, Heart, Newspaper, Bookmark } from 'lucide-react';
+import { Loader2, Heart, Newspaper, Bookmark, ArrowLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 type SavedProductWithDetails = Tables<'saved_products'> & {
   products: Tables<'products'> | null;
@@ -35,8 +36,7 @@ function SavedContent() {
             // Fetch Products
             const { data: productsData } = await supabase
                 .from('saved_products')
-                .select('*, products(*)')
-                .eq('user_id', user.id)
+                .select('*, products(*)').eq('user_id', user.id)
                 .order('created_at', { ascending: false });
             
             if (productsData) setSavedProducts(productsData as SavedProductWithDetails[]);
@@ -101,8 +101,14 @@ function SavedContent() {
   return (
       <main className="flex-1 min-h-screen pb-20">
         <div className="container mx-auto max-w-4xl px-4 py-8">
+          <div className="mb-6">
+              <Link href="/profile" className="inline-flex items-center gap-2 text-sm font-bold text-primary hover:opacity-70 transition-all">
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to My Account
+              </Link>
+          </div>
           <div className="flex flex-col gap-1 mb-8">
-              <h1 className="text-3xl font-black tracking-tight text-foreground">Saved Items</h1>
+              <h1 className="text-3xl font-black tracking-tight text-foreground uppercase">Saved Items</h1>
               <p className="text-muted-foreground text-sm">Everything you've saved for later.</p>
           </div>
 
