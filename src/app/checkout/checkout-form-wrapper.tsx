@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Tables } from '@/types/supabase';
@@ -13,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import { CheckoutButton } from './checkout-button';
 import { useToast } from '@/hooks/use-toast';
 import { useMemo } from 'react';
+import { Badge } from '@/components/ui/badge';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
   products: any | null;
@@ -28,6 +30,18 @@ export function CheckoutFormWrapper({ cartItems, subtotal }: { cartItems: CartIt
           return product?.offers_delivery === true;
       });
   }, [cartItems]);
+
+  const deliveryFees = useMemo(() => {
+      return cartItems.reduce((acc, item) => {
+          const product = item.products || item.vendor_products;
+          if (product?.offers_delivery && product.delivery_price_type === 'fixed') {
+              return acc + (product.delivery_price || 0);
+          }
+          return acc;
+      }, 0);
+  }, [cartItems]);
+
+  const totalPayable = subtotal + deliveryFees;
 
   const handleFormAction = async (formData: FormData) => {
     if (!navigator.onLine) {
@@ -53,22 +67,22 @@ export function CheckoutFormWrapper({ cartItems, subtotal }: { cartItems: CartIt
                         </div>
                         <div>
                             <CardTitle className="text-xl font-black uppercase tracking-tight">Delivery Details</CardTitle>
-                            <CardDescription className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Some items in your cart offer delivery.</CardDescription>
+                            <CardDescription className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-0.5">Some items in your cart offer direct delivery.</CardDescription>
                         </div>
                     </div>
                     <CardContent className="p-6 md:p-8 space-y-6">
                         <div className="grid gap-3">
                             <Label htmlFor="delivery_location" className="font-black text-xs uppercase tracking-[2px] text-muted-foreground flex items-center gap-2">
-                                <MapPin className="h-3.5 w-3.5 text-primary" /> Where should we deliver?
+                                <MapPin className="h-3.5 w-3.5 text-primary" /> Delivery Destination
                             </Label>
                             <Input 
                                 id="delivery_location" 
                                 name="delivery_location" 
-                                placeholder="e.g., Hall 7, Room 402 or Main Gate Security Post" 
+                                placeholder="e.g., University Hall, Block B Room 22" 
                                 required={requiresDelivery}
                                 className="h-14 border-2 rounded-2xl text-base font-medium px-6 bg-muted/20 focus:border-primary/50"
                             />
-                            <p className="text-[10px] text-muted-foreground font-medium italic">Your precise location helps vendors deliver quickly and estimate costs.</p>
+                            <p className="text-[10px] text-muted-foreground font-medium italic">Your location is shared only with vendors offering delivery for your order.</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -100,7 +114,7 @@ export function CheckoutFormWrapper({ cartItems, subtotal }: { cartItems: CartIt
                         <Info className="h-4 w-4" />
                         <AlertTitle>Payment on Collection</AlertTitle>
                         <AlertDescription>
-                            No online payment is required. You will pay in person when you collect your order or upon delivery.
+                            No upfront payment required. You will pay in person when you collect your order or when it is delivered to you.
                         </AlertDescription>
                     </Alert>
                 </CardContent>
@@ -136,7 +150,7 @@ export function CheckoutFormWrapper({ cartItems, subtotal }: { cartItems: CartIt
                                             <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black mt-1">Qty: {item.quantity}</p>
                                             {product.offers_delivery && (
                                                 <Badge variant="secondary" className="h-4 px-1.5 text-[8px] font-black uppercase tracking-tighter mt-1 bg-emerald-50 text-emerald-700 border-emerald-100">
-                                                    Delivery Offered
+                                                    {product.delivery_price_type === 'fixed' ? `Delivery: GHS ${product.delivery_price}` : 'Delivery (Pay on arrival)'}
                                                 </Badge>
                                             )}
                                         </div>
@@ -154,9 +168,15 @@ export function CheckoutFormWrapper({ cartItems, subtotal }: { cartItems: CartIt
                             <span>Subtotal</span>
                             <span>GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                         </div>
-                        <div className="flex justify-between font-bold text-xs uppercase tracking-widest text-emerald-600">
+                        {deliveryFees > 0 && (
+                            <div className="flex justify-between font-bold text-xs uppercase tracking-widest text-emerald-600">
+                                <span>Delivery Fees</span>
+                                <span>GHS {deliveryFees.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between font-bold text-xs uppercase tracking-widest text-muted-foreground">
                             <span>Admin Pickup</span>
-                            <span>Free</span>
+                            <span className="text-emerald-600">Free</span>
                         </div>
                     </div>
                     
@@ -164,7 +184,7 @@ export function CheckoutFormWrapper({ cartItems, subtotal }: { cartItems: CartIt
                     
                      <div className="flex justify-between items-end pt-2">
                         <span className="text-[10px] font-black uppercase tracking-[3px] text-muted-foreground mb-1">Total Payable</span>
-                        <span className="text-3xl font-black text-primary tracking-tighter">GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="text-3xl font-black text-primary tracking-tighter">GHS {totalPayable.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                 </CardContent>
                 <CardFooter className="p-6 pt-0 flex flex-col gap-4">

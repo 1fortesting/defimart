@@ -72,6 +72,9 @@ export type Database = {
           is_approved: boolean | null
           quantity: number | null
           tags: string[] | null
+          offers_delivery: boolean | null
+          delivery_price_type: string | null
+          delivery_price: number | null
         }
         Insert: {
           id?: string
@@ -85,6 +88,9 @@ export type Database = {
           is_approved?: boolean | null
           quantity?: number | null
           tags?: string[] | null
+          offers_delivery?: boolean | null
+          delivery_price_type?: string | null
+          delivery_price?: number | null
         }
         Update: {
           id?: string
@@ -98,6 +104,9 @@ export type Database = {
           is_approved?: boolean | null
           quantity?: number | null
           tags?: string[] | null
+          offers_delivery?: boolean | null
+          delivery_price_type?: string | null
+          delivery_price?: number | null
         }
         Relationships: [
           {
@@ -123,6 +132,7 @@ export type Database = {
           quantity: number
           seller_id: string
           status: Database["public"]["Enums"]["order_status"]
+          delivery_location: string | null
         }
         Insert: {
           buyer_id: string
@@ -137,6 +147,7 @@ export type Database = {
           quantity: number
           seller_id: string
           status?: Database["public"]["Enums"]["order_status"]
+          delivery_location?: string | null
         }
         Update: {
           buyer_id?: string
@@ -151,6 +162,7 @@ export type Database = {
           quantity?: number
           seller_id?: string
           status?: Database["public"]["Enums"]["order_status"]
+          delivery_location?: string | null
         }
         Relationships: [
           {
@@ -201,6 +213,9 @@ export type Database = {
           quantity: number | null
           seller_id: string
           tags: string[] | null
+          offers_delivery: boolean | null
+          delivery_price_type: string | null
+          delivery_price: number | null
         }
         Insert: {
           brand?: string | null
@@ -219,6 +234,9 @@ export type Database = {
           quantity?: number | null
           seller_id: string
           tags?: string[] | null
+          offers_delivery?: boolean | null
+          delivery_price_type?: string | null
+          delivery_price?: number | null
         }
         Update: {
           brand?: string | null
@@ -237,6 +255,9 @@ export type Database = {
           quantity?: number | null
           seller_id?: string
           tags?: string[] | null
+          offers_delivery?: boolean | null
+          delivery_price_type?: string | null
+          delivery_price?: number | null
         }
         Relationships: [
           {

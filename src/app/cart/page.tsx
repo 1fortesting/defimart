@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createClient } from '@/lib/supabase/client';
@@ -6,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Trash2, Minus, Plus, CheckCircle, Loader2, ImageIcon } from 'lucide-react';
+import { ShoppingCart, Trash2, Minus, Plus, CheckCircle, Loader2, ImageIcon, Truck } from 'lucide-react';
 import { removeItem, updateItemQuantity } from './actions';
 import { AuthPrompt } from '@/components/auth-prompt';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, useMemo } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Badge } from '@/components/ui/badge';
 
@@ -30,7 +31,7 @@ function QuantitySelector({ item, onQuantityChange, isPending }: { item: CartIte
                 className="h-6 w-6 rounded-full"
                 disabled={isPending || item.quantity <= 1}
             >
-                <Minus className="h-4 w-4" />
+                <偏Minus className="h-4 w-4" />
             </Button>
             <span className="w-8 text-center font-semibold">{item.quantity}</span>
             <Button
@@ -80,7 +81,14 @@ function CartItem({ item, onQuantityChange, onRemove, isPending }: { item: CartI
       <div className="flex-1 flex flex-col justify-between">
         <div>
           <h3 className="font-bold text-base md:text-lg">{product.name}</h3>
-          <div className="mt-1">{stockStatus}</div>
+          <div className="mt-1 flex items-center gap-3">
+            {stockStatus}
+            {product.offers_delivery && (
+                <Badge variant="outline" className="text-[9px] font-black uppercase tracking-tighter bg-emerald-50 text-emerald-600 border-emerald-100 flex gap-1 h-5">
+                    <Truck className="h-3 w-3" /> Delivery Available
+                </Badge>
+            )}
+          </div>
         </div>
         <Button onClick={() => onRemove(item.id)} type="button" variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 p-2 h-auto mt-2 self-start rounded-lg transition-all" disabled={isPending}>
             <Trash2 className="mr-2 h-4 w-4" />
@@ -115,7 +123,6 @@ export default function CartPage() {
     const initCart = async () => {
       setLoading(true);
       
-      // 1. Load from Local Storage immediately
       const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
       setCartItems(localCart);
       
@@ -123,14 +130,13 @@ export default function CartPage() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
 
-      // 2. Silent Sync from DB if logged in
       if (user) {
         const { data: dbItems, error } = await supabase
           .from('cart_items')
           .select(`
             *, 
-            products(name, price, image_urls, quantity, discount_percentage, discount_end_date, offers_delivery), 
-            vendor_products:vendor_product_id(name, price, image_urls, quantity, discount_percentage, discount_end_date, offers_delivery)
+            products(name, price, image_urls, quantity, discount_percentage, discount_end_date, offers_delivery, delivery_price_type, delivery_price), 
+            vendor_products:vendor_product_id(name, price, image_urls, quantity, discount_percentage, discount_end_date, offers_delivery, delivery_price_type, delivery_price)
           `)
           .eq('user_id', user.id)
           .order('created_at');
@@ -179,6 +185,22 @@ export default function CartPage() {
     });
   };
 
+  const subtotal = useMemo(() => {
+    return cartItems.reduce((acc, item) => {
+        const product = item.products || item.vendor_products;
+        if (!product) return acc;
+        const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
+        const finalPrice = isDiscountActive
+          ? product.price - (product.price * (product.discount_percentage! / 100))
+          : product.price;
+        return acc + (finalPrice * item.quantity);
+    }, 0);
+  }, [cartItems]);
+
+  const hasDeliveryOption = useMemo(() => {
+    return cartItems.some(item => (item.products || item.vendor_products)?.offers_delivery);
+  }, [cartItems]);
+
   if (loading && cartItems.length === 0) {
     return <main className="flex-1 p-8 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></main>;
   }
@@ -186,16 +208,6 @@ export default function CartPage() {
   if (!user && cartItems.length === 0 && !loading) {
     return <main className="flex-1 p-8 flex items-center justify-center"><AuthPrompt /></main>;
   }
-
-  const subtotal = cartItems.reduce((acc, item) => {
-      const product = item.products || item.vendor_products;
-      if (!product) return acc;
-      const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
-      const finalPrice = isDiscountActive
-        ? product.price - (product.price * (product.discount_percentage! / 100))
-        : product.price;
-      return acc + (finalPrice * item.quantity);
-  }, 0);
 
   return (
       <main className="flex-1 p-4 md:p-8 bg-muted/5 min-h-screen">
@@ -218,21 +230,23 @@ export default function CartPage() {
                         <span className="font-bold">GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                     </div>
                     <div className="flex justify-between items-center text-emerald-600 font-bold">
-                        <span>Platform Pickup</span>
-                        <span className="uppercase text-[10px] tracking-widest bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">Free</span>
+                        <span>Logistics</span>
+                        <span className="uppercase text-[10px] tracking-widest bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">
+                            {hasDeliveryOption ? 'Delivery Available' : 'Free Pickup'}
+                        </span>
                     </div>
                   </div>
                   
                   <div className="h-px bg-muted/50" />
                   
                   <div className="flex justify-between items-end">
-                    <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Order Total</span>
+                    <span className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Estimate</span>
                     <span className="text-3xl font-black text-primary leading-none">GHS {subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
 
                   <div className="bg-primary/5 text-primary p-4 rounded-2xl text-xs font-medium flex items-start gap-3 border border-primary/10">
                       <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                      <p>You pay in person upon product collection. No online payments required.</p>
+                      <p>Final delivery fees (if any) are calculated at checkout and paid in person.</p>
                   </div>
 
                   <Button asChild className="w-full h-14 text-base md:text-lg font-black uppercase tracking-widest shadow-2xl shadow-primary/30 rounded-2xl" size="lg">
