@@ -7,6 +7,7 @@ import { InstallPrompt } from './install-prompt';
 import { ScrollToTopButton } from './scroll-to-top-button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { MobileShopHeader } from './mobile-shop-header';
+import { NewsTicker } from './news-ticker';
 
 export function StorefrontShell({
   header,
@@ -58,6 +59,7 @@ export function StorefrontShell({
   const isAdminRoute = pathname.startsWith('/admin');
   const isDashboardRoute = pathname === '/seller/dashboard';
   const isShopRoute = pathname.startsWith('/shops');
+  const isHome = pathname === '/';
 
   // Removal Logic: Create more room for shops and dashboard on mobile
   // Hide main header for shops (on mobile) and dashboard (always, as it has its own)
@@ -83,6 +85,9 @@ export function StorefrontShell({
         
         <InstallPrompt />
         
+        {/* News Ticker at the absolute top of the header area for homepage */}
+        {isHome && <NewsTicker />}
+
         {/* Replacement Header for Shops / Dashboard on Mobile */}
         {showSlimMobileHeader ? (
             <MobileShopHeader />

@@ -9,7 +9,6 @@ import { RecommendedForYouSection } from '@/components/recommended-for-you-secti
 import type { Tables } from '@/types/supabase';
 import { HomePageContent } from './home-page-content';
 import { OutstandingProducts } from '@/components/outstanding-products';
-import { NewsTicker } from '@/components/news-ticker';
 
 export default async function Home() {
   const supabase = await createClient() as any;
@@ -90,8 +89,6 @@ export default async function Home() {
 
   return (
     <main className="flex-1">
-        <NewsTicker />
-        
         <div className="p-4 md:hidden">
           <SearchBar products={allProducts} />
         </div>
