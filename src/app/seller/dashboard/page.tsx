@@ -37,7 +37,9 @@ import {
     Edit,
     Sparkles,
     FileText,
-    LayoutGrid
+    LayoutGrid,
+    Truck,
+    MapPin
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -53,6 +55,7 @@ import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import { logout } from '@/app/auth/actions';
 import { generateProductDescription } from '@/ai/flows/ai-product-description-assistant';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const categories = [
     "Electronics & Gadgets",
@@ -74,6 +77,10 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
     const [productName, setProductName] = useState(product.name || '');
     const [description, setDescription] = useState(product.description?.replace(' (AI Enhanced)', '') || '');
     const [isGenerating, startGeneratingTransition] = useTransition();
+
+    // Delivery states
+    const [offersDelivery, setOffersDelivery] = useState(product.offers_delivery || false);
+    const [deliveryPriceType, setDeliveryPriceType] = useState(product.delivery_price_type || 'fixed');
 
     const [state, action, isPending] = useActionState(updateSellerProduct, { success: false, error: null });
 
@@ -164,6 +171,45 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                             </div>
                         )}
 
+                        <div className="p-4 bg-muted/20 rounded-2xl border-2 border-dashed space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Truck className="h-4 w-4 text-primary" />
+                                    <Label htmlFor="offers_delivery" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Offer Delivery</Label>
+                                </div>
+                                <Switch 
+                                    id="offers_delivery" 
+                                    name="offers_delivery" 
+                                    checked={offers_delivery} 
+                                    onCheckedChange={setOffersDelivery} 
+                                />
+                            </div>
+
+                            {offers_delivery && (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="grid gap-2">
+                                        <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Pricing Model</Label>
+                                        <RadioGroup name="delivery_price_type" value={deliveryPriceType} onValueChange={setDeliveryPriceType} className="flex gap-4">
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="fixed" id="fixed" />
+                                                <Label htmlFor="fixed" className="text-xs font-bold">Fixed Fee</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="location_based" id="location_based" />
+                                                <Label htmlFor="location_based" className="text-xs font-bold">Based on Location</Label>
+                                            </div>
+                                        </RadioGroup>
+                                    </div>
+                                    {deliveryPriceType === 'fixed' && (
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="delivery_price" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Delivery Fee (GHS)</Label>
+                                            <Input id="delivery_price" name="delivery_price" type="number" step="0.01" defaultValue={product.delivery_price || 0} className="bg-background border-2 h-10 text-sm rounded-lg" />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
                         <div className="grid gap-2">
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="description" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Detailed Description</Label>
@@ -238,6 +284,10 @@ export default function SellerDashboardPage() {
   const [productImagePreview, setProductImagePreview] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
+  // Add product delivery states
+  const [offersDelivery, setOffersDelivery] = useState(false);
+  const [deliveryPriceType, setDeliveryPriceType] = useState('fixed');
+
   const { toast } = useToast();
 
   const [addState, addAction, isAddPending] = useActionState(addSellerProduct, { success: false, error: null });
@@ -289,6 +339,8 @@ export default function SellerDashboardPage() {
         setUploadCategory('');
         setProductName('');
         setDescription('');
+        setOffersDelivery(false);
+        setDeliveryPriceType('fixed');
         toast({ variant: 'success', title: 'Listing Published!', description: 'Your product is now live in your shop.' });
         fetchData();
         router.refresh();
@@ -451,7 +503,6 @@ export default function SellerDashboardPage() {
                   </div>
                   
                   <div className="flex items-center gap-3 self-end md:self-auto">
-                    {/* Professional White Refresh Button */}
                     <Button 
                         variant="ghost" 
                         size="icon" 
@@ -524,6 +575,45 @@ export default function SellerDashboardPage() {
                                         <Input id="custom_category" name="custom_category" placeholder="Electronics" required className="bg-muted/30 border-2 h-10 text-sm rounded-lg" />
                                     </div>
                                 )}
+
+                                <div className="p-4 bg-muted/20 rounded-2xl border-2 border-dashed space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Truck className="h-4 w-4 text-primary" />
+                                            <Label htmlFor="offers_delivery_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Offer Delivery</Label>
+                                        </div>
+                                        <Switch 
+                                            id="offers_delivery_add" 
+                                            name="offers_delivery" 
+                                            checked={offers_delivery} 
+                                            onCheckedChange={setOffersDelivery} 
+                                        />
+                                    </div>
+
+                                    {offers_delivery && (
+                                        <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <div className="grid gap-2">
+                                                <Label className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Pricing Model</Label>
+                                                <RadioGroup name="delivery_price_type" value={deliveryPriceType} onValueChange={setDeliveryPriceType} className="flex gap-4">
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="fixed" id="fixed_add" />
+                                                        <Label htmlFor="fixed_add" className="text-xs font-bold">Fixed Fee</Label>
+                                                    </div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <RadioGroupItem value="location_based" id="location_based_add" />
+                                                        <Label htmlFor="location_based_add" className="text-xs font-bold">By Location</Label>
+                                                    </div>
+                                                </RadioGroup>
+                                            </div>
+                                            {deliveryPriceType === 'fixed' && (
+                                                <div className="grid gap-1">
+                                                    <Label htmlFor="delivery_price_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Delivery Fee (GHS)</Label>
+                                                    <Input id="delivery_price_add" name="delivery_price" type="number" step="0.01" placeholder="0.00" className="bg-background border-2 h-10 text-sm rounded-lg" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
 
                                 <div className="grid gap-1">
                                     <div className="flex items-center justify-between">
@@ -668,7 +758,7 @@ export default function SellerDashboardPage() {
                             <TableHeader className="bg-muted/5">
                                 <TableRow>
                                     <TableHead className="font-black uppercase text-[8px] tracking-wider py-4 px-8 text-muted-foreground">Buyer</TableHead>
-                                    <TableHead className="font-black uppercase text-[8px] tracking-wider text-muted-foreground">Product</TableHead>
+                                    <TableHead className="font-black uppercase text-[8px] tracking-wider text-muted-foreground">Product & Logistics</TableHead>
                                     <TableHead className="font-black uppercase text-[8px] tracking-wider text-muted-foreground">Gross</TableHead>
                                     <TableHead className="font-black uppercase text-[8px] tracking-wider text-muted-foreground">Status</TableHead>
                                     <TableHead className="font-black uppercase text-[8px] tracking-wider text-right px-8 text-muted-foreground">Link</TableHead>
@@ -685,6 +775,11 @@ export default function SellerDashboardPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <div className="text-sm font-medium truncate max-w-[200px]">{productName}</div>
+                                                {order.delivery_location && (
+                                                    <div className="flex items-center gap-1.5 text-[10px] text-primary font-black uppercase mt-1">
+                                                        <MapPin className="h-3 w-3" /> {order.delivery_location}
+                                                    </div>
+                                                )}
                                             </TableCell>
                                             <TableCell className="font-black text-sm text-foreground">GHS {formatPrice(order.price_per_item * order.quantity).replace('GHS ', '')}</TableCell>
                                             <TableCell>
@@ -734,6 +829,11 @@ export default function SellerDashboardPage() {
                                     </div>
                                     <div className="bg-muted/30 p-2.5 rounded-[14px] space-y-1">
                                         <p className="text-[10px] font-black truncate">{productName}</p>
+                                        {order.delivery_location && (
+                                            <p className="text-[9px] text-primary font-black uppercase flex items-center gap-1">
+                                                <MapPin className="h-3 w-3" /> {order.delivery_location}
+                                            </p>
+                                        )}
                                         <div className="flex justify-between items-center">
                                             <span className="text-[8px] font-bold text-muted-foreground uppercase">Qty: {order.quantity}</span>
                                             <span className="font-black text-[11px]">GHS {formatPrice(order.price_per_item * order.quantity)}</span>
@@ -768,8 +868,13 @@ export default function SellerDashboardPage() {
                                         <Trash2 className="h-3 w-3" />
                                     </Button>
                                 </div>
-                                <div className="absolute bottom-2 left-2">
+                                <div className="absolute bottom-2 left-2 flex flex-col gap-1">
                                      <Badge className="bg-black/60 backdrop-blur-md border-none text-white text-[7px] font-black uppercase tracking-widest rounded-md h-4">{product.category}</Badge>
+                                     {product.offers_delivery && (
+                                         <Badge className="bg-emerald-600/80 backdrop-blur-md border-none text-white text-[7px] font-black uppercase tracking-widest rounded-md h-4 flex items-center gap-1">
+                                             <Truck className="h-2 w-2" /> Delivery
+                                         </Badge>
+                                     )}
                                 </div>
                             </div>
                             <CardContent className="p-3.5 space-y-1">

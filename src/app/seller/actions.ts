@@ -13,14 +13,17 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
   const supabase = await createClient();
 
   try {
-    console.log('--- START UPLOAD PROCESS ---');
-    
     const file = formData.get('image') as File;
     const name = formData.get('name') as string;
     const price = Number(formData.get('price'));
     const description = formData.get('description') as string;
     const category = formData.get('category') as string;
     const customCategory = formData.get('custom_category') as string;
+    
+    // Delivery fields
+    const offers_delivery = formData.get('offers_delivery') === 'on';
+    const delivery_price_type = formData.get('delivery_price_type') as string || 'fixed';
+    const delivery_price = Number(formData.get('delivery_price') || 0);
 
     if (!file || file.size === 0) {
       return { success: false, error: 'Valid image required' };
@@ -68,7 +71,10 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
         seller_id: user.id,
         is_approved: true,
         quantity: 1,
-        tags: []
+        tags: [],
+        offers_delivery,
+        delivery_price_type,
+        delivery_price: offers_delivery && delivery_price_type === 'fixed' ? delivery_price : 0
       });
 
     if (dbError) {
@@ -88,7 +94,6 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
 
 /**
  * Updates an existing vendor product.
- * Includes automated SMS Price Drop Notification logic.
  */
 export async function updateSellerProduct(prevState: any, formData: FormData) {
   const supabase = await createClient();
@@ -101,13 +106,17 @@ export async function updateSellerProduct(prevState: any, formData: FormData) {
     const description = formData.get('description') as string;
     const category = formData.get('category') as string;
     const customCategory = formData.get('custom_category') as string;
+    
+    // Delivery fields
+    const offers_delivery = formData.get('offers_delivery') === 'on';
+    const delivery_price_type = formData.get('delivery_price_type') as string || 'fixed';
+    const delivery_price = Number(formData.get('delivery_price') || 0);
 
     if (!id) return { success: false, error: 'Product ID is missing' };
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: 'Authentication required' };
 
-    // Fetch existing product data to check for price drop
     const { data: oldProduct } = await (supabase as any).from('vendor_products').select('price').eq('id', id).single();
 
     const finalCategory = category === 'Other' ? customCategory : category;
@@ -116,6 +125,9 @@ export async function updateSellerProduct(prevState: any, formData: FormData) {
       description: description || '',
       price,
       category: finalCategory || 'Other',
+      offers_delivery,
+      delivery_price_type,
+      delivery_price: offers_delivery && delivery_price_type === 'fixed' ? delivery_price : 0
     };
 
     if (file && file.size > 0) {
@@ -140,7 +152,6 @@ export async function updateSellerProduct(prevState: any, formData: FormData) {
 
     if (dbError) return { success: false, error: `Update failed: ${dbError.message}` };
 
-    // --- Trigger SMS Price Drop Notification for Vendor Products ---
     if (oldProduct && price < oldProduct.price) {
         const { data: wishlistedUsers } = await supabase
             .from('saved_products')

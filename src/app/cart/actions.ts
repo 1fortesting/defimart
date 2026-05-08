@@ -111,6 +111,8 @@ export async function placeOrder(formData: FormData) {
         return redirect('/cart?error=Your cart is empty.');
     }
 
+    const delivery_location = formData.get('delivery_location') as string | null;
+
     const newOrders = (cartItems as any[]).map((item: any) => {
         const product = item.products || item.vendor_products;
         if (!product) throw new Error(`Product not found for cart item ${item.id}`);
@@ -131,6 +133,7 @@ export async function placeOrder(formData: FormData) {
             price_per_item,
             cost_price_per_item: product.cost_price ?? 0,
             notes: formData.get(`notes_${item.id}`) as string | null,
+            delivery_location: delivery_location || null
         };
     });
 
@@ -140,11 +143,9 @@ export async function placeOrder(formData: FormData) {
 
     // --- Notify Vendors via SMS ---
     const sendVendorNotifications = async () => {
-        // Find unique sellers from the created orders
         const uniqueSellerIds = Array.from(new Set(newOrders.map(o => o.seller_id)));
         
         for (const sellerId of uniqueSellerIds) {
-            // Don't notify the admin for platform products (handled by admin systems separately)
             if (sellerId === process.env.NEXT_PUBLIC_ADMIN_ID) continue;
 
             const { data: seller } = await supabase
@@ -155,21 +156,18 @@ export async function placeOrder(formData: FormData) {
 
             if (seller?.phone_number) {
                 const sellerOrders = newOrders.filter(o => o.seller_id === sellerId);
-                const firstProductName = sellerOrders[0].product_id ? 'a platform product' : 'a vendor product';
-                // Try to get a real name if we can
                 const prod = (cartItems as any[]).find(i => (i.products?.seller_id === sellerId || i.vendor_products?.seller_id === sellerId));
                 const name = prod?.products?.name || prod?.vendor_products?.name || "an item";
+                const locationText = delivery_location ? ` to be delivered to ${delivery_location.substring(0, 20)}...` : '';
 
-                const message = `DEFIMART: You have a new order for "${name}"! Login to your shop dashboard at ${process.env.NEXT_PUBLIC_SITE_URL}/seller/dashboard to process it.`;
+                const message = `DEFIMART: You have a new order for "${name}"${locationText}! Login to your shop dashboard to process it.`;
                 await sendSms({ phoneNumber: seller.phone_number, message });
             }
         }
     };
     
-    // Fire and forget notification
     sendVendorNotifications().catch(err => console.error("Vendor notification failed:", err));
 
-    // Clean up
     await supabase.from('cart_items').delete().eq('user_id', user.id);
     
     revalidatePath('/orders');
