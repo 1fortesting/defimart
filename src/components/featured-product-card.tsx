@@ -86,20 +86,21 @@ export function FeaturedProductCard({ product, isSaved, onToggleSave, onAddToCar
     <div className="block w-full h-full">
       <Card className="bg-[var(--brand-dark)] rounded-[16px] overflow-hidden p-4 md:p-6 relative shadow-[0_8px_32px_rgba(0,0,0,0.2)] border-none h-full flex flex-col justify-between cursor-pointer" onClick={() => window.location.href = `/products/${product.id}`}>
         {/* Top Badges */}
-        <div className="absolute top-3 left-3 bg-[var(--gold)] rounded-full px-3 py-1 flex items-center gap-1 z-20">
+        <div className="absolute top-3 left-3 bg-[var(--gold)] rounded-full px-3 py-1 flex items-center gap-1 z-20 shadow-lg">
           <Star className="w-[10px] h-[10px] fill-white text-white" />
           <span className="text-white text-[10px] font-bold uppercase tracking-wider">Featured</span>
         </div>
 
         <div className="flex gap-4 md:gap-6 relative z-10 flex-col sm:flex-row">
-          {/* Image Area */}
+          {/* Image Area - Rounded for Special Highlight */}
           <div className="w-[110px] h-[110px] md:w-[150px] md:h-[150px] flex-shrink-0 flex items-center justify-center relative mx-auto sm:mx-0">
-             <div className="w-[100px] h-[100px] md:w-[140px] md:h-[140px] relative drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]">
+             <div className="w-[100px] h-[100px] md:w-[140px] md:h-[140px] relative drop-shadow-[0_10px_25px_rgba(0,0,0,0.4)] rounded-full overflow-hidden bg-white/5 border border-white/10 p-2 group-hover:scale-110 transition-transform duration-500">
                 <Image
                   src={product.image_urls?.[0] || 'https://picsum.photos/seed/featured/200/200'}
                   alt={product.name}
                   fill
-                  className="object-contain"
+                  className="object-contain rounded-full"
+                  sizes="(max-width: 768px) 100px, 140px"
                 />
              </div>
           </div>
@@ -121,12 +122,14 @@ export function FeaturedProductCard({ product, isSaved, onToggleSave, onAddToCar
                   <button 
                     onClick={handleShare}
                     className="w-[30px] h-[30px] md:w-[36px] md:h-[36px] rounded-full bg-white/15 flex items-center justify-center transition-all hover:bg-white/25"
+                    aria-label="Share product"
                   >
                     <Share2 className="w-[14px] h-[14px] md:w-[16px] md:h-[16px] text-white stroke-[2px]" />
                   </button>
                   <button 
                     onClick={handleSave}
                     className="w-[30px] h-[30px] md:w-[36px] md:h-[36px] rounded-full bg-white/15 flex items-center justify-center transition-all hover:bg-white/25"
+                    aria-label="Save product"
                   >
                     <Heart className={cn("w-[14px] h-[14px] md:w-[16px] md:h-[16px] stroke-[2px] text-[var(--gold)]", saved && "fill-[var(--gold)]")} />
                   </button>
@@ -141,7 +144,7 @@ export function FeaturedProductCard({ product, isSaved, onToggleSave, onAddToCar
 
         <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-4">
            <span className="font-syne font-[700] text-[var(--gold-light)] text-[22px] md:text-[32px]">
-              GHS {formatPrice(product.price)}
+              GHS {formatPrice(product.price).replace('GHS ', '')}
            </span>
            <button 
               onClick={handleAddToCart}
