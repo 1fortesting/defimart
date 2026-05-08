@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useTransition, useActionState, useCallback } from 'react';
@@ -36,7 +37,8 @@ import {
     Heart,
     Edit,
     Sparkles,
-    FileText
+    FileText,
+    LayoutGrid
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -50,8 +52,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { logout } from '@/app/auth/actions';
 import { generateProductDescription } from '@/ai/flows/ai-product-description-assistant';
 
@@ -72,7 +72,6 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
     const [uploadCategory, setUploadCategory] = useState(categories.includes(product.category) ? product.category : 'Other');
     const [imagePreview, setImagePreview] = useState<string | null>(product.image_urls?.[0] || null);
     
-    // Sanitize description for editing while keeping backend tag
     const [productName, setProductName] = useState(product.name || '');
     const [description, setDescription] = useState(product.description?.replace(' (AI Enhanced)', '') || '');
     const [isGenerating, startGeneratingTransition] = useTransition();
@@ -108,7 +107,6 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                     category: uploadCategory || 'General',
                 });
                 if (result.description) {
-                    // AI returns with tag, strip it for the editor but keep it for logic later
                     setDescription(result.description.replace(' (AI Enhanced)', ''));
                     toast({ variant: 'success', title: 'AI Description Ready', description: 'Marketing copy has been enhanced.' });
                 }
@@ -397,7 +395,6 @@ export default function SellerDashboardPage() {
                 category: uploadCategory || 'General',
             });
             if (result.description) {
-                // AI returns with tag, strip it for the UI
                 setDescription(result.description.replace(' (AI Enhanced)', ''));
                 toast({ variant: 'success', title: 'AI Content Ready', description: 'Description generated successfully.' });
             }
@@ -425,553 +422,447 @@ export default function SellerDashboardPage() {
   });
 
   return (
-    <div className="min-h-screen bg-muted/10 flex flex-col w-full">
-      {/* Main Header (Sticky slim bar managed by StorefrontShell on mobile) */}
-      <div className="bg-background border-b px-4 md:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm w-full">
-          <div className="flex items-center gap-3 md:gap-4">
-              <div className="relative group shrink-0">
-                  <Avatar className="h-12 w-12 border-2 border-primary/20">
-                      <AvatarImage src={logoPreview || user?.user_metadata?.avatar_url || undefined} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">{seller.shop_name?.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className={cn("absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-background", seller.is_open ? "bg-emerald-500" : "bg-destructive")} />
-              </div>
-              <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                      <h1 className="text-lg md:text-xl font-black tracking-tight truncate">{seller.shop_name}</h1>
-                      <Badge variant="outline" className="text-[9px] px-1.5 h-4 uppercase font-bold text-muted-foreground border-muted-foreground/20 shrink-0">VENDOR</Badge>
-                  </div>
-                  <div className="flex items-center gap-3 mt-0.5">
-                       <div className="flex items-center gap-2">
-                          <Switch 
-                              id="shop-toggle" 
-                              checked={seller.is_open} 
-                              onCheckedChange={(checked) => handleToggle(checked)}
-                              disabled={isPending}
-                              className="scale-75"
-                          />
-                          <Label htmlFor="shop-toggle" className={cn("text-[9px] font-black uppercase tracking-widest", seller.is_open ? "text-emerald-600" : "text-destructive")}>
-                              {seller.is_open ? 'OPEN' : 'CLOSED'}
-                          </Label>
-                       </div>
-                  </div>
-              </div>
-          </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3">
-              <Button asChild variant="outline" size="sm" className="rounded-xl font-bold h-10 border-2 text-xs order-2 sm:order-1">
-                  <Link href={`/shops/${seller.id}`}>
-                      <Eye className="h-4 w-4 mr-2" /> View Shop
-                  </Link>
-              </Button>
-              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="lg" className="h-10 rounded-xl font-bold shadow-lg shadow-primary/20 text-xs md:text-sm order-1 sm:order-2">
-                        <Plus className="h-4 w-4 mr-1 md:mr-2" /> List Item
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="w-[95%] max-w-[550px] p-0 overflow-hidden rounded-3xl flex flex-col max-h-[80vh] border-none shadow-2xl">
-                      <div className="bg-primary p-5 md:p-6 text-primary-foreground flex-shrink-0">
-                        <DialogHeader>
-                            <DialogTitle className="text-xl md:text-2xl font-black tracking-tight text-white">Create New Listing</DialogTitle>
-                            <DialogDescription className="text-primary-foreground/80 text-xs md:text-sm">
-                                This product will appear in your shop instantly.
-                            </DialogDescription>
-                        </DialogHeader>
+    <div className="min-h-screen bg-[#FDFCF8] flex flex-col w-full pb-20 md:pb-10">
+      
+      {/* 1. Shop Header Card (Dark Dashboard) */}
+      <div className="p-4 md:p-10 w-full max-w-7xl mx-auto">
+          <div className="bg-[#1A1A1A] rounded-[40px] p-6 md:p-10 text-white shadow-2xl overflow-hidden relative mb-10 ring-1 ring-white/5">
+              {/* Decorative Ambient Glow */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 blur-[80px] rounded-full -mr-20 -mt-20 pointer-events-none" />
+              
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-10">
+                  <div className="flex items-center gap-6">
+                      <div className="relative shrink-0">
+                          <Avatar className="h-20 w-20 md:h-24 md:w-24 rounded-[32px] border-2 border-white/10 bg-[#2A2A2A] shadow-inner">
+                              <AvatarImage src={user?.user_metadata?.avatar_url} className="rounded-[32px] object-cover" />
+                              <AvatarFallback className="rounded-[32px] bg-primary/10 text-primary font-black text-2xl">
+                                  {seller.shop_name?.charAt(0)}
+                              </AvatarFallback>
+                          </Avatar>
+                          <div className={cn("absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-4 border-[#1A1A1A]", seller.is_open ? "bg-emerald-500" : "bg-destructive")} />
                       </div>
-                      <form action={addAction} className="flex flex-col flex-1 overflow-hidden bg-background">
-                          <div className="flex-1 overflow-y-auto px-5 md:px-8 py-4 space-y-5 hide-scrollbar">
-                                  <div className="grid gap-2">
-                                    <Label htmlFor="name" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Name</Label>
-                                    <Input id="name" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. Vintage Leather Bag" required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
-                                  </div>
+                      <div className="min-w-0">
+                          <h1 className="text-2xl md:text-3xl font-black tracking-tight truncate">{seller.shop_name}</h1>
+                          <div className="flex flex-wrap items-center gap-3 mt-2">
+                            <Badge variant="outline" className="bg-white/5 border-white/10 text-white/70 text-[10px] font-black uppercase tracking-[2px] px-3 py-1 rounded-full">
+                                ✦ Verified Vendor
+                            </Badge>
+                          </div>
+                      </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 self-end md:self-auto">
+                    <div className="flex items-center gap-4 bg-black/40 px-6 py-3 rounded-[24px] border border-white/5 shadow-inner">
+                        <Label htmlFor="shop-toggle-main" className={cn("text-[10px] font-black uppercase tracking-[2px]", seller.is_open ? "text-emerald-400" : "text-destructive/80")}>
+                            {seller.is_open ? 'OPEN' : 'CLOSED'}
+                        </Label>
+                        <Switch 
+                            id="shop-toggle-main" 
+                            checked={seller.is_open} 
+                            onCheckedChange={(checked) => handleToggle(checked)}
+                            disabled={isPending}
+                            className="data-[state=checked]:bg-emerald-500"
+                        />
+                    </div>
+                  </div>
+              </div>
 
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                      <DialogTrigger asChild>
+                          <Button className="h-16 rounded-[24px] bg-[#F5A623] hover:bg-[#E89512] text-black font-black uppercase tracking-[2px] text-sm shadow-xl shadow-orange-500/10 transition-all active:scale-95 border-none">
+                              <Plus className="h-5 w-5 mr-2 stroke-[3px]" /> List Item
+                          </Button>
+                      </DialogTrigger>
+                      <DialogContent className="w-[95%] max-w-[550px] p-0 overflow-hidden rounded-[32px] flex flex-col max-h-[85vh] border-none shadow-2xl">
+                        <div className="bg-primary p-6 text-primary-foreground flex-shrink-0">
+                            <DialogHeader>
+                                <DialogTitle className="text-2xl font-black tracking-tight text-white uppercase">New Listing</DialogTitle>
+                                <DialogDescription className="text-primary-foreground/80 text-sm font-medium">
+                                    Publish a product to your digital storefront.
+                                </DialogDescription>
+                            </DialogHeader>
+                        </div>
+                        <form action={addAction} className="flex flex-col flex-1 overflow-hidden bg-background">
+                            <div className="flex-1 overflow-y-auto px-6 md:px-10 py-6 space-y-6 hide-scrollbar">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="name" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Item Name</Label>
+                                    <Input id="name" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. MacBook Pro M3" required className="bg-muted/30 border-2 h-14 text-base rounded-2xl focus:border-primary/40" />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
                                     <div className="grid gap-2">
-                                      <Label htmlFor="price" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Selling Price (GHS)</Label>
-                                      <Input id="price" name="price" type="number" step="0.01" placeholder="Price" required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
+                                        <Label htmlFor="price" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Price (GHS)</Label>
+                                        <Input id="price" name="price" type="number" step="0.01" placeholder="0.00" required className="bg-muted/30 border-2 h-14 text-base rounded-2xl focus:border-primary/40" />
                                     </div>
                                     <div className="grid gap-2">
-                                      <Label htmlFor="category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Category</Label>
-                                      <Select name="category" required onValueChange={setUploadCategory}>
-                                          <SelectTrigger className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl">
-                                              <SelectValue placeholder="Select" />
-                                          </SelectTrigger>
-                                          <SelectContent className="rounded-xl">
-                                              {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                                          </SelectContent>
-                                      </Select>
+                                        <Label htmlFor="category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Category</Label>
+                                        <Select name="category" required onValueChange={setUploadCategory}>
+                                            <SelectTrigger className="bg-muted/30 border-2 h-14 text-base rounded-2xl">
+                                                <SelectValue placeholder="Select" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-2xl">
+                                                {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
                                     </div>
-                                  </div>
+                                </div>
 
-                                  {uploadCategory === 'Other' && (
-                                      <div className="grid gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                          <Label htmlFor="custom_category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Custom Category Name</Label>
-                                          <Input id="custom_category" name="custom_category" placeholder="Custom category" required className="bg-muted/30 border-2 h-11 text-sm md:text-base rounded-xl" />
-                                      </div>
-                                  )}
+                                {uploadCategory === 'Other' && (
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="custom_category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Custom Category</Label>
+                                        <Input id="custom_category" name="custom_category" placeholder="Electronics" required className="bg-muted/30 border-2 h-14 text-base rounded-2xl" />
+                                    </div>
+                                )}
 
-                                  <div className="grid gap-2">
+                                <div className="grid gap-2">
                                     <div className="flex items-center justify-between">
-                                        <Label htmlFor="description" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Detailed Description</Label>
+                                        <Label htmlFor="description" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Description</Label>
                                         <Button 
                                             type="button" 
                                             variant="outline" 
                                             size="sm" 
-                                            className="h-7 gap-1 px-3 text-[9px] font-black uppercase border-primary/20 text-primary hover:bg-primary/5 rounded-full"
+                                            className="h-8 gap-2 px-4 text-[10px] font-black uppercase border-primary/20 text-primary hover:bg-primary/5 rounded-full"
                                             onClick={handleGenerateDescription}
                                             disabled={isGenerating}
                                         >
                                             {isGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-                                            AI Generate
+                                            AI Assistant
                                         </Button>
                                     </div>
-                                    <Textarea 
-                                        id="description" 
-                                        name="description" 
-                                        value={description}
-                                        onChange={(e) => setDescription(e.target.value)}
-                                        placeholder="Detailed specifications..." 
-                                        rows={3} 
-                                        className="bg-muted/30 border-2 text-sm md:text-base rounded-xl resize-none" 
-                                    />
-                                  </div>
-                                  
-                                  <div className="space-y-3">
-                                    <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Image</Label>
+                                    <Textarea id="description" name="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="bg-muted/30 border-2 text-base rounded-2xl resize-none focus:border-primary/40" />
+                                </div>
+                                
+                                <div className="space-y-4">
+                                    <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Product Media</Label>
                                     <div className="flex flex-col gap-4">
-                                        <Input 
-                                            id="image" 
-                                            name="image" 
-                                            type="file" 
-                                            accept="image/*" 
-                                            required 
-                                            onChange={handleProductImageChange}
-                                            className="bg-muted/30 border-2 h-11 text-xs rounded-xl cursor-pointer pt-3"
-                                        />
+                                        <Input id="image" name="image" type="file" accept="image/*" required onChange={handleProductImageChange} className="bg-muted/30 border-2 h-14 text-xs rounded-2xl pt-4 cursor-pointer" />
                                         {productImagePreview && (
-                                            <div className="relative aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner">
-                                                <Image src={productImagePreview} alt="Preview" fill className="object-contain" />
+                                            <div className="relative aspect-video w-full rounded-[24px] overflow-hidden border-2 bg-muted shadow-inner">
+                                                <Image src={productImagePreview} alt="" fill className="object-contain" />
                                             </div>
                                         )}
                                     </div>
-                                  </div>
-                          </div>
+                                </div>
+                            </div>
 
-                          <div className="p-5 md:p-6 border-t bg-background flex-shrink-0">
-                            <Button type="submit" className="w-full h-12 md:h-14 text-sm md:text-base font-black uppercase tracking-widest shadow-xl shadow-primary/20 rounded-2xl" disabled={isAddPending}>
-                              {isAddPending ? <Loader2 className="animate-spin mr-3 h-5 w-5" /> : 'Publish Listing'}
-                            </Button>
-                          </div>
-                      </form>
-                    </DialogContent>
-                </Dialog>
+                            <div className="p-6 md:p-8 border-t bg-background flex-shrink-0">
+                                <Button type="submit" className="w-full h-16 text-base font-black uppercase tracking-[3px] shadow-2xl shadow-primary/20 rounded-2xl" disabled={isAddPending}>
+                                    {isAddPending ? <Loader2 className="animate-spin mr-3 h-6 w-6" /> : 'Confirm Listing'}
+                                </Button>
+                            </div>
+                        </form>
+                      </DialogContent>
+                  </Dialog>
+                  
+                  <Button asChild variant="secondary" className="h-16 rounded-[24px] bg-[#2A2A2A] hover:bg-[#333] text-white border-none font-black uppercase tracking-[2px] text-sm transition-all active:scale-95">
+                      <Link href={`/shops/${seller.id}`}>
+                          <Eye className="h-5 w-5 mr-3 stroke-[2px]" /> View Shop
+                      </Link>
+                  </Button>
+              </div>
           </div>
-      </div>
 
-      {/* Dashboard Content */}
-      <main className="flex-1 w-full p-4 md:p-10 space-y-8 max-w-full">
+          {/* 2. Professional Dashboard Tabs */}
           <Tabs defaultValue="overview" className="w-full">
-            <div className="bg-background p-1 md:p-2 rounded-2xl border shadow-sm sticky top-[72px] md:top-[100px] z-20 w-full overflow-x-auto no-scrollbar">
-                <TabsList className="bg-transparent h-auto gap-1 md:gap-2 flex w-max min-w-full">
-                    <TabsTrigger value="overview" className="rounded-xl gap-2 py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all whitespace-nowrap">
-                        <LayoutDashboard className="h-4 w-4" /> Overview
+            <div className="bg-white rounded-[32px] p-2 shadow-xl border border-border/50 sticky top-[72px] md:top-[100px] z-20 w-full overflow-x-auto no-scrollbar">
+                <TabsList className="bg-transparent h-auto gap-2 flex w-max min-w-full">
+                    <TabsTrigger value="overview" className="flex-1 rounded-[24px] py-4 px-8 flex flex-col md:flex-row items-center gap-2 text-xs font-black uppercase tracking-widest data-[state=active]:bg-[#1A1A1A] data-[state=active]:text-white transition-all">
+                        <LayoutGrid className="h-5 w-5" /> Overview
                     </TabsTrigger>
-                    <TabsTrigger value="orders" className="rounded-xl gap-2 py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all whitespace-nowrap">
-                        <ShoppingBag className="h-4 w-4" /> Orders 
-                        {pendingOrdersCount > 0 && <Badge className="ml-1 bg-white text-primary text-[10px] font-black">{pendingOrdersCount}</Badge>}
+                    <TabsTrigger value="orders" className="flex-1 rounded-[24px] py-4 px-8 flex flex-col md:flex-row items-center gap-2 text-xs font-black uppercase tracking-widest data-[state=active]:bg-[#1A1A1A] data-[state=active]:text-white transition-all">
+                        <ShoppingBag className="h-5 w-5" /> Orders 
+                        {pendingOrdersCount > 0 && <Badge className="ml-1 bg-red-500 text-white text-[10px] font-black h-5 w-5 rounded-full p-0 flex items-center justify-center">{pendingOrdersCount}</Badge>}
                     </TabsTrigger>
-                    <TabsTrigger value="products" className="rounded-xl gap-2 py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all whitespace-nowrap">
-                        <Package className="h-4 w-4" /> Products
+                    <TabsTrigger value="products" className="flex-1 rounded-[24px] py-4 px-8 flex flex-col md:flex-row items-center gap-2 text-xs font-black uppercase tracking-widest data-[state=active]:bg-[#1A1A1A] data-[state=active]:text-white transition-all">
+                        <Package className="h-5 w-5" /> Products
                     </TabsTrigger>
-                    <TabsTrigger value="customers" className="rounded-xl gap-2 py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all whitespace-nowrap">
-                        <Users className="h-4 w-4" /> Customers
+                    <TabsTrigger value="customers" className="flex-1 rounded-[24px] py-4 px-8 flex flex-col md:flex-row items-center gap-2 text-xs font-black uppercase tracking-widest data-[state=active]:bg-[#1A1A1A] data-[state=active]:text-white transition-all">
+                        <Users className="h-5 w-5" /> Clients
                     </TabsTrigger>
-                    <TabsTrigger value="settings" className="rounded-xl gap-2 py-2 md:py-3 px-4 md:px-6 text-xs md:text-sm font-bold data-[state=active]:bg-primary data-[state=active]:text-white transition-all whitespace-nowrap">
-                        <Settings className="h-4 w-4" /> Profile
+                    <TabsTrigger value="settings" className="flex-1 rounded-[24px] py-4 px-8 flex flex-col md:flex-row items-center gap-2 text-xs font-black uppercase tracking-widest data-[state=active]:bg-[#1A1A1A] data-[state=active]:text-white transition-all">
+                        <Settings className="h-5 w-5" /> Profile
                     </TabsTrigger>
                 </TabsList>
             </div>
 
-            <TabsContent value="overview" className="space-y-6 md:space-y-8 animate-in fade-in duration-500 mt-6">
-                <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card className="bg-emerald-500 text-white border-none shadow-xl shadow-emerald-500/20">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-[9px] md:text-[10px] font-black uppercase tracking-[2px] opacity-80 flex items-center gap-2">
-                                <TrendingUp className="h-3 w-3" /> Net Revenue
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-3xl md:text-4xl font-black">GHS {formatPrice(totalRevenue)}</p>
-                            <p className="text-[10px] font-bold mt-2 opacity-80 uppercase">Lifetime earnings</p>
-                        </CardContent>
-                    </Card>
-                    <Card className="bg-primary text-white border-none shadow-xl shadow-primary/20">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-[9px] md:text-[10px] font-black uppercase tracking-[2px] opacity-80 flex items-center gap-2">
-                                <ShoppingBag className="h-3 w-3" /> Total Volume
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-3xl md:text-4xl font-black">{orders.length}</p>
-                            <p className="text-[10px] font-bold mt-2 opacity-80 uppercase">Lifetime orders</p>
-                        </CardContent>
-                    </Card>
-                    <Card className="bg-white dark:bg-slate-900 shadow-xl border-none">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-[9px] md:text-[10px] font-black uppercase tracking-[2px] text-muted-foreground flex items-center gap-2">
-                                <Clock className="h-3 w-3 text-orange-500" /> Pending Action
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-3xl md:text-4xl font-black text-orange-500">{pendingOrdersCount}</p>
-                            <p className="text-[10px] font-bold mt-2 text-muted-foreground uppercase">New/Ready orders</p>
-                        </CardContent>
-                    </Card>
-                    <Card className="bg-white dark:bg-slate-900 shadow-xl border-none">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-[9px] md:text-[10px] font-black uppercase tracking-[2px] text-muted-foreground flex items-center gap-2">
-                                <Users className="h-3 w-3 text-primary" /> Active Clients
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-3xl md:text-4xl font-black">{uniqueCustomers.length}</p>
-                            <p className="text-[10px] font-bold mt-2 text-muted-foreground uppercase">Unique buyers</p>
-                        </CardContent>
-                    </Card>
-                </div>
-                
-                <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
-                     <Card className="border-none shadow-lg bg-background overflow-hidden">
-                        <CardHeader className="border-b bg-muted/5 py-4">
-                            <CardTitle className="text-sm font-black uppercase tracking-widest">Awaiting Logistics</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                             <div className="divide-y">
-                                {orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').slice(0, 5).map(order => (
-                                     <div key={order.id} className="p-4 flex items-center justify-between hover:bg-muted/5 transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="h-9 w-9">
-                                                <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">{order.profiles?.display_name?.charAt(0)}</AvatarFallback>
-                                            </Avatar>
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-black truncate">{order.profiles?.display_name}</p>
-                                                <p className="text-[10px] text-muted-foreground truncate max-w-[120px] md:max-w-[150px]">{order.products?.name || order.vendor_products?.name}</p>
-                                            </div>
-                                        </div>
-                                        <Badge variant={order.status === 'ready' ? 'secondary' : 'outline'} className="font-black text-[9px] uppercase px-1.5 h-5">{order.status}</Badge>
-                                     </div>
-                                ))}
-                                {orders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').length === 0 && (
-                                    <div className="py-12 text-center text-muted-foreground">
-                                        <CheckCircle className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                                        <p className="text-[10px] font-black uppercase tracking-widest">All caught up!</p>
-                                    </div>
-                                )}
-                             </div>
-                        </CardContent>
-                     </Card>
-
-                     <Card className="border-none shadow-lg bg-background overflow-hidden">
-                        <CardHeader className="border-b bg-muted/5 py-4">
-                            <CardTitle className="text-sm font-black uppercase tracking-widest">New Inventory</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-2">
-                             <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 lg:grid-cols-4 gap-2">
-                                {products.slice(0, 12).map(product => (
-                                    <Link href={`/products/${product.id}`} key={product.id} className="relative aspect-square rounded-xl overflow-hidden group bg-muted flex items-center justify-center border hover:border-primary/50 transition-all">
-                                        {product.image_urls?.[0] ? (
-                                            <Image src={product.image_urls[0]} alt="" fill className="object-cover group-hover:scale-110 transition-transform" />
-                                        ) : (
-                                            <ImageIcon className="h-4 w-4 text-muted-foreground/30" />
-                                        )}
-                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 text-center">
-                                            <p className="text-[9px] text-white font-bold line-clamp-2 w-full">{product.name}</p>
-                                        </div>
-                                    </Link>
-                                ))}
-                                {products.length === 0 && (
-                                     <div className="col-span-full py-12 text-center text-muted-foreground w-full">
-                                        <Package className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                                        <p className="text-[10px] font-black uppercase tracking-widest">No items listed</p>
-                                    </div>
-                                )}
-                             </div>
-                        </CardContent>
-                     </Card>
-                </div>
-            </TabsContent>
-
-            <TabsContent value="orders" className="animate-in fade-in duration-500 mt-6">
-                <div className="flex flex-col gap-6">
-                    <Card className="border-none shadow-xl bg-background overflow-hidden w-full">
-                        <CardHeader className="bg-muted/5 border-b p-5 md:p-6 flex flex-row items-center justify-between gap-4">
-                            <div className="min-w-0">
-                                <CardTitle className="text-base md:text-lg font-black uppercase tracking-widest truncate">Transaction Ledger</CardTitle>
-                                <CardDescription className="text-xs font-medium">Manage your shop orders.</CardDescription>
+            {/* 3. Overview Tab (New Performance Layout) */}
+            <TabsContent value="overview" className="space-y-10 mt-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                <div className="space-y-6">
+                    <p className="text-[10px] font-black uppercase tracking-[4px] text-muted-foreground ml-4">Performance Insights</p>
+                    
+                    {/* Net Revenue Hero Card */}
+                    <Card className="bg-[#10B981] border-none rounded-[48px] p-8 md:p-12 text-white shadow-2xl shadow-emerald-500/20 overflow-hidden relative">
+                        <div className="absolute bottom-0 right-0 w-[40%] h-full bg-gradient-to-tl from-white/10 to-transparent rounded-full blur-[100px] -mr-20 -mb-20" />
+                        <div className="space-y-4 md:space-y-6 relative z-10">
+                            <p className="text-xs md:text-sm font-black uppercase tracking-[3px] opacity-70 flex items-center gap-3">
+                                📈 Net Revenue
+                            </p>
+                            <div className="flex items-baseline gap-3">
+                                <span className="text-xl md:text-2xl font-black opacity-60">GHS</span>
+                                <h2 className="text-6xl md:text-8xl font-black leading-none tracking-tighter">
+                                    {formatPrice(totalRevenue).replace('GHS ', '')}
+                                </h2>
                             </div>
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={handleSync} 
-                                disabled={isPending}
-                                className="h-9 font-bold border-2 shrink-0"
-                            >
-                                <RefreshCw className={cn("h-3 w-3 mr-2", isPending && "animate-spin")} />
-                                Sync
-                            </Button>
-                        </CardHeader>
-                        
-                        <div className="hidden md:block">
-                            <Table>
-                                <TableHeader className="bg-muted/20">
-                                    <TableRow>
-                                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Client Identity</TableHead>
-                                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Product Segment</TableHead>
-                                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Amount</TableHead>
-                                        <TableHead className="font-black uppercase text-[10px] tracking-wider">Current Phase</TableHead>
-                                        <TableHead className="font-black uppercase text-[10px] tracking-wider text-right">Logistics Update</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {orders.map((order) => {
-                                        const productName = order.products?.name || order.vendor_products?.name || 'Unknown Product';
-                                        return (
-                                            <TableRow key={order.id} className="hover:bg-muted/10 transition-colors group">
-                                                <TableCell>
-                                                    <div className="font-black text-sm">{order.profiles?.display_name}</div>
-                                                    <div className="text-[10px] font-bold text-muted-foreground flex items-center gap-1 mt-0.5"><Phone className="h-2 w-2" /> {order.profiles?.phone_number}</div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="text-sm font-medium max-w-[200px] lg:max-w-[400px] truncate">{productName}</div>
-                                                    <div className="text-[10px] text-muted-foreground font-bold">ID: {order.id.substring(0, 8)}</div>
-                                                </TableCell>
-                                                <TableCell className="font-black text-sm">GHS {formatPrice(order.price_per_item * order.quantity)}</TableCell>
-                                                <TableCell>
-                                                    <Badge className="font-black text-[9px] px-2 py-0.5 uppercase tracking-tighter" variant={
-                                                        order.status === 'completed' ? 'default' :
-                                                        order.status === 'ready' ? 'secondary' : 'outline'
-                                                    }>
-                                                        {order.status}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <div className="flex justify-end items-center gap-2">
-                                                        {order.status === 'pending' && (
-                                                            <Button size="sm" className="h-8 font-black uppercase text-[10px] px-4 rounded-lg" onClick={() => handleUpdateStatus(order.id, 'ready')} disabled={isPending}>Mark Ready</Button>
-                                                        )}
-                                                        {order.status === 'ready' && (
-                                                            <Button size="sm" variant="outline" className="h-8 font-black uppercase text-[10px] px-4 rounded-lg bg-emerald-50 text-emerald-700 border-emerald-200" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Handover</Button>
-                                                        )}
-                                                        <Button size="sm" variant="ghost" className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all rounded-lg" asChild>
-                                                            <Link href={`/admin/sales/${order.id}`}><Eye className="h-4 w-4" /></Link>
-                                                        </Button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
-                                    {orders.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={5} className="text-center py-24 text-muted-foreground italic font-medium">No orders yet.</TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
-
-                        <div className="md:hidden divide-y">
-                            {orders.map((order) => {
-                                const productName = order.products?.name || order.vendor_products?.name || 'Unknown Product';
-                                return (
-                                    <div key={order.id} className="p-5 space-y-4 hover:bg-muted/5 transition-colors">
-                                        <div className="flex justify-between items-start">
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-10 w-10">
-                                                    <AvatarFallback className="bg-primary/10 text-primary font-black text-sm">{order.profiles?.display_name?.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <div>
-                                                    <p className="font-black text-sm">{order.profiles?.display_name}</p>
-                                                    <a href={`tel:${order.profiles?.phone_number}`} className="text-[10px] font-bold text-primary flex items-center gap-1"><Phone className="h-2 w-2" /> {order.profiles?.phone_number}</a>
-                                                </div>
-                                            </div>
-                                            <Badge className="font-black text-[9px] px-1.5 py-0.5 uppercase tracking-tighter" variant={
-                                                order.status === 'completed' ? 'default' :
-                                                order.status === 'ready' ? 'secondary' : 'outline'
-                                            }>
-                                                {order.status}
-                                            </Badge>
-                                        </div>
-
-                                        <div className="bg-muted/30 p-3 rounded-xl space-y-1">
-                                            <p className="text-xs font-bold truncate">{productName}</p>
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-[10px] text-muted-foreground font-bold">QTY: {order.quantity}</span>
-                                                <span className="font-black text-xs">GHS {formatPrice(order.price_per_item * order.quantity)}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                            {order.status === 'pending' && (
-                                                <Button size="sm" className="flex-1 h-10 font-black uppercase text-[10px] rounded-xl" onClick={() => handleUpdateStatus(order.id, 'ready')} disabled={isPending}>Mark Ready</Button>
-                                            )}
-                                            {order.status === 'ready' && (
-                                                <Button size="sm" variant="outline" className="flex-1 h-10 font-black uppercase text-[10px] rounded-xl bg-emerald-50 text-emerald-700 border-emerald-200" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Complete Handover</Button>
-                                            )}
-                                            <Button size="sm" variant="secondary" className="h-10 px-4 rounded-xl font-black uppercase text-[10px]" asChild>
-                                                <Link href={`/admin/sales/${order.id}`}>Details</Link>
-                                            </Button>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                            {orders.length === 0 && (
-                                <div className="py-20 text-center text-muted-foreground italic text-sm">No transactions yet.</div>
-                            )}
+                            <p className="text-[10px] md:text-xs font-black opacity-70 uppercase tracking-[3px]">Lifetime Earnings Aggregate</p>
                         </div>
                     </Card>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {/* Order Volume Card */}
+                        <Card className="bg-[#F5A623] border-none rounded-[48px] p-8 text-white shadow-2xl shadow-orange-500/20 overflow-hidden relative">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-black/10 rounded-full blur-[40px] -mr-10 -mt-10" />
+                            <div className="space-y-4 relative z-10">
+                                <p className="text-[10px] font-black uppercase tracking-[3px] opacity-70 flex items-center gap-2">
+                                    <ShoppingBag className="h-3 w-3" /> Volume
+                                </p>
+                                <h2 className="text-6xl font-black leading-none">{orders.length}</h2>
+                                <p className="text-[10px] font-black opacity-70 uppercase tracking-[3px]">Total Cumulative Orders</p>
+                            </div>
+                        </Card>
+
+                        {/* Clients Card */}
+                        <Card className="bg-white border border-border/50 rounded-[48px] p-8 shadow-2xl overflow-hidden relative group">
+                            <div className="space-y-4 relative z-10">
+                                <p className="text-[10px] font-black uppercase tracking-[3px] text-primary flex items-center gap-2">
+                                    <Users className="h-3 w-3" /> Clients
+                                </p>
+                                <h2 className="text-6xl font-black text-foreground leading-none">{uniqueCustomers.length}</h2>
+                                <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-[3px]">Unique Campus Buyers</p>
+                            </div>
+                            <button 
+                                onClick={() => setIsAddDialogOpen(true)}
+                                className="absolute bottom-8 right-8 w-14 h-14 bg-[#F5A623] rounded-[24px] flex items-center justify-center text-black shadow-xl shadow-orange-500/20 hover:scale-110 active:scale-90 transition-all duration-300"
+                            >
+                                <Plus className="h-7 w-7 stroke-[3px]" />
+                            </button>
+                        </Card>
+                    </div>
                 </div>
             </TabsContent>
 
-            <TabsContent value="products" className="animate-in fade-in duration-500 mt-6">
-                <div className="grid gap-4 md:gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 w-full">
+            <TabsContent value="orders" className="animate-in fade-in duration-500 mt-10">
+                <Card className="border-none shadow-2xl bg-background rounded-[40px] overflow-hidden">
+                    <CardHeader className="bg-muted/5 border-b p-8 flex flex-row items-center justify-between gap-4">
+                        <div className="min-w-0">
+                            <CardTitle className="text-xl font-black uppercase tracking-[3px] truncate">Transaction Ledger</CardTitle>
+                            <CardDescription className="text-sm font-medium">Manage and fulfill shop orders.</CardDescription>
+                        </div>
+                        <Button variant="outline" size="icon" onClick={handleSync} disabled={isPending} className="h-12 w-12 rounded-2xl border-2">
+                            <RefreshCw className={cn("h-5 w-5", isPending && "animate-spin")} />
+                        </Button>
+                    </CardHeader>
+                    
+                    <div className="hidden md:block">
+                        <Table>
+                            <TableHeader className="bg-muted/10">
+                                <TableRow>
+                                    <TableHead className="font-black uppercase text-[10px] tracking-wider py-6 px-8">Client</TableHead>
+                                    <TableHead className="font-black uppercase text-[10px] tracking-wider">Product</TableHead>
+                                    <TableHead className="font-black uppercase text-[10px] tracking-wider">Amount</TableHead>
+                                    <TableHead className="font-black uppercase text-[10px] tracking-wider">Status</TableHead>
+                                    <TableHead className="font-black uppercase text-[10px] tracking-wider text-right px-8">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {orders.map((order) => {
+                                    const productName = order.products?.name || order.vendor_products?.name || 'Unknown Product';
+                                    return (
+                                        <TableRow key={order.id} className="hover:bg-muted/5 transition-colors">
+                                            <TableCell className="px-8 py-6">
+                                                <div className="font-black text-sm">{order.profiles?.display_name}</div>
+                                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">{order.profiles?.phone_number}</div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="text-sm font-medium truncate max-w-[300px]">{productName}</div>
+                                                <div className="text-[10px] text-muted-foreground font-black opacity-50 uppercase mt-1">Order #{order.id.substring(0, 8)}</div>
+                                            </TableCell>
+                                            <TableCell className="font-black text-sm">GHS {formatPrice(order.price_per_item * order.quantity).replace('GHS ', '')}</TableCell>
+                                            <TableCell>
+                                                <Badge className="font-black text-[9px] px-2 py-0.5 uppercase tracking-tighter" variant={
+                                                    order.status === 'completed' ? 'default' :
+                                                    order.status === 'ready' ? 'secondary' : 'outline'
+                                                }>
+                                                    {order.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right px-8">
+                                                <div className="flex justify-end items-center gap-3">
+                                                    {order.status === 'pending' && (
+                                                        <Button size="sm" className="h-10 font-black uppercase text-[10px] px-5 rounded-xl" onClick={() => handleUpdateStatus(order.id, 'ready')} disabled={isPending}>Mark Ready</Button>
+                                                    )}
+                                                    {order.status === 'ready' && (
+                                                        <Button size="sm" variant="outline" className="h-10 font-black uppercase text-[10px] px-5 rounded-xl bg-emerald-50 text-emerald-700 border-emerald-200" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Delivered</Button>
+                                                    )}
+                                                    <Button size="sm" variant="ghost" className="h-10 w-10 p-0 hover:bg-primary/10 hover:text-primary transition-all rounded-xl" asChild>
+                                                        <Link href={`/admin/sales/${order.id}`}><Eye className="h-5 w-5" /></Link>
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    <div className="md:hidden divide-y">
+                        {orders.map((order) => {
+                            const productName = order.products?.name || order.vendor_products?.name || 'Unknown Product';
+                            return (
+                                <div key={order.id} className="p-6 space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center font-black text-primary text-sm">
+                                                {order.profiles?.display_name?.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <p className="font-black text-sm">{order.profiles?.display_name}</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase">{order.profiles?.phone_number}</p>
+                                            </div>
+                                        </div>
+                                        <Badge className="font-black text-[9px] uppercase" variant={order.status === 'completed' ? 'default' : 'outline'}>{order.status}</Badge>
+                                    </div>
+                                    <div className="bg-muted/30 p-4 rounded-[24px] space-y-1">
+                                        <p className="text-xs font-black truncate">{productName}</p>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[10px] font-bold text-muted-foreground uppercase">Qty: {order.quantity}</span>
+                                            <span className="font-black text-xs">GHS {formatPrice(order.price_per_item * order.quantity)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {order.status === 'pending' && <Button size="sm" className="flex-1 h-12 font-black uppercase text-[10px] rounded-2xl" onClick={() => handleUpdateStatus(order.id, 'ready')} disabled={isPending}>Mark Ready</Button>}
+                                        {order.status === 'ready' && <Button size="sm" variant="outline" className="flex-1 h-12 font-black uppercase text-[10px] rounded-2xl bg-emerald-50 text-emerald-700 border-emerald-200" onClick={() => handleUpdateStatus(order.id, 'completed')} disabled={isPending}>Handover Complete</Button>}
+                                        <Button size="sm" variant="secondary" className="h-12 px-5 rounded-2xl font-black uppercase text-[10px]" asChild>
+                                            <Link href={`/admin/sales/${order.id}`}>Details</Link>
+                                        </Button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="products" className="animate-in fade-in duration-500 mt-10">
+                <div className="grid gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 w-full">
                     {products.map((product) => (
-                        <Card key={product.id} className="overflow-hidden border-none shadow-lg bg-background group ring-1 ring-border/50 hover:ring-primary/40 transition-all duration-300">
+                        <Card key={product.id} className="overflow-hidden border-none shadow-xl bg-background group ring-1 ring-border/50 hover:ring-primary/40 transition-all duration-500 rounded-[32px]">
                             <div className="relative aspect-square bg-muted flex items-center justify-center overflow-hidden">
                                 {product.image_urls && product.image_urls.length > 0 ? (
-                                    <Image 
-                                        src={product.image_urls[0]} 
-                                        alt={product.name} 
-                                        fill 
-                                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                                    />
+                                    <Image src={product.image_urls[0]} alt="" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                                 ) : (
-                                    <ImageIcon className="h-8 md:h-12 w-8 md:w-12 text-muted-foreground/30" />
+                                    <ImageIcon className="h-12 w-12 text-muted-foreground/30" />
                                 )}
-                                <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
-                                     <Button 
-                                        variant="destructive" 
-                                        size="icon" 
-                                        className="h-8 w-8 rounded-full shadow-lg"
-                                        onClick={() => handleDeleteProduct(product.id)}
-                                    >
+                                <div className="absolute top-3 right-3 z-10">
+                                     <Button variant="destructive" size="icon" className="h-9 w-9 rounded-2xl shadow-xl opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDeleteProduct(product.id)}>
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>
-                                <div className="absolute bottom-2 left-2">
-                                     <Badge className="bg-black/60 backdrop-blur-md border-none text-white text-[8px] md:text-[9px] font-black uppercase">{product.category}</Badge>
+                                <div className="absolute bottom-3 left-3">
+                                     <Badge className="bg-black/60 backdrop-blur-md border-none text-white text-[9px] font-black uppercase tracking-widest rounded-lg">{product.category}</Badge>
                                 </div>
                             </div>
-                            <CardContent className="p-3 md:p-4">
-                                <h3 className="font-bold truncate text-xs md:text-sm leading-tight text-foreground">{product.name}</h3>
-                                <p className="text-primary font-black mt-1 text-sm md:text-lg">GHS {formatPrice(product.price)}</p>
+                            <CardContent className="p-5 space-y-2">
+                                <h3 className="font-black truncate text-sm leading-tight text-foreground uppercase tracking-tight">{product.name}</h3>
+                                <p className="text-primary font-black text-lg">GHS {formatPrice(product.price).replace('GHS ', '')}</p>
                                 <EditProductDialog product={product} onUpdateSuccess={handleSync} />
                             </CardContent>
                         </Card>
                     ))}
                     {products.length === 0 && (
-                        <div className="col-span-full py-24 md:py-32 text-center bg-muted/10 rounded-3xl border-2 border-dashed border-muted-foreground/20 w-full">
-                            <Package className="h-12 md:h-16 text-muted-foreground/10 mx-auto mb-4" />
-                            <h3 className="text-sm md:text-lg font-black uppercase tracking-widest text-muted-foreground opacity-30">Inventory Empty</h3>
-                            <Button className="mt-4 md:mt-6 font-bold rounded-xl text-xs" onClick={() => setIsAddDialogOpen(true)}><Plus className="h-4 w-4 mr-2" /> Start Selling</Button>
+                        <div className="col-span-full py-32 text-center bg-muted/10 rounded-[48px] border-4 border-dashed border-muted-foreground/10 flex flex-col items-center">
+                            <Package className="h-20 w-20 text-muted-foreground/10 mb-6" />
+                            <p className="text-sm font-black uppercase tracking-[4px] text-muted-foreground/40">Warehouse Empty</p>
+                            <Button className="mt-8 font-black uppercase tracking-widest rounded-2xl h-14 px-10" onClick={() => setIsAddDialogOpen(true)}><Plus className="h-5 w-5 mr-2 stroke-[3px]" /> Start Selling</Button>
                         </div>
                     )}
                 </div>
             </TabsContent>
 
-            <TabsContent value="customers" className="animate-in fade-in duration-500 mt-6">
-                <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 w-full">
+            <TabsContent value="customers" className="animate-in fade-in duration-500 mt-10">
+                <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full">
                     {uniqueCustomers.map((cust) => (
-                        <Card key={cust.id} className="p-5 md:p-6 border-none shadow-lg bg-background hover:translate-y-[-4px] transition-all">
-                            <div className="flex flex-col items-center text-center space-y-4">
+                        <Card key={cust.id} className="p-8 border-none shadow-2xl bg-background hover:translate-y-[-8px] transition-all duration-500 rounded-[40px]">
+                            <div className="flex flex-col items-center text-center space-y-6">
                                 <div className="relative">
-                                    <div className="h-16 md:h-20 w-16 md:w-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center font-black text-primary text-2xl md:text-3xl shadow-inner border">
+                                    <div className="h-24 w-24 rounded-[32px] bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center font-black text-primary text-4xl shadow-inner border border-primary/10">
                                         {cust.name.charAt(0)}
                                     </div>
-                                    <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-1 rounded-full border-4 border-background">
-                                        <CheckCircle className="h-3 w-3" />
+                                    <div className="absolute -bottom-1 -right-1 bg-emerald-500 text-white p-1.5 rounded-full border-4 border-background shadow-lg">
+                                        <CheckCircle className="h-4 w-4" />
                                     </div>
                                 </div>
                                 <div className="min-w-0 w-full">
-                                    <p className="font-black text-base md:text-lg leading-tight truncate">{cust.name}</p>
-                                    <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-primary mt-1">{cust.totalOrders} orders</p>
+                                    <p className="font-black text-xl leading-tight truncate">{cust.name}</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[3px] text-primary mt-2">{cust.totalOrders} Transactions</p>
                                 </div>
-                                <div className="w-full space-y-2 pt-2">
-                                     <a href={`tel:${cust.phone}`} className="flex items-center justify-center gap-2 text-[11px] font-bold text-muted-foreground hover:text-primary transition-colors">
-                                        <Phone className="h-3 w-3" /> {cust.phone}
-                                    </a>
+                                <div className="w-full pt-4 space-y-4">
                                     <Separator className="opacity-50" />
-                                    <div className="flex gap-2">
-                                        <Button variant="outline" size="sm" className="flex-1 h-10 font-bold border-2 rounded-xl text-[10px] md:text-xs" asChild>
-                                            <a href={`tel:${cust.phone}`}><Phone className="h-3.5 w-3.5 mr-1.5" /> Call</a>
+                                    <div className="flex gap-3">
+                                        <Button variant="outline" size="sm" className="flex-1 h-12 font-black uppercase tracking-widest border-2 rounded-2xl text-[10px]" asChild>
+                                            <a href={`tel:${cust.phone}`}><Phone className="h-4 w-4 mr-2" /> Call</a>
                                         </Button>
-                                        <Button variant="secondary" size="sm" className="flex-1 h-10 font-bold rounded-xl text-[10px] md:text-xs" asChild>
-                                            <Link href={`/admin/sales/customers/${cust.id}`}><TrendingUp className="h-3.5 w-3.5 mr-1.5" /> Data</Link>
+                                        <Button variant="secondary" size="sm" className="flex-1 h-12 font-black uppercase tracking-widest rounded-2xl text-[10px]" asChild>
+                                            <Link href={`/admin/sales/customers/${cust.id}`}><TrendingUp className="h-4 w-4 mr-2" /> Stats</Link>
                                         </Button>
                                     </div>
                                 </div>
                             </div>
                         </Card>
                     ))}
-                    {uniqueCustomers.length === 0 && (
-                        <div className="col-span-full py-20 md:py-32 text-center bg-muted/10 rounded-3xl border-2 border-dashed w-full">
-                             <p className="text-[10px] md:text-sm font-black uppercase tracking-[3px] text-muted-foreground opacity-20 italic">No Clients Found</p>
-                        </div>
-                    )}
                 </div>
             </TabsContent>
 
-            <TabsContent value="settings" className="animate-in fade-in duration-500 mt-6">
-                <div className="max-w-4xl w-full mx-auto">
-                    <Card className="border-none shadow-xl bg-background overflow-hidden">
-                        <CardHeader className="bg-muted/5 border-b p-6 md:p-8">
-                            <CardTitle className="text-lg md:text-xl font-black uppercase tracking-widest">Business Identity</CardTitle>
-                            <CardDescription className="text-xs md:text-sm font-medium">Maintain shop profile and operational hours.</CardDescription>
+            <TabsContent value="settings" className="animate-in fade-in duration-500 mt-10">
+                <div className="max-w-3xl mx-auto">
+                    <Card className="border-none shadow-2xl bg-background rounded-[48px] overflow-hidden">
+                        <CardHeader className="bg-muted/5 border-b p-8 md:p-12">
+                            <CardTitle className="text-2xl font-black uppercase tracking-[4px]">Shop Identity</CardTitle>
+                            <CardDescription className="text-sm font-medium mt-2">Manage your public presence and operational details.</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-6 md:p-8">
-                            <form action={handleUpdateShop} className="space-y-8">
-                                <div className="space-y-6">
-                                    <div className="flex flex-col sm:flex-row sm:items-center gap-6 md:gap-8 p-6 md:p-8 bg-muted/10 rounded-3xl border-2 border-dashed border-muted-foreground/10">
-                                        <div className="relative group mx-auto sm:mx-0">
-                                            <Avatar className="h-24 md:h-32 w-24 md:w-32 border-4 border-background shadow-2xl ring-1 ring-primary/20">
-                                                <AvatarImage src={logoPreview || user?.user_metadata?.avatar_url || undefined} />
-                                                <AvatarFallback className="text-3xl md:text-4xl font-black bg-primary/10 text-primary">{seller.shop_name?.charAt(0)}</AvatarFallback>
-                                            </Avatar>
-                                            <Label htmlFor="logo" className="absolute inset-0 flex items-center justify-center bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-sm">
-                                                <UploadCloud className="h-8 md:h-10 w-8 md:w-10 animate-bounce" />
-                                            </Label>
-                                            <Input id="logo" name="logo" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
-                                        </div>
-                                        <div className="text-center sm:text-left space-y-1">
-                                            <h4 className="font-black uppercase tracking-widest text-sm">Shop Branding</h4>
-                                            <p className="text-[10px] md:text-[12px] text-muted-foreground font-medium">Stand out in the vendor gallery.</p>
-                                        </div>
+                        <CardContent className="p-8 md:p-12">
+                            <form action={handleUpdateShop} className="space-y-10">
+                                <div className="flex flex-col items-center gap-6 p-10 bg-muted/10 rounded-[40px] border-4 border-dashed border-muted-foreground/10 group">
+                                    <div className="relative">
+                                        <Avatar className="h-32 w-32 md:h-40 md:w-40 border-[8px] border-background shadow-2xl ring-1 ring-primary/20">
+                                            <AvatarImage src={logoPreview || user?.user_metadata?.avatar_url || undefined} className="object-cover" />
+                                            <AvatarFallback className="text-5xl font-black bg-primary/10 text-primary">{seller.shop_name?.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <Label htmlFor="logo-settings" className="absolute inset-0 flex items-center justify-center bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 cursor-pointer backdrop-blur-md">
+                                            <UploadCloud className="h-12 w-12 animate-bounce" />
+                                        </Label>
+                                        <Input id="logo-settings" name="logo" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
+                                    </div>
+                                    <p className="text-[10px] font-black uppercase tracking-[3px] text-muted-foreground">Tap to Update Brand Logo</p>
+                                </div>
+
+                                <div className="space-y-8">
+                                    <div className="grid gap-3">
+                                        <Label htmlFor="shop_name_settings" className="font-black text-[10px] uppercase tracking-[4px] text-muted-foreground ml-2">Digital Shop Name</Label>
+                                        <Input id="shop_name_settings" name="shop_name" defaultValue={seller.shop_name} required className="h-16 border-2 rounded-2xl text-lg font-black px-8 focus:border-primary/50 bg-muted/20" />
                                     </div>
 
                                     <div className="grid gap-3">
-                                        <Label htmlFor="shop_name" className="font-black text-[9px] md:text-[10px] uppercase tracking-[3px] text-muted-foreground">Registered Shop Name</Label>
-                                        <Input id="shop_name" name="shop_name" defaultValue={seller.shop_name} required className="h-12 md:h-14 border-2 rounded-xl text-base md:text-lg font-bold px-4 md:px-6 focus:border-primary/50" />
+                                        <Label htmlFor="description_settings" className="font-black text-[10px] uppercase tracking-[4px] text-muted-foreground ml-2">Professional Bio</Label>
+                                        <Textarea id="description_settings" name="description" defaultValue={seller.description || ''} placeholder="Tell your customers about your shop philosophy..." className="min-h-[160px] border-2 rounded-2xl text-base font-medium px-8 py-6 resize-none bg-muted/20 focus:border-primary/40" />
                                     </div>
 
-                                    <div className="grid gap-3">
-                                        <Label htmlFor="description" className="font-black text-[9px] md:text-[10px] uppercase tracking-[3px] text-muted-foreground">Shop Bio / Description</Label>
-                                        <Textarea id="description" name="description" defaultValue={seller.description || ''} placeholder="Describe what you sell and your shop mission..." className="min-h-[120px] border-2 rounded-xl text-sm md:text-base font-medium px-4 md:px-6 resize-none" />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4 md:gap-6">
+                                    <div className="grid grid-cols-2 gap-6">
                                         <div className="grid gap-3">
-                                            <Label htmlFor="open_time" className="font-black text-[9px] md:text-[10px] uppercase tracking-[3px] text-muted-foreground">Open Time</Label>
-                                            <Input id="open_time" name="open_time" type="time" defaultValue={seller.open_time || "08:00"} className="h-12 md:h-14 border-2 rounded-xl font-bold px-4 md:px-6" />
+                                            <Label htmlFor="open_time_settings" className="font-black text-[10px] uppercase tracking-[4px] text-muted-foreground ml-2">Opens At</Label>
+                                            <Input id="open_time_settings" name="open_time" type="time" defaultValue={seller.open_time || "08:00"} className="h-16 border-2 rounded-2xl font-black px-8 bg-muted/20" />
                                         </div>
                                         <div className="grid gap-3">
-                                            <Label htmlFor="close_time" className="font-black text-[9px] md:text-[10px] uppercase tracking-[3px] text-muted-foreground">Close Time</Label>
-                                            <Input id="close_time" name="close_time" type="time" defaultValue={seller.close_time || "20:00"} className="h-12 md:h-14 border-2 rounded-xl font-bold px-4 md:px-6" />
+                                            <Label htmlFor="close_time_settings" className="font-black text-[10px] uppercase tracking-[4px] text-muted-foreground ml-2">Closes At</Label>
+                                            <Input id="close_time_settings" name="close_time" type="time" defaultValue={seller.close_time || "20:00"} className="h-16 border-2 rounded-2xl font-black px-8 bg-muted/20" />
                                         </div>
                                     </div>
                                 </div>
 
-                                <Button type="submit" className="w-full h-14 md:h-16 text-base md:text-lg font-black uppercase tracking-[3px] md:tracking-[4px] shadow-2xl shadow-primary/20 rounded-2xl transition-all mt-4" disabled={isUpdatePending}>
-                                    {isUpdatePending ? <Loader2 className="animate-spin mr-3 h-5 md:h-6 w-5 md:w-6" /> : <Settings className="mr-3 h-5 md:h-6 w-5 md:w-6" />}
-                                    Update Business Identity
+                                <Button type="submit" className="w-full h-20 text-lg font-black uppercase tracking-[5px] shadow-2xl shadow-primary/20 rounded-[28px] transition-all hover:scale-[1.02] mt-6" disabled={isUpdatePending}>
+                                    {isUpdatePending ? <Loader2 className="animate-spin mr-4 h-6 w-6" /> : <Settings className="mr-4 h-6 w-6" />}
+                                    Sync Shop Identity
                                 </Button>
                             </form>
                         </CardContent>
