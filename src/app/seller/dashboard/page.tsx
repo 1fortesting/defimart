@@ -537,28 +537,35 @@ export default function SellerDashboardPage() {
                 </TabsList>
             </div>
 
-            <div className="p-4 mt-auto">
-                <div className="bg-white/10 p-4 rounded-2xl space-y-4 mb-4">
-                    <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 border-2 border-white/20">
-                            <AvatarImage src={user?.user_metadata?.avatar_url} />
-                            <AvatarFallback className="bg-white/20 text-white font-black">{seller.shop_name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                            <p className="text-xs font-black text-white truncate">{seller.shop_name}</p>
-                            <p className="text-[9px] text-white/60 truncate">{user?.email}</p>
-                        </div>
+            <div className="p-4 mt-auto space-y-4">
+                <div className="bg-white/10 p-4 rounded-2xl space-y-3">
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="shop-toggle-sidebar" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer">Shop Status</Label>
+                        <Switch 
+                            id="shop-toggle-sidebar" 
+                            checked={seller.is_open} 
+                            onCheckedChange={handleToggle}
+                            disabled={isPending}
+                            className="data-[state=checked]:bg-emerald-500"
+                        />
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", seller.is_open ? "bg-emerald-400" : "bg-red-400")} />
+                        <span className="text-[9px] font-black text-white/70 uppercase tracking-tighter">
+                            {seller.is_open ? "Accepting Orders" : "Currently Closed"}
+                        </span>
                     </div>
                 </div>
-                <form action={logout}>
-                    <Button variant="ghost" className="w-full text-white/70 hover:text-white hover:bg-white/10 justify-start gap-4 font-bold uppercase text-[10px] tracking-widest">
-                        <LogOut className="h-4 w-4" /> Logout
-                    </Button>
-                </form>
+
+                <Button asChild variant="ghost" className="w-full text-white/70 hover:text-white hover:bg-white/10 justify-start gap-4 font-bold uppercase text-[10px] tracking-widest">
+                    <Link href="/">
+                        <Home className="h-4 w-4" /> Exit to Storefront
+                    </Link>
+                </Button>
             </div>
         </aside>
 
-        {/* MOBILE HEADER (SLIM) */}
+        {/* MOBILE HEADER */}
         <div className="md:hidden bg-primary p-4 flex items-center justify-between shadow-lg z-50">
              <h2 className="text-white text-lg font-black italic uppercase tracking-tighter">Seller Hub</h2>
              <div className="flex items-center gap-2">
@@ -575,7 +582,7 @@ export default function SellerDashboardPage() {
                          <div className="p-8">
                             <h2 className="text-white text-2xl font-black italic uppercase tracking-tighter">Seller Hub</h2>
                         </div>
-                        <div className="px-4">
+                        <div className="flex-1 px-4">
                              <TabsList className="flex flex-col h-auto bg-transparent gap-2 w-full">
                                 <SheetClose asChild><TabsTrigger value="dashboard" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Dashboard</TabsTrigger></SheetClose>
                                 <SheetClose asChild><TabsTrigger value="products" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Inventory</TabsTrigger></SheetClose>
@@ -583,6 +590,30 @@ export default function SellerDashboardPage() {
                                 <SheetClose asChild><TabsTrigger value="clients" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Customers</TabsTrigger></SheetClose>
                                 <SheetClose asChild><TabsTrigger value="settings" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Settings</TabsTrigger></SheetClose>
                             </TabsList>
+                        </div>
+                        <div className="p-4 space-y-4">
+                            <div className="bg-white/10 p-4 rounded-2xl space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="shop-toggle-mobile" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer">Shop Status</Label>
+                                    <Switch 
+                                        id="shop-toggle-mobile" 
+                                        checked={seller.is_open} 
+                                        onCheckedChange={handleToggle}
+                                        disabled={isPending}
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div className={cn("h-1.5 w-1.5 rounded-full animate-pulse", seller.is_open ? "bg-emerald-400" : "bg-red-400")} />
+                                    <span className="text-[9px] font-black text-white/70 uppercase tracking-tighter">
+                                        {seller.is_open ? "Accepting Orders" : "Currently Closed"}
+                                    </span>
+                                </div>
+                            </div>
+                            <Button asChild variant="ghost" className="w-full text-white/70 hover:text-white hover:bg-white/10 justify-start gap-4 font-bold uppercase text-[10px] tracking-widest">
+                                <Link href="/">
+                                    <Home className="h-4 w-4" /> Exit to Storefront
+                                </Link>
+                            </Button>
                         </div>
                     </SheetContent>
                  </Sheet>
@@ -750,6 +781,46 @@ export default function SellerDashboardPage() {
                                             </div>
                                             <Textarea id="description_add" name="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="bg-muted/30 border-2 text-sm rounded-lg resize-none" />
                                         </div>
+
+                                        <div className="p-4 bg-muted/20 rounded-2xl border-2 border-dashed space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <Truck className="h-4 w-4 text-primary" />
+                                                    <Label htmlFor="offers_delivery_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Offer Delivery</Label>
+                                                </div>
+                                                <Switch 
+                                                    id="offers_delivery_add" 
+                                                    name="offers_delivery" 
+                                                    checked={offersDelivery} 
+                                                    onCheckedChange={setOffersDelivery} 
+                                                />
+                                            </div>
+
+                                            {offersDelivery && (
+                                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                    <div className="grid gap-2">
+                                                        <Label className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Pricing Model</Label>
+                                                        <RadioGroup name="delivery_price_type" value={deliveryPriceType} onValueChange={setDeliveryPriceType} className="flex gap-4">
+                                                            <div className="flex items-center space-x-2">
+                                                                <RadioGroupItem value="fixed" id="fixed_add" />
+                                                                <Label htmlFor="fixed_add" className="text-[10px] font-bold">Fixed Fee</Label>
+                                                            </div>
+                                                            <div className="flex items-center space-x-2">
+                                                                <RadioGroupItem value="location_based" id="location_based_add" />
+                                                                <Label htmlFor="location_based_add" className="text-[10px] font-bold">Location Based</Label>
+                                                            </div>
+                                                        </RadioGroup>
+                                                    </div>
+                                                    {deliveryPriceType === 'fixed' && (
+                                                        <div className="grid gap-1">
+                                                            <Label htmlFor="delivery_price_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Delivery Fee (GHS)</Label>
+                                                            <Input id="delivery_price_add" name="delivery_price" type="number" step="0.01" placeholder="0.00" className="bg-background border-2 h-9 text-xs rounded-lg" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
                                         <div className="space-y-2">
                                             <Label className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Product Media</Label>
                                             <Input id="image_add" name="image" type="file" accept="image/*" required onChange={handleProductImageChange} className="bg-muted/30 border-2 h-10 text-[9px] rounded-lg pt-3 cursor-pointer" />
