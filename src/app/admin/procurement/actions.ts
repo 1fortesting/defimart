@@ -30,6 +30,11 @@ const CreateProductSchema = BaseProductSchema.extend({
     ),
 });
 
+const UpdateProductSchema = BaseProductSchema.extend({
+  id: z.string().min(1, 'Product ID is required'),
+  image: z.any().optional(),
+});
+
 export async function createProduct(prevState: any, formData: FormData) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -116,33 +121,77 @@ export async function createProduct(prevState: any, formData: FormData) {
     return { success: true };
 }
 
-const UpdateProductSchema = BaseProductSchema.extend({
-  id: z.string().min(1, 'Product ID is required'),
-  image: z.any().optional(),
-});
-
 export async function updateProduct(prevState: any, formData: FormData) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { message: 'Unauthorized.', success: false, errors: {} };
 
     const rawFormData = Object.fromEntries(formData.entries());
-    const validatedFields = UpdateProductSchema.safeParse(rawFormData);
+    
+    if (rawFormData.category === 'Other') {
+        const customCategory = (rawFormData.custom_category as string)?.trim();
+        rawFormData.category = customCategory || null;
+    }
+
+    const validatedFields = UpdateProductSchema.safeParse({
+        ...rawFormData,
+        price: parseFloat(rawFormData.price as string),
+        cost_price: rawFormData.cost_price ? parseFloat(rawFormData.cost_price as string) : 0,
+        quantity: parseInt(rawFormData.quantity as string, 10),
+        discount_percentage: rawFormData.discount_percentage ? parseFloat(rawFormData.discount_percentage as string) : null,
+        discount_end_date: rawFormData.discount_end_date || null
+    });
 
     if (!validatedFields.success) {
         return { errors: validatedFields.error.flatten().fieldErrors, message: 'Invalid data', success: false };
     }
 
-    const { id, name, price } = validatedFields.data;
+    const { id, name, description, price, cost_price, quantity, category, brand, image, discount_percentage, discount_end_date } = validatedFields.data;
 
-    // Check current price for drop detection
-    const { data: oldProduct } = await supabase.from('products').select('price').eq('id', id).single();
+    // Check current price for drop detection and get current images
+    const { data: oldProduct } = await supabase.from('products').select('price, image_urls').eq('id', id).single();
     
-    const { error: updateError } = await supabase.from('products').update({
-        ...validatedFields.data,
+    let newImageUrls = oldProduct?.image_urls || [];
+    const imageFile = image as File;
+
+    if (imageFile && imageFile.size > 0) {
+        // Validate image
+        if (imageFile.size > 5 * 1024 * 1024) return { message: 'Max image size is 5MB.', success: false, errors: {} };
+        if (!['image/jpeg', 'image/jpg', 'image/png', 'image/webp'].includes(imageFile.type)) return { message: 'Only .jpg, .jpeg, .png and .webp formats are supported.', success: false, errors: {} };
+
+        const fileName = `${Date.now()}-${imageFile.name}`;
+        const { error: uploadError } = await supabase.storage.from('product_images').upload(fileName, imageFile);
+
+        if (uploadError) return { message: `Storage Error: ${uploadError.message}`, success: false, errors: {} };
+
+        const { data: urlData } = supabase.storage.from('product_images').getPublicUrl(fileName);
+        
+        if (urlData?.publicUrl) {
+            newImageUrls = [urlData.publicUrl];
+            // Delete old image if it exists
+            if (oldProduct?.image_urls && oldProduct.image_urls[0]) {
+                const oldImageName = oldProduct.image_urls[0].split('/').pop();
+                if (oldImageName) await supabase.storage.from('product_images').remove([oldImageName]);
+            }
+        }
+    }
+
+    const updateObject = {
+        name,
+        description: description || '',
+        price,
+        cost_price: cost_price || 0,
+        quantity,
+        category: category || null,
+        brand: brand || null,
+        image_urls: newImageUrls,
+        discount_percentage: (discount_percentage && discount_end_date) ? discount_percentage : null,
+        discount_end_date: (discount_percentage && discount_end_date) ? new Date(discount_end_date).toISOString() : null,
         is_featured: formData.get('is_featured') === 'on',
         is_outstanding: formData.get('is_outstanding') === 'on',
-    }).eq('id', id);
+    };
+
+    const { error: updateError } = await supabase.from('products').update(updateObject).eq('id', id);
 
     if (updateError) return { message: updateError.message, success: false, errors: {} };
 
