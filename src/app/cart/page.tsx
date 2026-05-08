@@ -127,7 +127,11 @@ export default function CartPage() {
       if (user) {
         const { data: dbItems, error } = await supabase
           .from('cart_items')
-          .select('*, products(name, price, image_urls, quantity, discount_percentage, discount_end_date), vendor_products:vendor_product_id(name, price, image_urls, quantity, discount_percentage, discount_end_date)')
+          .select(`
+            *, 
+            products(name, price, image_urls, quantity, discount_percentage, discount_end_date, offers_delivery), 
+            vendor_products:vendor_product_id(name, price, image_urls, quantity, discount_percentage, discount_end_date, offers_delivery)
+          `)
           .eq('user_id', user.id)
           .order('created_at');
 

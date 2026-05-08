@@ -1,17 +1,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Tables } from '@/types/supabase';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Calendar, Info, WifiOff } from 'lucide-react';
 import { AuthPrompt } from '@/components/auth-prompt';
-import Image from 'next/image';
-import { Textarea } from '@/components/ui/textarea';
-import { Separator } from '@/components/ui/separator';
 import { CheckoutFormWrapper } from './checkout-form-wrapper';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
-  products: Pick<Tables<'products'>, 'name' | 'price' | 'discount_percentage' | 'discount_end_date' | 'image_urls'> | null
+  products: any | null;
+  vendor_products?: any | null;
 };
 
 export default async function CheckoutPage() {
@@ -26,9 +21,14 @@ export default async function CheckoutPage() {
     );
   }
 
+  // Fetch cart items with full product details for both platform and vendor products
   const { data: cartItems, error } = await supabase
     .from('cart_items')
-    .select('*, products(name, price, discount_percentage, discount_end_date, image_urls)')
+    .select(`
+      *, 
+      products(name, price, discount_percentage, discount_end_date, image_urls, offers_delivery, delivery_price_type, delivery_price),
+      vendor_products:vendor_product_id(name, price, discount_percentage, discount_end_date, image_urls, offers_delivery, delivery_price_type, delivery_price)
+    `)
     .eq('user_id', user.id)
     .returns<CartItemWithProduct[]>();
 
@@ -37,18 +37,24 @@ export default async function CheckoutPage() {
   }
   
   const subtotal = cartItems.reduce((acc, item) => {
-    if (!item.products) return acc;
-    const isDiscountActive = item.products.discount_percentage && item.products.discount_end_date && new Date(item.products.discount_end_date) > new Date();
+    const product = item.products || item.vendor_products;
+    if (!product) return acc;
+    const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
     const finalPrice = isDiscountActive
-      ? item.products.price - (item.products.price * (item.products.discount_percentage! / 100))
-      : item.products.price;
+      ? product.price - (product.price * (product.discount_percentage! / 100))
+      : product.price;
     return acc + finalPrice * item.quantity;
   }, 0);
 
   return (
-      <main className="flex-1 p-4 md:p-8">
-        <h1 className="text-3xl font-bold mb-8 tracking-tight">Checkout</h1>
-        <CheckoutFormWrapper cartItems={cartItems} subtotal={subtotal} />
+      <main className="flex-1 p-4 md:p-8 bg-muted/5">
+        <div className="max-w-7xl mx-auto">
+            <div className="mb-8">
+                <h1 className="text-3xl font-black tracking-tight uppercase italic">Secure Checkout</h1>
+                <p className="text-muted-foreground text-sm font-medium">Finalize your acquisition from the marketplace.</p>
+            </div>
+            <CheckoutFormWrapper cartItems={cartItems} subtotal={subtotal} />
+        </div>
       </main>
   );
 }
