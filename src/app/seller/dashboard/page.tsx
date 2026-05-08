@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useTransition, useActionState, useCallback } from 'react';
@@ -632,7 +631,7 @@ export default function SellerDashboardPage() {
                             </div>
                             <button 
                                 onClick={() => setIsAddDialogOpen(true)}
-                                className="absolute bottom-8 right-8 w-14 h-14 bg-[#F5A623] rounded-[24px] flex items-center justify-center text-black shadow-xl shadow-orange-500/20 hover:scale-110 active:scale-90 transition-all duration-300"
+                                className="absolute bottom-8 right-8 w-14 h-14 bg-[#F5A623] rounded-[24px] flex items-center justify-center text-black shadow-xl shadow-orange-500/10 hover:scale-110 active:scale-90 transition-all duration-300"
                             >
                                 <Plus className="h-7 w-7 stroke-[3px]" />
                             </button>
@@ -870,7 +869,7 @@ export default function SellerDashboardPage() {
                 </div>
             </TabsContent>
           </Tabs>
-      </main>
+      </div>
     </div>
   );
 }
