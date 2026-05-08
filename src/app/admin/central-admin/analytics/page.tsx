@@ -70,6 +70,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
     if (reviewsError) console.error("Error fetching reviews:", reviewsError.message);
     
     const periodOrders = allOrdersInRange || [];
+    // CRITICAL: Financials only count COMPLETED orders
     const completedPeriodOrders = periodOrders.filter(o => o.status === 'completed');
 
     // --- Data Fetching: All-Time Data ---
@@ -89,7 +90,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
     
     if (selectedDate) {
         salesChartTimeUnit = 'hour';
-        salesChartDescription = `Hourly revenue for ${format(selectedDate, 'PPP')}.`;
+        salesChartDescription = `Hourly completed revenue for ${format(selectedDate, 'PPP')}.`;
         salesChartData = Array.from({ length: 24 }, (_, i) => ({
             date: `${String(i).padStart(2, '0')}:00`,
             total: 0
@@ -99,7 +100,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
             salesChartData[hour].total += order.price_per_item * order.quantity;
         });
     } else { 
-        salesChartDescription = 'Daily revenue for the selected period.';
+        salesChartDescription = 'Daily completed revenue for the selected period.';
         salesChartData = eachDayOfInterval({ start: startDate, end: endDate }).map(day => {
             const dateString = format(day, 'MMM d');
             const total = completedPeriodOrders
@@ -136,7 +137,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams?: {
         const total_cost = productCompletedInRange.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0);
         const total_profit = total_revenue - total_cost;
         const review_count = productReviewsInRange.length;
-        const average_rating = review_count > 0 ? productReviewsInRange.reduce((sum, r) => sum + r.rating, 0) / review_count : 0;
+        const average_rating = review_count > 0 ? Math.round(productReviewsInRange.reduce((sum, r) => sum + r.rating, 0) / review_count) : 0;
         
         return { ...p, total_sales, total_revenue, total_profit, average_rating, review_count };
     }) ?? [];

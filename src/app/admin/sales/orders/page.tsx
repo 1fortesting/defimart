@@ -1,4 +1,3 @@
-
 export const dynamic = 'force-dynamic';
 
 import { createServerClient } from '@supabase/ssr';
@@ -40,10 +39,14 @@ export default async function AdminSalesOrdersPage() {
 
     const allOrders = orders || [];
     
-    const todaysOrders = allOrders.filter(order => new Date(order.created_at) >= startOfToday() && order.status === 'completed');
+    // CRITICAL: Financials (Revenue/Profit) only count COMPLETED orders
+    const todaysCompletedOrders = allOrders.filter(order => 
+        new Date(order.created_at) >= startOfToday() && 
+        order.status === 'completed'
+    );
     
-    const todaysRevenue = todaysOrders.reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0);
-    const todaysCost = todaysOrders.reduce((sum, order) => sum + ((order.cost_price_per_item ?? 0) * order.quantity), 0);
+    const todaysRevenue = todaysCompletedOrders.reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0);
+    const todaysCost = todaysCompletedOrders.reduce((sum, order) => sum + ((order.cost_price_per_item ?? 0) * order.quantity), 0);
     const todaysProfit = todaysRevenue - todaysCost;
 
     const pendingOrdersCount = allOrders.filter(o => o.status === 'pending').length;

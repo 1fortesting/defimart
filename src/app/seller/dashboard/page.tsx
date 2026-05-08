@@ -395,7 +395,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                                     onClick={handleGenerateDescription}
                                     disabled={isGenerating}
                                 >
-                                    {isGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                                    {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                                     AI Rewrite
                                 </Button>
                             </div>
@@ -587,6 +587,7 @@ export default function SellerDashboardPage() {
   if (loading) return <div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin h-12 w-12 text-primary" /></div>;
   if (!seller) return <div className="p-8 text-center h-screen flex items-center justify-center flex-col"><p className="text-muted-foreground">Seller profile not found.</p><Button asChild variant="outline" className="mt-4"><Link href="/">Return Home</Link></Button></div>;
 
+  // CRITICAL: Financials only count COMPLETED orders
   const totalRevenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
   
   const StatCard = ({ title, value, icon: Icon, change }: { title: string, value: string | number, icon: any, change?: string }) => (

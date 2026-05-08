@@ -28,6 +28,7 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
     
     // --- Data Fetching ---
     
+    // CRITICAL: Financials (Revenue/Profit) only count COMPLETED orders
     let ordersQuery = supabaseAdmin
         .from('orders')
         .select('created_at, price_per_item, cost_price_per_item, quantity, product_id')
@@ -62,7 +63,7 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
     
     if (selectedDate) {
         chartTimeUnit = 'hour';
-        chartDescription = `Hourly profit for ${format(selectedDate, 'PPP')}.`;
+        chartDescription = `Hourly completed profit for ${format(selectedDate, 'PPP')}.`;
         profitChartData = Array.from({ length: 24 }, (_, i) => ({
             date: `${String(i).padStart(2, '0')}:00`,
             total: 0
@@ -74,7 +75,7 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
         });
     } else { 
         chartTimeUnit = 'day';
-        chartDescription = 'Daily profit for the selected period.';
+        chartDescription = 'Daily completed profit for the selected period.';
         // Simplified daily chart for multi-day view
         const dayMap: Record<string, number> = {};
         orders.forEach(order => {
@@ -92,13 +93,13 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
     const totalSales = orders.reduce((sum, o) => sum + o.quantity, 0); 
     const { count: totalProducts } = await supabaseAdmin.from('products').select('id', { count: 'exact', head: true });
 
-    const { data: allOrders } = await supabaseAdmin
+    const { data: allCompletedOrders } = await supabaseAdmin
         .from('orders')
         .select('price_per_item, cost_price_per_item, quantity')
         .eq('status', 'completed');
 
-    const allTimeTotalRevenue = allOrders?.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0) ?? 0;
-    const allTimeTotalCost = allOrders?.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0) ?? 0;
+    const allTimeTotalRevenue = allCompletedOrders?.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0) ?? 0;
+    const allTimeTotalCost = allCompletedOrders?.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0) ?? 0;
     const allTimeTotalProfit = allTimeTotalRevenue - allTimeTotalCost;
 
     // --- Product Performance Table ---
@@ -117,7 +118,7 @@ export default async function ProfitPage({ searchParams }: { searchParams?: { [k
         const total_cost = productOrders.reduce((sum, o) => sum + ((o.cost_price_per_item ?? 0) * o.quantity), 0);
         const total_profit = total_revenue - total_cost;
         const review_count = productReviews.length;
-        const average_rating = review_count > 0 ? productReviews.reduce((sum, r) => sum + r.rating, 0) / review_count : 0;
+        const average_rating = review_count > 0 ? Math.round(productReviews.reduce((sum, r) => sum + r.rating, 0) / review_count) : 0;
         
         return { ...p, total_sales, total_revenue, total_profit, average_rating, review_count };
     }) ?? [];
