@@ -2,13 +2,10 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
 import { ProductCard } from '@/components/product-card';
-import { Clock, Store, Info, Package, ImageIcon, Search, Zap, Star, LayoutGrid, Heart, ShoppingBag, ArrowRight, MapPin, FileText } from 'lucide-react';
-import { cn, formatPrice } from '@/lib/utils';
+import { Clock, Package, ShoppingBag, FileText, Info } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import Image from 'next/image';
-import Link from 'next/link';
 
 export default async function ShopProfilePage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -30,19 +27,44 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
         .eq('id', seller.user_id)
         .single();
 
-    const { data: products } = await (supabase as any)
+    const { data: productsData } = await (supabase as any)
         .from('vendor_products')
         .select('*')
         .eq('seller_id', seller.user_id)
         .eq('is_approved', true)
         .order('created_at', { ascending: false });
 
+    const products = productsData || [];
+
     const { data: { user } } = await supabase.auth.getUser();
+
+    // Fetch saved product IDs for the user
+    const { data: savedProducts } = user 
+      ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 
+      : { data: null };
+    const savedProductIds = new Set((savedProducts as any[])?.map((p: any) => p.product_id) || []);
+
+    // Fetch all reviews to calculate ratings for the products
+    const productIds = products.map((p: any) => p.id);
+    const { data: reviews } = productIds.length > 0 
+        ? await supabase.from('reviews').select('product_id, rating').in('product_id', productIds)
+        : { data: [] };
+
+    const reviewsByProduct = (reviews || []).reduce((acc: Record<string, number[]>, review: any) => {
+        if (!acc[review.product_id]) acc[review.product_id] = [];
+        acc[review.product_id].push(review.rating);
+        return acc;
+    }, {} as Record<string, number[]>);
+
+    const enrichedProducts = products.map((p: any) => {
+        const ratings = reviewsByProduct[p.id] || [];
+        const review_count = ratings.length;
+        const average_rating = review_count > 0 ? ratings.reduce((sum: number, r: number) => sum + r, 0) / review_count : 0;
+        return { ...p, average_rating, review_count };
+    });
     
     const isShopOpen = () => {
-        // Official stores are always open
         if (seller.user_id === process.env.NEXT_PUBLIC_ADMIN_ID) return true;
-        
         if (!seller.is_open) return false;
         if (!seller.open_time || !seller.close_time) return seller.is_open;
 
@@ -52,7 +74,6 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
 
         const openDate = new Date(now);
         openDate.setHours(openH, openM, 0);
-
         const closeDate = new Date(now);
         closeDate.setHours(closeH, closeM, 0);
 
@@ -63,11 +84,9 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
 
     return (
         <main className="flex-1 bg-background pb-24 md:pb-12">
-            {/* 1. Immersive Hero Section */}
             <div className="relative h-[220px] md:h-[300px] w-full overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary via-orange-500 to-amber-600">
                     <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]" />
-                    {/* Decorative Elements */}
                     <div className="absolute top-[-10%] right-[-5%] w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse" />
                     <div className="absolute bottom-[-20%] left-[-10%] w-80 h-80 bg-black/10 rounded-full blur-3xl" />
                 </div>
@@ -88,7 +107,6 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
                 </div>
             </div>
 
-            {/* 2. Brand Identity Overlap */}
             <div className="container mx-auto px-4 -mt-10 relative z-20">
                 <div className="bg-background rounded-[40px] shadow-[0_20px_60px_rgba(0,0,0,0.06)] p-6 md:p-8 flex flex-col md:flex-row md:items-start justify-between gap-8 border border-border/40">
                     <div className="flex items-center gap-4 md:gap-6">
@@ -111,7 +129,7 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
                                 <Separator orientation="vertical" className="h-3" />
                                 <div className="flex items-center gap-1 text-xs font-bold text-muted-foreground uppercase">
                                     <Package className="h-3.5 w-3.5 text-primary" />
-                                    <span>{products?.length || 0} Listings</span>
+                                    <span>{products.length} Listings</span>
                                 </div>
                             </div>
                         </div>
@@ -136,63 +154,35 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
                 </div>
             </div>
 
-            {/* 3. Catalog Section */}
             <div className="container mx-auto px-4 mt-12 space-y-8">
                 <div className="flex items-center justify-between px-2">
                     <h2 className="text-2xl font-black italic uppercase tracking-tighter text-foreground flex items-center gap-3">
                         Collection <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                     </h2>
                     <span className="text-muted-foreground text-[10px] font-black uppercase tracking-[2px]">
-                        {products?.length || 0} Total Items
+                        {products.length} Total Items
                     </span>
                 </div>
 
-                {(!products || products.length === 0) ? (
+                {products.length === 0 ? (
                     <div className="py-32 text-center bg-muted/10 rounded-[40px] border-4 border-dashed border-muted-foreground/10 flex flex-col items-center">
                         <ShoppingBag className="h-20 w-20 text-muted-foreground/20 mb-4" />
                         <p className="text-xl font-black text-muted-foreground/40 uppercase tracking-widest italic">Catalog Empty</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8">
-                        {products.map((product: any) => (
-                            <Link href={`/products/${product.id}`} key={product.id} className="group">
-                                <Card className="border-none shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-[24px] overflow-hidden transition-all duration-500 h-full bg-white flex flex-col group">
-                                    <div className="relative aspect-square p-4 bg-muted/20">
-                                        {product.image_urls?.[0] ? (
-                                            <Image 
-                                                src={product.image_urls[0]} 
-                                                alt={product.name} 
-                                                fill 
-                                                className="object-contain p-2 group-hover:scale-110 transition-transform duration-700" 
-                                            />
-                                        ) : (
-                                            <div className="h-full w-full flex items-center justify-center text-muted-foreground/20">
-                                                <ImageIcon className="h-12 w-12" />
-                                            </div>
-                                        )}
-                                    </div>
-                                    <CardContent className="p-5 space-y-2 flex flex-col flex-1">
-                                        <div>
-                                            <h3 className="font-black text-sm md:text-base leading-tight line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h3>
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">Shop Collection</p>
-                                        </div>
-                                        <div className="pt-2 mt-auto">
-                                            <p className="text-primary font-black text-lg md:text-xl">GHS {formatPrice(product.price).split(' ')[1]}</p>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            </Link>
+                        {enrichedProducts.map((product: any) => (
+                            <ProductCard 
+                                key={product.id}
+                                product={product}
+                                user={user}
+                                isVendor={true}
+                                isSaved={savedProductIds.has(product.id)}
+                            />
                         ))}
                     </div>
                 )}
             </div>
-
-            {/* Floating Action Button (Mobile) */}
-            <Link href="/search" className="fixed bottom-24 right-6 md:hidden z-[100]">
-                <button className="h-16 w-16 rounded-full bg-primary text-white shadow-2xl shadow-primary/40 flex items-center justify-center animate-bounce">
-                    <Search className="h-7 w-7" />
-                </button>
-            </Link>
         </main>
     );
 }

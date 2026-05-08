@@ -23,13 +23,14 @@ import {
 import { Badge } from './ui/badge';
 
 type ProductCardProps = {
-  product: Tables<'products'> & { average_rating?: number; review_count?: number };
+  product: any; // Using any to support both products and vendor_products tables
   user: any; 
   isSaved: boolean;
+  isVendor?: boolean;
   onUnsave?: (productId: string) => void;
 };
 
-export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardProps) {
+export function ProductCard({ product, user, isSaved, isVendor = false, onUnsave }: ProductCardProps) {
     const pathname = usePathname();
     const [isPending, startTransition] = useTransition();
     const [isSavedState, setIsSavedState] = useState(isSaved);
@@ -85,14 +86,17 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
         
         try {
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const existingItemIndex = cart.findIndex((item: any) => item.product_id === product.id);
+            const existingItemIndex = cart.findIndex((item: any) => 
+                isVendor ? item.vendor_product_id === product.id : item.product_id === product.id
+            );
 
             if (existingItemIndex > -1) {
                 cart[existingItemIndex].quantity += 1;
             } else {
                  const cartItem = {
                     id: `local-${product.id}-${Date.now()}`,
-                    product_id: product.id,
+                    product_id: isVendor ? null : product.id,
+                    vendor_product_id: isVendor ? product.id : null,
                     quantity: 1,
                     created_at: new Date().toISOString(),
                     products: { ...product }
@@ -100,7 +104,6 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                 cart.push(cartItem);
             }
             localStorage.setItem('cart', JSON.stringify(cart));
-            // Trigger instant UI update in Header/BottomNav
             window.dispatchEvent(new Event('cart-updated'));
         } catch (e) {
             console.error('Local cart update failed', e);
@@ -111,6 +114,7 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
             startTransition(async () => {
                 const formData = new FormData();
                 formData.append('productId', product.id);
+                if (isVendor) formData.append('isVendor', 'true');
                 await addToCart(formData);
             });
         }
@@ -170,13 +174,10 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
     };
 
     const hasImage = product.image_urls && product.image_urls.length > 0;
-    
-    // Sanitize description for UI
     const displayDescription = product.description?.replace(' (AI Enhanced)', '') || (product.category || 'General');
 
     return (
     <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-primary/[0.01] via-background to-blue-500/[0.01] border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/5 flex flex-col relative h-full cursor-pointer" onClick={() => window.location.href = `/products/${product.id}`}>
-        {/* Subtle Decorative Blue Auras */}
         <div className="absolute -top-16 -left-16 w-48 h-48 bg-primary/[0.03] rounded-full blur-3xl transition-all duration-700 opacity-20 group-hover:opacity-40 group-hover:scale-125 z-0" />
         <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-blue-500/[0.01] rounded-full blur-3xl transition-all duration-700 opacity-20 group-hover:opacity-40 group-hover:scale-125 z-0" />
         
@@ -245,30 +246,19 @@ export function ProductCard({ product, user, isSaved, onUnsave }: ProductCardPro
                                     <SheetTitle className="text-left text-sm font-syne font-black uppercase tracking-widest text-white">Share with friends</SheetTitle>
                                 </SheetHeader>
                                 <div className="p-6 grid grid-cols-3 gap-4">
-                                    <button 
-                                        onClick={shareWhatsApp}
-                                        className="flex flex-col items-center gap-2 group"
-                                    >
+                                    <button onClick={shareWhatsApp} className="flex flex-col items-center gap-2 group">
                                         <div className="h-14 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
                                             <MessageCircle className="h-7 w-7" />
                                         </div>
                                         <span className="text-[10px] font-bold font-dm uppercase tracking-tighter text-white/90">WhatsApp</span>
                                     </button>
-                                    
-                                    <button 
-                                        onClick={shareFacebook}
-                                        className="flex flex-col items-center gap-2 group"
-                                    >
+                                    <button onClick={shareFacebook} className="flex flex-col items-center gap-2 group">
                                         <div className="h-14 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
                                             <Facebook className="h-7 w-7" />
                                         </div>
                                         <span className="text-[10px] font-bold font-dm uppercase tracking-tighter text-white/90">Facebook</span>
                                     </button>
-
-                                    <button 
-                                        onClick={handleCopyLink}
-                                        className="flex flex-col items-center gap-2 group"
-                                    >
+                                    <button onClick={handleCopyLink} className="flex flex-col items-center gap-2 group">
                                         <div className="h-14 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
                                             {isCopied ? <Check className="h-7 w-7" /> : <Copy className="h-7 w-7" />}
                                         </div>

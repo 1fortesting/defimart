@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { sendSms } from '@/lib/sendSms';
 
 /**
  * Robust sequential product upload pipeline with comprehensive logging.
@@ -14,12 +15,6 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
   try {
     console.log('--- START UPLOAD PROCESS ---');
     
-    // 🧪 DEBUG: Log all form data keys
-    console.log('FORM DATA KEYS:');
-    for (const key of formData.keys()) {
-      console.log(key);
-    }
-
     const file = formData.get('image') as File;
     const name = formData.get('name') as string;
     const price = Number(formData.get('price'));
@@ -27,30 +22,13 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
     const category = formData.get('category') as string;
     const customCategory = formData.get('custom_category') as string;
 
-    // 🔍 STEP 1: CHECK FILE
-    if (!file) {
-      console.log('❌ FILE IS NULL');
-      return { success: false, error: 'No file received' };
+    if (!file || file.size === 0) {
+      return { success: false, error: 'Valid image required' };
     }
 
-    console.log('📁 FILE:', file);
-    console.log('📁 NAME:', file.name);
-    console.log('📁 SIZE:', file.size);
-    console.log('📁 TYPE:', file.type);
-
-    if (file.size === 0) {
-      console.log('❌ FILE SIZE IS 0');
-      return { success: false, error: 'Empty file' };
-    }
-
-    // 🔍 STEP 2: GENERATE NAME
     const ext = file.name.split('.').pop() || 'jpg';
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
 
-    console.log('📦 UPLOADING TO BUCKET: vendor-images');
-    console.log('📦 FILE NAME:', fileName);
-
-    // 🔍 STEP 3: UPLOAD
     const { error: uploadError } = await supabase.storage
       .from('vendor-images')
       .upload(fileName, file, {
@@ -59,32 +37,24 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
       });
 
     if (uploadError) {
-      console.log('❌ UPLOAD ERROR:', uploadError.message);
       return { success: false, error: `Upload failed: ${uploadError.message}` };
     }
 
-    console.log('✅ UPLOAD SUCCESS');
-
-    // 🔍 STEP 4: GET URL
     const { data: urlData } = supabase.storage
       .from('vendor-images')
       .getPublicUrl(fileName);
 
     const imageUrl = urlData?.publicUrl;
-    console.log('🌍 IMAGE URL:', imageUrl);
 
     if (!imageUrl) {
       return { success: false, error: 'No image URL generated' };
     }
 
-    // 🔍 STEP 5: GET SELLER
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      console.log('❌ AUTH USER NOT FOUND');
       return { success: false, error: 'Authentication required' };
     }
 
-    // 🔍 STEP 6: INSERT PRODUCT (Table: vendor_products)
     const finalCategory = category === 'Other' ? customCategory : category;
 
     const { error: dbError } = await (supabase as any)
@@ -102,13 +72,9 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
       });
 
     if (dbError) {
-      console.log('❌ DB ERROR:', dbError.message);
-      // Optional: Cleanup orphaned image
       await supabase.storage.from('vendor-images').remove([fileName]);
       return { success: false, error: `Database insert failed: ${dbError.message}` };
     }
-
-    console.log('✅ PRODUCT INSERTED');
 
     revalidatePath('/seller/dashboard');
     revalidatePath('/shops');
@@ -116,13 +82,13 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
     return { success: true };
 
   } catch (err: any) {
-    console.log('🔥 FINAL ERROR:', err);
     return { success: false, error: err.message || 'Unexpected failure' };
   }
 }
 
 /**
  * Updates an existing vendor product.
+ * Includes automated SMS Price Drop Notification logic.
  */
 export async function updateSellerProduct(prevState: any, formData: FormData) {
   const supabase = await createClient();
@@ -140,6 +106,9 @@ export async function updateSellerProduct(prevState: any, formData: FormData) {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: 'Authentication required' };
+
+    // Fetch existing product data to check for price drop
+    const { data: oldProduct } = await (supabase as any).from('vendor_products').select('price').eq('id', id).single();
 
     const finalCategory = category === 'Other' ? customCategory : category;
     const updateData: any = {
@@ -171,7 +140,27 @@ export async function updateSellerProduct(prevState: any, formData: FormData) {
 
     if (dbError) return { success: false, error: `Update failed: ${dbError.message}` };
 
+    // --- Trigger SMS Price Drop Notification for Vendor Products ---
+    if (oldProduct && price < oldProduct.price) {
+        const { data: wishlistedUsers } = await supabase
+            .from('saved_products')
+            .select('user_id, profiles(phone_number)')
+            .eq('product_id', id);
+
+        if (wishlistedUsers && wishlistedUsers.length > 0) {
+            const usersWithPhones = wishlistedUsers.filter(u => (u.profiles as any)?.phone_number);
+            const message = `DEFIMART PRICE DROP! 📉 The price of '${name}' in your wishlist has dropped to GHS ${price.toLocaleString()}. Grab it now from our student marketplace!`;
+            
+            await Promise.allSettled(
+                usersWithPhones.map(u => sendSms({ phoneNumber: (u.profiles as any).phone_number, message }))
+            );
+        }
+    }
+
     revalidatePath('/seller/dashboard');
+    revalidatePath(`/products/${id}`);
+    revalidatePath('/shops');
+    
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message || 'Unexpected failure' };
