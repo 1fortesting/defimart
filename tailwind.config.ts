@@ -107,6 +107,10 @@ export default {
           '10%, 30%': { transform: 'translateX(-24px)' },
           '40%, 100%': { transform: 'translateX(0)' },
         },
+        'marquee': {
+          '0%': { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -115,6 +119,7 @@ export default {
         'heartbeat': 'heartbeat 1s ease-in-out infinite',
         'swing': 'swing 3s ease-in-out infinite',
         'peek-a-boo': 'peek-a-boo 3s ease-in-out 2 1s',
+        'marquee': 'marquee 40s linear infinite',
       },
     },
   },
