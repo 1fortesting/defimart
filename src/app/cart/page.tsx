@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createClient } from '@/lib/supabase/client';
@@ -31,7 +30,7 @@ function QuantitySelector({ item, onQuantityChange, isPending }: { item: CartIte
                 className="h-6 w-6 rounded-full"
                 disabled={isPending || item.quantity <= 1}
             >
-                <偏Minus className="h-4 w-4" />
+                <Minus className="h-4 w-4" />
             </Button>
             <span className="w-8 text-center font-semibold">{item.quantity}</span>
             <Button
