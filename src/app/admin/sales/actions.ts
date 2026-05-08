@@ -17,7 +17,7 @@ export async function updateOrderStatus(formData: FormData) {
 
     const { data: order, error: fetchError } = await supabase
         .from('orders')
-        .select('*, products(name), vendor_products(name), profiles:profiles!orders_buyer_id_fkey(phone_number)')
+        .select('*, products(name), vendor_products:vendor_product_id(name), profiles:buyer_id(phone_number)')
         .eq('id', orderId)
         .single();
 
@@ -63,7 +63,7 @@ export async function updateOrderStatus(formData: FormData) {
     
     if (updateError) return { error: 'Failed to update order status.' };
 
-    // --- Notifications ---
+    // --- Notifications to Buyer ---
     const buyerPhoneNumber = order.profiles?.phone_number;
     const productName = order.products?.name || order.vendor_products?.name || 'Your order';
     const pickupDate = getPickupDateString();
@@ -81,7 +81,15 @@ export async function updateOrderStatus(formData: FormData) {
             await sendSms({ phoneNumber: buyerPhoneNumber, message });
         }
     }
+    
+    if (newStatus === 'cancelled' && oldStatus !== 'cancelled') {
+        if (buyerPhoneNumber) {
+            const message = `DEFIMART: Order #${order.id.substring(0, 8)} for '${productName}' has been cancelled. Please contact the vendor if you have any questions.`;
+            await sendSms({ phoneNumber: buyerPhoneNumber, message });
+        }
+    }
 
     revalidatePath('/admin/sales/orders');
+    revalidatePath('/seller/dashboard');
     return { success: true };
 }

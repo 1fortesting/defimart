@@ -1,4 +1,3 @@
-
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -103,12 +102,6 @@ export async function placeOrder(formData: FormData) {
         return redirect('/login?message=Please log in to place an order.');
     }
 
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('display_name, phone_number')
-        .eq('id', user.id)
-        .single();
-
     const { data: cartItems, error: cartError } = await supabase
         .from('cart_items')
         .select('*, products(*), vendor_products:vendor_product_id(*)')
@@ -145,11 +138,42 @@ export async function placeOrder(formData: FormData) {
 
     if (orderError) return redirect(`/checkout?error=${orderError.message}`);
 
+    // --- Notify Vendors via SMS ---
+    const sendVendorNotifications = async () => {
+        // Find unique sellers from the created orders
+        const uniqueSellerIds = Array.from(new Set(newOrders.map(o => o.seller_id)));
+        
+        for (const sellerId of uniqueSellerIds) {
+            // Don't notify the admin for platform products (handled by admin systems separately)
+            if (sellerId === process.env.NEXT_PUBLIC_ADMIN_ID) continue;
+
+            const { data: seller } = await supabase
+                .from('sellers')
+                .select('phone_number, shop_name')
+                .eq('user_id', sellerId)
+                .single();
+
+            if (seller?.phone_number) {
+                const sellerOrders = newOrders.filter(o => o.seller_id === sellerId);
+                const firstProductName = sellerOrders[0].product_id ? 'a platform product' : 'a vendor product';
+                // Try to get a real name if we can
+                const prod = (cartItems as any[]).find(i => (i.products?.seller_id === sellerId || i.vendor_products?.seller_id === sellerId));
+                const name = prod?.products?.name || prod?.vendor_products?.name || "an item";
+
+                const message = `DEFIMART: You have a new order for "${name}"! Login to your shop dashboard at ${process.env.NEXT_PUBLIC_SITE_URL}/seller/dashboard to process it.`;
+                await sendSms({ phoneNumber: seller.phone_number, message });
+            }
+        }
+    };
+    
+    // Fire and forget notification
+    sendVendorNotifications().catch(err => console.error("Vendor notification failed:", err));
+
     // Clean up
     await supabase.from('cart_items').delete().eq('user_id', user.id);
     
     revalidatePath('/orders');
     revalidatePath('/cart');
     revalidatePath('/'); 
-    redirect('/orders?success=Order placed successfully!');
+    redirect('/orders?success=Order placed successfully! Vendors have been notified.');
 }
