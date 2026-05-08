@@ -7,8 +7,51 @@ import { Tables } from '@/types/supabase';
 import { sendSms } from '@/lib/sendSms';
 
 /**
- * Adds a product to the cart. Automatically detects if it's a platform product
- * or a vendor product based on the context of the addition.
+ * Syncs multiple items from local storage to the database cart.
+ */
+export async function syncCart(items: { product_id?: string | null, vendor_product_id?: string | null, quantity: number }[]) {
+  const supabase = await createClient() as any;
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user || !items || items.length === 0) return { success: false };
+
+  // Prepare batch items
+  const dbItems = items.map(item => ({
+    user_id: user.id,
+    product_id: item.product_id || null,
+    vendor_product_id: item.vendor_product_id || null,
+    quantity: item.quantity
+  }));
+
+  // Simple loop for individual upserts to handle existing items correctly
+  for (const item of dbItems) {
+      const query = supabase
+        .from('cart_items')
+        .select('id, quantity')
+        .eq('user_id', user.id);
+      
+      if (item.vendor_product_id) {
+          query.eq('vendor_product_id', item.vendor_product_id);
+      } else {
+          query.eq('product_id', item.product_id);
+      }
+
+      const { data: existing } = await query.single();
+
+      if (existing) {
+          await supabase.from('cart_items').update({ quantity: Math.max(existing.quantity, item.quantity) }).eq('id', existing.id);
+      } else {
+          await supabase.from('cart_items').insert(item);
+      }
+  }
+
+  revalidatePath('/cart');
+  revalidatePath('/checkout');
+  return { success: true };
+}
+
+/**
+ * Adds a product to the cart. 
  */
 export async function addToCart(formData: FormData) {
   const supabase = await createClient() as any;
@@ -25,7 +68,6 @@ export async function addToCart(formData: FormData) {
     return { error: 'Product not found' };
   }
 
-  // Check if item already in cart
   const query = supabase
     .from('cart_items')
     .select('id, quantity')
@@ -48,7 +90,6 @@ export async function addToCart(formData: FormData) {
     if (updateError) return { error: updateError.message };
 
   } else {
-    // Add new item to cart
     const { error: insertError } = await supabase
       .from('cart_items')
       .insert({ 
@@ -137,41 +178,28 @@ export async function placeOrder(formData: FormData) {
         };
     });
 
-    const { data: createdOrders, error: orderError } = await (supabase.from('orders').insert(newOrders).select() as any);
+    const { error: orderError } = await (supabase.from('orders').insert(newOrders) as any);
 
     if (orderError) return redirect(`/checkout?error=${orderError.message}`);
 
-    // --- Notify Vendors via SMS ---
+    // Notify Vendors
     const sendVendorNotifications = async () => {
         const uniqueSellerIds = Array.from(new Set(newOrders.map(o => o.seller_id)));
-        
         for (const sellerId of uniqueSellerIds) {
-            if (sellerId === process.env.NEXT_PUBLIC_ADMIN_ID) continue;
-
-            const { data: seller } = await supabase
-                .from('sellers')
-                .select('phone_number, shop_name')
-                .eq('user_id', sellerId)
-                .single();
-
+            const { data: seller } = await supabase.from('sellers').select('phone_number').eq('user_id', sellerId).single();
             if (seller?.phone_number) {
-                const sellerOrders = newOrders.filter(o => o.seller_id === sellerId);
                 const prod = (cartItems as any[]).find(i => (i.products?.seller_id === sellerId || i.vendor_products?.seller_id === sellerId));
                 const name = prod?.products?.name || prod?.vendor_products?.name || "an item";
-                const locationText = delivery_location ? ` to be delivered to ${delivery_location.substring(0, 20)}...` : '';
-
-                const message = `DEFIMART: You have a new order for "${name}"${locationText}! Login to your shop dashboard to process it.`;
+                const message = `DEFIMART: You have a new order for "${name}"! Check your vendor dashboard.`;
                 await sendSms({ phoneNumber: seller.phone_number, message });
             }
         }
     };
-    
-    sendVendorNotifications().catch(err => console.error("Vendor notification failed:", err));
+    sendVendorNotifications().catch(console.error);
 
     await supabase.from('cart_items').delete().eq('user_id', user.id);
     
     revalidatePath('/orders');
     revalidatePath('/cart');
-    revalidatePath('/'); 
-    redirect('/orders?success=Order placed successfully! Vendors have been notified.');
+    redirect('/orders?success=Order placed successfully!');
 }

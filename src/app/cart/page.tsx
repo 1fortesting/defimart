@@ -3,11 +3,11 @@
 import { createClient } from '@/lib/supabase/client';
 import { Tables } from '@/types/supabase';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ShoppingCart, Trash2, Minus, Plus, CheckCircle, Loader2, ImageIcon, Truck } from 'lucide-react';
-import { removeItem, updateItemQuantity, addToCart } from './actions';
+import { removeItem, updateItemQuantity, syncCart } from './actions';
 import { AuthPrompt } from '@/components/auth-prompt';
 import { useEffect, useState, useTransition, useMemo } from 'react';
 import type { User } from '@supabase/supabase-js';
@@ -116,6 +116,7 @@ export default function CartPage() {
   const [user, setUser] = useState<User | null>(null);
   const [cartItems, setCartItems] = useState<CartItemWithProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -126,26 +127,22 @@ export default function CartPage() {
       setCartItems(localCart);
       
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      setUser(authUser);
 
-      if (user) {
-        // --- SYNC LOCAL TO DB ---
-        // If there are items in local storage that aren't in DB, push them.
-        if (localCart.length > 0) {
-            for (const item of localCart) {
-                if (item.id && item.id.startsWith('local-')) {
-                    const fd = new FormData();
-                    const prodId = item.product_id || item.vendor_product_id;
-                    if (prodId) {
-                        fd.append('productId', prodId);
-                        if (item.vendor_product_id) fd.append('isVendor', 'true');
-                        // Use multiple calls for each quantity or update action to handle this properly
-                        // For simplicity in sync, we just add once, the DB sync below will get the full state
-                        await addToCart(fd);
-                    }
-                }
-            }
+      if (authUser) {
+        // Sync local to DB if items exist and are not already in DB
+        const needsSync = localCart.some((i: any) => i.id?.toString().startsWith('local-'));
+        
+        if (needsSync) {
+            setIsSyncing(true);
+            const syncItems = localCart.filter((i: any) => i.id?.toString().startsWith('local-')).map((i: any) => ({
+                product_id: i.product_id,
+                vendor_product_id: i.vendor_product_id,
+                quantity: i.quantity
+            }));
+            await syncCart(syncItems);
+            setIsSyncing(false);
         }
 
         const { data: dbItems, error } = await supabase
@@ -155,7 +152,7 @@ export default function CartPage() {
             products(name, price, image_urls, quantity, discount_percentage, discount_end_date, offers_delivery, delivery_price_type, delivery_price), 
             vendor_products:vendor_product_id(name, price, image_urls, quantity, discount_percentage, discount_end_date, offers_delivery, delivery_price_type, delivery_price)
           `)
-          .eq('user_id', user.id)
+          .eq('user_id', authUser.id)
           .order('created_at');
 
         if (!error && dbItems) {
@@ -219,22 +216,27 @@ export default function CartPage() {
   }, [cartItems]);
 
   if (loading && cartItems.length === 0) {
-    return <main className="flex-1 p-8 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></main>;
-  }
-
-  if (!user && cartItems.length === 0 && !loading) {
-    return <main className="flex-1 p-8 flex items-center justify-center"><AuthPrompt /></main>;
+    return <main className="flex-1 p-8 flex items-center justify-center min-h-[400px]"><Loader2 className="h-8 w-8 animate-spin text-primary" /></main>;
   }
 
   return (
       <main className="flex-1 p-4 md:p-8 bg-muted/5 min-h-screen">
-        {cartItems.length > 0 ? (
+        {isSyncing && (
+            <div className="max-w-7xl mx-auto mb-6 bg-primary/10 p-4 rounded-2xl flex items-center gap-4 animate-in fade-in duration-300 border border-primary/20">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                <span className="text-sm font-bold text-primary uppercase tracking-widest">Synchronizing your bag...</span>
+            </div>
+        )}
+
+        {!user && cartItems.length === 0 ? (
+             <div className="flex-1 p-8 flex items-center justify-center min-h-[400px]"><AuthPrompt /></div>
+        ) : cartItems.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start max-w-7xl mx-auto">
             <div className="lg:col-span-2 space-y-4">
                 <h1 className="text-3xl font-black tracking-tight italic uppercase">BAG ({cartItems.length})</h1>
                 <Card className="border-none shadow-xl bg-background rounded-3xl overflow-hidden">
                     <div className="divide-y">
-                        {cartItems.map(item => <CartItem key={item.id} item={item} onQuantityChange={handleQuantityChange} onRemove={handleRemoveItem} isPending={isPending} />)}
+                        {cartItems.map(item => <CartItem key={item.id} item={item} onQuantityChange={handleQuantityChange} onRemove={handleRemoveItem} isPending={isPending || isSyncing} />)}
                     </div>
                 </Card>
             </div>
@@ -266,7 +268,7 @@ export default function CartPage() {
                       <p>Final delivery fees (if any) are calculated at checkout and paid in person.</p>
                   </div>
 
-                  <Button asChild className="w-full h-14 text-base md:text-lg font-black uppercase tracking-widest shadow-2xl shadow-primary/30 rounded-2xl" size="lg">
+                  <Button asChild className="w-full h-14 text-base md:text-lg font-black uppercase tracking-widest shadow-2xl shadow-primary/30 rounded-2xl" size="lg" disabled={isSyncing}>
                       <Link href="/checkout">Checkout Now</Link>
                   </Button>
               </Card>
