@@ -94,7 +94,7 @@ export async function Header() {
   );
 
   return (
-    <header className="relative bg-gradient-to-r from-primary/[0.05] via-background to-blue-500/[0.01] backdrop-blur-md border-b border-[var(--border)] p-4 flex flex-col gap-2 overflow-hidden">
+    <header className="relative bg-gradient-to-r from-primary/[0.05] via-background to-blue-500/[0.01] backdrop-blur-md border-b border-[var(--border)] px-4 py-2.5 md:p-4 flex flex-col gap-2 md:gap-4 overflow-hidden">
       {/* Softened Decorative Aura for Header */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-primary/[0.03] rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/[0.01] rounded-full blur-[60px] -ml-24 -mb-24 pointer-events-none" />
@@ -212,8 +212,8 @@ export async function Header() {
             <Image
                 src="https://iili.io/qO5Jeou.png"
                 alt="DEFIMART Logo"
-                width={150}
-                height={32}
+                width={130}
+                height={28}
                 className="object-contain"
             />
         </Link>
@@ -222,7 +222,7 @@ export async function Header() {
             <RefreshButton />
             <ThemeToggle />
              {!user && (
-                <Button asChild size="sm">
+                <Button asChild size="sm" className="h-8 px-3 text-xs">
                     <Link href="/login">Login</Link>
                 </Button>
             )}
