@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { Tables } from '@/types/supabase';
@@ -33,17 +35,25 @@ export default async function CheckoutPage() {
     .returns<CartItemWithProduct[]>();
 
   if (error || !cartItems || cartItems.length === 0) {
+    // If cart is empty on server, guest might still have local items not yet synced.
+    // We redirect to cart so initCart sync logic can run.
     return redirect('/cart');
   }
   
   const subtotal = cartItems.reduce((acc, item) => {
-    const product = item.products || item.vendor_products;
-    if (!product) return acc;
-    const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
+    // Ensure item and products are handled safely regardless of return shape
+    const product = Array.isArray(item.products) ? item.products[0] : item.products;
+    const vProduct = Array.isArray(item.vendor_products) ? item.vendor_products[0] : item.vendor_products;
+    const p = product || vProduct;
+
+    if (!p || typeof p.price !== 'number') return acc;
+    
+    const isDiscountActive = p.discount_percentage && p.discount_end_date && new Date(p.discount_end_date) > new Date();
     const finalPrice = isDiscountActive
-      ? product.price - (product.price * (product.discount_percentage! / 100))
-      : product.price;
-    return acc + finalPrice * item.quantity;
+      ? p.price - (p.price * (p.discount_percentage! / 100))
+      : p.price;
+      
+    return acc + (finalPrice * (item.quantity || 1));
   }, 0);
 
   return (

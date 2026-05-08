@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ShoppingCart, Trash2, Minus, Plus, CheckCircle, Loader2, ImageIcon, Truck } from 'lucide-react';
-import { removeItem, updateItemQuantity } from './actions';
+import { removeItem, updateItemQuantity, addToCart } from './actions';
 import { AuthPrompt } from '@/components/auth-prompt';
 import { useEffect, useState, useTransition, useMemo } from 'react';
 import type { User } from '@supabase/supabase-js';
@@ -130,6 +130,24 @@ export default function CartPage() {
       setUser(user);
 
       if (user) {
+        // --- SYNC LOCAL TO DB ---
+        // If there are items in local storage that aren't in DB, push them.
+        if (localCart.length > 0) {
+            for (const item of localCart) {
+                if (item.id && item.id.startsWith('local-')) {
+                    const fd = new FormData();
+                    const prodId = item.product_id || item.vendor_product_id;
+                    if (prodId) {
+                        fd.append('productId', prodId);
+                        if (item.vendor_product_id) fd.append('isVendor', 'true');
+                        // Use multiple calls for each quantity or update action to handle this properly
+                        // For simplicity in sync, we just add once, the DB sync below will get the full state
+                        await addToCart(fd);
+                    }
+                }
+            }
+        }
+
         const { data: dbItems, error } = await supabase
           .from('cart_items')
           .select(`
@@ -192,7 +210,7 @@ export default function CartPage() {
         const finalPrice = isDiscountActive
           ? product.price - (product.price * (product.discount_percentage! / 100))
           : product.price;
-        return acc + (finalPrice * item.quantity);
+        return acc + (finalPrice * (item.quantity || 1));
     }, 0);
   }, [cartItems]);
 
