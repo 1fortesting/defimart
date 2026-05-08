@@ -451,6 +451,17 @@ export default function SellerDashboardPage() {
                   </div>
                   
                   <div className="flex items-center gap-4 self-end md:self-auto">
+                    {/* Refresh Button for Vendor Console */}
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={handleSync} 
+                        disabled={isPending}
+                        className="h-10 w-10 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                    >
+                        <RefreshCw className={cn("h-5 w-5", isPending && "animate-spin")} />
+                    </Button>
+                    
                     <div className="flex items-center gap-3 bg-black/40 px-4 py-2 rounded-[20px] border border-white/5 shadow-inner">
                         <Label htmlFor="shop-toggle-main" className={cn("text-[9px] font-black uppercase tracking-[1.5px]", seller.is_open ? "text-emerald-400" : "text-destructive/80")}>
                             {seller.is_open ? 'OPEN' : 'CLOSED'}
@@ -482,7 +493,7 @@ export default function SellerDashboardPage() {
                                 </DialogDescription>
                             </DialogHeader>
                         </div>
-                        <form action={action} className="flex flex-col flex-1 overflow-hidden bg-background">
+                        <form action={addAction} className="flex flex-col flex-1 overflow-hidden bg-background">
                             <div className="flex-1 overflow-y-auto px-6 md:px-10 py-6 space-y-5 hide-scrollbar">
                                 <div className="grid gap-1">
                                     <Label htmlFor="name" className="font-black text-[9px] uppercase tracking-widest text-muted-foreground">Item Name</Label>
