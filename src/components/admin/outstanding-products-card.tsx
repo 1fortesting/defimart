@@ -40,7 +40,7 @@ export function OutstandingProductsCard({ products }: OutstandingProductsCardPro
                                 <TableCell className="text-right">GHS {product.total_revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                                 <TableCell className="text-right">{product.total_sales.toLocaleString('en-US')}</TableCell>
                                 <TableCell className="text-right flex items-center justify-end gap-1">
-                                    <Star className="h-4 w-4 text-primary" /> {product.average_rating.toFixed(1)}
+                                    <Star className="h-4 w-4 text-primary" /> {Math.round(product.average_rating)}
                                 </TableCell>
                             </TableRow>
                         ))}

@@ -32,7 +32,7 @@ export function StarRating({ rating, totalStars = 5, size = 20, className, showT
           <Star key={`empty-${i}`} fill="hsl(var(--muted-foreground))" className="text-muted-foreground opacity-20" style={{ width: size, height: size }} />
         ))}
       </div>
-      {showText && <span className="text-sm text-muted-foreground">{rating.toFixed(1)} out of {totalStars}</span>}
+      {showText && <span className="text-sm text-muted-foreground">{Math.round(rating)} out of {totalStars}</span>}
     </div>
   );
 }

@@ -334,7 +334,7 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                     </div>
                     <div className="flex items-center gap-4 bg-muted/30 px-6 py-3 rounded-xl">
                         <div className="text-center">
-                            <p className="text-3xl font-black text-primary">{averageRating.toFixed(1)}/5</p>
+                            <p className="text-3xl font-black text-primary">{Math.round(averageRating)}/5</p>
                             <StarRating rating={averageRating} size={12} showText={false} className="justify-center mt-1" />
                         </div>
                         <div className="h-10 w-[1px] bg-border mx-2" />

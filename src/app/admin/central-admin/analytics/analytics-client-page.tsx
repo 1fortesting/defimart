@@ -119,7 +119,7 @@ export default function AnalyticsClientPage({
             total_sales_units: p.total_sales,
             total_revenue: p.total_revenue.toFixed(2),
             total_profit: p.total_profit.toFixed(2),
-            average_rating: p.average_rating.toFixed(2),
+            average_rating: Math.round(p.average_rating),
             review_count: p.review_count,
             created_at: format(new Date(p.created_at), 'yyyy-MM-dd'),
         }));
@@ -252,7 +252,7 @@ export default function AnalyticsClientPage({
                                         <TableCell>{product.total_sales.toLocaleString('en-US')}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1">
-                                                <Star className="h-4 w-4 text-primary" /> {product.average_rating.toFixed(1)} ({product.review_count})
+                                                <Star className="h-4 w-4 text-primary" /> {Math.round(product.average_rating)} ({product.review_count})
                                             </div>
                                         </TableCell>
                                     </TableRow>
