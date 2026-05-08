@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition, useActionState, useCallback } from 'react';
+import { useEffect, useState, useTransition, useActionState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,6 +61,14 @@ import { Separator } from '@/components/ui/separator';
 import { logout } from '@/app/auth/actions';
 import { generateProductDescription } from '@/ai/flows/ai-product-description-assistant';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose
+} from "@/components/ui/sheet";
 
 const categories = [
     "Electronics & Gadgets",
@@ -179,10 +187,10 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <Truck className="h-4 w-4 text-primary" />
-                                    <Label htmlFor="offers_delivery" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Offer Delivery</Label>
+                                    <Label htmlFor="offers_delivery_edit" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Offer Delivery</Label>
                                 </div>
                                 <Switch 
-                                    id="offers_delivery" 
+                                    id="offers_delivery_edit" 
                                     name="offers_delivery" 
                                     checked={offersDelivery} 
                                     onCheckedChange={setOffersDelivery} 
@@ -195,19 +203,19 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                                         <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Pricing Model</Label>
                                         <RadioGroup name="delivery_price_type" value={deliveryPriceType} onValueChange={setDeliveryPriceType} className="flex gap-4">
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="fixed" id="fixed" />
-                                                <Label htmlFor="fixed" className="text-xs font-bold">Fixed Fee</Label>
+                                                <RadioGroupItem value="fixed" id="fixed_edit" />
+                                                <Label htmlFor="fixed_edit" className="text-xs font-bold">Fixed Fee</Label>
                                             </div>
                                             <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value="location_based" id="location_based" />
-                                                <Label htmlFor="location_based" className="text-xs font-bold">Based on Location</Label>
+                                                <RadioGroupItem value="location_based" id="location_based_edit" />
+                                                <Label htmlFor="location_based_edit" className="text-xs font-bold">Based on Location</Label>
                                             </div>
                                         </RadioGroup>
                                     </div>
                                     {deliveryPriceType === 'fixed' && (
                                         <div className="grid gap-2">
-                                            <Label htmlFor="delivery_price" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Delivery Fee (GHS)</Label>
-                                            <Input id="delivery_price" name="delivery_price" type="number" step="0.01" defaultValue={product.delivery_price || 0} className="bg-background border-2 h-10 text-sm rounded-lg" />
+                                            <Label htmlFor="delivery_price_edit" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Delivery Fee (GHS)</Label>
+                                            <Input id="delivery_price_edit" name="delivery_price" type="number" step="0.01" defaultValue={product.delivery_price || 0} className="bg-background border-2 h-10 text-sm rounded-lg" />
                                         </div>
                                     )}
                                 </div>
@@ -458,6 +466,21 @@ export default function SellerDashboardPage() {
     });
   };
 
+  const uniqueCustomers = useMemo(() => {
+      const customersMap = new Map();
+      orders.forEach(order => {
+          if (order.profiles && !customersMap.has(order.profiles.id)) {
+              customersMap.set(order.profiles.id, {
+                  id: order.profiles.id,
+                  name: order.profiles.display_name || 'Anonymous',
+                  phone: order.profiles.phone_number || 'No phone',
+                  totalOrders: orders.filter(o => o.buyer_id === order.profiles.id).length
+              });
+          }
+      });
+      return Array.from(customersMap.values());
+  }, [orders]);
+
   if (loading) return <div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin h-12 w-12 text-primary" /></div>;
   if (!seller) return <div className="p-8 text-center h-screen flex items-center justify-center flex-col"><p className="text-muted-foreground">Seller profile not found.</p><Button asChild variant="outline" className="mt-4"><Link href="/">Return Home</Link></Button></div>;
 
@@ -554,11 +577,11 @@ export default function SellerDashboardPage() {
                         </div>
                         <div className="px-4">
                              <TabsList className="flex flex-col h-auto bg-transparent gap-2 w-full">
-                                <SheetClose asChild><TabsTrigger value="dashboard" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary">Dashboard</TabsTrigger></SheetClose>
-                                <SheetClose asChild><TabsTrigger value="products" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary">Inventory</TabsTrigger></SheetClose>
-                                <SheetClose asChild><TabsTrigger value="orders" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary">Orders</TabsTrigger></SheetClose>
-                                <SheetClose asChild><TabsTrigger value="clients" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary">Customers</TabsTrigger></SheetClose>
-                                <SheetClose asChild><TabsTrigger value="settings" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary">Settings</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="dashboard" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Dashboard</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="products" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Inventory</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="orders" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Orders</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="clients" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Customers</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="settings" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Settings</TabsTrigger></SheetClose>
                             </TabsList>
                         </div>
                     </SheetContent>
@@ -838,7 +861,7 @@ export default function SellerDashboardPage() {
                                             <TableCell className="text-right px-6">
                                                 <div className="flex justify-end gap-2">
                                                     {o.status === 'pending' && <Button size="sm" className="h-7 text-[8px] font-black uppercase px-2 rounded-lg" onClick={() => handleUpdateStatus(o.id, 'ready')}>Mark Ready</Button>}
-                                                    {o.status === 'ready' && <Button size="sm" className="h-7 text-[8px] font-black uppercase px-2 rounded-lg bg-emerald-500" onClick={() => handleUpdateStatus(o.id, 'completed')}>Complete</Button>}
+                                                    {o.status === 'ready' && <Button size="sm" className="h-7 text-[8px] font-black uppercase px-2 rounded-lg bg-emerald-500 text-white" onClick={() => handleUpdateStatus(o.id, 'completed')}>Complete</Button>}
                                                     <Button variant="ghost" size="icon" className="h-7 w-7" asChild><Link href={`/admin/sales/${o.id}`}><Eye className="h-3.5 w-3.5" /></Link></Button>
                                                 </div>
                                             </TableCell>
