@@ -16,7 +16,6 @@ import {
   LogIn,
   Info,
   Store,
-  X,
 } from 'lucide-react';
 import { HeaderNav } from './header-nav';
 import Image from 'next/image';
@@ -117,6 +116,7 @@ export async function Header() {
             <SearchBar products={allProducts} />
         </div>
         <div className="flex items-center gap-2">
+            <RefreshButton />
             <ThemeToggle />
             <UserMenu user={user} />
         </div>
@@ -219,7 +219,7 @@ export async function Header() {
         </Link>
         
         <div className="flex items-center gap-1">
-            {user && <RefreshButton />}
+            <RefreshButton />
             <ThemeToggle />
              {!user && (
                 <Button asChild size="sm">

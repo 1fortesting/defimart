@@ -14,6 +14,7 @@ import type { User } from '@supabase/supabase-js';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from "@/lib/utils";
 import { WelcomeSplash } from "@/components/admin/welcome-splash";
+import { RefreshButton } from "@/components/refresh-button";
 
 const navLinks = [
     { href: "/admin/logistics", text: "Products", icon: Package },
@@ -92,7 +93,7 @@ const AdminHeader = ({ user, handleLogout, onExit }: { user: User | null; handle
                             <span className="sr-only">Toggle navigation menu</span>
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="flex flex-col p-0 w-3/4">
+                    <SheetContent side="left" className="flex flex-col p-0 w-3/4 shadow-2xl bg-background border-r-0">
                          <div className="flex h-14 items-center border-b px-6">
                             <Link href="/admin/departments" className="flex items-center gap-2 font-semibold">
                                 <DoorOpen className="h-6 w-6 text-primary" />
@@ -118,28 +119,31 @@ const AdminHeader = ({ user, handleLogout, onExit }: { user: User | null; handle
 
             <div className="w-full flex-1" />
 
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="secondary" size="icon" className="rounded-full">
-                        <Avatar className="h-8 w-8">
-                            <AvatarImage src={user?.user_metadata.avatar_url ?? undefined} />
-                            <AvatarFallback>{displayName?.charAt(0)?.toUpperCase() ?? 'A'}</AvatarFallback>
-                        </Avatar>
-                        <span className="sr-only">Toggle user menu</span>
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>
-                        <p className="font-medium">{displayName}</p>
-                        <p className="text-xs text-muted-foreground">{user?.email}</p>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={handleLogout} className="text-red-500">
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Logout
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center gap-2">
+                <RefreshButton />
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="secondary" size="icon" className="rounded-full">
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={user?.user_metadata.avatar_url ?? undefined} />
+                                <AvatarFallback>{displayName?.charAt(0)?.toUpperCase() ?? 'A'}</AvatarFallback>
+                            </Avatar>
+                            <span className="sr-only">Toggle user menu</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>
+                            <p className="font-medium">{displayName}</p>
+                            <p className="text-xs text-muted-foreground">{user?.email}</p>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onSelect={handleLogout} className="text-red-500">
+                            <LogOut className="mr-2 h-4 w-4" />
+                            Logout
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
         </header>
     );
 };
