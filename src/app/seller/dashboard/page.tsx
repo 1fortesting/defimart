@@ -180,12 +180,12 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                                 <Switch 
                                     id="offers_delivery" 
                                     name="offers_delivery" 
-                                    checked={offers_delivery} 
+                                    checked={offersDelivery} 
                                     onCheckedChange={setOffersDelivery} 
                                 />
                             </div>
 
-                            {offers_delivery && (
+                            {offersDelivery && (
                                 <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="grid gap-2">
                                         <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Pricing Model</Label>
@@ -585,12 +585,12 @@ export default function SellerDashboardPage() {
                                         <Switch 
                                             id="offers_delivery_add" 
                                             name="offers_delivery" 
-                                            checked={offers_delivery} 
+                                            checked={offersDelivery} 
                                             onCheckedChange={setOffersDelivery} 
                                         />
                                     </div>
 
-                                    {offers_delivery && (
+                                    {offersDelivery && (
                                         <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                                             <div className="grid gap-2">
                                                 <Label className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Pricing Model</Label>
