@@ -24,22 +24,16 @@ import {
     Phone, 
     Image as ImageIcon,
     Trash2,
-    CheckCircle,
     Store,
     RefreshCw,
     UploadCloud,
-    ExternalLink,
     Menu,
     Home,
     LogOut,
-    ArrowLeft,
-    Heart,
     Edit,
     Sparkles,
     FileText,
-    LayoutGrid,
     Truck,
-    MapPin,
     Search,
     Bell,
     DollarSign,
@@ -58,7 +52,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn, formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
-import { logout } from '@/app/auth/actions';
 import { generateProductDescription } from '@/ai/flows/ai-product-description-assistant';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
@@ -80,6 +73,174 @@ const categories = [
     "Groceries & Food",
     "Other"
 ];
+
+function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }) {
+    const { toast } = useToast();
+    const [isOpen, setIsOpen] = useState(false);
+    const [uploadCategory, setUploadCategory] = useState('');
+    const [productName, setProductName] = useState('');
+    const [description, setDescription] = useState('');
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isGenerating, startGeneratingTransition] = useTransition();
+
+    const [offersDelivery, setOffersDelivery] = useState(false);
+    const [deliveryPriceType, setDeliveryPriceType] = useState('fixed');
+
+    const [state, action, isPending] = useActionState(addSellerProduct, { success: false, error: null });
+
+    useEffect(() => {
+        if (state.success) {
+            setIsOpen(false);
+            setImagePreview(null);
+            setUploadCategory('');
+            setProductName('');
+            setDescription('');
+            setOffersDelivery(false);
+            setDeliveryPriceType('fixed');
+            toast({ variant: 'success', title: 'Listing Published!', description: 'Your product is now live.' });
+            onPublishSuccess();
+        } else if (state.error) {
+            toast({ title: 'Listing Failed', description: state.error, variant: 'destructive' });
+        }
+    }, [state, toast, onPublishSuccess]);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    const handleGenerateDescription = () => {
+        if (!productName) {
+            toast({ variant: 'destructive', title: 'Name required', description: 'Enter a product name to generate description.' });
+            return;
+        }
+        startGeneratingTransition(async () => {
+            try {
+                const result = await generateProductDescription({
+                    productName,
+                    category: uploadCategory || 'General',
+                });
+                if (result.description) {
+                    setDescription(result.description.replace(' (AI Enhanced)', ''));
+                    toast({ variant: 'success', title: 'AI Content Ready', description: 'Description generated successfully.' });
+                }
+            } catch (e) {
+                toast({ variant: 'destructive', title: 'AI Error', description: 'Failed to generate description.' });
+            }
+        });
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <Button className="bg-[#F5A623] hover:bg-[#E89512] text-white font-black uppercase tracking-[1.5px] text-[10px] rounded-xl px-5 h-10 border-none shadow-lg shadow-orange-500/10">
+                    <Plus className="h-3.5 w-3.5 mr-2" /> Publish Item
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="w-[95%] max-w-[550px] p-0 overflow-hidden rounded-[28px] flex flex-col max-h-[85vh] border-none shadow-2xl">
+                <div className="bg-primary p-5 text-primary-foreground flex-shrink-0">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-black tracking-tight text-white uppercase">New Listing</DialogTitle>
+                        <DialogDescription className="text-primary-foreground/80 text-[10px] font-medium">
+                            Publish a product to your digital storefront.
+                        </DialogDescription>
+                    </DialogHeader>
+                </div>
+                <form action={action} className="flex flex-col flex-1 overflow-hidden bg-background">
+                    <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 hide-scrollbar">
+                        <div className="grid gap-1">
+                            <Label htmlFor="name_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Item Name</Label>
+                            <Input id="name_add" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. MacBook Pro M3" required className="bg-muted/30 border-2 h-10 text-sm rounded-lg" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="grid gap-1">
+                                <Label htmlFor="price_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Price (GHS)</Label>
+                                <Input id="price_add" name="price" type="number" step="0.01" placeholder="0.00" required className="bg-muted/30 border-2 h-10 text-sm rounded-lg" />
+                            </div>
+                            <div className="grid gap-1">
+                                <Label htmlFor="category_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Category</Label>
+                                <Select name="category" required onValueChange={setUploadCategory}>
+                                    <SelectTrigger className="bg-muted/30 border-2 h-10 text-sm rounded-lg">
+                                        <SelectValue placeholder="Select" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-lg">
+                                        {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        <div className="grid gap-1">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="description_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Description</Label>
+                                <Button type="button" variant="outline" size="sm" className="h-6 gap-1 px-2 text-[8px] font-black uppercase rounded-full" onClick={handleGenerateDescription} disabled={isGenerating}>
+                                    {isGenerating ? <Loader2 className="h-2 w-2 animate-spin" /> : <Sparkles className="h-2 w-2" />} AI Assistant
+                                </Button>
+                            </div>
+                            <Textarea id="description_add" name="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="bg-muted/30 border-2 text-sm rounded-lg resize-none" />
+                        </div>
+
+                        <div className="p-4 bg-muted/20 rounded-2xl border-2 border-dashed space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Truck className="h-4 w-4 text-primary" />
+                                    <Label htmlFor="offers_delivery_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Offer Delivery</Label>
+                                </div>
+                                <Switch 
+                                    id="offers_delivery_add" 
+                                    name="offers_delivery" 
+                                    checked={offersDelivery} 
+                                    onCheckedChange={setOffersDelivery}
+                                    className="data-[state=unchecked]:bg-muted-foreground/20"
+                                />
+                            </div>
+
+                            {offersDelivery && (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="grid gap-2">
+                                        <Label className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Pricing Model</Label>
+                                        <RadioGroup name="delivery_price_type" value={deliveryPriceType} onValueChange={setDeliveryPriceType} className="flex gap-4">
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="fixed" id="fixed_add" />
+                                                <Label htmlFor="fixed_add" className="text-[10px] font-bold">Fixed Fee</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="location_based" id="location_based_add" />
+                                                <Label htmlFor="location_based_add" className="text-[10px] font-bold">Location Based</Label>
+                                            </div>
+                                        </RadioGroup>
+                                    </div>
+                                    {deliveryPriceType === 'fixed' && (
+                                        <div className="grid gap-1">
+                                            <Label htmlFor="delivery_price_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Delivery Fee (GHS)</Label>
+                                            <Input id="delivery_price_add" name="delivery_price" type="number" step="0.01" placeholder="0.00" className="bg-background border-2 h-9 text-xs rounded-lg" />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Product Media</Label>
+                            <Input id="image_add" name="image" type="file" accept="image/*" required onChange={handleImageChange} className="bg-muted/30 border-2 h-11 text-[9px] rounded-lg pt-3 cursor-pointer" />
+                            {imagePreview && (
+                                <div className="relative aspect-video w-full rounded-[16px] overflow-hidden border-2 bg-muted shadow-inner">
+                                    <Image src={imagePreview} alt="" fill className="object-contain" />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <div className="p-5 border-t bg-background flex-shrink-0">
+                        <Button type="submit" className="w-full h-12 text-xs font-black uppercase tracking-[1.5px] shadow-2xl shadow-primary/20 rounded-xl" disabled={isPending}>
+                            {isPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : 'Confirm Listing'}
+                        </Button>
+                    </div>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdateSuccess: () => void }) {
     const { toast } = useToast();
@@ -193,7 +354,8 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                                     id="offers_delivery_edit" 
                                     name="offers_delivery" 
                                     checked={offersDelivery} 
-                                    onCheckedChange={setOffersDelivery} 
+                                    onCheckedChange={setOffersDelivery}
+                                    className="data-[state=unchecked]:bg-muted-foreground/20"
                                 />
                             </div>
 
@@ -287,21 +449,9 @@ export default function SellerDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [isUpdatePending, startUpdateTransition] = useTransition();
-  const [isGenerating, startGeneratingTransition] = useTransition();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  
-  const [uploadCategory, setUploadCategory] = useState('');
-  const [productName, setProductName] = useState('');
-  const [description, setDescription] = useState('');
-  const [productImagePreview, setProductImagePreview] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
-  const [offersDelivery, setOffersDelivery] = useState(false);
-  const [deliveryPriceType, setDeliveryPriceType] = useState('fixed');
-
   const { toast } = useToast();
-
-  const [addState, addAction, isAddPending] = useActionState(addSellerProduct, { success: false, error: null });
 
   const fetchData = useCallback(async () => {
     try {
@@ -342,23 +492,6 @@ export default function SellerDashboardPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
-  useEffect(() => {
-    if (addState.success) {
-        setIsAddDialogOpen(false);
-        setProductImagePreview(null);
-        setUploadCategory('');
-        setProductName('');
-        setDescription('');
-        setOffersDelivery(false);
-        setDeliveryPriceType('fixed');
-        toast({ variant: 'success', title: 'Listing Published!', description: 'Your product is now live in your shop.' });
-        fetchData();
-        router.refresh();
-    } else if (addState.error) {
-        toast({ title: 'Listing Failed', description: addState.error, variant: 'destructive' });
-    }
-  }, [addState, toast, router, fetchData]);
 
   const handleSync = () => {
     startTransition(async () => {
@@ -409,15 +542,6 @@ export default function SellerDashboardPage() {
       }
   };
 
-  const handleProductImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProductImagePreview(URL.createObjectURL(file));
-    } else {
-      setProductImagePreview(null);
-    }
-  };
-
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -445,27 +569,6 @@ export default function SellerDashboardPage() {
       });
   };
 
-  const handleGenerateDescription = () => {
-    if (!productName) {
-        toast({ variant: 'destructive', title: 'Name required', description: 'Enter a product name to generate description.' });
-        return;
-    }
-    startGeneratingTransition(async () => {
-        try {
-            const result = await generateProductDescription({
-                productName,
-                category: uploadCategory || 'General',
-            });
-            if (result.description) {
-                setDescription(result.description.replace(' (AI Enhanced)', ''));
-                toast({ variant: 'success', title: 'AI Content Ready', description: 'Description generated successfully.' });
-            }
-        } catch (e) {
-            toast({ variant: 'destructive', title: 'AI Error', description: 'Failed to generate description.' });
-        }
-    });
-  };
-
   const uniqueCustomers = useMemo(() => {
       const customersMap = new Map();
       orders.forEach(order => {
@@ -485,7 +588,6 @@ export default function SellerDashboardPage() {
   if (!seller) return <div className="p-8 text-center h-screen flex items-center justify-center flex-col"><p className="text-muted-foreground">Seller profile not found.</p><Button asChild variant="outline" className="mt-4"><Link href="/">Return Home</Link></Button></div>;
 
   const totalRevenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
-  const pendingOrdersCount = orders.filter(o => o.status === 'pending' || o.status === 'ready').length;
   
   const StatCard = ({ title, value, icon: Icon, change }: { title: string, value: string | number, icon: any, change?: string }) => (
       <Card className="bg-white border-none shadow-sm rounded-2xl p-3 md:p-4 relative overflow-hidden flex flex-col justify-between group hover:shadow-md transition-all">
@@ -546,7 +648,7 @@ export default function SellerDashboardPage() {
                             checked={seller.is_open} 
                             onCheckedChange={handleToggle}
                             disabled={isPending}
-                            className="scale-75 data-[state=checked]:bg-emerald-500"
+                            className="scale-75 data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-white/20"
                         />
                     </div>
                     <div className="flex items-center gap-2">
@@ -603,6 +705,7 @@ export default function SellerDashboardPage() {
                                         checked={seller.is_open} 
                                         onCheckedChange={handleToggle}
                                         disabled={isPending}
+                                        className="data-[state=unchecked]:bg-white/20"
                                     />
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -735,111 +838,7 @@ export default function SellerDashboardPage() {
                             <p className="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-widest">Oversee your digital commodity inventory.</p>
                         </div>
                         
-                        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                            <DialogTrigger asChild>
-                                <Button className="bg-[#F5A623] hover:bg-[#E89512] text-white font-black uppercase tracking-[1.5px] text-[10px] rounded-xl px-5 h-10 border-none shadow-lg shadow-orange-500/10">
-                                    <Plus className="h-3.5 w-3.5 mr-2" /> Publish Item
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="w-[95%] max-w-[550px] p-0 overflow-hidden rounded-[28px] flex flex-col max-h-[85vh] border-none shadow-2xl">
-                                <div className="bg-primary p-5 text-primary-foreground flex-shrink-0">
-                                    <DialogHeader>
-                                        <DialogTitle className="text-lg font-black tracking-tight text-white uppercase">New Listing</DialogTitle>
-                                        <DialogDescription className="text-primary-foreground/80 text-[10px] font-medium">
-                                            Publish a product to your digital storefront.
-                                        </DialogDescription>
-                                    </DialogHeader>
-                                </div>
-                                <form action={addAction} className="flex flex-col flex-1 overflow-hidden bg-background">
-                                    <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 hide-scrollbar">
-                                        <div className="grid gap-1">
-                                            <Label htmlFor="name_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Item Name</Label>
-                                            <Input id="name_add" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. MacBook Pro M3" required className="bg-muted/30 border-2 h-10 text-sm rounded-lg" />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div className="grid gap-1">
-                                                <Label htmlFor="price_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Price (GHS)</Label>
-                                                <Input id="price_add" name="price" type="number" step="0.01" placeholder="0.00" required className="bg-muted/30 border-2 h-10 text-sm rounded-lg" />
-                                            </div>
-                                            <div className="grid gap-1">
-                                                <Label htmlFor="category_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Category</Label>
-                                                <Select name="category" required onValueChange={setUploadCategory}>
-                                                    <SelectTrigger className="bg-muted/30 border-2 h-10 text-sm rounded-lg">
-                                                        <SelectValue placeholder="Select" />
-                                                    </SelectTrigger>
-                                                    <SelectContent className="rounded-lg">
-                                                        {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-                                        <div className="grid gap-1">
-                                            <div className="flex items-center justify-between">
-                                                <Label htmlFor="description_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Description</Label>
-                                                <Button type="button" variant="outline" size="sm" className="h-6 gap-1 px-2 text-[8px] font-black uppercase rounded-full" onClick={handleGenerateDescription} disabled={isGenerating}>
-                                                    {isGenerating ? <Loader2 className="h-2 w-2 animate-spin" /> : <Sparkles className="h-2 w-2" />} AI Assistant
-                                                </Button>
-                                            </div>
-                                            <Textarea id="description_add" name="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="bg-muted/30 border-2 text-sm rounded-lg resize-none" />
-                                        </div>
-
-                                        <div className="p-4 bg-muted/20 rounded-2xl border-2 border-dashed space-y-4">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <Truck className="h-4 w-4 text-primary" />
-                                                    <Label htmlFor="offers_delivery_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Offer Delivery</Label>
-                                                </div>
-                                                <Switch 
-                                                    id="offers_delivery_add" 
-                                                    name="offers_delivery" 
-                                                    checked={offersDelivery} 
-                                                    onCheckedChange={setOffersDelivery} 
-                                                />
-                                            </div>
-
-                                            {offersDelivery && (
-                                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                    <div className="grid gap-2">
-                                                        <Label className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Pricing Model</Label>
-                                                        <RadioGroup name="delivery_price_type" value={deliveryPriceType} onValueChange={setDeliveryPriceType} className="flex gap-4">
-                                                            <div className="flex items-center space-x-2">
-                                                                <RadioGroupItem value="fixed" id="fixed_add" />
-                                                                <Label htmlFor="fixed_add" className="text-[10px] font-bold">Fixed Fee</Label>
-                                                            </div>
-                                                            <div className="flex items-center space-x-2">
-                                                                <RadioGroupItem value="location_based" id="location_based_add" />
-                                                                <Label htmlFor="location_based_add" className="text-[10px] font-bold">Location Based</Label>
-                                                            </div>
-                                                        </RadioGroup>
-                                                    </div>
-                                                    {deliveryPriceType === 'fixed' && (
-                                                        <div className="grid gap-1">
-                                                            <Label htmlFor="delivery_price_add" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Delivery Fee (GHS)</Label>
-                                                            <Input id="delivery_price_add" name="delivery_price" type="number" step="0.01" placeholder="0.00" className="bg-background border-2 h-9 text-xs rounded-lg" />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Product Media</Label>
-                                            <Input id="image_add" name="image" type="file" accept="image/*" required onChange={handleProductImageChange} className="bg-muted/30 border-2 h-10 text-[9px] rounded-lg pt-3 cursor-pointer" />
-                                            {productImagePreview && (
-                                                <div className="relative aspect-video w-full rounded-[16px] overflow-hidden border-2 bg-muted shadow-inner">
-                                                    <Image src={productImagePreview} alt="" fill className="object-contain" />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="p-5 border-t bg-background flex-shrink-0">
-                                        <Button type="submit" className="w-full h-12 text-xs font-black uppercase tracking-[1.5px] shadow-2xl shadow-primary/20 rounded-xl" disabled={isAddPending}>
-                                            {isAddPending ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : 'Confirm Listing'}
-                                        </Button>
-                                    </div>
-                                </form>
-                            </DialogContent>
-                        </Dialog>
+                        <AddProductDialog onPublishSuccess={fetchData} />
                     </div>
 
                     <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
