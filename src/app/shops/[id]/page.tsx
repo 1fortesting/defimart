@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ProductCard } from '@/components/product-card';
-import { Clock, Store, Info, Package, ImageIcon, Search, Zap, Star, LayoutGrid, Heart, ShoppingBag, ArrowRight, MapPin } from 'lucide-react';
+import { Clock, Store, Info, Package, ImageIcon, Search, Zap, Star, LayoutGrid, Heart, ShoppingBag, ArrowRight, MapPin, FileText } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
