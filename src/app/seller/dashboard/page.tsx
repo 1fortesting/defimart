@@ -488,18 +488,18 @@ export default function SellerDashboardPage() {
   const pendingOrdersCount = orders.filter(o => o.status === 'pending' || o.status === 'ready').length;
   
   const StatCard = ({ title, value, icon: Icon, change }: { title: string, value: string | number, icon: any, change?: string }) => (
-      <Card className="bg-white border-none shadow-sm rounded-2xl p-4 md:p-6 relative overflow-hidden flex flex-col justify-between group hover:shadow-md transition-all">
+      <Card className="bg-white border-none shadow-sm rounded-2xl p-3 md:p-4 relative overflow-hidden flex flex-col justify-between group hover:shadow-md transition-all">
           <div className="flex justify-between items-start">
-              <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{title}</p>
-                  <h3 className="text-2xl font-black text-foreground">{value}</h3>
+              <div className="space-y-0.5">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{title}</p>
+                  <h3 className="text-lg md:text-xl font-black text-foreground">{value}</h3>
               </div>
-              <div className="bg-primary/10 p-2.5 rounded-xl text-primary group-hover:scale-110 transition-transform">
-                  <Icon className="h-5 w-5" />
+              <div className="bg-primary/10 p-2 rounded-xl text-primary group-hover:scale-110 transition-transform">
+                  <Icon className="h-4 w-4" />
               </div>
           </div>
           {change && (
-              <p className="text-[10px] font-bold text-emerald-500 mt-2 flex items-center gap-1">
+              <p className="text-[9px] font-bold text-emerald-500 mt-2 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" /> {change}
               </p>
           )}
@@ -512,41 +512,41 @@ export default function SellerDashboardPage() {
       <Tabs defaultValue="dashboard" className="w-full flex flex-col md:flex-row h-screen overflow-hidden">
         
         {/* SIDEBAR */}
-        <aside className="hidden md:flex w-[260px] bg-primary flex-col flex-shrink-0">
-            <div className="p-8">
-                <h2 className="text-white text-2xl font-black italic uppercase tracking-tighter">Seller Hub</h2>
+        <aside className="hidden md:flex w-[240px] bg-primary flex-col flex-shrink-0">
+            <div className="p-6">
+                <h2 className="text-white text-xl font-black italic uppercase tracking-tighter">Seller Hub</h2>
             </div>
             
-            <div className="flex-1 px-4">
-                <TabsList className="flex flex-col h-auto bg-transparent gap-2 w-full">
-                    <TabsTrigger value="dashboard" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
+            <div className="flex-1 px-3">
+                <TabsList className="flex flex-col h-auto bg-transparent gap-1.5 w-full">
+                    <TabsTrigger value="dashboard" className="w-full justify-start gap-3 rounded-xl py-3 px-4 text-white/70 font-bold uppercase text-[10px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
                         <LayoutDashboard className="h-4 w-4" /> Dashboard
                     </TabsTrigger>
-                    <TabsTrigger value="products" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
+                    <TabsTrigger value="products" className="w-full justify-start gap-3 rounded-xl py-3 px-4 text-white/70 font-bold uppercase text-[10px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
                         <Box className="h-4 w-4" /> Inventory
                     </TabsTrigger>
-                    <TabsTrigger value="orders" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
+                    <TabsTrigger value="orders" className="w-full justify-start gap-3 rounded-xl py-3 px-4 text-white/70 font-bold uppercase text-[10px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
                         <ShoppingBasket className="h-4 w-4" /> Orders
                     </TabsTrigger>
-                    <TabsTrigger value="clients" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
+                    <TabsTrigger value="clients" className="w-full justify-start gap-3 rounded-xl py-3 px-4 text-white/70 font-bold uppercase text-[10px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
                         <Users className="h-4 w-4" /> Customers
                     </TabsTrigger>
-                    <TabsTrigger value="settings" className="w-full justify-start gap-4 rounded-xl py-4 px-5 text-white/70 font-bold uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
+                    <TabsTrigger value="settings" className="w-full justify-start gap-3 rounded-xl py-3 px-4 text-white/70 font-bold uppercase text-[10px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
                         <Settings className="h-4 w-4" /> Settings
                     </TabsTrigger>
                 </TabsList>
             </div>
 
-            <div className="p-4 mt-auto space-y-4">
-                <div className="bg-white/10 p-4 rounded-2xl space-y-3">
+            <div className="p-4 mt-auto space-y-3">
+                <div className="bg-white/10 p-4 rounded-2xl space-y-2">
                     <div className="flex items-center justify-between">
-                        <Label htmlFor="shop-toggle-sidebar" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer">Shop Status</Label>
+                        <Label htmlFor="shop-toggle-sidebar" className="text-[9px] font-black text-white uppercase tracking-widest cursor-pointer">Shop Status</Label>
                         <Switch 
                             id="shop-toggle-sidebar" 
                             checked={seller.is_open} 
                             onCheckedChange={handleToggle}
                             disabled={isPending}
-                            className="data-[state=checked]:bg-emerald-500"
+                            className="scale-75 data-[state=checked]:bg-emerald-500"
                         />
                     </div>
                     <div className="flex items-center gap-2">
@@ -557,9 +557,9 @@ export default function SellerDashboardPage() {
                     </div>
                 </div>
 
-                <Button asChild variant="ghost" className="w-full text-white/70 hover:text-white hover:bg-white/10 justify-start gap-4 font-bold uppercase text-[10px] tracking-widest">
+                <Button asChild variant="ghost" className="w-full text-white/70 hover:text-white hover:bg-white/10 justify-start gap-3 h-10 font-bold uppercase text-[9px] tracking-widest">
                     <Link href="/">
-                        <Home className="h-4 w-4" /> Exit to Storefront
+                        <Home className="h-4 w-4" /> Exit Store
                     </Link>
                 </Button>
             </div>
@@ -579,6 +579,9 @@ export default function SellerDashboardPage() {
                         </Button>
                     </SheetTrigger>
                     <SheetContent side="left" className="w-[260px] p-0 bg-primary border-none">
+                        <SheetHeader className="sr-only">
+                            <SheetTitle>Navigation Menu</SheetTitle>
+                        </SheetHeader>
                          <div className="p-8">
                             <h2 className="text-white text-2xl font-black italic uppercase tracking-tighter">Seller Hub</h2>
                         </div>
@@ -611,7 +614,7 @@ export default function SellerDashboardPage() {
                             </div>
                             <Button asChild variant="ghost" className="w-full text-white/70 hover:text-white hover:bg-white/10 justify-start gap-4 font-bold uppercase text-[10px] tracking-widest">
                                 <Link href="/">
-                                    <Home className="h-4 w-4" /> Exit to Storefront
+                                    <Home className="h-4 w-4" /> Exit Store
                                 </Link>
                             </Button>
                         </div>
@@ -624,68 +627,66 @@ export default function SellerDashboardPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
             
             {/* TOP UTILITY BAR */}
-            <header className="hidden md:flex h-16 bg-white border-b items-center px-8 justify-between flex-shrink-0">
-                <div className="relative w-full max-w-md group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                    <Input placeholder="Search products, orders, customers..." className="pl-10 h-10 border-none bg-muted/40 focus-visible:ring-primary/20 rounded-xl text-xs" />
+            <header className="hidden md:flex h-14 bg-white border-b items-center px-8 justify-between flex-shrink-0">
+                <div className="relative w-full max-w-sm group">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input placeholder="Search orders, inventory..." className="pl-9 h-9 border-none bg-muted/30 focus-visible:ring-primary/10 rounded-xl text-[11px]" />
                 </div>
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={handleSync} disabled={isPending} className="text-muted-foreground h-9 w-9 rounded-full">
-                        <RefreshCw className={cn("h-4 w-4", isPending && "animate-spin")} />
+                    <Button variant="ghost" size="icon" onClick={handleSync} disabled={isPending} className="text-muted-foreground h-8 w-8 rounded-full">
+                        <RefreshCw className={cn("h-3.5 w-3.5", isPending && "animate-spin")} />
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-muted-foreground h-9 w-9 rounded-full relative">
-                        <Bell className="h-4 w-4" />
-                        <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full border-2 border-white" />
+                    <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8 rounded-full relative">
+                        <Bell className="h-3.5 w-3.5" />
+                        <span className="absolute top-1.5 right-1.5 w-1 h-1 bg-red-500 rounded-full" />
                     </Button>
-                    <Separator orientation="vertical" className="h-6" />
-                    <div className="flex items-center gap-3">
+                    <Separator orientation="vertical" className="h-5" />
+                    <div className="flex items-center gap-2.5">
                          <div className="text-right">
-                            <p className="text-xs font-black text-foreground leading-none">{seller.shop_name}</p>
-                            <p className="text-[10px] text-muted-foreground leading-none mt-1">{user?.email}</p>
+                            <p className="text-[10px] font-black text-foreground leading-none">{seller.shop_name}</p>
+                            <p className="text-[9px] text-muted-foreground leading-none mt-1">{user?.email}</p>
                         </div>
-                        <Avatar className="h-8 w-8 rounded-lg border-2 border-primary/10">
+                        <Avatar className="h-7 w-7 rounded-lg border border-primary/10">
                             <AvatarImage src={user?.user_metadata?.avatar_url} />
-                            <AvatarFallback className="bg-primary/5 text-primary text-[10px] font-black">{seller.shop_name.charAt(0)}</AvatarFallback>
+                            <AvatarFallback className="bg-primary/5 text-primary text-[9px] font-black">{seller.shop_name.charAt(0)}</AvatarFallback>
                         </Avatar>
                     </div>
                 </div>
             </header>
 
-            <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8F9FA] hide-scrollbar">
+            <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-[#F8F9FA] hide-scrollbar">
                 
                 {/* DASHBOARD CONTENT */}
-                <TabsContent value="dashboard" className="m-0 space-y-8 animate-in fade-in duration-500">
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                        <StatCard title="Total Revenue" value={`GHS ${formatPrice(totalRevenue).replace('GHS ', '')}`} icon={DollarSign} change="+12.5% from last month" />
-                        <StatCard title="Products Listed" value={products.length} icon={Box} change="+2 from last week" />
-                        <StatCard title="Orders Processed" value={orders.length} icon={ShoppingBag} change="+18.2% total" />
-                        <StatCard title="Shop Status" value={seller.is_open ? 'OPEN' : 'CLOSED'} icon={seller.is_open ? Store : Clock} />
+                <TabsContent value="dashboard" className="m-0 space-y-6 animate-in fade-in duration-500">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        <StatCard title="Total Revenue" value={`GHS ${formatPrice(totalRevenue).replace('GHS ', '')}`} icon={DollarSign} change="+12.5% this month" />
+                        <StatCard title="Active Listings" value={products.length} icon={Box} change="+2 new items" />
+                        <StatCard title="Orders Processed" value={orders.length} icon={ShoppingBag} />
+                        <StatCard title="Shop Status" value={seller.is_open ? 'ONLINE' : 'OFFLINE'} icon={seller.is_open ? Store : Clock} />
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                          <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-                            <CardHeader className="bg-white border-b px-6 py-4 flex flex-row items-center justify-between">
-                                <CardTitle className="text-sm font-black uppercase tracking-widest">Recent Orders</CardTitle>
-                                <Button variant="link" className="text-primary text-[10px] font-black uppercase p-0 h-auto" onClick={() => router.push('#orders')}>See All</Button>
+                            <CardHeader className="bg-white border-b px-5 py-3 flex flex-row items-center justify-between">
+                                <CardTitle className="text-[11px] font-black uppercase tracking-widest">Recent Orders</CardTitle>
+                                <Button variant="link" className="text-primary text-[9px] font-black uppercase p-0 h-auto">View Registry</Button>
                             </CardHeader>
                             <div className="bg-white overflow-x-auto">
                                 <Table>
-                                    <TableHeader className="bg-muted/30">
+                                    <TableHeader className="bg-muted/10">
                                         <TableRow>
-                                            <TableHead className="text-[9px] font-black uppercase px-6">Order ID</TableHead>
-                                            <TableHead className="text-[9px] font-black uppercase">Product</TableHead>
-                                            <TableHead className="text-[9px] font-black uppercase">Gross</TableHead>
-                                            <TableHead className="text-[9px] font-black uppercase text-right px-6">Status</TableHead>
+                                            <TableHead className="text-[8px] font-black uppercase px-5 h-8">Registry ID</TableHead>
+                                            <TableHead className="text-[8px] font-black uppercase h-8">Commodity</TableHead>
+                                            <TableHead className="text-[8px] font-black uppercase text-right px-5 h-8">Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {orders.slice(0, 5).map(order => (
-                                            <TableRow key={order.id} className="hover:bg-muted/10">
-                                                <TableCell className="text-[11px] font-mono px-6">#{order.id.substring(0, 8)}</TableCell>
-                                                <TableCell className="text-[11px] font-bold truncate max-w-[120px]">{order.products?.name || order.vendor_products?.name}</TableCell>
-                                                <TableCell className="text-[11px] font-black">GHS {order.price_per_item * order.quantity}</TableCell>
-                                                <TableCell className="text-right px-6">
-                                                    <Badge className="text-[8px] h-4 px-1.5 uppercase font-black" variant={order.status === 'completed' ? 'default' : 'outline'}>{order.status}</Badge>
+                                            <TableRow key={order.id} className="hover:bg-muted/5 transition-colors">
+                                                <TableCell className="text-[10px] font-mono px-5 py-3">#{order.id.substring(0, 6)}</TableCell>
+                                                <TableCell className="text-[10px] font-bold truncate max-w-[100px] py-3">{order.products?.name || order.vendor_products?.name}</TableCell>
+                                                <TableCell className="text-right px-5 py-3">
+                                                    <Badge className="text-[7px] h-3.5 px-1.5 uppercase font-black" variant={order.status === 'completed' ? 'default' : 'outline'}>{order.status}</Badge>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -694,29 +695,29 @@ export default function SellerDashboardPage() {
                             </div>
                         </Card>
 
-                        <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-                             <CardHeader className="bg-white border-b px-6 py-4 flex flex-row items-center justify-between">
-                                <CardTitle className="text-sm font-black uppercase tracking-widest">Recent Activity</CardTitle>
-                                <FileText className="h-4 w-4 text-muted-foreground" />
+                        <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+                             <CardHeader className="bg-white border-b px-5 py-3 flex flex-row items-center justify-between">
+                                <CardTitle className="text-[11px] font-black uppercase tracking-widest">Market Logs</CardTitle>
+                                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
                             </CardHeader>
-                            <CardContent className="p-6 bg-white space-y-6">
+                            <CardContent className="p-5 space-y-4">
                                 {orders.length === 0 ? (
-                                    <div className="text-center py-10 opacity-50 flex flex-col items-center">
-                                        <Package className="h-10 w-10 mb-2" />
-                                        <p className="text-[10px] font-black uppercase tracking-widest">No activity yet</p>
+                                    <div className="text-center py-10 opacity-30 flex flex-col items-center">
+                                        <Package className="h-8 w-8 mb-2" />
+                                        <p className="text-[9px] font-black uppercase tracking-widest">Logs empty</p>
                                     </div>
                                 ) : (
-                                    <div className="space-y-4">
+                                    <div className="space-y-3.5">
                                         {orders.slice(0, 4).map(o => (
-                                            <div key={o.id} className="flex gap-4 items-center">
-                                                <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                                    <DollarSign className="h-4 w-4" />
+                                            <div key={o.id} className="flex gap-3 items-center">
+                                                <div className="h-7 w-7 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                                    <DollarSign className="h-3.5 w-3.5" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-[11px] font-bold truncate">New order from {o.profiles?.display_name || 'Anonymous'}</p>
-                                                    <p className="text-[9px] text-muted-foreground">Successfully processed for GHS {o.price_per_item * o.quantity}</p>
+                                                    <p className="text-[10px] font-bold truncate">Acquisition by {o.profiles?.display_name || 'Buyer'}</p>
+                                                    <p className="text-[8px] text-muted-foreground">Amount: GHS {o.price_per_item * o.quantity}</p>
                                                 </div>
-                                                <span className="text-[9px] font-bold text-muted-foreground whitespace-nowrap">{new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                <span className="text-[8px] font-bold text-muted-foreground whitespace-nowrap">{new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -730,14 +731,14 @@ export default function SellerDashboardPage() {
                 <TabsContent value="products" className="m-0 space-y-6 animate-in fade-in duration-500">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
                         <div>
-                            <h1 className="text-2xl font-black italic uppercase tracking-tighter text-foreground leading-none">Product Inventory</h1>
-                            <p className="text-xs text-muted-foreground font-medium mt-1 uppercase tracking-widest">Manage your live and draft listings.</p>
+                            <h1 className="text-xl font-black italic uppercase tracking-tighter text-foreground leading-none">Catalog Management</h1>
+                            <p className="text-[10px] text-muted-foreground font-medium mt-1 uppercase tracking-widest">Oversee your digital commodity inventory.</p>
                         </div>
                         
                         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button className="bg-[#F5A623] hover:bg-[#E89512] text-white font-black uppercase tracking-[1.5px] text-[11px] rounded-xl px-6 h-11 border-none shadow-lg shadow-orange-500/20">
-                                    <Plus className="h-4 w-4 mr-2" /> Add Product
+                                <Button className="bg-[#F5A623] hover:bg-[#E89512] text-white font-black uppercase tracking-[1.5px] text-[10px] rounded-xl px-5 h-10 border-none shadow-lg shadow-orange-500/10">
+                                    <Plus className="h-3.5 w-3.5 mr-2" /> Publish Item
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="w-[95%] max-w-[550px] p-0 overflow-hidden rounded-[28px] flex flex-col max-h-[85vh] border-none shadow-2xl">
@@ -841,49 +842,45 @@ export default function SellerDashboardPage() {
                         </Dialog>
                     </div>
 
-                    <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-                         <div className="bg-white p-4 border-b">
+                    <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+                        <div className="bg-white p-3 border-b">
                             <div className="relative w-full max-w-sm">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                                <Input placeholder="Filter products..." className="pl-9 h-9 text-xs bg-muted/40 border-none rounded-xl" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                                <Input placeholder="Refine results..." className="pl-8 h-8 text-[10px] bg-muted/30 border-none rounded-lg" />
                             </div>
                         </div>
                         <div className="bg-white overflow-x-auto">
                             <Table>
-                                <TableHeader className="bg-muted/30">
+                                <TableHeader className="bg-muted/10">
                                     <TableRow>
-                                        <TableHead className="text-[9px] font-black uppercase px-6">Product</TableHead>
-                                        <TableHead className="text-[9px] font-black uppercase">Category</TableHead>
-                                        <TableHead className="text-[9px] font-black uppercase">Price</TableHead>
-                                        <TableHead className="text-[9px] font-black uppercase">Stock</TableHead>
-                                        <TableHead className="text-[9px] font-black uppercase">Status</TableHead>
-                                        <TableHead className="text-[9px] font-black uppercase text-right px-6">Actions</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase px-5 h-8">Commodity</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase h-8">Valuation</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase h-8">Logistics</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase text-right px-5 h-8">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {products.map(p => (
-                                        <TableRow key={p.id} className="hover:bg-muted/10 transition-colors">
-                                            <TableCell className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="relative h-10 w-10 rounded-xl bg-muted overflow-hidden flex-shrink-0">
-                                                        {p.image_urls?.[0] ? <Image src={p.image_urls[0]} alt="" fill className="object-cover" /> : <ImageIcon className="p-2 text-muted-foreground/30" />}
+                                        <TableRow key={p.id} className="hover:bg-muted/5 transition-colors">
+                                            <TableCell className="px-5 py-3">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="relative h-8 w-8 rounded-lg bg-muted overflow-hidden flex-shrink-0 border">
+                                                        {p.image_urls?.[0] ? <Image src={p.image_urls[0]} alt="" fill className="object-cover" /> : <ImageIcon className="p-2 text-muted-foreground/30 h-4 w-4 mx-auto mt-1" />}
                                                     </div>
-                                                    <span className="text-[12px] font-black truncate max-w-[200px]">{p.name}</span>
+                                                    <span className="text-[11px] font-black truncate max-w-[150px]">{p.name}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-[11px] font-bold text-muted-foreground uppercase">{p.category}</TableCell>
-                                            <TableCell className="text-[12px] font-black text-foreground">GHS {p.price.toFixed(2)}</TableCell>
-                                            <TableCell className="text-[11px] font-bold text-muted-foreground uppercase">{p.quantity || 0} Units</TableCell>
+                                            <TableCell className="text-[11px] font-black text-foreground">GHS {p.price.toFixed(2)}</TableCell>
                                             <TableCell>
-                                                <Badge className="text-[8px] font-black h-4 uppercase px-1.5" variant={(p.quantity || 0) > 0 ? 'default' : 'destructive'}>
-                                                    {(p.quantity || 0) > 0 ? 'In Stock' : 'Out of Stock'}
+                                                <Badge className="text-[7px] font-black h-3.5 uppercase px-1.5" variant={(p.quantity || 0) > 0 ? 'default' : 'destructive'}>
+                                                    {(p.quantity || 0) > 0 ? 'Stocked' : 'Empty'}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="text-right px-6">
-                                                <div className="flex justify-end gap-1">
+                                            <TableCell className="text-right px-5 py-3">
+                                                <div className="flex justify-end gap-0.5">
                                                     <EditProductDialog product={p} onUpdateSuccess={fetchData} />
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleDeleteProduct(p.id)}>
-                                                        <Trash2 className="h-4 w-4" />
+                                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/5" onClick={() => handleDeleteProduct(p.id)}>
+                                                        <Trash2 className="h-3.5 w-3.5" />
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -891,7 +888,7 @@ export default function SellerDashboardPage() {
                                     ))}
                                     {products.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={6} className="text-center py-20 text-muted-foreground italic font-medium">No products listed in your shop yet.</TableCell>
+                                            <TableCell colSpan={4} className="text-center py-16 text-muted-foreground italic text-[11px]">No active commodity listings.</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>
@@ -902,38 +899,34 @@ export default function SellerDashboardPage() {
 
                 {/* ORDERS TAB */}
                 <TabsContent value="orders" className="m-0 animate-in fade-in duration-500">
-                    <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-                        <CardHeader className="bg-white border-b px-6 py-4 flex flex-row items-center justify-between">
-                            <CardTitle className="text-sm font-black uppercase tracking-widest">Active Orders</CardTitle>
+                    <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+                        <CardHeader className="bg-white border-b px-5 py-3 flex flex-row items-center justify-between">
+                            <CardTitle className="text-[11px] font-black uppercase tracking-widest">Active Order Ledger</CardTitle>
                         </CardHeader>
                         <div className="bg-white overflow-x-auto">
                             <Table>
-                                <TableHeader className="bg-muted/30">
+                                <TableHeader className="bg-muted/10">
                                     <TableRow>
-                                        <TableHead className="text-[9px] font-black uppercase px-6">Customer</TableHead>
-                                        <TableHead className="text-[9px] font-black uppercase">Product</TableHead>
-                                        <TableHead className="text-[9px] font-black uppercase">Total</TableHead>
-                                        <TableHead className="text-[9px] font-black uppercase">Status</TableHead>
-                                        <TableHead className="text-[9px] font-black uppercase text-right px-6">Action</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase px-5 h-8">Buyer</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase h-8">Item</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase h-8">Total</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase text-right px-5 h-8">Process</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {orders.map(o => (
-                                        <TableRow key={o.id}>
-                                            <TableCell className="px-6 py-4">
-                                                <p className="text-[11px] font-black">{o.profiles?.display_name}</p>
-                                                <p className="text-[9px] font-bold text-muted-foreground">{o.profiles?.phone_number}</p>
+                                        <TableRow key={o.id} className="hover:bg-muted/5 transition-colors">
+                                            <TableCell className="px-5 py-3">
+                                                <p className="text-[10px] font-black">{o.profiles?.display_name}</p>
+                                                <p className="text-[8px] font-bold text-muted-foreground">{o.profiles?.phone_number}</p>
                                             </TableCell>
-                                            <TableCell className="text-[11px] font-bold max-w-[150px] truncate">{o.products?.name || o.vendor_products?.name}</TableCell>
-                                            <TableCell className="text-[11px] font-black">GHS {o.price_per_item * o.quantity}</TableCell>
-                                            <TableCell>
-                                                <Badge className="text-[8px] font-black h-4 px-1.5 uppercase" variant={o.status === 'completed' ? 'default' : 'outline'}>{o.status}</Badge>
-                                            </TableCell>
-                                            <TableCell className="text-right px-6">
-                                                <div className="flex justify-end gap-2">
-                                                    {o.status === 'pending' && <Button size="sm" className="h-7 text-[8px] font-black uppercase px-2 rounded-lg" onClick={() => handleUpdateStatus(o.id, 'ready')}>Mark Ready</Button>}
-                                                    {o.status === 'ready' && <Button size="sm" className="h-7 text-[8px] font-black uppercase px-2 rounded-lg bg-emerald-500 text-white" onClick={() => handleUpdateStatus(o.id, 'completed')}>Complete</Button>}
-                                                    <Button variant="ghost" size="icon" className="h-7 w-7" asChild><Link href={`/admin/sales/${o.id}`}><Eye className="h-3.5 w-3.5" /></Link></Button>
+                                            <TableCell className="text-[10px] font-bold max-w-[120px] truncate">{o.products?.name || o.vendor_products?.name}</TableCell>
+                                            <TableCell className="text-[10px] font-black">GHS {o.price_per_item * o.quantity}</TableCell>
+                                            <TableCell className="text-right px-5 py-3">
+                                                <div className="flex justify-end gap-1.5">
+                                                    {o.status === 'pending' && <Button size="sm" className="h-6 text-[7px] font-black uppercase px-2 rounded-md" onClick={() => handleUpdateStatus(o.id, 'ready')}>Approve</Button>}
+                                                    {o.status === 'ready' && <Button size="sm" className="h-6 text-[7px] font-black uppercase px-2 rounded-md bg-emerald-500 text-white" onClick={() => handleUpdateStatus(o.id, 'completed')}>Finalize</Button>}
+                                                    <Button variant="ghost" size="icon" className="h-6 w-6" asChild><Link href={`/admin/sales/${o.id}`}><Eye className="h-3 w-3" /></Link></Button>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
@@ -946,71 +939,76 @@ export default function SellerDashboardPage() {
 
                 {/* CUSTOMERS TAB */}
                 <TabsContent value="clients" className="m-0 animate-in fade-in duration-500">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         {uniqueCustomers.map((cust: any) => (
-                            <Card key={cust.id} className="border-none shadow-sm rounded-3xl p-6 bg-white flex items-center gap-4 group hover:shadow-md transition-all">
-                                <Avatar className="h-12 w-12 border-2 border-primary/10">
-                                    <AvatarFallback className="bg-primary/5 text-primary font-black">{cust.name.charAt(0)}</AvatarFallback>
+                            <Card key={cust.id} className="border-none shadow-sm rounded-3xl p-4 bg-white flex items-center gap-3 group hover:shadow-md transition-all">
+                                <Avatar className="h-10 w-10 border border-primary/10">
+                                    <AvatarFallback className="bg-primary/5 text-primary font-black text-xs">{cust.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="font-black text-sm truncate uppercase tracking-tight">{cust.name}</h3>
-                                    <p className="text-[10px] font-bold text-muted-foreground">{cust.phone}</p>
-                                    <p className="text-[9px] font-black text-primary uppercase mt-1 tracking-widest">{cust.totalOrders} Purchases</p>
+                                    <h3 className="font-black text-xs truncate uppercase tracking-tight">{cust.name}</h3>
+                                    <p className="text-[9px] font-bold text-muted-foreground">{cust.phone}</p>
                                 </div>
-                                <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary transition-all" asChild>
-                                    <a href={`tel:${cust.phone}`}><Phone className="h-4 w-4" /></a>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl hover:bg-primary/10 hover:text-primary transition-all" asChild>
+                                    <a href={`tel:${cust.phone}`}><Phone className="h-3.5 w-3.5" /></a>
                                 </Button>
                             </Card>
                         ))}
+                        {uniqueCustomers.length === 0 && (
+                            <div className="col-span-full py-20 text-center text-muted-foreground opacity-30 flex flex-col items-center">
+                                <Users className="h-10 w-10 mb-2" />
+                                <p className="text-[10px] font-black uppercase tracking-widest">No customer data available</p>
+                            </div>
+                        )}
                     </div>
                 </TabsContent>
 
                 {/* SETTINGS TAB */}
                 <TabsContent value="settings" className="m-0 animate-in fade-in duration-500">
-                    <div className="max-w-2xl mx-auto space-y-6">
+                    <div className="max-w-xl mx-auto space-y-6">
                         <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
-                            <CardHeader className="bg-muted/5 border-b p-8">
-                                <CardTitle className="text-lg font-black uppercase tracking-[2px]">Storefront Identity</CardTitle>
+                            <CardHeader className="bg-muted/5 border-b p-6 md:p-8">
+                                <CardTitle className="text-sm font-black uppercase tracking-[2px]">Identity Synchronizer</CardTitle>
                             </CardHeader>
-                            <CardContent className="p-8">
+                            <CardContent className="p-6 md:p-8">
                                 <form action={handleUpdateShop} className="space-y-6">
                                     <div className="flex flex-col items-center gap-4">
                                         <div className="relative group">
-                                            <Avatar className="h-24 w-24 border-[4px] border-white shadow-xl ring-1 ring-primary/20">
+                                            <Avatar className="h-20 w-20 border-[4px] border-white shadow-xl ring-1 ring-primary/10">
                                                 <AvatarImage src={logoPreview || user?.user_metadata?.avatar_url} className="object-cover" />
-                                                <AvatarFallback className="text-3xl font-black">{seller.shop_name.charAt(0)}</AvatarFallback>
+                                                <AvatarFallback className="text-2xl font-black">{seller.shop_name.charAt(0)}</AvatarFallback>
                                             </Avatar>
                                             <Label htmlFor="logo_settings" className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
-                                                <UploadCloud className="text-white h-8 w-8" />
+                                                <UploadCloud className="text-white h-6 w-6" />
                                             </Label>
                                             <Input id="logo_settings" name="logo" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
                                         </div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Tap to change identity</p>
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Modify Identity</p>
                                     </div>
 
                                     <div className="space-y-4">
                                         <div className="grid gap-1.5">
-                                            <Label htmlFor="shop_name_s" className="font-black text-[9px] uppercase tracking-widest text-muted-foreground">Store Nomenclature</Label>
-                                            <Input id="shop_name_s" name="shop_name" defaultValue={seller.shop_name} required className="h-12 border-2 rounded-xl text-sm font-bold bg-muted/20" />
+                                            <Label htmlFor="shop_name_s" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Store Nomenclature</Label>
+                                            <Input id="shop_name_s" name="shop_name" defaultValue={seller.shop_name} required className="h-11 border-2 rounded-xl text-sm font-bold bg-muted/20" />
                                         </div>
                                         <div className="grid gap-1.5">
-                                            <Label htmlFor="desc_s" className="font-black text-[9px] uppercase tracking-widest text-muted-foreground">Business Bio</Label>
-                                            <Textarea id="desc_s" name="description" defaultValue={seller.description || ''} placeholder="Describe your shop..." className="min-h-[120px] border-2 rounded-xl text-xs bg-muted/20 resize-none" />
+                                            <Label htmlFor="desc_s" className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Business Bio</Label>
+                                            <Textarea id="desc_s" name="description" defaultValue={seller.description || ''} placeholder="Describe your shop..." className="min-h-[100px] border-2 rounded-xl text-xs bg-muted/20 resize-none" />
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="grid gap-1.5">
-                                                <Label className="font-black text-[9px] uppercase tracking-widest text-muted-foreground">Open</Label>
-                                                <Input name="open_time" type="time" defaultValue={seller.open_time || "08:00"} className="h-12 border-2 rounded-xl bg-muted/20" />
+                                                <Label className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Open</Label>
+                                                <Input name="open_time" type="time" defaultValue={seller.open_time || "08:00"} className="h-11 border-2 rounded-xl bg-muted/20 text-xs" />
                                             </div>
                                             <div className="grid gap-1.5">
-                                                <Label className="font-black text-[9px] uppercase tracking-widest text-muted-foreground">Close</Label>
-                                                <Input name="close_time" type="time" defaultValue={seller.close_time || "20:00"} className="h-12 border-2 rounded-xl bg-muted/20" />
+                                                <Label className="font-black text-[8px] uppercase tracking-widest text-muted-foreground">Close</Label>
+                                                <Input name="close_time" type="time" defaultValue={seller.close_time || "20:00"} className="h-11 border-2 rounded-xl bg-muted/20 text-xs" />
                                             </div>
                                         </div>
                                     </div>
 
-                                    <Button type="submit" className="w-full h-14 font-black uppercase tracking-[2px] rounded-xl shadow-xl shadow-primary/20" disabled={isUpdatePending}>
-                                        {isUpdatePending ? <Loader2 className="animate-spin h-5 w-5 mr-3" /> : 'Synchronize Profile'}
+                                    <Button type="submit" className="w-full h-12 text-[10px] font-black uppercase tracking-[2px] rounded-xl shadow-xl shadow-primary/10" disabled={isUpdatePending}>
+                                        {isUpdatePending ? <Loader2 className="animate-spin h-4 w-4 mr-3" /> : 'Synchronize Profile'}
                                     </Button>
                                 </form>
                             </CardContent>
