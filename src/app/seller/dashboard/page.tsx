@@ -86,18 +86,41 @@ const categories = [
 /**
  * Internal Order Detail View for Vendors
  * Provides full transparency without leaving the dashboard or accessing Admin pages.
+ * Supports hardware back button on mobile to close the dialog.
  */
 function OrderDetailsDialog({ order, trigger }: { order: any, trigger: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
     const prod = order.products || order.vendor_products;
     const isDelivery = prod?.offers_delivery;
     const finalTotal = order.price_per_item * order.quantity;
 
+    // Handle back button on mobile to close dialog instead of navigating back
+    useEffect(() => {
+        if (isOpen) {
+            window.history.pushState({ dialogOpen: true }, '');
+            
+            const handlePopState = () => {
+                setIsOpen(false);
+            };
+
+            window.addEventListener('popstate', handlePopState);
+            return () => window.removeEventListener('popstate', handlePopState);
+        }
+    }, [isOpen]);
+
+    const handleOpenChange = (open: boolean) => {
+        setIsOpen(open);
+        if (!open && window.history.state?.dialogOpen) {
+            window.history.back();
+        }
+    };
+
     return (
-        <Dialog>
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 {trigger}
             </DialogTrigger>
-            <DialogContent className="w-[95%] max-w-[650px] p-0 overflow-hidden rounded-[32px] flex flex-col max-h-[90vh] border-none shadow-2xl">
+            <DialogContent className="w-[95%] max-w-[650px] p-0 overflow-hidden rounded-[32px] flex flex-col max-h-[85vh] border-none shadow-2xl animate-in zoom-in-95 duration-200">
                 <div className="bg-primary p-6 md:p-8 text-primary-foreground flex-shrink-0 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -mr-24 -mt-24" />
                     <DialogHeader className="relative z-10">
@@ -186,7 +209,7 @@ function OrderDetailsDialog({ order, trigger }: { order: any, trigger: React.Rea
                     <Separator className="opacity-50" />
 
                     {/* Logistics & Notes */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-6">
                         <section className="space-y-4">
                              <h4 className="text-[11px] font-black uppercase tracking-[3px] text-muted-foreground font-poppins flex items-center gap-2">
                                 <MapPin className="h-3.5 w-3.5 text-primary" /> Delivery Logic
@@ -214,9 +237,9 @@ function OrderDetailsDialog({ order, trigger }: { order: any, trigger: React.Rea
                     </div>
                 </div>
 
-                <div className="p-6 border-t bg-muted/5 flex-shrink-0 flex justify-center">
-                    <Button variant="ghost" className="h-11 px-8 rounded-xl font-black text-[11px] uppercase tracking-[3px] text-muted-foreground hover:bg-muted/50" asChild>
-                        <DialogTrigger>Close Registry</DialogTrigger>
+                <div className="p-6 border-t bg-muted/5 flex-shrink-0 flex justify-center pb-8 md:pb-6">
+                    <Button onClick={() => handleOpenChange(false)} variant="ghost" className="h-11 px-10 rounded-xl font-black text-[12px] uppercase tracking-[3px] text-muted-foreground hover:bg-muted/50 border-2">
+                        Close Registry
                     </Button>
                 </div>
             </DialogContent>
@@ -1049,18 +1072,24 @@ export default function SellerDashboardPage() {
                                             const isAccepted = order.status === 'ready' || order.status === 'completed';
                                             const isDeclined = order.status === 'cancelled';
                                             return (
-                                                <TableRow key={order.id} className="hover:bg-muted/5 transition-colors border-none">
-                                                    <TableCell className="text-[12px] font-mono px-6 py-4">#{order.id.substring(0, 6)}</TableCell>
-                                                    <TableCell className="text-[13px] font-bold truncate max-w-[120px] py-4 font-inter">{order.products?.name || order.vendor_products?.name}</TableCell>
-                                                    <TableCell className="text-right px-6 py-4">
-                                                        <Badge 
-                                                            className="text-[10px] h-5 px-2 uppercase font-black tracking-widest font-poppins" 
-                                                            variant={order.status === 'completed' ? 'default' : isDeclined ? 'destructive' : isAccepted ? 'secondary' : 'outline'}
-                                                        >
-                                                            {order.status === 'ready' ? 'Process' : order.status}
-                                                        </Badge>
-                                                    </TableCell>
-                                                </TableRow>
+                                                <OrderDetailsDialog 
+                                                    key={order.id}
+                                                    order={order}
+                                                    trigger={
+                                                        <TableRow className="hover:bg-muted/5 transition-colors border-none cursor-pointer">
+                                                            <TableCell className="text-[12px] font-mono px-6 py-4">#{order.id.substring(0, 6)}</TableCell>
+                                                            <TableCell className="text-[13px] font-bold truncate max-w-[120px] py-4 font-inter">{order.products?.name || order.vendor_products?.name}</TableCell>
+                                                            <TableCell className="text-right px-6 py-4">
+                                                                <Badge 
+                                                                    className="text-[10px] h-5 px-2 uppercase font-black tracking-widest font-poppins" 
+                                                                    variant={order.status === 'completed' ? 'default' : isDeclined ? 'destructive' : isAccepted ? 'secondary' : 'outline'}
+                                                                >
+                                                                    {order.status === 'ready' ? 'Process' : order.status}
+                                                                </Badge>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    }
+                                                />
                                             );
                                         })}
                                         {orders.length === 0 && (
@@ -1087,16 +1116,22 @@ export default function SellerDashboardPage() {
                                 ) : (
                                     <div className="space-y-4">
                                         {orders.slice(0, 4).map(o => (
-                                            <div key={o.id} className="flex gap-4 items-center group">
-                                                <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
-                                                    <DollarSign className="h-4.5 w-4.5" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-[13px] font-bold truncate font-inter">Deal by {o.profiles?.display_name || 'Buyer'}</p>
-                                                    <p className="text-[11px] text-muted-foreground font-roboto">Value: GHS {(o.price_per_item * o.quantity).toFixed(2)}</p>
-                                                </div>
-                                                <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap font-roboto">{new Date(o.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
-                                            </div>
+                                            <OrderDetailsDialog 
+                                                key={o.id}
+                                                order={o}
+                                                trigger={
+                                                    <div className="flex gap-4 items-center group cursor-pointer">
+                                                        <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
+                                                            <DollarSign className="h-4.5 w-4.5" />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-[13px] font-bold truncate font-inter">Deal by {o.profiles?.display_name || 'Buyer'}</p>
+                                                            <p className="text-[11px] text-muted-foreground font-roboto">Value: GHS {(o.price_per_item * o.quantity).toFixed(2)}</p>
+                                                        </div>
+                                                        <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap font-roboto">{new Date(o.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
+                                                    </div>
+                                                }
+                                            />
                                         ))}
                                     </div>
                                 )}
