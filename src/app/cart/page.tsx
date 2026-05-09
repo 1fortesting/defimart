@@ -8,14 +8,14 @@ export default async function CartPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (user) {
-    // Explicit, redundant fetch logic to handle potential schema inconsistencies 
-    // during the rollout of delivery and discount features.
+    // Standardized cloud fetch for authenticated users.
+    // Explicitly joins with both product tables using foreign key identifiers.
     const { data: dbItems, error } = await supabase
       .from('cart_items')
       .select(`
         *, 
-        products:product_id(*), 
-        vendor_products:vendor_product_id(*)
+        products:products!cart_items_product_id_fkey(*), 
+        vendor_products:vendor_products!cart_items_vendor_product_id_fkey(*)
       `)
       .eq('user_id', user.id)
       .order('created_at');
@@ -26,7 +26,7 @@ export default async function CartPage() {
 
     return (
       <main className="flex-1 p-4 md:p-8 bg-muted/5 min-h-screen">
-        <CartClientPage user={user} initialItems={dbItems || []} />
+        <CartClientPage user={user as any} initialItems={dbItems || []} />
       </main>
     );
   }

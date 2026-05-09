@@ -9,6 +9,7 @@ import CustomerDetailsClientPage from './customer-details-client-page';
 // Define types for joined data
 export type OrderWithProduct = Tables<'orders'> & {
     products: Pick<Tables<'products'>, 'name'> | null;
+    vendor_products: Pick<Tables<'vendor_products'>, 'name'> | null;
 };
 
 export type ReviewWithProduct = Tables<'reviews'> & {
@@ -41,10 +42,10 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
     
     const userWithProfile = { ...user, ...profile };
 
-    // 2. Fetch user's orders
+    // 2. Fetch user's orders (Including Vendor items for full profile view)
     const { data: orders, error: ordersError } = await (supabaseAdmin
         .from('orders')
-        .select('*, products(name)')
+        .select('*, products(name), vendor_products:vendor_product_id(name)')
         .eq('buyer_id', id)
         .order('created_at', { ascending: false }) as any);
 
@@ -64,6 +65,12 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
     const totalReviews = reviews?.length ?? 0;
     const avgRating = totalReviews > 0 ? ((reviews as any[])?.reduce((sum: number, r: any) => sum + r.rating, 0) ?? 0) / totalReviews : 0;
 
+    // Normalize order product names for client page
+    const normalizedOrders = (orders as any[] || []).map(o => ({
+        ...o,
+        products: o.products || o.vendor_products || { name: 'Item Info Unavailable' }
+    }));
+
     const stats = {
         totalSpent,
         totalOrders,
@@ -75,7 +82,7 @@ export default async function CustomerDetailsPage({ params }: { params: Promise<
         <CustomerDetailsClientPage
             customer={userWithProfile}
             stats={stats}
-            orders={orders ?? []}
+            orders={normalizedOrders as any}
             reviews={reviews ?? []}
         />
     );

@@ -7,6 +7,7 @@ import CentralAdminDashboardClientPage from './dashboard-client-page';
 
 type OrderWithProductAndBuyer = Tables<'orders'> & {
   products: Pick<Tables<'products'>, 'name'> | null;
+  vendor_products: Pick<Tables<'vendor_products'>, 'name'> | null;
   profiles: Pick<Tables<'profiles'>, 'display_name'> | null;
 };
 
@@ -28,17 +29,15 @@ export default async function CentralAdminDashboardPage() {
     const { count: productCount } = await supabaseAdmin.from('products').select('id', { count: 'exact', head: true });
     const { count: userCount } = await supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true });
     
-    // Only count platform orders for this dashboard
+    // CEO Overview: Count ALL orders (Marketplace-wide)
     const { count: orderCount } = await supabaseAdmin
         .from('orders')
-        .select('id', { count: 'exact', head: true })
-        .not('product_id', 'is', null);
+        .select('id', { count: 'exact', head: true });
 
-    // Fetch recent platform orders only
+    // Fetch recent marketplace orders (Both Platform & Vendor)
     const { data: ordersData, error: ordersError } = await supabaseAdmin
         .from('orders')
-        .select('*, products(name), profiles:profiles!orders_buyer_id_fkey(display_name)')
-        .not('product_id', 'is', null)
+        .select('*, products(name), vendor_products:vendor_product_id(name), profiles:profiles!orders_buyer_id_fkey(display_name)')
         .order('created_at', { ascending: false })
         .limit(5)
         .returns<OrderWithProductAndBuyer[]>();
@@ -47,11 +46,16 @@ export default async function CentralAdminDashboardPage() {
         console.error("Error fetching recent orders:", ordersError.message);
     }
 
+    const normalizedOrders = (ordersData || []).map(o => ({
+        ...o,
+        products: o.products || o.vendor_products || { name: 'Item Unavailable' }
+    }));
+
     const stats = {
         productCount: productCount ?? 0,
         userCount: userCount ?? 0,
         orderCount: orderCount ?? 0,
     };
 
-    return <CentralAdminDashboardClientPage stats={stats} recentOrders={ordersData || []} />;
+    return <CentralAdminDashboardClientPage stats={stats} recentOrders={normalizedOrders as any} />;
 }
