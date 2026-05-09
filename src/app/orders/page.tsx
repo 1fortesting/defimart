@@ -8,6 +8,7 @@ import { ArrowLeft, ImageIcon, Package, Calendar } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { cn, formatPrice } from '@/lib/utils';
+import { format } from 'date-fns';
 
 type OrderWithProduct = Tables<'orders'> & {
   products: Pick<Tables<'products'>, 'name' | 'image_urls'> | null;
@@ -62,7 +63,7 @@ function MobileOrderCard({ order }: { order: OrderWithProduct }) {
                 </div>
                 <div className="bg-muted/30 px-4 py-2 flex justify-between items-center border-t border-muted/20">
                     <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-tighter font-poppins">
-                        <Calendar className="h-3 w-3" /> {new Date(order.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                        <Calendar className="h-3 w-3" /> {format(new Date(order.created_at), 'MMM d, yyyy')}
                     </div>
                     <span className="text-[9px] font-mono text-muted-foreground opacity-50 uppercase">Ref: {order.id.substring(0, 8)}</span>
                 </div>
@@ -170,7 +171,7 @@ export default async function OrdersPage() {
                                     {order.status}
                                 </Badge>
                             </TableCell>
-                            <TableCell className="text-xs text-muted-foreground font-bold text-right px-6 font-roboto uppercase">{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground font-bold text-right px-6 font-roboto uppercase">{format(new Date(order.created_at), 'MMM d, yyyy')}</TableCell>
                             </TableRow>
                         )
                         })}
