@@ -9,21 +9,36 @@ export default async function SearchPage({
 }: {
   searchParams?: { [key: string]: string | string[] | undefined };
 }) {
-  const supabase = await createClient() as any;
+  const supabase = await createClient();
   const params = await searchParams;
   const query = (params?.q as string) || '';
   
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Fetch only platform products. Vendor products are isolated in vendor_products table.
+  // Fetch only platform products
   const { data: products } = await supabase.from('products').select('*');
+  const { data: reviews } = await supabase.from('reviews').select('product_id, rating');
   
   const officialProducts = products || [];
 
-  const productsEnriched = officialProducts.map((p: any) => ({
-    ...p,
-    shop_name: 'Official Store'
-  }));
+  // Aggregate reviews
+  const reviewsByProduct = (reviews || []).reduce((acc: Record<string, number[]>, review: any) => {
+    if (!acc[review.product_id]) acc[review.product_id] = [];
+    acc[review.product_id].push(review.rating);
+    return acc;
+  }, {} as Record<string, number[]>);
+
+  const productsEnriched = officialProducts.map((p: any) => {
+    const ratings = reviewsByProduct[p.id] || [];
+    const review_count = ratings.length;
+    const average_rating = review_count > 0 ? ratings.reduce((sum, r) => sum + r, 0) / review_count : 0;
+    return {
+        ...p,
+        shop_name: 'Official Store',
+        average_rating,
+        review_count
+    };
+  });
 
   const { data: savedProducts } = user 
       ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 
@@ -37,7 +52,7 @@ export default async function SearchPage({
       <Suspense fallback={<div>Loading...</div>}>
         <SearchClientPage
           initialQuery={query}
-          allProducts={productsEnriched}
+          allProducts={productsEnriched as any}
           allCategories={allCategories}
           user={user}
           savedProductIds={Array.from(savedProductIds) as string[]}

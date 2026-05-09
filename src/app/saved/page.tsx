@@ -13,7 +13,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 type SavedProductWithDetails = Tables<'saved_products'> & {
-  products: Tables<'products'> | null;
+  products: (Tables<'products'> & { average_rating?: number, review_count?: number }) | null;
 };
 
 function SavedContent() {
@@ -33,13 +33,39 @@ function SavedContent() {
         setUser(user);
 
         if (user) {
-            // Fetch Products
+            // Fetch Products with details
             const { data: productsData } = await supabase
                 .from('saved_products')
                 .select('*, products(*)').eq('user_id', user.id)
                 .order('created_at', { ascending: false });
             
-            if (productsData) setSavedProducts(productsData as SavedProductWithDetails[]);
+            if (productsData && productsData.length > 0) {
+                // Fetch reviews for these products to show ratings in wishlist
+                const productIds = (productsData as any[]).map(p => p.product_id);
+                const { data: reviews } = await supabase.from('reviews').select('product_id, rating').in('product_id', productIds);
+                
+                const reviewsByProduct = (reviews || []).reduce((acc: Record<string, number[]>, review: any) => {
+                    if (!acc[review.product_id]) acc[review.product_id] = [];
+                    acc[review.product_id].push(review.rating);
+                    return acc;
+                }, {} as Record<string, number[]>);
+
+                const enrichedProducts = (productsData as any[]).map(item => {
+                    if (!item.products) return item;
+                    const ratings = reviewsByProduct[item.product_id] || [];
+                    const review_count = ratings.length;
+                    const average_rating = review_count > 0 ? ratings.reduce((sum, r) => sum + r, 0) / review_count : 0;
+                    return {
+                        ...item,
+                        products: {
+                            ...item.products,
+                            average_rating,
+                            review_count
+                        }
+                    };
+                });
+                setSavedProducts(enrichedProducts);
+            }
 
             // Fetch Feeds
             const { data: feedsData } = await supabase

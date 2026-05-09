@@ -11,7 +11,7 @@ const ReviewSchema = z.object({
 });
 
 export async function submitReview(prevState: any, formData: FormData) {
-    const supabase = await createClient() as any;
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -34,13 +34,14 @@ export async function submitReview(prevState: any, formData: FormData) {
     
     const { rating, comment, productId } = validatedFields.data;
 
-    // Check if user has already reviewed
+    // Check if user has already reviewed this specific ID 
+    // (IDs are unique across products and vendor_products tables)
     const { data: existingReview, error: fetchError } = await supabase
         .from('reviews')
         .select('id')
         .eq('user_id', user.id)
         .eq('product_id', productId)
-        .single();
+        .maybeSingle();
     
     let error;
 
@@ -48,7 +49,11 @@ export async function submitReview(prevState: any, formData: FormData) {
         // Update existing review
         const { error: updateError } = await supabase
             .from('reviews')
-            .update({ rating, comment: comment || null, created_at: new Date().toISOString() })
+            .update({ 
+                rating, 
+                comment: comment || null, 
+                created_at: new Date().toISOString() 
+            })
             .eq('id', existingReview.id);
         error = updateError;
     } else {
@@ -62,11 +67,11 @@ export async function submitReview(prevState: any, formData: FormData) {
         error = insertError;
     }
 
-
     if (error) {
         return { success: false, message: error.message };
     }
 
     revalidatePath(`/products/${productId}`);
+    revalidatePath('/'); // Refresh caches for rating updates
     return { success: true, message: 'Review submitted successfully!' };
 }
