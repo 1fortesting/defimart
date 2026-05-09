@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { toggleShopStatus, addSellerProduct, updateShopInfo, updateSellerProduct } from '../actions';
+import { toggleShopStatus, addSellerProduct, updateShopInfo, updateSellerProduct, deleteSellerOrder } from '../actions';
 import { updateOrderStatus } from '@/app/admin/sales/actions';
 import { useToast } from '@/hooks/use-toast';
 import { 
@@ -560,6 +560,20 @@ export default function SellerDashboardPage() {
       }
   };
 
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm('Are you sure you want to delete this order record? This action cannot be undone.')) return;
+    
+    startTransition(async () => {
+        const result = await deleteSellerOrder(orderId);
+        if (result.success) {
+            setOrders(orders.filter(o => o.id !== orderId));
+            toast({ title: 'Order Record Deleted', variant: 'success' });
+        } else {
+            toast({ title: 'Delete failed', description: result.error, variant: 'destructive' });
+        }
+    });
+  };
+
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -606,6 +620,8 @@ export default function SellerDashboardPage() {
       );
   }, [orders, globalSearch]);
 
+  const unattendedCount = useMemo(() => orders.filter(o => o.status === 'pending').length, [orders]);
+
   const uniqueCustomers = useMemo(() => {
       const customersMap = new Map();
       orders.forEach(order => {
@@ -620,6 +636,20 @@ export default function SellerDashboardPage() {
       });
       return Array.from(customersMap.values());
   }, [orders]);
+
+  const handleBellClick = () => {
+      if (unattendedCount > 0) {
+          toast({
+              title: 'Pending Action',
+              description: `You have ${unattendedCount} unattended order(s). Check the Registry.`,
+          });
+      } else {
+          toast({
+              title: 'All Clear',
+              description: 'No pending orders at the moment.',
+          });
+      }
+  };
 
   if (loading) return <div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin h-12 w-12 text-primary" /></div>;
   if (!seller) return <div className="p-8 text-center h-screen flex items-center justify-center flex-col"><p className="text-muted-foreground">Seller profile not found.</p><Button asChild variant="outline" className="mt-4"><Link href="/">Return Home</Link></Button></div>;
@@ -781,9 +811,13 @@ export default function SellerDashboardPage() {
                     <Button variant="ghost" size="icon" onClick={handleSync} disabled={isPending} className="text-muted-foreground h-8 w-8 rounded-full">
                         <RefreshCw className={cn("h-3.5 w-3.5", isPending && "animate-spin")} />
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-muted-foreground h-8 w-8 rounded-full relative">
+                    <Button onClick={handleBellClick} variant="ghost" size="icon" className="text-muted-foreground h-8 w-8 rounded-full relative">
                         <Bell className="h-3.5 w-3.5" />
-                        <span className="absolute top-1.5 right-1.5 w-1 h-1 bg-red-500 rounded-full" />
+                        {unattendedCount > 0 && (
+                            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-1 bg-red-500 text-white rounded-full text-[8px] font-black flex items-center justify-center border border-white">
+                                {unattendedCount}
+                            </span>
+                        )}
                     </Button>
                     <Separator orientation="vertical" className="h-5" />
                     <div className="flex items-center gap-2.5">
@@ -1021,7 +1055,7 @@ export default function SellerDashboardPage() {
                                                     {o.status === 'cancelled' && <Badge variant="destructive" className="text-[7px] h-3.5 px-1.5 uppercase font-black">Declined</Badge>}
                                                 </TableCell>
                                                 <TableCell className="text-right px-5 py-3">
-                                                    <div className="flex justify-end gap-1.5">
+                                                    <div className="flex justify-end gap-1">
                                                         {o.status === 'pending' && (
                                                             <div className="flex gap-1">
                                                                 <Button 
@@ -1053,6 +1087,9 @@ export default function SellerDashboardPage() {
                                                             </Button>
                                                         )}
                                                         <Button variant="ghost" size="icon" className="h-7 w-7" asChild><Link href={`/admin/sales/${o.id}`}><Eye className="h-3.5 w-3.5" /></Link></Button>
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => handleDeleteOrder(o.id)}>
+                                                            <Trash2 className="h-3.5 w-3.5" />
+                                                        </Button>
                                                     </div>
                                                 </TableCell>
                                             </TableRow>

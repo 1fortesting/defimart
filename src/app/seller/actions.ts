@@ -258,3 +258,24 @@ export async function updateShopInfo(formData: FormData) {
         return { success: false, error: err.message };
     }
 }
+
+/**
+ * Deletes an order record from the database.
+ */
+export async function deleteSellerOrder(orderId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) return { success: false, error: 'Authentication required.' };
+
+  const { error } = await supabase
+    .from('orders')
+    .delete()
+    .eq('id', orderId)
+    .eq('seller_id', user.id); // Security check
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath('/seller/dashboard');
+  return { success: true };
+}
