@@ -45,7 +45,8 @@ import {
     X,
     Calendar,
     ChevronRight,
-    User as UserIcon
+    User as UserIcon,
+    Mail
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -81,6 +82,147 @@ const categories = [
     "Groceries & Food",
     "Other"
 ];
+
+/**
+ * Internal Order Detail View for Vendors
+ * Provides full transparency without leaving the dashboard or accessing Admin pages.
+ */
+function OrderDetailsDialog({ order, trigger }: { order: any, trigger: React.ReactNode }) {
+    const prod = order.products || order.vendor_products;
+    const isDelivery = prod?.offers_delivery;
+    const finalTotal = order.price_per_item * order.quantity;
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>
+                {trigger}
+            </DialogTrigger>
+            <DialogContent className="w-[95%] max-w-[650px] p-0 overflow-hidden rounded-[32px] flex flex-col max-h-[90vh] border-none shadow-2xl">
+                <div className="bg-primary p-6 md:p-8 text-primary-foreground flex-shrink-0 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -mr-24 -mt-24" />
+                    <DialogHeader className="relative z-10">
+                        <div className="flex items-center gap-3 mb-2">
+                             <Badge className="bg-white/20 text-white border-none text-[10px] font-black uppercase tracking-widest px-3">
+                                Ref: #{order.id.substring(0, 8)}
+                             </Badge>
+                             <Badge variant={order.status === 'completed' ? 'default' : order.status === 'cancelled' ? 'destructive' : 'secondary'} className="h-5 text-[9px] font-black uppercase tracking-widest font-poppins">
+                                {order.status}
+                             </Badge>
+                        </div>
+                        <DialogTitle className="text-2xl font-black tracking-tighter text-white font-montserrat uppercase italic">Transaction Log</DialogTitle>
+                        <DialogDescription className="text-white/80 font-medium font-inter">
+                             Order initiated on {format(new Date(order.created_at), 'PPPP')}
+                        </DialogDescription>
+                    </DialogHeader>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto bg-background p-6 md:p-10 space-y-8 hide-scrollbar">
+                    {/* Buyer Identity Section */}
+                    <section className="space-y-4">
+                        <h4 className="text-[11px] font-black uppercase tracking-[3px] text-muted-foreground font-poppins">Buyer Identity</h4>
+                        <div className="flex items-center gap-6 bg-muted/20 p-6 rounded-[24px] border-2 border-white shadow-sm">
+                            <Avatar className="h-20 w-20 border-4 border-white shadow-md">
+                                <AvatarImage src={order.profiles?.avatar_url} className="object-cover" />
+                                <AvatarFallback className="bg-primary/5 text-primary text-2xl font-black font-montserrat">
+                                    {order.profiles?.display_name?.charAt(0) || 'U'}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 space-y-3">
+                                <div>
+                                    <h5 className="text-xl font-black tracking-tight font-montserrat uppercase leading-tight">{order.profiles?.display_name || 'Anonymous Buyer'}</h5>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1 font-poppins">Verified Campus Shopper</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    {order.profiles?.phone_number && (
+                                        <Button variant="outline" size="sm" className="h-9 px-4 rounded-xl border-2 font-bold font-roboto gap-2 text-xs" asChild>
+                                            <a href={`tel:${order.profiles.phone_number}`}>
+                                                <Phone className="h-3.5 w-3.5 text-primary" />
+                                                Call Buyer
+                                            </a>
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <Separator className="opacity-50" />
+
+                    {/* Commodity Details */}
+                    <section className="space-y-4">
+                         <h4 className="text-[11px] font-black uppercase tracking-[3px] text-muted-foreground font-poppins">Commodity Overview</h4>
+                         <div className="flex flex-col sm:flex-row gap-6">
+                            <div className="relative h-32 w-32 bg-muted/30 rounded-2xl overflow-hidden flex-shrink-0 border-2 border-white shadow-sm">
+                                <Image 
+                                    src={prod?.image_urls?.[0] || 'https://picsum.photos/seed/1/300/300'} 
+                                    alt="" 
+                                    fill 
+                                    className="object-contain p-2" 
+                                />
+                            </div>
+                            <div className="flex-1 space-y-4">
+                                <div>
+                                    <h6 className="text-lg font-black font-montserrat uppercase tracking-tight leading-tight">{prod?.name || 'Item Detail Missing'}</h6>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1 font-poppins">{prod?.category || 'General'}</p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest font-poppins mb-1">Unit Value</p>
+                                        <span className="text-base font-black font-roboto">GHS {order.price_per_item.toLocaleString()}</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest font-poppins mb-1">Volume</p>
+                                        <span className="text-base font-black font-roboto">{order.quantity} Units</span>
+                                    </div>
+                                </div>
+                                <div className="bg-primary/5 p-4 rounded-2xl border border-primary/10">
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest font-poppins mb-1">Total Transaction Value</p>
+                                    <span className="text-2xl font-black text-foreground font-montserrat tracking-tighter">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                </div>
+                            </div>
+                         </div>
+                    </section>
+
+                    <Separator className="opacity-50" />
+
+                    {/* Logistics & Notes */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <section className="space-y-4">
+                             <h4 className="text-[11px] font-black uppercase tracking-[3px] text-muted-foreground font-poppins flex items-center gap-2">
+                                <MapPin className="h-3.5 w-3.5 text-primary" /> Delivery Logic
+                             </h4>
+                             {order.delivery_location ? (
+                                <p className="text-sm font-black text-foreground bg-muted/30 p-4 rounded-2xl border-2 border-white italic">
+                                    {order.delivery_location}
+                                </p>
+                             ) : (
+                                <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest italic py-4">Direct Pickup Point</p>
+                             )}
+                        </section>
+                        <section className="space-y-4">
+                             <h4 className="text-[11px] font-black uppercase tracking-[3px] text-muted-foreground font-poppins flex items-center gap-2">
+                                <StickyNote className="h-3.5 w-3.5 text-amber-600" /> Buyer Instruction
+                             </h4>
+                             {order.notes ? (
+                                <p className="text-xs text-amber-800 bg-amber-50 p-4 rounded-2xl border border-amber-100 italic leading-relaxed">
+                                    &ldquo;{order.notes}&rdquo;
+                                </p>
+                             ) : (
+                                <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest italic py-4">Standard Fulfillment</p>
+                             )}
+                        </section>
+                    </div>
+                </div>
+
+                <div className="p-6 border-t bg-muted/5 flex-shrink-0 flex justify-center">
+                    <Button variant="ghost" className="h-11 px-8 rounded-xl font-black text-[11px] uppercase tracking-[3px] text-muted-foreground hover:bg-muted/50" asChild>
+                        <DialogTrigger>Close Registry</DialogTrigger>
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }) {
     const { toast } = useToast();
@@ -467,70 +609,67 @@ function SellerOrderCard({ order, onUpdateStatus, onDeleteOrder }: { order: any,
     const isDeclined = order.status === 'cancelled';
 
     return (
-        <Card className="border-none shadow-sm rounded-2xl overflow-hidden bg-white mb-4 animate-in fade-in duration-300">
-            <div className="p-4 space-y-4">
-                <div className="flex justify-between items-start gap-4">
-                    <div className="min-w-0">
-                         <div className="flex items-center gap-2 mb-2">
-                            <Badge 
-                                className="text-[9px] font-black h-5 px-2 uppercase tracking-widest font-poppins" 
-                                variant={order.status === 'completed' ? 'default' : isDeclined ? 'destructive' : isAccepted ? 'secondary' : 'outline'}
-                            >
-                                {order.status === 'ready' ? (isDelivery ? 'In Transit' : 'Accepted') : order.status}
-                            </Badge>
+        <OrderDetailsDialog 
+            order={order}
+            trigger={
+                <Card className="border-none shadow-sm rounded-2xl overflow-hidden bg-white mb-4 animate-in fade-in duration-300 cursor-pointer hover:bg-muted/5 transition-all">
+                    <div className="p-4 space-y-4">
+                        <div className="flex justify-between items-start gap-4">
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Badge 
+                                        className="text-[9px] font-black h-5 px-2 uppercase tracking-widest font-poppins" 
+                                        variant={order.status === 'completed' ? 'default' : isDeclined ? 'destructive' : isAccepted ? 'secondary' : 'outline'}
+                                    >
+                                        {order.status === 'ready' ? (isDelivery ? 'In Transit' : 'Accepted') : order.status}
+                                    </Badge>
+                                </div>
+                                <h3 className="text-[14px] font-black uppercase tracking-tight font-montserrat truncate max-w-[200px] leading-tight">
+                                    {prod?.name || 'Item Detail Missing'}
+                                </h3>
+                                <div className="flex items-center gap-2 mt-1.5 text-[11px] font-bold text-muted-foreground uppercase font-poppins tracking-tighter">
+                                    <UserIcon className="h-3 w-3" /> {order.profiles?.display_name || 'Anonymous Buyer'}
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[15px] font-black text-primary font-roboto">GHS {(order.price_per_item * order.quantity).toFixed(2)}</p>
+                                <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase font-poppins">Qty: {order.quantity}</p>
+                            </div>
                         </div>
-                        <h3 className="text-[14px] font-black uppercase tracking-tight font-montserrat truncate max-w-[200px] leading-tight">
-                            {prod?.name || 'Item Detail Missing'}
-                        </h3>
-                        <div className="flex items-center gap-2 mt-1.5 text-[11px] font-bold text-muted-foreground uppercase font-poppins tracking-tighter">
-                            <UserIcon className="h-3 w-3" /> {order.profiles?.display_name || 'Anonymous Buyer'}
-                        </div>
-                    </div>
-                    <div className="text-right">
-                         <p className="text-[15px] font-black text-primary font-roboto">GHS {(order.price_per_item * order.quantity).toFixed(2)}</p>
-                         <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase font-poppins">Qty: {order.quantity}</p>
-                    </div>
-                </div>
 
-                {order.delivery_location && (
-                    <div className="bg-primary/5 p-3 rounded-xl flex items-center gap-3 border border-primary/10">
-                        <MapPin className="h-4 w-4 text-primary shrink-0" />
-                        <span className="text-[11px] font-black uppercase tracking-tighter text-primary font-poppins truncate leading-none">{order.delivery_location}</span>
-                    </div>
-                )}
-
-                {order.notes && (
-                    <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl shadow-sm">
-                        <div className="flex items-center gap-2 mb-2 opacity-70">
-                            <StickyNote className="h-3.5 w-3.5 text-amber-800" />
-                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-900 font-poppins">Special Request</span>
-                        </div>
-                        <p className="text-[12px] text-amber-800 leading-relaxed italic font-inter">&ldquo;{order.notes}&rdquo;</p>
-                    </div>
-                )}
-
-                <div className="pt-3 border-t border-muted/20 flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex gap-2">
-                        {order.status === 'pending' && (
-                            <>
-                                <Button size="sm" className="h-9 px-5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] uppercase rounded-xl tracking-widest font-poppins" onClick={() => onUpdateStatus(order.id, 'ready')}>Accept</Button>
-                                <Button variant="outline" size="sm" className="h-9 px-5 border-2 border-destructive/20 text-destructive font-black text-[10px] uppercase rounded-xl tracking-widest font-poppins" onClick={() => onUpdateStatus(order.id, 'cancelled')}>Decline</Button>
-                            </>
+                        {order.delivery_location && (
+                            <div className="bg-primary/5 p-3 rounded-xl flex items-center gap-3 border border-primary/10">
+                                <MapPin className="h-4 w-4 text-primary shrink-0" />
+                                <span className="text-[11px] font-black uppercase tracking-tighter text-primary font-poppins truncate leading-none">{order.delivery_location}</span>
+                            </div>
                         )}
-                        {order.status === 'ready' && (
-                            <Button size="sm" className="h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase rounded-xl tracking-widest font-poppins" onClick={() => onUpdateStatus(order.id, 'completed')}>
-                                {isDelivery ? 'Delivered' : 'Completed'}
-                            </Button>
-                        )}
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all" asChild><Link href={`/admin/sales/${order.id}`}><Eye className="h-4.5 w-4.5" /></Link></Button>
+
+                        <div className="pt-3 border-t border-muted/20 flex flex-wrap items-center justify-between gap-3" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex gap-2">
+                                {order.status === 'pending' && (
+                                    <>
+                                        <Button size="sm" className="h-9 px-5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] uppercase rounded-xl tracking-widest font-poppins" onClick={() => onUpdateStatus(order.id, 'ready')}>Accept</Button>
+                                        <Button variant="outline" size="sm" className="h-9 px-5 border-2 border-destructive/20 text-destructive font-black text-[10px] uppercase rounded-xl tracking-widest font-poppins" onClick={() => onUpdateStatus(order.id, 'cancelled')}>Decline</Button>
+                                    </>
+                                )}
+                                {order.status === 'ready' && (
+                                    <Button size="sm" className="h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase rounded-xl tracking-widest font-poppins" onClick={() => onUpdateStatus(order.id, 'completed')}>
+                                        {isDelivery ? 'Mark Delivered' : 'Confirm'}
+                                    </Button>
+                                )}
+                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all">
+                                    <Eye className="h-4.5 w-4.5" />
+                                </Button>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase font-roboto">{format(new Date(order.created_at), 'MMM d, h:mm a')}</span>
+                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-destructive/40 hover:text-destructive hover:bg-destructive/5 transition-all" onClick={() => onDeleteOrder(order.id)}><Trash2 className="h-4.5 w-4.5" /></Button>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase font-roboto">{format(new Date(order.created_at), 'MMM d, h:mm a')}</span>
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-destructive/40 hover:text-destructive hover:bg-destructive/5 transition-all" onClick={() => onDeleteOrder(order.id)}><Trash2 className="h-4.5 w-4.5" /></Button>
-                    </div>
-                </div>
-            </div>
-        </Card>
+                </Card>
+            }
+        />
     );
 }
 
@@ -571,7 +710,7 @@ export default function SellerDashboardPage() {
 
             const { data: ordersData } = await supabase
               .from('orders')
-              .select('*, products:product_id(name, image_urls, offers_delivery), vendor_products:vendor_product_id(name, image_urls, offers_delivery), profiles:buyer_id(display_name, phone_number, id)')
+              .select('*, products:product_id(name, image_urls, offers_delivery), vendor_products:vendor_product_id(name, image_urls, offers_delivery), profiles:buyer_id(display_name, phone_number, id, avatar_url)')
               .eq('seller_id', user.id)
               .order('created_at', { ascending: false });
             setOrders(ordersData || []);
@@ -810,7 +949,7 @@ export default function SellerDashboardPage() {
             </div>
         </aside>
 
-        <div className="md:hidden bg-primary p-4 flex items-center justify-between shadow-lg z-50">
+        <div className="md:hidden bg-primary p-4 flex items-center justify-between shadow-lg z-50 flex-shrink-0">
              <h2 className="text-white text-xl font-black italic uppercase tracking-tighter font-montserrat">Seller Hub</h2>
              <div className="flex items-center gap-3">
                  <Button variant="ghost" size="icon" onClick={handleSync} disabled={isPending} className="text-white h-10 w-10">
@@ -1115,7 +1254,7 @@ export default function SellerDashboardPage() {
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-right px-6 py-6">
-                                                    <div className="flex justify-end gap-3">
+                                                    <div className="flex justify-end gap-3" onClick={(e) => e.stopPropagation()}>
                                                         {o.status === 'pending' && (
                                                             <div className="flex gap-2">
                                                                 <Button size="sm" className="h-10 text-[11px] font-black uppercase px-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-poppins tracking-widest" onClick={() => handleUpdateStatus(o.id, 'ready')}>Accept</Button>
@@ -1127,7 +1266,14 @@ export default function SellerDashboardPage() {
                                                                 {isDelivery ? 'Mark Delivered' : 'Confirm'}
                                                             </Button>
                                                         )}
-                                                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-all" asChild><Link href={`/admin/sales/${o.id}`}><Eye className="h-5 w-5" /></Link></Button>
+                                                        <OrderDetailsDialog 
+                                                            order={o}
+                                                            trigger={
+                                                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
+                                                                    <Eye className="h-5 w-5" />
+                                                                </Button>
+                                                            }
+                                                        />
                                                         <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive/40 hover:text-destructive hover:bg-destructive/5 rounded-xl transition-all" onClick={() => handleDeleteOrder(o.id)}>
                                                             <Trash2 className="h-5 w-5" />
                                                         </Button>
