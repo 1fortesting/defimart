@@ -30,34 +30,48 @@ export default async function VendorAnalyticsPage() {
     );
 
     // 1. Fetch all approved sellers
-    const { data: sellers } = await supabaseAdmin
+    const { data: sellersData, error: sellersError } = await supabaseAdmin
         .from('sellers' as any)
-        .select('*, profiles:user_id(avatar_url)')
+        .select('*')
         .eq('status', 'approved');
 
-    if (!sellers) return <div>No approved vendors found.</div>;
+    if (sellersError || !sellersData) {
+        console.error("Error fetching sellers:", sellersError?.message);
+        return <div className="p-8 text-center text-muted-foreground">No approved vendors found or error loading data.</div>;
+    }
 
-    // 2. Fetch all vendor products
-    const { data: products } = await supabaseAdmin
+    const sellers = sellersData as any[];
+    const userIds = sellers.map(s => s.user_id).filter(Boolean);
+
+    // 2. Fetch profiles for these sellers to get avatars
+    const { data: profilesData } = await supabaseAdmin
+        .from('profiles')
+        .select('id, avatar_url')
+        .in('id', userIds);
+
+    // 3. Fetch all vendor products
+    const { data: productsData } = await supabaseAdmin
         .from('vendor_products' as any)
         .select('*');
 
-    // 3. Fetch all completed vendor orders
-    const { data: orders } = await supabaseAdmin
+    // 4. Fetch all vendor-related orders
+    const { data: ordersData } = await supabaseAdmin
         .from('orders')
         .select('*')
         .not('vendor_product_id', 'is', null);
 
-    // 4. Aggregate data for each vendor
-    const vendorsWithPerformance: VendorWithPerformance[] = (sellers as any[]).map(seller => {
-        const sellerProducts = (products || []).filter((p: any) => p.seller_id === seller.user_id);
-        const sellerOrders = (orders || []).filter((o: any) => o.seller_id === seller.user_id);
+    // 5. Aggregate data for each vendor
+    const vendorsWithPerformance: VendorWithPerformance[] = sellers.map(seller => {
+        const profile = (profilesData || []).find(p => p.id === seller.user_id);
+        const sellerProducts = (productsData || []).filter((p: any) => p.seller_id === seller.user_id);
+        const sellerOrders = (ordersData || []).filter((o: any) => o.seller_id === seller.user_id);
         
         const completedOrders = sellerOrders.filter(o => o.status === 'completed');
         const totalRevenue = completedOrders.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
 
         return {
             ...seller,
+            profiles: profile ? { avatar_url: profile.avatar_url } : null,
             products: sellerProducts,
             metrics: {
                 totalRevenue,
