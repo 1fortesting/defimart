@@ -26,6 +26,7 @@ export default async function CheckoutPage() {
   }
 
   // Strictly database-driven checkout to ensure integrity
+  // Use explicit joins to avoid ambiguity
   const { data: cartItemsRaw, error } = await supabase
     .from('cart_items')
     .select(`
@@ -33,14 +34,16 @@ export default async function CheckoutPage() {
       quantity,
       product_id,
       vendor_product_id,
-      products:product_id(*),
-      vendor_products:vendor_product_id(*)
+      products:products!cart_items_product_id_fkey(*),
+      vendor_products:vendor_products!cart_items_vendor_product_id_fkey(*)
     `)
     .eq('user_id', user.id);
 
   const cartItems = (cartItemsRaw || []) as any as CartItemWithProduct[];
 
   if (error || !cartItems || cartItems.length === 0) {
+    if (error) console.error('Checkout Data Fetch Error:', error);
+    
     return (
         <main className="flex-1 p-4 md:p-8 flex flex-col items-center justify-center min-h-[60vh] text-center">
             <div className="bg-muted rounded-full p-6 mb-6 shadow-inner">

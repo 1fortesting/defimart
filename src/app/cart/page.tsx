@@ -9,14 +9,15 @@ export default async function CartPage() {
 
   if (user) {
     // Fetch cart items with an explicit, robust join for both platform and vendor products
+    // We use the constraint names to ensure the correct foreign key is used.
     const { data: dbItems, error } = await supabase
       .from('cart_items')
       .select(`
         *, 
-        products!cart_items_product_id_fkey(
+        products:products!cart_items_product_id_fkey(
           id, name, price, image_urls, quantity, discount_percentage, discount_end_date, offers_delivery, delivery_price_type, delivery_price
         ), 
-        vendor_products:vendor_product_id(
+        vendor_products:vendor_products!cart_items_vendor_product_id_fkey(
           id, name, price, image_urls, quantity, discount_percentage, discount_end_date, offers_delivery, delivery_price_type, delivery_price
         )
       `)
@@ -24,7 +25,7 @@ export default async function CartPage() {
       .order('created_at');
 
     if (error) {
-        console.error('Cart Fetch Error:', error);
+        console.error('Cart Fetch Error Details:', JSON.stringify(error, null, 2));
     }
 
     return (

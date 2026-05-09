@@ -1,4 +1,3 @@
-
 export type Json =
   | string
   | number
@@ -75,6 +74,8 @@ export type Database = {
           offers_delivery: boolean | null
           delivery_price_type: string | null
           delivery_price: number | null
+          discount_percentage: number | null
+          discount_end_date: string | null
         }
         Insert: {
           id?: string
@@ -91,6 +92,8 @@ export type Database = {
           offers_delivery?: boolean | null
           delivery_price_type?: string | null
           delivery_price?: number | null
+          discount_percentage?: number | null
+          discount_end_date?: string | null
         }
         Update: {
           id?: string
@@ -107,6 +110,8 @@ export type Database = {
           offers_delivery?: boolean | null
           delivery_price_type?: string | null
           delivery_price?: number | null
+          discount_percentage?: number | null
+          discount_end_date?: string | null
         }
         Relationships: [
           {
