@@ -41,19 +41,21 @@ function SavedContent() {
                 .order('created_at', { ascending: false });
             
             if (productsData && productsData.length > 0) {
-                // Fetch reviews for platform products
+                // 1. Collect all product IDs to fetch reviews in bulk
                 const platformIds = (productsData as any[]).map(p => p.product_id).filter(Boolean);
+                const vendorIds = (productsData as any[]).map(p => p.vendor_product_id).filter(Boolean);
+
+                // 2. Fetch platform reviews
                 const { data: platformReviews } = platformIds.length > 0 
                     ? await supabase.from('reviews').select('product_id, rating').in('product_id', platformIds)
                     : { data: [] };
                 
-                // Fetch reviews for vendor products
-                const vendorIds = (productsData as any[]).filter(p => !!p.vendor_products).map(p => p.vendor_product_id || p.product_id).filter(Boolean);
-                
+                // 3. Fetch vendor reviews
                 const { data: vendorReviews } = vendorIds.length > 0 
                     ? await supabase.from('vendor_reviews' as any).select('vendor_product_id, rating').in('vendor_product_id', vendorIds)
                     : { data: [] };
 
+                // 4. Map reviews to dictionaries for easy lookup
                 const reviewsByProduct = (platformReviews || []).reduce((acc: Record<string, number[]>, review: any) => {
                     if (!acc[review.product_id]) acc[review.product_id] = [];
                     acc[review.product_id].push(review.rating);
@@ -66,6 +68,7 @@ function SavedContent() {
                     return acc;
                 }, {} as Record<string, number[]>);
 
+                // 5. Enrich the saved products with calculated ratings
                 const enrichedProducts = (productsData as any[]).map(item => {
                     if (item.products) {
                         const ratings = reviewsByProduct[item.product_id] || [];
@@ -74,7 +77,7 @@ function SavedContent() {
                         return { ...item, products: { ...item.products, average_rating, review_count } };
                     }
                     if (item.vendor_products) {
-                        const vId = item.vendor_product_id || item.product_id;
+                        const vId = item.vendor_product_id;
                         const ratings = vendorReviewsByProduct[vId] || [];
                         const review_count = ratings.length;
                         const average_rating = review_count > 0 ? ratings.reduce((sum, r) => sum + r, 0) / review_count : 0;
@@ -117,7 +120,7 @@ function SavedContent() {
   }, []);
   
   const handleUnsaveProduct = (productId: string) => {
-    setSavedProducts(currentItems => currentItems.filter(item => item.product_id !== productId));
+    setSavedProducts(currentItems => currentItems.filter(item => item.product_id !== productId && item.vendor_product_id !== productId));
   };
 
   const handleUnsaveFeed = (feedId: string) => {
@@ -140,7 +143,10 @@ function SavedContent() {
     );
   }
   
-  const savedProductIds = new Set(savedProducts.map(item => item.product_id));
+  const savedIdsSet = new Set([
+      ...savedProducts.map(item => item.product_id),
+      ...savedProducts.map(item => item.vendor_product_id)
+  ].filter(Boolean));
 
   return (
       <main className="flex-1 min-h-screen pb-20">
@@ -173,13 +179,14 @@ function SavedContent() {
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
                   {savedProducts.map((item) => {
                     const productData = item.products || item.vendor_products;
+                    const pId = item.product_id || item.vendor_product_id;
                     return productData ? (
                       <ProductCard 
                         key={item.id} 
                         product={productData} 
                         user={user} 
                         isVendor={!!item.vendor_products}
-                        isSaved={savedProductIds.has(item.product_id)} 
+                        isSaved={savedIdsSet.has(pId)} 
                         onUnsave={handleUnsaveProduct}
                       />
                     ) : null;

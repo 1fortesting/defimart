@@ -60,9 +60,16 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     const isSaved = !!savedProducts;
 
     // Fetch reviews associated with this product ID from the correct table
+    // We use a robust select that joins with profiles
     const { data: reviewsData } = await supabase
         .from(reviewsTable as any)
-        .select('*, profiles(display_name, avatar_url)')
+        .select(`
+            *,
+            profiles:user_id (
+                display_name,
+                avatar_url
+            )
+        `)
         .eq(reviewForeignKey, id)
         .order('created_at', { ascending: false });
     

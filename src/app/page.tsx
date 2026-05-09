@@ -19,7 +19,10 @@ export default async function Home() {
 
   // Fetch only platform-managed products
   const { data: productsData } = await supabase.from('products').select('*');
-  const { data: reviews } = await supabase.from('reviews').select('product_id, rating');
+  
+  // Fetch reviews from both tables for accurate aggregation
+  const { data: platformReviews } = await supabase.from('reviews').select('product_id, rating');
+  const { data: vendorReviews } = await supabase.from('vendor_reviews' as any).select('vendor_product_id, rating');
   
   const { data: savedProducts } = user 
       ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id) 
@@ -28,10 +31,9 @@ export default async function Home() {
 
   const allProducts = productsData || [];
 
-  const reviewsByProduct = (reviews || []).reduce((acc: Record<string, number[]>, review: any) => {
-    if (!acc[review.product_id]) {
-        acc[review.product_id] = [];
-    }
+  // Unified review map
+  const reviewsByProduct = (platformReviews || []).reduce((acc: Record<string, number[]>, review: any) => {
+    if (!acc[review.product_id]) acc[review.product_id] = [];
     acc[review.product_id].push(review.rating);
     return acc;
   }, {} as Record<string, number[]>);
@@ -164,6 +166,6 @@ export default async function Home() {
                 </div>
             </section>
         </div>
-      </main>
+    </main>
   );
 }

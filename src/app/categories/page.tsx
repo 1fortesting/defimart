@@ -8,19 +8,20 @@ import { Suspense } from 'react';
 export default async function CategoriesPage() {
     const supabase = await createClient();
 
-    // Fetch platform products and reviews
+    // Fetch platform products
     const { data: productsData } = await supabase
         .from('products')
         .select('*')
         .order('created_at', { ascending: false });
 
-    // Fetch reviews from both tables
-    const { data: reviews } = await supabase.from('reviews').select('product_id, rating');
+    // Fetch reviews from both tables for full coverage
+    const { data: platformReviews } = await supabase.from('reviews').select('product_id, rating');
+    const { data: vendorReviews } = await supabase.from('vendor_reviews' as any).select('vendor_product_id, rating');
 
     const rawProducts = productsData || [];
 
-    // Aggregate reviews
-    const reviewsByProduct = (reviews || []).reduce((acc: Record<string, number[]>, review: any) => {
+    // Unified review map
+    const reviewsByProduct = (platformReviews || []).reduce((acc: Record<string, number[]>, review: any) => {
         if (!acc[review.product_id]) acc[review.product_id] = [];
         acc[review.product_id].push(review.rating);
         return acc;

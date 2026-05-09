@@ -15,7 +15,7 @@ export default async function SearchPage({
   
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Fetch platform products and reviews
+  // Fetch platform products
   const { data: products } = await supabase.from('products').select('*');
   
   // Fetch reviews from both tables for full coverage
@@ -24,10 +24,18 @@ export default async function SearchPage({
   
   const officialProducts = products || [];
 
-  // Map reviews for official products
+  // Unified review map
   const reviewsByProduct = (platformReviews || []).reduce((acc: Record<string, number[]>, review: any) => {
     if (!acc[review.product_id]) acc[review.product_id] = [];
     acc[review.product_id].push(review.rating);
+    return acc;
+  }, {} as Record<string, number[]>);
+
+  // We should also map vendor reviews even though this page currently focuses on official products
+  // To future-proof search results
+  const vendorReviewsMap = (vendorReviews || []).reduce((acc: Record<string, number[]>, review: any) => {
+    if (!acc[review.vendor_product_id]) acc[review.vendor_product_id] = [];
+    acc[review.vendor_product_id].push(review.rating);
     return acc;
   }, {} as Record<string, number[]>);
 
