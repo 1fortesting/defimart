@@ -18,7 +18,6 @@ export default async function Home() {
   } = await supabase.auth.getUser();
 
   // Fetch only platform-managed products
-  // Vendor products live in vendor_products and are excluded by querying the 'products' table directly
   const { data: productsData } = await supabase.from('products').select('*');
   const { data: reviews } = await supabase.from('reviews').select('product_id, rating');
   
@@ -83,7 +82,10 @@ export default async function Home() {
   const categoriesData = categoriesToShow.map((category, index) => ({
       title: category,
       category: category,
-      products: productsByCategory[category].slice(0, 10),
+      products: productsByCategory[category].slice(0, 10).map(p => {
+          const ratings = reviewsByProduct[p.id] || [];
+          return { ...p, average_rating: ratings.length > 0 ? ratings.reduce((s,r) => s+r,0)/ratings.length : 0, review_count: ratings.length };
+      }),
       color: categoryColors[index % categoryColors.length]
   }));
 
@@ -110,10 +112,10 @@ export default async function Home() {
             <RecommendedForYouSection />
             
             <HomePageContent 
-                products={shuffledProducts} 
+                products={shuffledProducts as any} 
                 user={user} 
                 savedProductIds={savedProductIds}
-                categoriesData={categoriesData}
+                categoriesData={categoriesData as any}
             />
 
             <section className="bg-white dark:bg-slate-900 rounded-2xl p-8 md:p-12 my-16 shadow-lg border border-border overflow-hidden relative">

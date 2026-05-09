@@ -44,7 +44,7 @@ export default async function ShopProfilePage({ params }: { params: Promise<{ id
       : { data: null };
     const savedProductIds = new Set((savedProducts as any[])?.map((p: any) => p.product_id) || []);
 
-    // Fetch all reviews to calculate ratings for the products
+    // Fetch all reviews for this vendor's products
     const productIds = products.map((p: any) => p.id);
     const { data: reviews } = productIds.length > 0 
         ? await supabase.from('reviews').select('product_id, rating').in('product_id', productIds)

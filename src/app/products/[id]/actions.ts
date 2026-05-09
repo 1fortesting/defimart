@@ -35,8 +35,7 @@ export async function submitReview(prevState: any, formData: FormData) {
     const { rating, comment, productId } = validatedFields.data;
 
     // Check if user has already reviewed this specific ID 
-    // (IDs are unique across products and vendor_products tables)
-    const { data: existingReview, error: fetchError } = await supabase
+    const { data: existingReview } = await supabase
         .from('reviews')
         .select('id')
         .eq('user_id', user.id)
@@ -68,10 +67,14 @@ export async function submitReview(prevState: any, formData: FormData) {
     }
 
     if (error) {
-        return { success: false, message: error.message };
+        console.error('Review DB Error:', error);
+        return { success: false, message: 'Could not save review. Please try again.' };
     }
 
     revalidatePath(`/products/${productId}`);
-    revalidatePath('/'); // Refresh caches for rating updates
-    return { success: true, message: 'Review submitted successfully!' };
+    revalidatePath('/'); 
+    revalidatePath('/shops');
+    revalidatePath('/search');
+    
+    return { success: true, message: 'Feedback posted!' };
 }
