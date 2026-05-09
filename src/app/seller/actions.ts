@@ -2,7 +2,63 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { sendSms } from '@/lib/sendSms';
+
+/**
+ * Registers a new vendor application.
+ */
+export async function registerSeller(prevState: any, formData: FormData) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, error: 'You must be logged in to register.' };
+  }
+
+  const full_name = formData.get('full_name') as string;
+  const shop_name = formData.get('shop_name') as string;
+  const phone_number = formData.get('phone_number') as string;
+  const email = formData.get('email') as string;
+
+  if (!full_name || !shop_name || !phone_number || !email) {
+    return { success: false, error: 'All fields are required.' };
+  }
+
+  // Check if seller already exists
+  const { data: existingSeller } = await supabase
+    .from('sellers' as any)
+    .select('id')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (existingSeller) {
+    return { success: false, error: 'You have already submitted an application.' };
+  }
+
+  const { error } = await supabase
+    .from('sellers' as any)
+    .insert({
+      user_id: user.id,
+      full_name,
+      shop_name,
+      phone_number,
+      email,
+      status: 'pending',
+      is_open: false,
+      open_time: '08:00',
+      close_time: '20:00'
+    });
+
+  if (error) {
+    console.error('Registration Error:', error);
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/seller/dashboard');
+  revalidatePath('/admin/sellers');
+  redirect('/seller/dashboard');
+}
 
 /**
  * Robust sequential product upload pipeline with comprehensive logging.
