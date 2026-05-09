@@ -1,3 +1,4 @@
+
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -16,6 +17,7 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
     const file = formData.get('image') as File;
     const name = formData.get('name') as string;
     const price = Number(formData.get('price'));
+    const quantity = parseInt(formData.get('quantity') as string, 10) || 1;
     const description = formData.get('description') as string;
     const category = formData.get('category') as string;
     const customCategory = formData.get('custom_category') as string;
@@ -70,7 +72,7 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
         image_urls: [imageUrl],
         seller_id: user.id,
         is_approved: true,
-        quantity: 1,
+        quantity: quantity,
         tags: [],
         offers_delivery,
         delivery_price_type,
@@ -103,6 +105,7 @@ export async function updateSellerProduct(prevState: any, formData: FormData) {
     const file = formData.get('image') as File | null;
     const name = formData.get('name') as string;
     const price = Number(formData.get('price'));
+    const quantity = parseInt(formData.get('quantity') as string, 10) || 0;
     const description = formData.get('description') as string;
     const category = formData.get('category') as string;
     const customCategory = formData.get('custom_category') as string;
@@ -124,6 +127,7 @@ export async function updateSellerProduct(prevState: any, formData: FormData) {
       name,
       description: description || '',
       price,
+      quantity: quantity,
       category: finalCategory || 'Other',
       offers_delivery,
       delivery_price_type,

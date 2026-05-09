@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useTransition, useActionState, useCallback, useMemo } from 'react';
@@ -38,7 +39,8 @@ import {
     Bell,
     DollarSign,
     Box,
-    ShoppingBasket
+    ShoppingBasket,
+    MapPin
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -154,12 +156,16 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                             <Label htmlFor="name_add" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Item Name</Label>
                             <Input id="name_add" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. MacBook Pro M3" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="grid gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="grid gap-2 col-span-1">
                                 <Label htmlFor="price_add" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Price (GHS)</Label>
                                 <Input id="price_add" name="price" type="number" step="0.01" placeholder="0.00" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
                             </div>
-                            <div className="grid gap-2">
+                            <div className="grid gap-2 col-span-1">
+                                <Label htmlFor="quantity_add" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Stock Units</Label>
+                                <Input id="quantity_add" name="quantity" type="number" min="0" placeholder="1" defaultValue="1" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
+                            </div>
+                            <div className="grid gap-2 col-span-1">
                                 <Label htmlFor="category_add" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Category</Label>
                                 <Select name="category" required onValueChange={setUploadCategory}>
                                     <SelectTrigger className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl">
@@ -321,10 +327,14 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                             <Input id="name" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="price" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Selling Price (GHS)</Label>
+                                <Label htmlFor="price" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Price (GHS)</Label>
                                 <Input id="price" name="price" type="number" step="0.01" defaultValue={product.price} required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="quantity" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Units In Stock</Label>
+                                <Input id="quantity" name="quantity" type="number" min="0" defaultValue={product.quantity || 1} required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="category" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Category</Label>
@@ -614,7 +624,7 @@ export default function SellerDashboardPage() {
   // CRITICAL: Financials only count COMPLETED orders
   const totalRevenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
   
-  const StatCard = ({ title, value, icon: Icon, change }: { title: string, value: string | number, icon: any, change?: string }) => (
+  const StatCard = ({ title, value, icon: Icon, subText }: { title: string, value: string | number, icon: any, subText?: string }) => (
       <Card className="bg-white border-none shadow-sm rounded-2xl p-3 md:p-4 relative overflow-hidden flex flex-col justify-between group hover:shadow-md transition-all">
           <div className="flex justify-between items-start">
               <div className="space-y-0.5">
@@ -625,9 +635,9 @@ export default function SellerDashboardPage() {
                   <Icon className="h-4 w-4" />
               </div>
           </div>
-          {change && (
-              <p className="text-[9px] font-bold text-emerald-500 mt-2 flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3" /> {change}
+          {subText && (
+              <p className="text-[9px] font-bold text-muted-foreground mt-2 flex items-center gap-1">
+                  {subText}
               </p>
           )}
       </Card>
@@ -684,7 +694,7 @@ export default function SellerDashboardPage() {
                     </div>
                 </div>
 
-                <Button asChild variant="destructive" className="w-full justify-start gap-3 h-10 font-bold uppercase text-[9px] tracking-widest shadow-lg shadow-red-900/20">
+                <Button asChild variant="destructive" className="w-full justify-start gap-3 h-10 font-bold uppercase text-[9px] tracking-widest shadow-lg shadow-red-900/20 bg-red-600 hover:bg-red-700">
                     <Link href="/">
                         <Home className="h-4 w-4" /> Exit Store
                     </Link>
@@ -740,7 +750,7 @@ export default function SellerDashboardPage() {
                                     </span>
                                 </div>
                             </div>
-                            <Button asChild variant="destructive" className="w-full justify-start gap-4 h-12 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-red-900/40">
+                            <Button asChild variant="destructive" className="w-full justify-start gap-4 h-12 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-red-900/40 bg-red-600">
                                 <Link href="/">
                                     <Home className="h-4 w-4" /> Exit Store
                                 </Link>
@@ -792,8 +802,8 @@ export default function SellerDashboardPage() {
                 {/* DASHBOARD CONTENT */}
                 <TabsContent value="dashboard" className="m-0 space-y-6 animate-in fade-in duration-500">
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <StatCard title="Total Revenue" value={`GHS ${formatPrice(totalRevenue).replace('GHS ', '')}`} icon={DollarSign} change="+12.5% this month" />
-                        <StatCard title="Active Listings" value={products.length} icon={Box} change="+2 new items" />
+                        <StatCard title="Total Revenue" value={`GHS ${formatPrice(totalRevenue).replace('GHS ', '')}`} icon={DollarSign} subText="Life-time earnings" />
+                        <StatCard title="Active Listings" value={products.length} icon={Box} subText="Live on marketplace" />
                         <StatCard title="Orders Processed" value={orders.length} icon={ShoppingBag} />
                         <StatCard title="Shop Status" value={seller.is_open ? 'ONLINE' : 'OFFLINE'} icon={seller.is_open ? Store : Clock} />
                     </div>
@@ -889,7 +899,7 @@ export default function SellerDashboardPage() {
                                     <TableRow>
                                         <TableHead className="text-[8px] font-black uppercase px-5 h-8">Commodity</TableHead>
                                         <TableHead className="text-[8px] font-black uppercase h-8">Valuation</TableHead>
-                                        <TableHead className="text-[8px] font-black uppercase h-8">Logistics</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase h-8">Stock Level</TableHead>
                                         <TableHead className="text-[8px] font-black uppercase text-right px-5 h-8">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -906,9 +916,12 @@ export default function SellerDashboardPage() {
                                             </TableCell>
                                             <TableCell className="text-[11px] font-black text-foreground">GHS {p.price.toFixed(2)}</TableCell>
                                             <TableCell>
-                                                <Badge className="text-[7px] font-black h-3.5 uppercase px-1.5" variant={(p.quantity || 0) > 0 ? 'default' : 'destructive'}>
-                                                    {(p.quantity || 0) > 0 ? 'Stocked' : 'Empty'}
-                                                </Badge>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="text-[11px] font-bold">{p.quantity || 0} Units</span>
+                                                    <Badge className="text-[6px] font-black h-3 uppercase px-1 w-fit" variant={(p.quantity || 0) > 0 ? 'secondary' : 'destructive'}>
+                                                        {(p.quantity || 0) > 0 ? 'Active' : 'Out of Stock'}
+                                                    </Badge>
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-right px-5 py-3">
                                                 <div className="flex justify-end gap-0.5">
@@ -950,7 +963,7 @@ export default function SellerDashboardPage() {
                             <Table>
                                 <TableHeader className="bg-muted/10">
                                     <TableRow>
-                                        <TableHead className="text-[8px] font-black uppercase px-5 h-8">Buyer</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase px-5 h-8">Buyer & Location</TableHead>
                                         <TableHead className="text-[8px] font-black uppercase h-8">Item</TableHead>
                                         <TableHead className="text-[8px] font-black uppercase h-8">Total</TableHead>
                                         <TableHead className="text-[8px] font-black uppercase text-right px-5 h-8">Process</TableHead>
@@ -960,15 +973,24 @@ export default function SellerDashboardPage() {
                                     {filteredOrders.map(o => (
                                         <TableRow key={o.id} className="hover:bg-muted/5 transition-colors">
                                             <TableCell className="px-5 py-3">
-                                                <p className="text-[10px] font-black">{o.profiles?.display_name}</p>
-                                                <p className="text-[8px] font-bold text-muted-foreground">{o.profiles?.phone_number}</p>
+                                                <div className="space-y-1">
+                                                    <div>
+                                                        <p className="text-[10px] font-black leading-none">{o.profiles?.display_name}</p>
+                                                        <p className="text-[8px] font-bold text-muted-foreground mt-0.5">{o.profiles?.phone_number}</p>
+                                                    </div>
+                                                    {o.delivery_location && (
+                                                        <div className="flex items-center gap-1 text-[8px] font-black text-primary bg-primary/5 px-1.5 py-0.5 rounded-md w-fit uppercase tracking-tighter">
+                                                            <MapPin className="h-2.5 w-2.5" /> {o.delivery_location}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </TableCell>
                                             <TableCell className="text-[10px] font-bold max-w-[120px] truncate">{o.products?.name || o.vendor_products?.name}</TableCell>
                                             <TableCell className="text-[10px] font-black">GHS {o.price_per_item * o.quantity}</TableCell>
                                             <TableCell className="text-right px-5 py-3">
                                                 <div className="flex justify-end gap-1.5">
                                                     {o.status === 'pending' && <Button size="sm" className="h-6 text-[7px] font-black uppercase px-2 rounded-md" onClick={() => handleUpdateStatus(o.id, 'ready')}>Approve</Button>}
-                                                    {o.status === 'ready' && <Button size="sm" className="h-6 text-[7px] font-black uppercase px-2 rounded-md bg-emerald-500 text-white" onClick={() => handleUpdateStatus(o.id, 'completed')}>Finalize</Button>}
+                                                    {o.status === 'ready' && <Button size="sm" className="h-6 text-[7px] font-black uppercase px-2 rounded-md bg-emerald-500 text-white hover:bg-emerald-600" onClick={() => handleUpdateStatus(o.id, 'completed')}>Finalize</Button>}
                                                     <Button variant="ghost" size="icon" className="h-6 w-6" asChild><Link href={`/admin/sales/${o.id}`}><Eye className="h-3 w-3" /></Link></Button>
                                                 </div>
                                             </TableCell>
