@@ -187,12 +187,21 @@ export async function placeOrder(formData: FormData) {
         };
     });
 
-    const { error: orderError } = await supabase.from('orders').insert(newOrders);
+    const { data: insertedOrders, error: orderError } = await supabase.from('orders').insert(newOrders).select('id');
 
     if (orderError) return redirect(`/checkout?error=${orderError.message}`);
 
-    // Notify Vendors
-    const sendVendorNotifications = async () => {
+    // --- Notifications ---
+    const sendOrderNotifications = async () => {
+        // 1. Notify Buyer
+        const { data: profile } = await supabase.from('profiles').select('phone_number, display_name').eq('id', user.id).single();
+        if (profile?.phone_number) {
+            const orderCount = newOrders.length;
+            const message = `DEFIMART: Order received! 🛒 We've logged ${orderCount} item(s) in your request. Track status in your profile. Thank you for shopping with us, ${profile.display_name}!`;
+            await sendSms({ phoneNumber: profile.phone_number, message });
+        }
+
+        // 2. Notify Vendors
         const uniqueSellerIds = Array.from(new Set(newOrders.map(o => o.seller_id)));
         for (const sellerId of uniqueSellerIds) {
             const { data: seller } = await supabase.from('sellers').select('phone_number').eq('user_id', sellerId).single();
@@ -204,7 +213,8 @@ export async function placeOrder(formData: FormData) {
             }
         }
     };
-    sendVendorNotifications().catch(console.error);
+    
+    sendOrderNotifications().catch(console.error);
 
     await supabase.from('cart_items').delete().eq('user_id', user.id);
     

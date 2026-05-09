@@ -4,12 +4,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tables } from '@/types/supabase';
 import { AuthPrompt } from '@/components/auth-prompt';
-import { ArrowLeft, ArrowDown } from 'lucide-react';
+import { ArrowLeft, ArrowDown, ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 type OrderWithProduct = Tables<'orders'> & {
-  products: Pick<Tables<'products'>, 'name' | 'image_urls'> | null
+  products: Pick<Tables<'products'>, 'name' | 'image_urls'> | null;
+  vendor_products: Pick<Tables<'vendor_products'>, 'name' | 'image_urls'> | null;
 };
 
 export default async function OrdersPage() {
@@ -26,7 +27,7 @@ export default async function OrdersPage() {
 
   const { data: orders, error } = await supabase
     .from('orders')
-    .select('*, products(name, image_urls)')
+    .select('*, products(name, image_urls), vendor_products:vendor_product_id(name, image_urls)')
     .eq('buyer_id', user.id)
     .order('created_at', { ascending: false })
     .returns<OrderWithProduct[]>();
@@ -45,67 +46,86 @@ export default async function OrdersPage() {
                 </Link>
             </div>
             <h1 className="text-3xl font-bold mb-8">My Orders</h1>
-            <Card>
+            <Card className="rounded-2xl shadow-xl border-none overflow-hidden bg-background">
             <CardContent className="p-0">
                 <Table>
-                <TableHeader>
+                <TableHeader className="bg-muted/50">
                     <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Total Price</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date</TableHead>
+                    <TableHead className="font-bold">Product</TableHead>
+                    <TableHead className="font-bold">Quantity</TableHead>
+                    <TableHead className="font-bold">Total Price</TableHead>
+                    <TableHead className="font-bold">Status</TableHead>
+                    <TableHead className="font-bold">Date</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {orders?.map((order) => {
+                    const product = order.products || order.vendor_products;
                     const wasDiscounted = order.original_price_per_item > order.price_per_item;
                     const originalTotal = order.original_price_per_item * order.quantity;
                     const finalTotal = order.price_per_item * order.quantity;
                     const discountPercentage = wasDiscounted ? ((originalTotal - finalTotal) / originalTotal) * 100 : 0;
+                    const imageUrl = product?.image_urls?.[0];
 
                     return (
-                        <TableRow key={order.id}>
+                        <TableRow key={order.id} className="hover:bg-muted/5 transition-colors">
                         <TableCell>
                             <div className="flex items-center gap-4">
-                            <Image
-                                src={order.products?.image_urls?.[0] || 'https://picsum.photos/seed/1/64/64'}
-                                alt={order.products?.name || 'Product Image'}
-                                width={64}
-                                height={64}
-                                className="rounded-md object-cover hidden sm:block"
-                                />
-                            <span>{order.products?.name}</span>
+                            <div className="relative h-14 w-14 bg-muted rounded-xl flex items-center justify-center overflow-hidden border flex-shrink-0">
+                                {imageUrl ? (
+                                    <Image
+                                        src={imageUrl}
+                                        alt={product?.name || 'Product'}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <ImageIcon className="h-6 w-6 text-muted-foreground/30" />
+                                )}
+                            </div>
+                            <span className="font-bold text-sm md:text-base">{product?.name || 'Item Information Unavailable'}</span>
                             </div>
                         </TableCell>
-                        <TableCell>{order.quantity}</TableCell>
+                        <TableCell className="font-medium">{order.quantity}</TableCell>
                         <TableCell>
                             {wasDiscounted ? (
                             <div className="flex flex-col">
-                                <span className="text-muted-foreground line-through">GHS {originalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                <span className="text-[10px] text-muted-foreground line-through">GHS {originalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 <div className="flex items-center gap-2">
-                                    <span className="font-bold">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    <span className="font-black text-foreground">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     {discountPercentage > 0 &&
-                                        <Badge variant="destructive" className="flex items-center gap-1">
-                                            <ArrowDown className="h-3 w-3" /> {discountPercentage.toFixed(0)}%
+                                        <Badge variant="destructive" className="h-4 px-1 text-[8px] font-black uppercase">
+                                            -{discountPercentage.toFixed(0)}%
                                         </Badge>
                                     }
                                 </div>
                             </div>
                             ) : (
-                            <span className="font-bold">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span className="font-black text-foreground">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             )}
                         </TableCell>
                         <TableCell>
-                            <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : order.status === 'cancelled' ? 'destructive' : 'outline'}>{order.status}</Badge>
+                            <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : order.status === 'cancelled' ? 'destructive' : 'outline'} className="capitalize font-bold">
+                                {order.status}
+                            </Badge>
                         </TableCell>
-                        <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground font-medium">{new Date(order.created_at).toLocaleDateString()}</TableCell>
                         </TableRow>
                     )
                     })}
                     {(!orders || orders.length === 0) && (
                     <TableRow>
-                        <TableCell colSpan={5} className="text-center py-12">You have no orders yet.</TableCell>
+                        <TableCell colSpan={5} className="text-center py-20">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="bg-muted p-4 rounded-full">
+                                    <ImageIcon className="h-10 w-10 text-muted-foreground/40" />
+                                </div>
+                                <p className="text-muted-foreground font-bold">You have no orders yet.</p>
+                                <Button asChild variant="outline" size="sm" className="rounded-xl">
+                                    <Link href="/">Discover Products</Link>
+                                </Button>
+                            </div>
+                        </TableCell>
                     </TableRow>
                     )}
                 </TableBody>

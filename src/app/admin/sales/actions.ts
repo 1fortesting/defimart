@@ -17,7 +17,7 @@ export async function updateOrderStatus(formData: FormData) {
 
     const { data: order, error: fetchError } = await supabase
         .from('orders')
-        .select('*, products(name), vendor_products:vendor_product_id(name), profiles:buyer_id(phone_number)')
+        .select('*, products(name), vendor_products:vendor_product_id(name), profiles:buyer_id(phone_number, display_name)')
         .eq('id', orderId)
         .single();
 
@@ -65,31 +65,29 @@ export async function updateOrderStatus(formData: FormData) {
 
     // --- Notifications to Buyer ---
     const buyerPhoneNumber = order.profiles?.phone_number;
+    const buyerName = order.profiles?.display_name || 'Customer';
     const productName = order.products?.name || order.vendor_products?.name || 'Your order';
     const pickupDate = getPickupDateString();
 
-    if (newStatus === 'ready' && oldStatus !== 'ready') {
-        if (buyerPhoneNumber) {
-            const message = `DEFIMART: Order #${order.id.substring(0, 8)} for '${productName}' is ready! Pick it up on ${pickupDate}. Payment on pickup. Thank you!`;
-            await sendSms({ phoneNumber: buyerPhoneNumber, message });
-        }
-    }
+    if (buyerPhoneNumber) {
+        let message = '';
+        const orderShortId = order.id.substring(0, 8);
 
-    if (newStatus === 'completed' && oldStatus !== 'completed') {
-        if (buyerPhoneNumber) {
-            const message = `DEFIMART: Order #${order.id.substring(0, 8)} is now complete! Thank you for shopping with us. We hope to see you again soon!`;
-            await sendSms({ phoneNumber: buyerPhoneNumber, message });
+        if (newStatus === 'ready' && oldStatus !== 'ready') {
+            message = `DEFIMART: Hi ${buyerName}, your order #${orderShortId} for '${productName}' is ready! 📦 Pick it up on ${pickupDate}. Payment is required on collection. Thank you!`;
+        } else if (newStatus === 'completed' && oldStatus !== 'completed') {
+            message = `DEFIMART: Order #${orderShortId} is now complete! ✅ Thank you for shopping with us, ${buyerName}. We hope you enjoy your purchase!`;
+        } else if (newStatus === 'cancelled' && oldStatus !== 'cancelled') {
+            message = `DEFIMART: Order #${orderShortId} for '${productName}' has been cancelled. ❌ If you didn't request this, please contact support immediately.`;
         }
-    }
-    
-    if (newStatus === 'cancelled' && oldStatus !== 'cancelled') {
-        if (buyerPhoneNumber) {
-            const message = `DEFIMART: Order #${order.id.substring(0, 8)} for '${productName}' has been cancelled. Please contact the vendor if you have any questions.`;
+
+        if (message) {
             await sendSms({ phoneNumber: buyerPhoneNumber, message });
         }
     }
 
     revalidatePath('/admin/sales/orders');
     revalidatePath('/seller/dashboard');
+    revalidatePath('/orders');
     return { success: true };
 }
