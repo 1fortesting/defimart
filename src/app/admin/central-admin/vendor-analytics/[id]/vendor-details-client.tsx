@@ -19,12 +19,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatPrice } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
 import { 
     Breadcrumb, 
     BreadcrumbItem, 
