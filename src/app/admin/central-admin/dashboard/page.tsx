@@ -27,12 +27,18 @@ export default async function CentralAdminDashboardPage() {
     // Fetch counts using service role to bypass RLS
     const { count: productCount } = await supabaseAdmin.from('products').select('id', { count: 'exact', head: true });
     const { count: userCount } = await supabaseAdmin.from('profiles').select('id', { count: 'exact', head: true });
-    const { count: orderCount } = await supabaseAdmin.from('orders').select('id', { count: 'exact', head: true });
+    
+    // Only count platform orders for this dashboard
+    const { count: orderCount } = await supabaseAdmin
+        .from('orders')
+        .select('id', { count: 'exact', head: true })
+        .not('product_id', 'is', null);
 
-    // Fetch recent orders
+    // Fetch recent platform orders only
     const { data: ordersData, error: ordersError } = await supabaseAdmin
         .from('orders')
         .select('*, products(name), profiles:profiles!orders_buyer_id_fkey(display_name)')
+        .not('product_id', 'is', null)
         .order('created_at', { ascending: false })
         .limit(5)
         .returns<OrderWithProductAndBuyer[]>();

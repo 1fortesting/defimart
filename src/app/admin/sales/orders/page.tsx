@@ -29,9 +29,11 @@ export default async function AdminSalesOrdersPage() {
         }
     );
 
+    // CRITICAL: Filter to only show platform orders (product_id is NOT NULL)
     const { data: orders, error } = await supabaseAdmin
         .from('orders')
         .select('*, products(name, image_urls), profiles:profiles!orders_buyer_id_fkey(id, display_name, phone_number)')
+        .not('product_id', 'is', null)
         .order('created_at', { ascending: false })
         .returns<OrderWithDetails[]>();
 

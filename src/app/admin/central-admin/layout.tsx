@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, Package, Users, LineChart, Menu, LogOut, DoorOpen, Star, TrendingUp, MessageSquare, Bell, Newspaper, Store } from 'lucide-react';
+import { Home, Package, Users, LineChart, Menu, LogOut, DoorOpen, Star, TrendingUp, MessageSquare, Bell, Newspaper, Store, BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
@@ -21,7 +21,8 @@ const navLinks = [
     { href: "/admin/central-admin/profit", text: "Profit", icon: TrendingUp },
     { href: "/admin/central-admin/product-performance", text: "Performance", icon: Package },
     { href: "/admin/central-admin/reviews", text: "Reviews", icon: Star },
-    { href: "/admin/sellers", text: "Vendors", icon: Store },
+    { href: "/admin/central-admin/vendor-analytics", text: "Vendor Analytics", icon: BarChart3 },
+    { href: "/admin/sellers", text: "Vendor Approval", icon: Store },
     { href: "/admin/central-admin/customers", text: "Customers", icon: Users },
     { href: "/admin/central-admin/customer-messaging", text: "Messaging", icon: MessageSquare },
     { href: "/admin/central-admin/notifications", text: "Push Alerts", icon: Bell },
