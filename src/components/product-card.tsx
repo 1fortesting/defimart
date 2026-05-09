@@ -3,8 +3,6 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import Link from 'next/link';
-import { Tables } from '@/types/supabase';
 import { Heart, ShoppingCart, Star, Share2, Copy, Check, MessageCircle, Facebook, ImageIcon, ArrowDown } from 'lucide-react';
 import { cn, formatPrice } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
@@ -23,7 +21,7 @@ import {
 import { Badge } from './ui/badge';
 
 type ProductCardProps = {
-  product: any; // Using any to support both products and vendor_products tables
+  product: any;
   user: any; 
   isSaved: boolean;
   isVendor?: boolean;
@@ -77,7 +75,6 @@ export function ProductCard({ product, user, isSaved, isVendor = false, onUnsave
         e.preventDefault();
         e.stopPropagation();
 
-        // 1. Instant UI Feedback (0ms delay)
         toast({
             title: 'Added to Cart',
             description: `${product.name} added successfully!`,
@@ -109,7 +106,6 @@ export function ProductCard({ product, user, isSaved, isVendor = false, onUnsave
             console.error('Local cart update failed', e);
         }
         
-        // 2. Silent Backend Sync (Non-blocking)
         if (user) {
             startTransition(async () => {
                 const formData = new FormData();
@@ -177,109 +173,109 @@ export function ProductCard({ product, user, isSaved, isVendor = false, onUnsave
     const displayDescription = product.description?.replace(' (AI Enhanced)', '') || (product.category || 'General');
 
     return (
-    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-gradient-to-br from-primary/[0.01] via-background to-blue-500/[0.01] border border-[var(--border)] shadow-sm hover:shadow-lg hover:shadow-[var(--gold)]/5 flex flex-col relative h-full cursor-pointer" onClick={() => window.location.href = `/products/${product.id}`}>
-        <div className="absolute -top-16 -left-16 w-48 h-48 bg-primary/[0.03] rounded-full blur-3xl transition-all duration-700 opacity-20 group-hover:opacity-40 group-hover:scale-125 z-0" />
-        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-blue-500/[0.01] rounded-full blur-3xl transition-all duration-700 opacity-20 group-hover:opacity-40 group-hover:scale-125 z-0" />
+    <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-white border border-border shadow-sm hover:shadow-xl hover:shadow-primary/5 flex flex-col relative h-full cursor-pointer rounded-2xl" onClick={() => window.location.href = `/products/${product.id}`}>
+        <div className="absolute -top-16 -left-16 w-48 h-48 bg-primary/5 rounded-full blur-3xl transition-all duration-700 opacity-20 group-hover:opacity-40 group-hover:scale-125 z-0" />
         
         {product.is_featured && (
-            <div className="absolute top-2.5 right-2.5 z-20 bg-yellow-400 text-white rounded-full p-2 shadow-md">
-                <Star className="h-4.5 w-4.5 fill-current" />
+            <div className="absolute top-3 right-3 z-20 bg-primary text-white rounded-full p-2 shadow-lg scale-90 group-hover:scale-100 transition-transform">
+                <Star className="h-4 w-4 fill-current" />
             </div>
         )}
 
         <div className="relative z-10 flex flex-col h-full">
-            <div className="p-4">
-                <div className="block relative aspect-square overflow-hidden rounded-2xl bg-primary/[0.01]">
+            <div className="p-3">
+                <div className="block relative aspect-square overflow-hidden rounded-xl bg-muted/30">
                     {hasImage ? (
                         <Image
                             src={product.image_urls![0]}
                             alt={product.name}
                             fill
-                            className="object-contain p-3 group-hover:scale-110 transition-transform duration-500 drop-shadow-sm rounded-2xl"
+                            className="object-contain p-4 group-hover:scale-110 transition-transform duration-700 drop-shadow-md rounded-xl"
                         />
                     ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/30">
-                            <ImageIcon className="h-14 w-14 mb-2" />
-                            <span className="text-[11px] font-black uppercase tracking-widest">No Image</span>
+                            <ImageIcon className="h-12 w-12 mb-2" />
+                            <span className="text-[10px] font-black uppercase tracking-widest font-poppins">No Image</span>
                         </div>
                     )}
                 </div>
             </div>
             
-            <div className="p-5 pt-0 flex flex-col justify-between flex-grow">
+            <div className="p-4 pt-0 flex flex-col justify-between flex-grow">
                 <div>
-                    <h3 className="font-syne font-bold text-[15px] md:text-lg leading-tight text-[var(--dark)] mb-1.5 group-hover:text-primary transition-colors">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                        <Badge variant="outline" className="text-[9px] font-black uppercase tracking-tighter h-5 px-2 bg-muted/50 border-muted">
+                            {isVendor ? 'Vendor' : 'Official'}
+                        </Badge>
+                        {isDiscountActive && <Badge className="text-[9px] font-black h-5 px-2 bg-red-500 text-white border-none animate-pulse">Save {product.discount_percentage}%</Badge>}
+                    </div>
+                    <h3 className="font-montserrat font-bold text-[14px] md:text-[16px] leading-tight text-foreground mb-1 group-hover:text-primary transition-colors line-clamp-2 h-10">
                         {product.name}
                     </h3>
-                     <div className="text-xs md:text-sm text-[var(--muted)] font-dm line-clamp-2 h-9 overflow-hidden mb-3">
-                        {displayDescription}
-                    </div>
-                    <div className="flex items-center gap-2 mb-4">
-                        <StarRating rating={product.average_rating || 0} size={15} showText={false} />
-                        {product.review_count !== undefined && product.review_count > 0 && <span className="text-xs text-[var(--muted)]">({product.review_count})</span>}
+                    <div className="flex items-center gap-2 mb-3">
+                        <StarRating rating={product.average_rating || 0} size={12} showText={false} />
+                        {product.review_count !== undefined && product.review_count > 0 && <span className="text-[10px] font-bold text-muted-foreground font-roboto">({product.review_count})</span>}
                     </div>
                 </div>
                 
                 <div className="flex items-center justify-between mt-auto">
                      <div className="text-left flex flex-col">
                         {isDiscountActive && (
-                            <p className="text-[11px] text-red-500/70 font-bold line-through">GHS {formatPrice(product.price)}</p>
+                            <p className="text-[10px] text-muted-foreground/60 font-bold line-through font-roboto">GHS {formatPrice(product.price).replace('GHS ', '')}</p>
                         )}
-                        <p className="font-syne font-bold text-lg md:text-xl text-[var(--dark)]">GHS {formatPrice(discountedPrice)}</p>
+                        <p className="font-montserrat font-black text-lg md:text-xl text-foreground tracking-tighter">
+                            <span className="text-xs font-bold mr-0.5">GHS</span>{formatPrice(discountedPrice).replace('GHS ', '')}
+                        </p>
                     </div>
                     
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1">
                         <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="h-9 w-9 rounded-full text-[var(--muted)] hover:text-[var(--gold)] hover:bg-[var(--gold)]/10" 
+                            className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10" 
                             onClick={handleShare}
-                            aria-label="Share product"
                         >
-                            <Share2 className="h-4.5 w-4.5" />
+                            <Share2 className="h-4 w-4" />
                         </Button>
 
                         <Sheet open={showShareFallback} onOpenChange={setShowShareFallback}>
-                            <SheetContent side="bottom" className="rounded-t-3xl border-t-0 p-0 overflow-hidden bg-gradient-to-b from-[var(--gold)] to-blue-500 z-[150]">
-                                <div className="w-12 h-2 bg-white/30 rounded-full mx-auto mt-4 mb-2" />
-                                <SheetHeader className="px-6 py-5 border-b border-white/10">
-                                    <SheetTitle className="text-left text-sm font-syne font-black uppercase tracking-widest text-white">Share with friends</SheetTitle>
-                                </SheetHeader>
+                            <SheetContent side="bottom" className="rounded-t-[32px] border-none p-0 overflow-hidden bg-background shadow-2xl z-[250]">
+                                <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mt-4 mb-2" />
                                 <div className="p-8 grid grid-cols-3 gap-6">
                                     <button onClick={shareWhatsApp} className="flex flex-col items-center gap-3 group">
-                                        <div className="h-16 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
-                                            <MessageCircle className="h-8 w-8" />
+                                        <div className="h-14 w-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-all shadow-sm">
+                                            <MessageCircle className="h-6 w-6" />
                                         </div>
-                                        <span className="text-xs font-bold font-dm uppercase tracking-tighter text-white/90">WhatsApp</span>
+                                        <span className="text-[10px] font-black font-poppins uppercase tracking-widest">WhatsApp</span>
                                     </button>
                                     <button onClick={shareFacebook} className="flex flex-col items-center gap-3 group">
-                                        <div className="h-16 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
-                                            <Facebook className="h-8 w-8" />
+                                        <div className="h-14 w-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+                                            <Facebook className="h-6 w-6" />
                                         </div>
-                                        <span className="text-xs font-bold font-dm uppercase tracking-tighter text-white/90">Facebook</span>
+                                        <span className="text-[10px] font-black font-poppins uppercase tracking-widest">Facebook</span>
                                     </button>
                                     <button onClick={handleCopyLink} className="flex flex-col items-center gap-3 group">
-                                        <div className="h-16 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
-                                            {isCopied ? <Check className="h-8 w-8" /> : <Copy className="h-8 w-8" />}
+                                        <div className="h-14 w-14 bg-muted text-foreground rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
+                                            {isCopied ? <Check className="h-6 w-6" /> : <Copy className="h-6 w-6" />}
                                         </div>
-                                        <span className="text-xs font-bold font-dm uppercase tracking-tighter text-white/90">{isCopied ? 'Copied!' : 'Copy Link'}</span>
+                                        <span className="text-[10px] font-black font-poppins uppercase tracking-widest">{isCopied ? 'Copied' : 'Link'}</span>
                                     </button>
                                 </div>
                             </SheetContent>
                         </Sheet>
 
-                        <Button onClick={handleToggleSave} size="icon" variant="ghost" className="h-9 w-9 rounded-full text-[var(--muted)] hover:text-[var(--gold)] hover:bg-[var(--gold)]/10" aria-label="Save for later">
-                            <Heart className={cn("h-4.5 w-4.5", isSavedState && "fill-[var(--gold)] text-[var(--gold)]")} />
+                        <Button onClick={handleToggleSave} size="icon" variant="ghost" className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10">
+                            <Heart className={cn("h-4 w-4 transition-all", isSavedState && "fill-primary text-primary")} />
                         </Button>
                     </div>
                 </div>
                 <Button 
                     onClick={handleAddToCart}
                     disabled={product.quantity === 0} 
-                    className="w-full mt-5 h-12 bg-gradient-to-r from-[var(--gold)] to-orange-600 hover:from-orange-600 hover:to-red-600 text-white font-black uppercase tracking-widest transition-all duration-500 shadow-lg shadow-[var(--gold)]/20 border-none"
+                    className="w-full mt-4 h-11 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[11px] rounded-xl shadow-lg shadow-primary/20 border-none font-poppins"
                 >
-                    <ShoppingCart className="mr-2 h-5 w-5" />
-                    {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    {product.quantity === 0 ? 'Out of Stock' : 'Add to Bag'}
                 </Button>
             </div>
         </div>

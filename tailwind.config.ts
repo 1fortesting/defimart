@@ -10,9 +10,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
-        code: ['monospace'],
+        sans: ['var(--font-body)', 'Inter', 'sans-serif'],
+        montserrat: ['var(--font-heading)', 'Montserrat', 'sans-serif'],
+        inter: ['var(--font-body)', 'Inter', 'sans-serif'],
+        poppins: ['var(--font-ui)', 'Poppins', 'sans-serif'],
+        roboto: ['var(--font-data)', 'Roboto', 'sans-serif'],
+        syne: ['Montserrat', 'sans-serif'], // Montserrat works well as a Syne alternative for italics
+        dm: ['Inter', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',

@@ -28,16 +28,13 @@ interface HomePageContentProps {
 export function HomePageContent({ products, user, savedProductIds, categoriesData }: HomePageContentProps) {
     const [selectedCategory, setSelectedCategory] = useState('All');
     
-    // Dynamically derive top categories from the database (via products)
     const dynamicCategories = useMemo(() => {
         const counts: Record<string, number> = {};
         products.forEach(p => {
             if (p.category) {
-                // Use the exact case from the DB
                 counts[p.category] = (counts[p.category] || 0) + 1;
             }
         });
-        // Sort by frequency and take top 5
         const sorted = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
         return ['All', ...sorted.slice(0, 5)];
     }, [products]);
@@ -68,7 +65,7 @@ export function HomePageContent({ products, user, savedProductIds, categoriesDat
     const section3 = gridProducts.slice(productsPerSection * 2);
 
     const renderGrid = (items: ProductWithRating[]) => (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-6 my-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 my-6">
             {items.map((product) => (
                 <ProductCard 
                     key={product.id} 
@@ -83,25 +80,23 @@ export function HomePageContent({ products, user, savedProductIds, categoriesDat
 
     return (
         <div className="container mx-auto max-w-7xl pt-6 px-4 pb-12 bg-transparent min-h-screen">
-            {/* Header */}
             <div className="flex justify-between items-center mb-6">
-                <h1 className="font-syne font-[700] text-[var(--dark)] text-2xl md:text-3xl">Discover Products</h1>
-                <Link href="/search" className="text-[var(--gold)] text-[13px] md:text-sm font-[600] font-dm hover:underline">
-                    See all →
+                <h1 className="font-montserrat font-black text-foreground text-2xl md:text-3xl uppercase tracking-tighter italic">Discover Commodities</h1>
+                <Link href="/search" className="text-primary text-xs md:text-sm font-black uppercase tracking-widest hover:underline font-poppins">
+                    See all items →
                 </Link>
             </div>
 
-            {/* Dynamic Filter Chips */}
             <div className="flex gap-2 overflow-x-auto hide-scrollbar mb-8 -mx-1 px-1">
                 {dynamicCategories.map((cat) => (
                     <button
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
                         className={cn(
-                            "px-5 py-2.5 rounded-full text-[13px] font-dm transition-all whitespace-nowrap shadow-sm",
+                            "px-6 py-2.5 rounded-full text-[12px] font-poppins transition-all whitespace-nowrap shadow-sm border-2 uppercase tracking-widest font-black",
                             selectedCategory === cat 
-                                ? "bg-[var(--gold)] text-white font-[600]" 
-                                : "bg-[var(--surface)] text-[var(--muted)] font-[500] border border-[var(--border)]"
+                                ? "bg-primary text-white border-primary" 
+                                : "bg-white text-muted-foreground border-border hover:border-primary/30"
                         )}
                     >
                         {cat}
@@ -109,9 +104,8 @@ export function HomePageContent({ products, user, savedProductIds, categoriesDat
                 ))}
             </div>
 
-            {/* Featured Section (Only for 'All') */}
             {selectedCategory === 'All' && featuredProduct && (
-                <div className="mb-8">
+                <div className="mb-10">
                     <FeaturedProductCard 
                         product={featuredProduct}
                         isSaved={localSavedIds.has(featuredProduct.id)}
@@ -120,7 +114,6 @@ export function HomePageContent({ products, user, savedProductIds, categoriesDat
                 </div>
             )}
 
-            {/* Grid Sections with Category Rows Interleaved (Only for 'All') */}
             {selectedCategory === 'All' ? (
                 <>
                     {renderGrid(section1)}
@@ -135,20 +128,19 @@ export function HomePageContent({ products, user, savedProductIds, categoriesDat
                     {gridProducts.length > 0 ? (
                         renderGrid(gridProducts)
                     ) : (
-                        <div className="flex flex-col items-center justify-center py-20 text-center">
-                            <p className="text-[var(--muted)] font-dm text-lg">No products found in {selectedCategory}</p>
+                        <div className="flex flex-col items-center justify-center py-24 text-center bg-white/50 rounded-[40px] border-4 border-dashed">
+                            <p className="text-muted-foreground font-poppins font-bold uppercase tracking-widest">No listings in {selectedCategory}</p>
                             <button 
                                 onClick={() => setSelectedCategory('All')}
-                                className="mt-4 text-[var(--gold)] font-bold hover:underline"
+                                className="mt-4 text-primary font-black uppercase tracking-widest text-xs hover:underline"
                             >
-                                Clear filters
+                                Reset protocol
                             </button>
                         </div>
                     )}
                 </div>
             )}
 
-            {/* Bottom Spacer for Nav (Mobile only) */}
             <div className="h-[80px] md:hidden" />
         </div>
     );

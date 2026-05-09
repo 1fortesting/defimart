@@ -139,15 +139,15 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-[#F5A623] hover:bg-[#E89512] text-white font-black uppercase tracking-[1.5px] text-xs rounded-xl px-5 h-11 border-none shadow-lg shadow-orange-500/10">
+                <Button className="bg-[#F5A623] hover:bg-[#E89512] text-white font-black uppercase tracking-[1.5px] text-xs rounded-xl px-5 h-11 border-none shadow-lg shadow-orange-500/10 font-poppins">
                     <Plus className="h-4 w-4 mr-2" /> Publish Item
                 </Button>
             </DialogTrigger>
             <DialogContent className="w-[95%] max-w-[650px] p-0 overflow-hidden rounded-[32px] flex flex-col max-h-[90vh] border-none shadow-2xl">
                 <div className="bg-primary p-6 text-primary-foreground flex-shrink-0">
                     <DialogHeader>
-                        <DialogTitle className="text-xl font-black tracking-tight text-white uppercase">New Listing</DialogTitle>
-                        <DialogDescription className="text-primary-foreground/90 text-sm font-medium">
+                        <DialogTitle className="text-xl font-black tracking-tight text-white uppercase font-montserrat">New Listing</DialogTitle>
+                        <DialogDescription className="text-primary-foreground/90 text-sm font-medium font-inter">
                             Publish a product to your digital storefront.
                         </DialogDescription>
                     </DialogHeader>
@@ -155,25 +155,25 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                 <form action={action} className="flex flex-col flex-1 overflow-hidden bg-background">
                     <div className="flex-1 overflow-y-auto px-6 md:px-10 py-6 space-y-6 hide-scrollbar">
                         <div className="grid gap-2">
-                            <Label htmlFor="name_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Item Name</Label>
-                            <Input id="name_add" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. MacBook Pro M3" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
+                            <Label htmlFor="name_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Item Name</Label>
+                            <Input id="name_add" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. MacBook Pro M3" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-inter" />
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="grid gap-2 col-span-1">
-                                <Label htmlFor="price_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Price (GHS)</Label>
-                                <Input id="price_add" name="price" type="number" step="0.01" placeholder="0.00" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
+                                <Label htmlFor="price_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Price (GHS)</Label>
+                                <Input id="price_add" name="price" type="number" step="0.01" placeholder="0.00" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-roboto" />
                             </div>
                             <div className="grid gap-2 col-span-1">
-                                <Label htmlFor="quantity_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Stock Units</Label>
-                                <Input id="quantity_add" name="quantity" type="number" min="0" placeholder="1" defaultValue="1" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
+                                <Label htmlFor="quantity_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Stock Units</Label>
+                                <Input id="quantity_add" name="quantity" type="number" min="0" placeholder="1" defaultValue="1" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-roboto" />
                             </div>
                             <div className="grid gap-2 col-span-1">
-                                <Label htmlFor="category_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Category</Label>
+                                <Label htmlFor="category_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Category</Label>
                                 <Select name="category" required onValueChange={setUploadCategory}>
-                                    <SelectTrigger className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl">
+                                    <SelectTrigger className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-inter">
                                         <SelectValue placeholder="Select" />
                                     </SelectTrigger>
-                                    <SelectContent className="rounded-xl">
+                                    <SelectContent className="rounded-xl font-inter">
                                         {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
@@ -181,21 +181,21 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                         </div>
                         <div className="grid gap-2">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="description_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Description</Label>
-                                <Button type="button" variant="outline" size="sm" className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase rounded-full border-primary/20 text-primary" onClick={handleGenerateDescription} disabled={isGenerating}>
+                                <Label htmlFor="description_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Description</Label>
+                                <Button type="button" variant="outline" size="sm" className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase rounded-full border-primary/20 text-primary font-poppins" onClick={handleGenerateDescription} disabled={isGenerating}>
                                     {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} AI Assistant
                                 </Button>
                             </div>
-                            <Textarea id="description_add" name="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="bg-muted/30 border-2 text-sm md:text-base rounded-xl resize-none" />
+                            <Textarea id="description_add" name="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="bg-muted/30 border-2 text-sm md:text-base rounded-xl resize-none font-inter" />
                         </div>
 
                         <div className="p-5 md:p-6 bg-muted/20 rounded-2xl border-2 border-dashed space-y-5">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="bg-primary/10 p-2 rounded-lg">
-                                        <Truck className="h-5 w-5 text-primary" />
+                                    <div className="bg-primary/10 p-2 rounded-lg text-primary">
+                                        <Truck className="h-5 w-5" />
                                     </div>
-                                    <Label htmlFor="offers_delivery_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Offer Delivery</Label>
+                                    <Label htmlFor="offers_delivery_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Offer Delivery</Label>
                                 </div>
                                 <Switch 
                                     id="offers_delivery_add" 
@@ -209,13 +209,13 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                             {offersDelivery && (
                                 <div className="space-y-5 animate-in fade-in slide-in-from-top-2 duration-300 border-t border-muted pt-5">
                                     <div className="grid gap-3">
-                                        <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground">Pricing Model</Label>
+                                        <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Pricing Model</Label>
                                         <RadioGroup name="delivery_price_type" value={deliveryPriceType} onValueChange={setDeliveryPriceType} className="flex flex-col sm:flex-row gap-4">
-                                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl border-2 flex-1 cursor-pointer hover:border-primary/30 transition-all">
+                                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl border-2 flex-1 cursor-pointer hover:border-primary/30 transition-all font-inter">
                                                 <RadioGroupItem value="fixed" id="fixed_add" />
                                                 <Label htmlFor="fixed_add" className="text-sm font-bold cursor-pointer">Fixed Fee</Label>
                                             </div>
-                                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl border-2 flex-1 cursor-pointer hover:border-primary/30 transition-all">
+                                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl border-2 flex-1 cursor-pointer hover:border-primary/30 transition-all font-inter">
                                                 <RadioGroupItem value="location_based" id="location_based_add" />
                                                 <Label htmlFor="location_based_add" className="text-sm font-bold cursor-pointer">Location Based</Label>
                                             </div>
@@ -223,8 +223,8 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                                     </div>
                                     {deliveryPriceType === 'fixed' && (
                                         <div className="grid gap-2">
-                                            <Label htmlFor="delivery_price_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Delivery Fee (GHS)</Label>
-                                            <Input id="delivery_price_add" name="delivery_price" type="number" step="0.01" placeholder="0.00" className="bg-background border-2 h-11 text-sm rounded-xl" />
+                                            <Label htmlFor="delivery_price_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Delivery Fee (GHS)</Label>
+                                            <Input id="delivery_price_add" name="delivery_price" type="number" step="0.01" placeholder="0.00" className="bg-background border-2 h-11 text-sm rounded-xl font-roboto" />
                                         </div>
                                     )}
                                 </div>
@@ -232,8 +232,8 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                         </div>
 
                         <div className="space-y-3">
-                            <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground">Product Media</Label>
-                            <Input id="image_add" name="image" type="file" accept="image/*" required onChange={handleImageChange} className="bg-muted/30 border-2 h-14 text-xs rounded-xl pt-4 cursor-pointer file:font-bold file:text-primary" />
+                            <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Product Media</Label>
+                            <Input id="image_add" name="image" type="file" accept="image/*" required onChange={handleImageChange} className="bg-muted/30 border-2 h-14 text-xs rounded-xl pt-4 cursor-pointer file:font-bold file:text-primary font-poppins" />
                             {imagePreview && (
                                 <div className="relative aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner group">
                                     <Image src={imagePreview} alt="" fill className="object-contain" />
@@ -242,7 +242,7 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                         </div>
                     </div>
                     <div className="p-6 border-t bg-background flex-shrink-0">
-                        <Button type="submit" className="w-full h-14 text-base font-black uppercase tracking-[2px] shadow-2xl shadow-primary/20 rounded-2xl" disabled={isPending}>
+                        <Button type="submit" className="w-full h-14 text-base font-black uppercase tracking-[2px] shadow-2xl shadow-primary/20 rounded-2xl font-poppins" disabled={isPending}>
                             {isPending ? <Loader2 className="animate-spin mr-3 h-5 w-5" /> : 'Confirm & Publish'}
                         </Button>
                     </div>
@@ -308,15 +308,15 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary">
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-primary transition-all">
                     <Edit className="h-5 w-5" />
                 </Button>
             </DialogTrigger>
             <DialogContent className="w-[95%] max-w-[650px] p-0 overflow-hidden rounded-[32px] flex flex-col max-h-[90vh] border-none shadow-2xl">
                 <div className="bg-primary p-6 text-primary-foreground flex-shrink-0">
                     <DialogHeader>
-                        <DialogTitle className="text-xl md:text-2xl font-black tracking-tight text-white">Edit Listing</DialogTitle>
-                        <DialogDescription className="text-primary-foreground/80 text-sm">
+                        <DialogTitle className="text-xl md:text-2xl font-black tracking-tight text-white font-montserrat uppercase">Edit Listing</DialogTitle>
+                        <DialogDescription className="text-primary-foreground/80 text-sm font-inter">
                             Modify your product details and availability.
                         </DialogDescription>
                     </DialogHeader>
@@ -325,26 +325,26 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                     <input type="hidden" name="id" value={product.id} />
                     <div className="flex-1 overflow-y-auto px-6 md:px-10 py-6 space-y-6 hide-scrollbar">
                         <div className="grid gap-2">
-                            <Label htmlFor="name" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Product Name</Label>
-                            <Input id="name" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
+                            <Label htmlFor="name" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Product Name</Label>
+                            <Input id="name" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-inter" />
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="price" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Price (GHS)</Label>
-                                <Input id="price" name="price" type="number" step="0.01" defaultValue={product.price} required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
+                                <Label htmlFor="price" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Price (GHS)</Label>
+                                <Input id="price" name="price" type="number" step="0.01" defaultValue={product.price} required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-roboto" />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="quantity" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Units In Stock</Label>
-                                <Input id="quantity" name="quantity" type="number" min="0" defaultValue={product.quantity || 1} required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
+                                <Label htmlFor="quantity" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Units In Stock</Label>
+                                <Input id="quantity" name="quantity" type="number" min="0" defaultValue={product.quantity || 1} required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-roboto" />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="category" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Category</Label>
+                                <Label htmlFor="category" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Category</Label>
                                 <Select name="category" defaultValue={categories.includes(product.category) ? product.category : 'Other'} required onValueChange={setUploadCategory}>
-                                    <SelectTrigger className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl">
+                                    <SelectTrigger className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-inter">
                                         <SelectValue placeholder="Select" />
                                     </SelectTrigger>
-                                    <SelectContent className="rounded-xl">
+                                    <SelectContent className="rounded-xl font-inter">
                                         {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
@@ -353,18 +353,18 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
 
                         {uploadCategory === 'Other' && (
                             <div className="grid gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                <Label htmlFor="custom_category" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Custom Category Name</Label>
-                                <Input id="custom_category" name="custom_category" defaultValue={!categories.includes(product.category) ? product.category : ''} placeholder="Custom category" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl" />
+                                <Label htmlFor="custom_category" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Custom Category Name</Label>
+                                <Input id="custom_category" name="custom_category" defaultValue={!categories.includes(product.category) ? product.category : ''} placeholder="Custom category" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-inter" />
                             </div>
                         )}
 
                         <div className="p-5 md:p-6 bg-muted/20 rounded-2xl border-2 border-dashed space-y-5">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="bg-primary/10 p-2 rounded-lg">
-                                        <Truck className="h-5 w-5 text-primary" />
+                                    <div className="bg-primary/10 p-2 rounded-lg text-primary">
+                                        <Truck className="h-5 w-5" />
                                     </div>
-                                    <Label htmlFor="offers_delivery_edit" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Offer Delivery</Label>
+                                    <Label htmlFor="offers_delivery_edit" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Offer Delivery</Label>
                                 </div>
                                 <Switch 
                                     id="offers_delivery_edit" 
@@ -378,13 +378,13 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                             {offersDelivery && (
                                 <div className="space-y-5 animate-in fade-in slide-in-from-top-2 duration-300 border-t border-muted pt-5">
                                     <div className="grid gap-3">
-                                        <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground">Pricing Model</Label>
+                                        <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Pricing Model</Label>
                                         <RadioGroup name="delivery_price_type" value={deliveryPriceType} onValueChange={setDeliveryPriceType} className="flex flex-col sm:flex-row gap-4">
-                                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl border-2 flex-1 cursor-pointer hover:border-primary/30 transition-all">
+                                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl border-2 flex-1 cursor-pointer hover:border-primary/30 transition-all font-inter">
                                                 <RadioGroupItem value="fixed" id="fixed_edit" />
                                                 <Label htmlFor="fixed_edit" className="text-sm font-bold cursor-pointer">Fixed Fee</Label>
                                             </div>
-                                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl border-2 flex-1 cursor-pointer hover:border-primary/30 transition-all">
+                                            <div className="flex items-center space-x-3 bg-white p-3 rounded-xl border-2 flex-1 cursor-pointer hover:border-primary/30 transition-all font-inter">
                                                 <RadioGroupItem value="location_based" id="location_based_edit" />
                                                 <Label htmlFor="location_based_edit" className="text-sm font-bold cursor-pointer">Based on Location</Label>
                                             </div>
@@ -392,8 +392,8 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                                     </div>
                                     {deliveryPriceType === 'fixed' && (
                                         <div className="grid gap-2">
-                                            <Label htmlFor="delivery_price_edit" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Delivery Fee (GHS)</Label>
-                                            <Input id="delivery_price_edit" name="delivery_price" type="number" step="0.01" defaultValue={product.delivery_price || 0} className="bg-background border-2 h-11 text-sm rounded-xl" />
+                                            <Label htmlFor="delivery_price_edit" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Delivery Fee (GHS)</Label>
+                                            <Input id="delivery_price_edit" name="delivery_price" type="number" step="0.01" defaultValue={product.delivery_price || 0} className="bg-background border-2 h-11 text-sm rounded-xl font-roboto" />
                                         </div>
                                     )}
                                 </div>
@@ -402,12 +402,12 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
 
                         <div className="grid gap-2">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="description" className="font-black text-xs uppercase tracking-widest text-muted-foreground">Detailed Description</Label>
+                                <Label htmlFor="description" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Detailed Description</Label>
                                 <Button 
                                     type="button" 
                                     variant="outline" 
                                     size="sm" 
-                                    className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/20 text-primary hover:bg-primary/5 rounded-full"
+                                    className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase border-primary/20 text-primary hover:bg-primary/5 rounded-full font-poppins"
                                     onClick={handleGenerateDescription}
                                     disabled={isGenerating}
                                 >
@@ -421,12 +421,12 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 rows={4} 
-                                className="bg-muted/30 border-2 text-sm md:text-base rounded-xl resize-none" 
+                                className="bg-muted/30 border-2 text-sm md:text-base rounded-xl resize-none font-inter" 
                             />
                         </div>
                         
                         <div className="space-y-3">
-                            <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground">Update Image (Optional)</Label>
+                            <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Update Image (Optional)</Label>
                             <div className="flex flex-col gap-4">
                                 <Input 
                                     id="image" 
@@ -434,7 +434,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                                     type="file" 
                                     accept="image/*" 
                                     onChange={handleImageChange}
-                                    className="bg-muted/30 border-2 h-14 text-xs rounded-xl cursor-pointer pt-5"
+                                    className="bg-muted/30 border-2 h-14 text-xs rounded-xl cursor-pointer pt-5 font-poppins"
                                 />
                                 {imagePreview && (
                                     <div className="relative aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner">
@@ -446,7 +446,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                     </div>
 
                     <div className="p-6 border-t bg-background flex-shrink-0">
-                        <Button type="submit" className="w-full h-14 text-base font-black uppercase tracking-widest shadow-xl shadow-primary/20 rounded-2xl" disabled={isPending}>
+                        <Button type="submit" className="w-full h-14 text-base font-black uppercase tracking-widest shadow-2xl shadow-primary/20 rounded-2xl font-poppins" disabled={isPending}>
                             {isPending ? <Loader2 className="animate-spin mr-3 h-5 w-5" /> : 'Save Changes'}
                         </Button>
                     </div>
@@ -651,7 +651,7 @@ export default function SellerDashboardPage() {
   };
 
   if (loading) return <div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin h-12 w-12 text-primary" /></div>;
-  if (!seller) return <div className="p-8 text-center h-screen flex items-center justify-center flex-col"><p className="text-muted-foreground text-sm">Seller profile not found.</p><Button asChild variant="outline" className="mt-4"><Link href="/">Return Home</Link></Button></div>;
+  if (!seller) return <div className="p-8 text-center h-screen flex items-center justify-center flex-col"><p className="text-muted-foreground text-sm font-poppins">Seller profile not found.</p><Button asChild variant="outline" className="mt-4 rounded-xl"><Link href="/">Return Home</Link></Button></div>;
 
   const totalRevenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
   
@@ -659,15 +659,15 @@ export default function SellerDashboardPage() {
       <Card className="bg-white border-none shadow-sm rounded-2xl p-4 md:p-5 relative overflow-hidden flex flex-col justify-between group hover:shadow-md transition-all">
           <div className="flex justify-between items-start">
               <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{title}</p>
-                  <h3 className="text-xl md:text-2xl font-black text-foreground">{value}</h3>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground font-poppins">{title}</p>
+                  <h3 className="text-xl md:text-2xl font-black text-foreground font-montserrat">{value}</h3>
               </div>
               <div className="bg-primary/10 p-2.5 rounded-xl text-primary group-hover:scale-110 transition-transform">
                   <Icon className="h-5 w-5" />
               </div>
           </div>
           {subText && (
-              <p className="text-[10px] font-bold text-muted-foreground mt-3 flex items-center gap-1.5 uppercase tracking-tighter">
+              <p className="text-[10px] font-bold text-muted-foreground mt-3 flex items-center gap-1.5 uppercase tracking-tighter font-inter">
                   {subText}
               </p>
           )}
@@ -675,31 +675,30 @@ export default function SellerDashboardPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex flex-col md:flex-row w-full overflow-hidden">
+    <div className="min-h-screen bg-[#F8F9FA] flex flex-col md:flex-row w-full overflow-hidden font-inter">
       
       <Tabs defaultValue="dashboard" className="w-full flex flex-col md:flex-row h-screen overflow-hidden">
         
-        {/* SIDEBAR */}
         <aside className="hidden md:flex w-[250px] bg-primary flex-col flex-shrink-0">
             <div className="p-8">
-                <h2 className="text-white text-2xl font-black italic uppercase tracking-tighter">Seller Hub</h2>
+                <h2 className="text-white text-2xl font-black italic uppercase tracking-tighter font-montserrat">Seller Hub</h2>
             </div>
             
             <div className="flex-1 px-4">
                 <TabsList className="flex flex-col h-auto bg-transparent gap-2 w-full">
-                    <TabsTrigger value="dashboard" className="w-full justify-start gap-4 rounded-xl py-3.5 px-5 text-white/70 font-bold uppercase text-xs tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
+                    <TabsTrigger value="dashboard" className="w-full justify-start gap-4 rounded-xl py-3.5 px-5 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">
                         <LayoutDashboard className="h-5 w-5" /> Dashboard
                     </TabsTrigger>
-                    <TabsTrigger value="products" className="w-full justify-start gap-4 rounded-xl py-3.5 px-5 text-white/70 font-bold uppercase text-xs tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
+                    <TabsTrigger value="products" className="w-full justify-start gap-4 rounded-xl py-3.5 px-5 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">
                         <Box className="h-5 w-5" /> Inventory
                     </TabsTrigger>
-                    <TabsTrigger value="orders" className="w-full justify-start gap-4 rounded-xl py-3.5 px-5 text-white/70 font-bold uppercase text-xs tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
+                    <TabsTrigger value="orders" className="w-full justify-start gap-4 rounded-xl py-3.5 px-5 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">
                         <ShoppingBasket className="h-5 w-5" /> Orders
                     </TabsTrigger>
-                    <TabsTrigger value="clients" className="w-full justify-start gap-4 rounded-xl py-3.5 px-5 text-white/70 font-bold uppercase text-xs tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
+                    <TabsTrigger value="clients" className="w-full justify-start gap-4 rounded-xl py-3.5 px-5 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">
                         <Users className="h-5 w-5" /> Customers
                     </TabsTrigger>
-                    <TabsTrigger value="settings" className="w-full justify-start gap-4 rounded-xl py-3.5 px-5 text-white/70 font-bold uppercase text-xs tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">
+                    <TabsTrigger value="settings" className="w-full justify-start gap-4 rounded-xl py-3.5 px-5 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">
                         <Settings className="h-5 w-5" /> Settings
                     </TabsTrigger>
                 </TabsList>
@@ -708,7 +707,7 @@ export default function SellerDashboardPage() {
             <div className="p-6 mt-auto space-y-4">
                 <div className="bg-white/10 p-5 rounded-2xl space-y-3">
                     <div className="flex items-center justify-between">
-                        <Label htmlFor="shop-toggle-sidebar" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer">Shop Status</Label>
+                        <Label htmlFor="shop-toggle-sidebar" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer font-poppins">Shop Status</Label>
                         <Switch 
                             id="shop-toggle-sidebar" 
                             checked={seller.is_open} 
@@ -719,13 +718,13 @@ export default function SellerDashboardPage() {
                     </div>
                     <div className="flex items-center gap-2">
                         <div className={cn("h-2 w-2 rounded-full animate-pulse", seller.is_open ? "bg-emerald-400" : "bg-red-400")} />
-                        <span className="text-[10px] font-black text-white/70 uppercase tracking-tighter">
+                        <span className="text-[10px] font-black text-white/70 uppercase tracking-tighter font-poppins">
                             {seller.is_open ? "Accepting Orders" : "Currently Closed"}
                         </span>
                     </div>
                 </div>
 
-                <Button asChild variant="destructive" className="w-full justify-start gap-4 h-11 font-bold uppercase text-[10px] tracking-widest shadow-lg shadow-red-900/20 bg-red-600 hover:bg-red-700">
+                <Button asChild variant="destructive" className="w-full justify-start gap-4 h-11 font-black uppercase text-[10px] tracking-widest shadow-lg shadow-red-900/20 bg-red-600 hover:bg-red-700 font-poppins rounded-xl">
                     <Link href="/">
                         <Home className="h-5 w-5" /> Exit Store
                     </Link>
@@ -733,9 +732,8 @@ export default function SellerDashboardPage() {
             </div>
         </aside>
 
-        {/* MOBILE HEADER */}
         <div className="md:hidden bg-primary p-4 flex items-center justify-between shadow-lg z-50">
-             <h2 className="text-white text-xl font-black italic uppercase tracking-tighter">Seller Hub</h2>
+             <h2 className="text-white text-xl font-black italic uppercase tracking-tighter font-montserrat">Seller Hub</h2>
              <div className="flex items-center gap-3">
                  <Button variant="ghost" size="icon" onClick={handleSync} disabled={isPending} className="text-white h-10 w-10">
                     <RefreshCw className={cn("h-5 w-5", isPending && "animate-spin")} />
@@ -751,57 +749,29 @@ export default function SellerDashboardPage() {
                             <SheetTitle>Navigation Menu</SheetTitle>
                         </SheetHeader>
                          <div className="p-8">
-                            <h2 className="text-white text-2xl font-black italic uppercase tracking-tighter">Seller Hub</h2>
+                            <h2 className="text-white text-2xl font-black italic uppercase tracking-tighter font-montserrat">Seller Hub</h2>
                         </div>
                         <div className="flex-1 px-4">
                              <TabsList className="flex flex-col h-auto bg-transparent gap-2 w-full">
-                                <SheetClose asChild><TabsTrigger value="dashboard" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-bold uppercase text-xs tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Dashboard</TabsTrigger></SheetClose>
-                                <SheetClose asChild><TabsTrigger value="products" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-bold uppercase text-xs tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Inventory</TabsTrigger></SheetClose>
-                                <SheetClose asChild><TabsTrigger value="orders" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-bold uppercase text-xs tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Orders</TabsTrigger></SheetClose>
-                                <SheetClose asChild><TabsTrigger value="clients" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-bold uppercase text-xs tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Customers</TabsTrigger></SheetClose>
-                                <SheetClose asChild><TabsTrigger value="settings" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-bold uppercase text-xs tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all">Settings</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="dashboard" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Dashboard</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="products" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Inventory</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="orders" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Orders</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="clients" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Customers</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="settings" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Settings</TabsTrigger></SheetClose>
                             </TabsList>
-                        </div>
-                        <div className="p-6 space-y-5">
-                            <div className="bg-white/10 p-5 rounded-2xl space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <Label htmlFor="shop-toggle-mobile" className="text-[11px] font-black text-white uppercase tracking-widest cursor-pointer">Shop Status</Label>
-                                    <Switch 
-                                        id="shop-toggle-mobile" 
-                                        checked={seller.is_open} 
-                                        onCheckedChange={handleToggle}
-                                        disabled={isPending}
-                                        className="data-[state=unchecked]:bg-white/20"
-                                    />
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <div className={cn("h-2 w-2 rounded-full animate-pulse", seller.is_open ? "bg-emerald-400" : "bg-red-400")} />
-                                    <span className="text-[11px] font-black text-white/70 uppercase tracking-tighter">
-                                        {seller.is_open ? "Accepting Orders" : "Currently Closed"}
-                                    </span>
-                                </div>
-                            </div>
-                            <Button asChild variant="destructive" className="w-full justify-start gap-4 h-14 font-black uppercase text-xs tracking-widest shadow-xl shadow-red-900/40 bg-red-600">
-                                <Link href="/">
-                                    <Home className="h-5 w-5" /> Exit Store
-                                </Link>
-                            </Button>
                         </div>
                     </SheetContent>
                  </Sheet>
              </div>
         </div>
 
-        {/* MAIN CONTENT AREA */}
         <div className="flex-1 flex flex-col overflow-hidden">
-            
-            {/* TOP UTILITY BAR */}
             <header className="hidden md:flex h-16 bg-white border-b items-center px-10 justify-between flex-shrink-0">
                 <div className="relative w-full max-w-md group">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     <Input 
-                        placeholder="Search orders, inventory..." 
-                        className="pl-11 h-10 border-none bg-muted/30 focus-visible:ring-primary/10 rounded-xl text-sm" 
+                        placeholder="Search records..." 
+                        className="pl-11 h-11 border-none bg-muted/30 focus-visible:ring-primary/10 rounded-xl text-sm font-inter" 
                         value={globalSearch}
                         onChange={(e) => setGlobalSearch(e.target.value)}
                     />
@@ -813,7 +783,7 @@ export default function SellerDashboardPage() {
                     <Button onClick={handleBellClick} variant="ghost" size="icon" className="text-muted-foreground h-9 w-9 rounded-full relative">
                         <Bell className="h-4 w-4" />
                         {unattendedCount > 0 && (
-                            <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 bg-red-500 text-white rounded-full text-[9px] font-black flex items-center justify-center border-2 border-white">
+                            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-1 bg-red-500 text-white rounded-full text-[8px] font-black flex items-center justify-center border-2 border-white">
                                 {unattendedCount}
                             </span>
                         )}
@@ -821,12 +791,12 @@ export default function SellerDashboardPage() {
                     <Separator orientation="vertical" className="h-6" />
                     <div className="flex items-center gap-3.5">
                          <div className="text-right">
-                            <p className="text-xs font-black text-foreground leading-none">{seller.shop_name}</p>
-                            <p className="text-[10px] text-muted-foreground leading-none mt-1.5">{user?.email}</p>
+                            <p className="text-[11px] font-black text-foreground leading-none font-poppins uppercase tracking-tighter">{seller.shop_name}</p>
+                            <p className="text-[9px] text-muted-foreground leading-none mt-1 font-roboto uppercase">{user?.email}</p>
                         </div>
-                        <Avatar className="h-9 w-9 rounded-xl border border-primary/10">
-                            <AvatarImage src={user?.user_metadata?.avatar_url} />
-                            <AvatarFallback className="bg-primary/5 text-primary text-xs font-black">{seller.shop_name.charAt(0)}</AvatarFallback>
+                        <Avatar className="h-10 w-10 rounded-xl border border-primary/10 bg-white">
+                            <AvatarImage src={user?.user_metadata?.avatar_url} className="object-cover" />
+                            <AvatarFallback className="bg-primary/5 text-primary text-[11px] font-black">{seller.shop_name.charAt(0)}</AvatarFallback>
                         </Avatar>
                     </div>
                 </div>
@@ -834,28 +804,27 @@ export default function SellerDashboardPage() {
 
             <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8F9FA] hide-scrollbar">
                 
-                {/* DASHBOARD CONTENT */}
                 <TabsContent value="dashboard" className="m-0 space-y-8 animate-in fade-in duration-500">
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                        <StatCard title="Total Revenue" value={`GHS ${formatPrice(totalRevenue).replace('GHS ', '')}`} icon={DollarSign} subText="Life-time earnings" />
-                        <StatCard title="Active Listings" value={products.length} icon={Box} subText="Live on marketplace" />
-                        <StatCard title="Orders Processed" value={orders.length} icon={ShoppingBag} />
-                        <StatCard title="Shop Status" value={seller.is_open ? 'ONLINE' : 'OFFLINE'} icon={seller.is_open ? Store : Clock} />
+                        <StatCard title="Liquidity" value={`GHS ${formatPrice(totalRevenue).replace('GHS ', '')}`} icon={DollarSign} subText="Life-time earnings" />
+                        <StatCard title="Inventory" value={products.length} icon={Box} subText="Live marketplace items" />
+                        <StatCard title="Logistics" value={orders.length} icon={ShoppingBag} subText="Orders in pipeline" />
+                        <StatCard title="Protocol" value={seller.is_open ? 'ONLINE' : 'OFFLINE'} icon={seller.is_open ? Store : Clock} subText="Operational status" />
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                         <Card className="border-none shadow-sm rounded-[32px] overflow-hidden">
+                         <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
                             <CardHeader className="bg-white border-b px-6 py-4 flex flex-row items-center justify-between">
-                                <CardTitle className="text-xs font-black uppercase tracking-widest">Recent Orders</CardTitle>
-                                <Button variant="link" className="text-primary text-[10px] font-black uppercase p-0 h-auto">View Registry</Button>
+                                <CardTitle className="text-[11px] font-black uppercase tracking-widest text-muted-foreground font-poppins">Order Registry</CardTitle>
+                                <Button variant="link" className="text-primary text-[11px] font-black uppercase p-0 h-auto font-poppins">Full Log</Button>
                             </CardHeader>
-                            <div className="bg-white overflow-x-auto">
+                            <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader className="bg-muted/10">
-                                        <TableRow>
-                                            <TableHead className="text-[10px] font-black uppercase px-6 h-10">Registry ID</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase h-10">Commodity</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase text-right px-6 h-10">Status</TableHead>
+                                        <TableRow className="hover:bg-transparent">
+                                            <TableHead className="text-[10px] font-black uppercase px-6 h-10 font-poppins">ID</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase h-10 font-poppins">Commodity</TableHead>
+                                            <TableHead className="text-[10px] font-black uppercase text-right px-6 h-10 font-poppins">Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -863,12 +832,12 @@ export default function SellerDashboardPage() {
                                             const isAccepted = order.status === 'ready' || order.status === 'completed';
                                             const isDeclined = order.status === 'cancelled';
                                             return (
-                                                <TableRow key={order.id} className="hover:bg-muted/5 transition-colors">
-                                                    <TableCell className="text-xs font-mono px-6 py-4">#{order.id.substring(0, 6)}</TableCell>
-                                                    <TableCell className="text-xs font-bold truncate max-w-[120px] py-4">{order.products?.name || order.vendor_products?.name}</TableCell>
+                                                <TableRow key={order.id} className="hover:bg-muted/5 transition-colors border-none">
+                                                    <TableCell className="text-[11px] font-mono px-6 py-4">#{order.id.substring(0, 6)}</TableCell>
+                                                    <TableCell className="text-[13px] font-bold truncate max-w-[120px] py-4 font-inter">{order.products?.name || order.vendor_products?.name}</TableCell>
                                                     <TableCell className="text-right px-6 py-4">
                                                         <Badge 
-                                                            className="text-[8px] md:text-[9px] h-4 px-2 uppercase font-black tracking-tighter" 
+                                                            className="text-[9px] h-5 px-2 uppercase font-black tracking-widest font-poppins" 
                                                             variant={order.status === 'completed' ? 'default' : isDeclined ? 'destructive' : isAccepted ? 'secondary' : 'outline'}
                                                         >
                                                             {order.status === 'ready' ? 'Accepted' : order.status}
@@ -884,27 +853,27 @@ export default function SellerDashboardPage() {
 
                         <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
                              <CardHeader className="bg-white border-b px-6 py-4 flex flex-row items-center justify-between">
-                                <CardTitle className="text-xs font-black uppercase tracking-widest">Market Logs</CardTitle>
+                                <CardTitle className="text-[11px] font-black uppercase tracking-widest text-muted-foreground font-poppins">Market Activity</CardTitle>
                                 <FileText className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent className="p-6 space-y-5">
                                 {orders.length === 0 ? (
                                     <div className="text-center py-12 opacity-30 flex flex-col items-center">
                                         <Package className="h-10 w-10 mb-3" />
-                                        <p className="text-[11px] font-black uppercase tracking-widest">Logs empty</p>
+                                        <p className="text-[11px] font-black uppercase tracking-widest font-poppins">Logs empty</p>
                                     </div>
                                 ) : (
-                                    <div className="space-y-4.5">
+                                    <div className="space-y-4">
                                         {orders.slice(0, 4).map(o => (
                                             <div key={o.id} className="flex gap-4 items-center">
-                                                <div className="h-9 w-9 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
-                                                    <DollarSign className="h-4 w-4" />
+                                                <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                                    <DollarSign className="h-4.5 w-4.5" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-[11px] font-bold truncate">Acquisition by {o.profiles?.display_name || 'Buyer'}</p>
-                                                    <p className="text-[10px] text-muted-foreground">Amount: GHS {o.price_per_item * o.quantity}</p>
+                                                    <p className="text-[13px] font-bold truncate font-inter">Purchase by {o.profiles?.display_name || 'Buyer'}</p>
+                                                    <p className="text-[11px] text-muted-foreground font-roboto">GHS {(o.price_per_item * o.quantity).toFixed(2)}</p>
                                                 </div>
-                                                <span className="text-[10px] font-bold text-muted-foreground whitespace-nowrap">{new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap font-roboto">{new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -914,24 +883,23 @@ export default function SellerDashboardPage() {
                     </div>
                 </TabsContent>
 
-                {/* INVENTORY / PRODUCTS CONTENT */}
                 <TabsContent value="products" className="m-0 space-y-8 animate-in fade-in duration-500">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-2">
                         <div>
-                            <h1 className="text-2xl font-black italic uppercase tracking-tighter text-foreground leading-none">Catalog Management</h1>
-                            <p className="text-xs text-muted-foreground font-medium mt-2 uppercase tracking-widest">Oversee your digital commodity inventory.</p>
+                            <h1 className="text-2xl font-black italic uppercase tracking-tighter text-foreground leading-none font-montserrat">Commodity Control</h1>
+                            <p className="text-xs text-muted-foreground font-bold mt-2 uppercase tracking-[2px] font-poppins">Manage your digital marketplace inventory.</p>
                         </div>
                         
                         <AddProductDialog onPublishSuccess={fetchData} />
                     </div>
 
                     <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
-                        <div className="bg-white p-4 border-b">
-                            <div className="relative w-full max-w-md">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <div className="bg-white p-5 border-b">
+                            <div className="relative w-full max-w-md group">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
                                 <Input 
-                                    placeholder="Refine results..." 
-                                    className="pl-11 h-10 text-xs bg-muted/30 border-none rounded-xl" 
+                                    placeholder="Filter catalog..." 
+                                    className="pl-11 h-11 text-sm bg-muted/30 border-none rounded-xl font-inter" 
                                     value={globalSearch}
                                     onChange={(e) => setGlobalSearch(e.target.value)}
                                 />
@@ -940,38 +908,38 @@ export default function SellerDashboardPage() {
                         <div className="bg-white overflow-x-auto">
                             <Table>
                                 <TableHeader className="bg-muted/10">
-                                    <TableRow>
-                                        <TableHead className="text-[10px] font-black uppercase px-6 h-10">Commodity</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase h-10">Valuation</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase h-10">Stock Level</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase text-right px-6 h-10">Actions</TableHead>
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="text-[10px] font-black uppercase px-6 h-12 font-poppins">Commodity</TableHead>
+                                        <TableHead className="text-[10px] font-black uppercase h-12 font-poppins">Valuation</TableHead>
+                                        <TableHead className="text-[10px] font-black uppercase h-12 font-poppins">Stock Level</TableHead>
+                                        <TableHead className="text-[10px] font-black uppercase text-right px-6 h-12 font-poppins">Management</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {filteredProducts.map(p => (
-                                        <TableRow key={p.id} className="hover:bg-muted/5 transition-colors">
-                                            <TableCell className="px-6 py-4">
-                                                <div className="flex items-center gap-3.5">
-                                                    <div className="relative h-10 w-10 rounded-xl bg-muted overflow-hidden flex-shrink-0 border shadow-sm">
-                                                        {p.image_urls?.[0] ? <Image src={p.image_urls[0]} alt="" fill className="object-cover" /> : <ImageIcon className="p-2.5 text-muted-foreground/30 h-5 w-5 mx-auto mt-1" />}
+                                        <TableRow key={p.id} className="hover:bg-muted/5 transition-colors border-none">
+                                            <TableCell className="px-6 py-5">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="relative h-12 w-12 rounded-xl bg-muted overflow-hidden flex-shrink-0 border-2 border-white shadow-sm">
+                                                        {p.image_urls?.[0] ? <Image src={p.image_urls[0]} alt="" fill className="object-cover" /> : <ImageIcon className="p-3 text-muted-foreground/30 h-6 w-6 mx-auto mt-1" />}
                                                     </div>
-                                                    <span className="text-sm font-black truncate max-w-[180px]">{p.name}</span>
+                                                    <span className="text-[14px] font-bold truncate max-w-[200px] font-inter">{p.name}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-sm font-black text-foreground">GHS {p.price.toFixed(2)}</TableCell>
+                                            <TableCell className="text-[14px] font-black text-foreground font-roboto">GHS {p.price.toFixed(2)}</TableCell>
                                             <TableCell>
-                                                <div className="flex flex-col gap-1">
-                                                    <span className="text-xs font-bold">{p.quantity || 0} Units</span>
-                                                    <Badge className="text-[8px] font-black h-4 uppercase px-1.5 w-fit" variant={(p.quantity || 0) > 0 ? 'secondary' : 'destructive'}>
+                                                <div className="flex flex-col gap-1.5">
+                                                    <span className="text-[13px] font-bold font-inter">{p.quantity || 0} Units</span>
+                                                    <Badge className="text-[9px] font-black h-5 px-2 uppercase tracking-widest w-fit font-poppins" variant={(p.quantity || 0) > 0 ? 'secondary' : 'destructive'}>
                                                         {(p.quantity || 0) > 0 ? 'Active' : 'Empty'}
                                                     </Badge>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-right px-6 py-4">
-                                                <div className="flex justify-end gap-1.5">
+                                            <TableCell className="text-right px-6 py-5">
+                                                <div className="flex justify-end gap-2">
                                                     <EditProductDialog product={p} onUpdateSuccess={fetchData} />
-                                                    <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:bg-destructive/5 rounded-xl" onClick={() => handleDeleteProduct(p.id)}>
-                                                        <Trash2 className="h-4 w-4" />
+                                                    <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl transition-all" onClick={() => handleDeleteProduct(p.id)}>
+                                                        <Trash2 className="h-5 w-5" />
                                                     </Button>
                                                 </div>
                                             </TableCell>
@@ -979,7 +947,7 @@ export default function SellerDashboardPage() {
                                     ))}
                                     {filteredProducts.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-20 text-muted-foreground italic text-sm">No matching commodities found.</TableCell>
+                                            <TableCell colSpan={4} className="text-center py-24 text-muted-foreground italic text-sm font-inter">No commodities in this sector.</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>
@@ -988,16 +956,15 @@ export default function SellerDashboardPage() {
                     </Card>
                 </TabsContent>
 
-                {/* ORDERS TAB */}
                 <TabsContent value="orders" className="m-0 animate-in fade-in duration-500">
                     <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
-                        <CardHeader className="bg-white border-b px-6 py-4 flex flex-row items-center justify-between">
-                            <CardTitle className="text-xs font-black uppercase tracking-widest">Order Registry</CardTitle>
-                             <div className="relative w-full max-w-[250px]">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                        <CardHeader className="bg-white border-b px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <CardTitle className="text-[11px] font-black uppercase tracking-widest text-muted-foreground font-poppins">Order Pipeline</CardTitle>
+                             <div className="relative w-full max-w-[300px] group">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                 <Input 
-                                    placeholder="Filter registry..." 
-                                    className="pl-9 h-9 text-[11px] bg-muted/30 border-none rounded-xl" 
+                                    placeholder="Search order ID or buyer..." 
+                                    className="pl-10 h-10 text-[13px] bg-muted/30 border-none rounded-xl font-inter" 
                                     value={globalSearch}
                                     onChange={(e) => setGlobalSearch(e.target.value)}
                                 />
@@ -1006,11 +973,11 @@ export default function SellerDashboardPage() {
                         <div className="bg-white overflow-x-auto">
                             <Table>
                                 <TableHeader className="bg-muted/10">
-                                    <TableRow>
-                                        <TableHead className="text-[10px] font-black uppercase px-6 h-10">Buyer & Location</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase h-10">Item & Note</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase h-10">Status Phase</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase text-right px-6 h-10">Management</TableHead>
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="text-[10px] font-black uppercase px-6 h-12 font-poppins">Buyer Profile</TableHead>
+                                        <TableHead className="text-[10px] font-black uppercase h-12 font-poppins">Commodity Detail</TableHead>
+                                        <TableHead className="text-[10px] font-black uppercase h-12 font-poppins">Lifecycle Phase</TableHead>
+                                        <TableHead className="text-[10px] font-black uppercase text-right px-6 h-12 font-poppins">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -1018,48 +985,54 @@ export default function SellerDashboardPage() {
                                         const prod = o.products || o.vendor_products;
                                         const isDelivery = prod?.offers_delivery;
                                         return (
-                                            <TableRow key={o.id} className="hover:bg-muted/5 transition-colors align-top">
-                                                <TableCell className="px-6 py-4">
-                                                    <div className="space-y-1.5">
+                                            <TableRow key={o.id} className="hover:bg-muted/5 transition-colors align-top border-none">
+                                                <TableCell className="px-6 py-6">
+                                                    <div className="space-y-2">
                                                         <div>
-                                                            <p className="text-sm font-black leading-tight">{o.profiles?.display_name}</p>
-                                                            <p className="text-[10px] font-bold text-muted-foreground mt-0.5 tracking-tight">{o.profiles?.phone_number}</p>
+                                                            <p className="text-[14px] font-black leading-tight font-inter">{o.profiles?.display_name}</p>
+                                                            <p className="text-[11px] font-bold text-muted-foreground mt-1 tracking-wider font-roboto uppercase">{o.profiles?.phone_number}</p>
                                                         </div>
                                                         {o.delivery_location && (
-                                                            <div className="flex items-center gap-1.5 text-[9px] font-black text-primary bg-primary/5 px-2 py-1 rounded-lg w-fit uppercase tracking-tighter mt-1.5">
-                                                                <MapPin className="h-3 w-3" /> {o.delivery_location}
+                                                            <div className="flex items-center gap-2 text-[10px] font-black text-primary bg-primary/5 px-2.5 py-1.5 rounded-lg w-fit uppercase tracking-tighter mt-2 font-poppins">
+                                                                <MapPin className="h-3.5 w-3.5" /> {o.delivery_location}
                                                             </div>
                                                         )}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="px-6 py-4">
-                                                    <div className="space-y-2.5">
-                                                        <p className="text-xs font-bold max-w-[180px] truncate">{prod?.name}</p>
+                                                <TableCell className="px-6 py-6">
+                                                    <div className="space-y-3">
+                                                        <p className="text-[13px] font-bold max-w-[200px] truncate font-inter">{prod?.name}</p>
                                                         {o.notes && (
-                                                            <div className="bg-amber-50 border border-amber-100 p-3 rounded-xl max-w-[220px]">
-                                                                <p className="text-[10px] text-amber-800 leading-normal italic line-clamp-3">"{o.notes}"</p>
+                                                            <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl max-w-[250px] shadow-sm">
+                                                                <div className="flex items-center gap-2 mb-1.5 opacity-70">
+                                                                    <StickyNote className="h-3 w-3 text-amber-800" />
+                                                                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-900 font-poppins">Special Request</span>
+                                                                </div>
+                                                                <p className="text-[11px] text-amber-800 leading-relaxed italic font-inter">&ldquo;{o.notes}&rdquo;</p>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="py-4">
-                                                    {o.status === 'pending' && <Badge variant="outline" className="text-[8px] md:text-[9px] h-4.5 px-2 uppercase font-black bg-blue-50 text-blue-700 border-blue-200">New Request</Badge>}
-                                                    {o.status === 'ready' && (
-                                                        <Badge variant="secondary" className="text-[8px] md:text-[9px] h-4.5 px-2 uppercase font-black bg-emerald-50 text-emerald-700 border-emerald-200 flex items-center gap-1.5 w-fit">
-                                                            {isDelivery ? <Truck className="h-2.5 w-2.5" /> : <Package className="h-2.5 w-2.5" />}
-                                                            {isDelivery ? 'In Delivery' : 'Preparing'}
-                                                        </Badge>
-                                                    )}
-                                                    {o.status === 'completed' && <Badge variant="default" className="text-[8px] md:text-[9px] h-4.5 px-2 uppercase font-black bg-emerald-600 text-white border-none">{isDelivery ? 'Delivered' : 'Completed'}</Badge>}
-                                                    {o.status === 'cancelled' && <Badge variant="destructive" className="text-[8px] md:text-[9px] h-4.5 px-2 uppercase font-black">Declined</Badge>}
+                                                <TableCell className="py-6">
+                                                    <div className="flex flex-col gap-2">
+                                                        {o.status === 'pending' && <Badge variant="outline" className="text-[10px] h-6 px-3 uppercase font-black bg-blue-50 text-blue-700 border-blue-200 font-poppins tracking-widest">New Order</Badge>}
+                                                        {o.status === 'ready' && (
+                                                            <Badge variant="secondary" className="text-[10px] h-6 px-3 uppercase font-black bg-emerald-50 text-emerald-700 border-emerald-200 flex items-center gap-2 w-fit font-poppins tracking-widest">
+                                                                {isDelivery ? <Truck className="h-3 w-3" /> : <Package className="h-3 w-3" />}
+                                                                {isDelivery ? 'Pending Delivery' : 'Awaiting Collection'}
+                                                            </Badge>
+                                                        )}
+                                                        {o.status === 'completed' && <Badge variant="default" className="text-[10px] h-6 px-3 uppercase font-black bg-emerald-600 text-white border-none font-poppins tracking-widest">Successful</Badge>}
+                                                        {o.status === 'cancelled' && <Badge variant="destructive" className="text-[10px] h-6 px-3 uppercase font-black font-poppins tracking-widest">Declined</Badge>}
+                                                    </div>
                                                 </TableCell>
-                                                <TableCell className="text-right px-6 py-4">
-                                                    <div className="flex justify-end gap-2">
+                                                <TableCell className="text-right px-6 py-6">
+                                                    <div className="flex justify-end gap-3">
                                                         {o.status === 'pending' && (
                                                             <div className="flex gap-2">
                                                                 <Button 
                                                                     size="sm" 
-                                                                    className="h-8 text-[10px] font-black uppercase px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg shadow-sm" 
+                                                                    className="h-10 text-[11px] font-black uppercase px-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-500/10 font-poppins tracking-widest" 
                                                                     onClick={() => handleUpdateStatus(o.id, 'ready')}
                                                                 >
                                                                     Accept
@@ -1067,7 +1040,7 @@ export default function SellerDashboardPage() {
                                                                 <Button 
                                                                     variant="ghost" 
                                                                     size="sm" 
-                                                                    className="h-8 text-[10px] font-black uppercase px-4 text-destructive hover:bg-destructive/10 rounded-lg border border-destructive/20" 
+                                                                    className="h-10 text-[11px] font-black uppercase px-6 text-destructive hover:bg-destructive/10 rounded-xl border-2 border-destructive/10 font-poppins tracking-widest" 
                                                                     onClick={() => handleUpdateStatus(o.id, 'cancelled')}
                                                                 >
                                                                     Decline
@@ -1077,15 +1050,15 @@ export default function SellerDashboardPage() {
                                                         {o.status === 'ready' && (
                                                             <Button 
                                                                 size="sm" 
-                                                                className="h-8 text-[10px] font-black uppercase px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 shadow-md" 
+                                                                className="h-10 text-[11px] font-black uppercase px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 font-poppins tracking-widest" 
                                                                 onClick={() => handleUpdateStatus(o.id, 'completed')}
                                                             >
-                                                                {isDelivery ? 'Mark Delivered' : 'Complete'}
+                                                                {isDelivery ? 'Mark Delivered' : 'Confirm Collection'}
                                                             </Button>
                                                         )}
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-all" asChild><Link href={`/admin/sales/${o.id}`}><Eye className="h-4 w-4" /></Link></Button>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/5 rounded-lg" onClick={() => handleDeleteOrder(o.id)}>
-                                                            <Trash2 className="h-4 w-4" />
+                                                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-all" asChild><Link href={`/admin/sales/${o.id}`}><Eye className="h-5 w-5" /></Link></Button>
+                                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/5 rounded-xl transition-all" onClick={() => handleDeleteOrder(o.id)}>
+                                                            <Trash2 className="h-5 w-5" />
                                                         </Button>
                                                     </div>
                                                 </TableCell>
@@ -1094,7 +1067,7 @@ export default function SellerDashboardPage() {
                                     })}
                                     {filteredOrders.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-24 text-muted-foreground italic text-xs">No matching records found.</TableCell>
+                                            <TableCell colSpan={4} className="text-center py-32 text-muted-foreground italic text-[14px] font-inter">No marketplace transactions found.</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>
@@ -1103,80 +1076,79 @@ export default function SellerDashboardPage() {
                     </Card>
                 </TabsContent>
 
-                {/* CUSTOMERS TAB */}
                 <TabsContent value="clients" className="m-0 animate-in fade-in duration-500">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {uniqueCustomers.map((cust: any) => (
-                            <Card key={cust.id} className="border-none shadow-sm rounded-3xl p-5 bg-white flex items-center gap-4 group hover:shadow-md transition-all">
-                                <Avatar className="h-12 w-12 border border-primary/10 shadow-sm">
-                                    <AvatarFallback className="bg-primary/5 text-primary font-black text-sm">{cust.name.charAt(0)}</AvatarFallback>
+                            <Card key={cust.id} className="border-none shadow-sm rounded-[32px] p-6 bg-white flex items-center gap-5 group hover:shadow-xl hover:shadow-primary/5 transition-all">
+                                <Avatar className="h-14 w-14 border-2 border-background shadow-lg ring-1 ring-primary/10">
+                                    <AvatarFallback className="bg-primary/5 text-primary font-black text-lg font-montserrat">{cust.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="font-black text-sm truncate uppercase tracking-tight">{cust.name}</h3>
-                                    <p className="text-xs font-bold text-muted-foreground mt-0.5 tracking-tight">{cust.phone}</p>
+                                    <h3 className="font-black text-[15px] truncate uppercase tracking-tight font-montserrat">{cust.name}</h3>
+                                    <p className="text-[11px] font-bold text-muted-foreground mt-1 tracking-widest font-roboto uppercase">{cust.phone}</p>
+                                    <p className="text-[10px] font-black text-primary/70 uppercase mt-2 font-poppins">{cust.totalOrders} Completed Deals</p>
                                 </div>
-                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl bg-muted/30 text-primary hover:bg-primary hover:text-white transition-all shadow-sm" asChild>
-                                    <a href={`tel:${cust.phone}`}><Phone className="h-4.5 w-4.5" /></a>
+                                <Button variant="ghost" size="icon" className="h-12 w-12 rounded-[20px] bg-muted/40 text-primary hover:bg-primary hover:text-white transition-all shadow-sm" asChild>
+                                    <a href={`tel:${cust.phone}`}><Phone className="h-5 w-5" /></a>
                                 </Button>
                             </Card>
                         ))}
                         {uniqueCustomers.length === 0 && (
-                            <div className="col-span-full py-32 text-center text-muted-foreground opacity-30 flex flex-col items-center">
-                                <Users className="h-12 w-12 mb-3" />
-                                <p className="text-sm font-black uppercase tracking-widest">No customer data available</p>
+                            <div className="col-span-full py-40 text-center text-muted-foreground opacity-30 flex flex-col items-center">
+                                <Users className="h-16 w-16 mb-4" />
+                                <p className="text-sm font-black uppercase tracking-[3px] font-poppins">Customer database offline</p>
                             </div>
                         )}
                     </div>
                 </TabsContent>
 
-                {/* SETTINGS TAB */}
                 <TabsContent value="settings" className="m-0 animate-in fade-in duration-500">
                     <div className="max-w-2xl mx-auto space-y-8">
                         <Card className="border-none shadow-sm rounded-[40px] overflow-hidden bg-white">
                             <CardHeader className="bg-muted/5 border-b p-8 md:p-10">
-                                <CardTitle className="text-base font-black uppercase tracking-[3px]">Identity Management</CardTitle>
+                                <CardTitle className="text-[11px] font-black uppercase tracking-[3px] text-muted-foreground font-poppins">Digital Identity Management</CardTitle>
                             </CardHeader>
                             <CardContent className="p-8 md:p-12">
-                                <form action={handleUpdateShop} className="space-y-8">
-                                    <div className="flex flex-col items-center gap-5">
+                                <form action={handleUpdateShop} className="space-y-10">
+                                    <div className="flex flex-col items-center gap-6">
                                         <div className="relative group">
-                                            <Avatar className="h-28 w-28 border-[6px] border-white shadow-2xl ring-1 ring-primary/10">
+                                            <Avatar className="h-32 w-32 border-[8px] border-white shadow-2xl ring-1 ring-primary/20">
                                                 <AvatarImage src={logoPreview || user?.user_metadata?.avatar_url} className="object-cover" />
-                                                <AvatarFallback className="text-3xl font-black">{seller.shop_name.charAt(0)}</AvatarFallback>
+                                                <AvatarFallback className="text-4xl font-black font-montserrat">{seller.shop_name.charAt(0)}</AvatarFallback>
                                             </Avatar>
-                                            <Label htmlFor="logo_settings" className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
-                                                <UploadCloud className="text-white h-8 w-8" />
+                                            <Label htmlFor="logo_settings" className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer">
+                                                <UploadCloud className="text-white h-10 w-10" />
                                             </Label>
                                             <Input id="logo_settings" name="logo" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-xs font-black uppercase tracking-[3px] text-primary">Modify Branding</p>
-                                            <p className="text-[10px] text-muted-foreground mt-1.5 font-medium uppercase tracking-widest">Update shop logo & icon</p>
+                                            <p className="text-xs font-black uppercase tracking-[4px] text-primary font-poppins">Modify Marketplace Branding</p>
+                                            <p className="text-[10px] text-muted-foreground mt-2 font-medium uppercase tracking-widest font-poppins">Logo dimension optimal: 512x512</p>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-6">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="shop_name_s" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Store Nomenclature</Label>
-                                            <Input id="shop_name_s" name="shop_name" defaultValue={seller.shop_name} required className="h-13 border-2 rounded-2xl text-base font-bold bg-muted/20" />
+                                    <div className="space-y-8">
+                                        <div className="grid gap-2.5">
+                                            <Label htmlFor="shop_name_s" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground font-poppins">Enterprise Name</Label>
+                                            <Input id="shop_name_s" name="shop_name" defaultValue={seller.shop_name} required className="h-14 border-2 rounded-2xl text-[15px] font-bold bg-muted/20 font-inter" />
                                         </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="desc_s" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Business Biography</Label>
-                                            <Textarea id="desc_s" name="description" defaultValue={seller.description || ''} placeholder="Describe your shop..." className="min-h-[140px] border-2 rounded-2xl text-sm bg-muted/20 resize-none p-4" />
+                                        <div className="grid gap-2.5">
+                                            <Label htmlFor="desc_s" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground font-poppins">Store Biography</Label>
+                                            <Textarea id="desc_s" name="description" defaultValue={seller.description || ''} placeholder="Tell customers about your shop..." className="min-h-[160px] border-2 rounded-2xl text-[14px] bg-muted/20 resize-none p-5 font-inter leading-relaxed" />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-6">
-                                            <div className="grid gap-2">
-                                                <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Opening Hours</Label>
-                                                <Input name="open_time" type="time" defaultValue={seller.open_time || "08:00"} className="h-13 border-2 rounded-2xl bg-muted/20 text-sm font-bold" />
+                                        <div className="grid grid-cols-2 gap-8">
+                                            <div className="grid gap-2.5">
+                                                <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground font-poppins">Protocol Start</Label>
+                                                <Input name="open_time" type="time" defaultValue={seller.open_time || "08:00"} className="h-14 border-2 rounded-2xl bg-muted/20 text-sm font-black font-roboto" />
                                             </div>
-                                            <div className="grid gap-2">
-                                                <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground">Closing Hours</Label>
-                                                <Input name="close_time" type="time" defaultValue={seller.close_time || "20:00"} className="h-13 border-2 rounded-2xl bg-muted/20 text-sm font-bold" />
+                                            <div className="grid gap-2.5">
+                                                <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground font-poppins">Protocol End</Label>
+                                                <Input name="close_time" type="time" defaultValue={seller.close_time || "20:00"} className="h-14 border-2 rounded-2xl bg-muted/20 text-sm font-black font-roboto" />
                                             </div>
                                         </div>
                                     </div>
 
-                                    <Button type="submit" className="w-full h-15 text-xs md:text-sm font-black uppercase tracking-[3px] rounded-2xl shadow-2xl shadow-primary/20 mt-4" disabled={isUpdatePending}>
+                                    <Button type="submit" className="w-full h-16 text-xs md:text-sm font-black uppercase tracking-[4px] rounded-2xl shadow-2xl shadow-primary/30 mt-6 font-poppins" disabled={isUpdatePending}>
                                         {isUpdatePending ? <Loader2 className="animate-spin h-5 w-5 mr-4" /> : 'Synchronize Identity'}
                                     </Button>
                                 </form>
