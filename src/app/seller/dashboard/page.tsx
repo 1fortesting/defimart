@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useTransition, useActionState, useCallback, useMemo } from 'react';
@@ -592,7 +591,7 @@ export default function SellerDashboardPage() {
             toast({ 
                 variant: 'success',
                 title: 'Settings Saved!', 
-                description: 'Changes applied. Refresh to see updates across the site.',
+                description: 'Changes applied. Please refresh the page manually to update all profile icons across the site.',
             });
             fetchData();
           } else {
@@ -1055,25 +1054,23 @@ export default function SellerDashboardPage() {
                                                     {o.status === 'cancelled' && <Badge variant="destructive" className="text-[7px] h-3.5 px-1.5 uppercase font-black">Declined</Badge>}
                                                 </TableCell>
                                                 <TableCell className="text-right px-5 py-3">
-                                                    <div className="flex justify-end gap-1">
+                                                    <div className="flex justify-end gap-1.5">
                                                         {o.status === 'pending' && (
-                                                            <div className="flex gap-1">
+                                                            <div className="flex gap-1.5">
                                                                 <Button 
                                                                     size="sm" 
-                                                                    className="h-7 w-7 p-0 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md shadow-sm" 
+                                                                    className="h-7 text-[8px] font-black uppercase px-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md shadow-sm" 
                                                                     onClick={() => handleUpdateStatus(o.id, 'ready')}
-                                                                    title="Accept Order"
                                                                 >
-                                                                    <Check className="h-3.5 w-3.5" />
+                                                                    Accept
                                                                 </Button>
                                                                 <Button 
                                                                     variant="ghost" 
                                                                     size="sm" 
-                                                                    className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10 rounded-md" 
+                                                                    className="h-7 text-[8px] font-black uppercase px-3 text-destructive hover:bg-destructive/10 rounded-md border border-destructive/20" 
                                                                     onClick={() => handleUpdateStatus(o.id, 'cancelled')}
-                                                                    title="Decline Order"
                                                                 >
-                                                                    <X className="h-3.5 w-3.5" />
+                                                                    Decline
                                                                 </Button>
                                                             </div>
                                                         )}
@@ -1087,7 +1084,7 @@ export default function SellerDashboardPage() {
                                                             </Button>
                                                         )}
                                                         <Button variant="ghost" size="icon" className="h-7 w-7" asChild><Link href={`/admin/sales/${o.id}`}><Eye className="h-3.5 w-3.5" /></Link></Button>
-                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => handleDeleteOrder(o.id)}>
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:bg-destructive/5" onClick={() => handleDeleteOrder(o.id)}>
                                                             <Trash2 className="h-3.5 w-3.5" />
                                                         </Button>
                                                     </div>
