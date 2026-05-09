@@ -28,6 +28,7 @@ export async function updateOrderStatus(formData: FormData) {
     
     const oldStatus = order.status;
 
+    // --- INVENTORY MANAGEMENT ---
     // Handle stock adjustments for completed orders (Platform and Vendor)
     if (newStatus === 'completed' && oldStatus !== 'completed') {
         const table = order.product_id ? 'products' : 'vendor_products';
@@ -42,6 +43,7 @@ export async function updateOrderStatus(formData: FormData) {
             
             if (!productError && product !== null) {
                 const newQuantity = (product.quantity ?? 0) - order.quantity;
+                // Update product table with new quantity (ensure it doesn't go below 0)
                 await supabase.from(table).update({ quantity: Math.max(0, newQuantity) }).eq('id', targetId);
             }
         }
