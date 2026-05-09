@@ -15,7 +15,8 @@ import { Tables } from '@/types/supabase';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Switch, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { generateProductDescription } from '@/ai/flows/ai-product-description-assistant';
 
 const categories = [
@@ -43,7 +44,7 @@ export function EditProductForm({ product }: { product: Tables<'products'>}) {
     const [state, dispatch] = useActionState(updateProduct, initialState);
     const [isGenerating, startGeneratingTransition] = useTransition();
 
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(product.image_urls?.[0] || null);
     const [description, setDescription] = useState(product.description || '');
     const [productName, setProductName] = useState(product.name || '');
 
