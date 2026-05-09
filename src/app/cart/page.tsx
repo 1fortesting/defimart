@@ -123,7 +123,8 @@ export default function CartPage() {
     const initCart = async () => {
       setLoading(true);
       
-      const localCart = JSON.parse(localStorage.getItem('cart') || '[]');
+      const localCartRaw = localStorage.getItem('cart');
+      const localCart = localCartRaw ? JSON.parse(localCartRaw) : [];
       setCartItems(localCart);
       
       const supabase = createClient();
@@ -131,20 +132,26 @@ export default function CartPage() {
       setUser(authUser);
 
       if (authUser) {
-        // Sync local to DB if items exist and are not already in DB
-        const needsSync = localCart.some((i: any) => i.id?.toString().startsWith('local-'));
+        // Sync local to DB if items exist with local IDs
+        const localItems = localCart.filter((i: any) => i.id?.toString().startsWith('local-'));
         
-        if (needsSync) {
+        if (localItems.length > 0) {
             setIsSyncing(true);
-            const syncItems = localCart.filter((i: any) => i.id?.toString().startsWith('local-')).map((i: any) => ({
-                product_id: i.product_id,
-                vendor_product_id: i.vendor_product_id,
+            const syncItems = localItems.map((i: any) => ({
+                product_id: i.product_id || null,
+                vendor_product_id: i.vendor_product_id || null,
                 quantity: i.quantity
             }));
-            await syncCart(syncItems);
+            
+            const result = await syncCart(syncItems);
+            if (result.success) {
+                // Clear local storage after successful sync to prevent double-syncing
+                localStorage.removeItem('cart');
+            }
             setIsSyncing(false);
         }
 
+        // Fetch the unified cart from the database
         const { data: dbItems, error } = await supabase
           .from('cart_items')
           .select(`
@@ -156,7 +163,7 @@ export default function CartPage() {
           .order('created_at');
 
         if (!error && dbItems) {
-          setCartItems(dbItems);
+          setCartItems(dbItems as any[]);
           localStorage.setItem('cart', JSON.stringify(dbItems));
           window.dispatchEvent(new Event('cart-updated'));
         }
