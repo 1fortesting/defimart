@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { updateOrderStatus } from '../actions';
 import { useState, useTransition, useEffect, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ArrowDown, Eye, Loader2, RefreshCw, DollarSign, Package, AlertCircle, Calendar as CalendarIcon, Download, FilterX, Search, ChevronRight, TrendingUp, Phone, MapPin, User } from 'lucide-react';
+import { ArrowDown, Eye, Loader2, RefreshCw, DollarSign, Package, AlertCircle, Calendar as CalendarIcon, Download, FilterX, Search, ChevronRight, TrendingUp, Phone, MapPin, User, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -439,9 +439,9 @@ export default function AdminSalesOrdersClientPage({ initialOrders, stats }: {
                 <Accordion type="multiple" className="space-y-4" defaultValue={Object.keys(groupedAllOrders).slice(0, 1)}>
                     {Object.entries(groupedAllOrders).map(([date, orders]) => <OrderDailyGroup key={date} date={date} orders={orders} handleStatusUpdate={handleStatusUpdate} pendingOrderId={pendingOrderId} />)}
                     {Object.keys(groupedAllOrders).length === 0 && (
-                         <div className="text-center py-40 bg-white rounded-[40px] border-4 border-dashed border-muted-foreground/10 flex flex-col items-center">
-                            <Package className="h-16 w-16 text-muted-foreground/20 mb-4" />
-                            <p className="text-sm font-black uppercase tracking-[3px] text-muted-foreground font-poppins italic">Logbook is currently clear</p>
+                         <div className="text-center py-20 bg-white/50 rounded-[24px] border border-dashed border-muted-foreground/20 flex flex-col items-center">
+                            <Package className="h-12 w-12 text-muted-foreground/30 mb-3" />
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest font-poppins">No listings currently recorded</p>
                         </div>
                     )}
                 </Accordion>
@@ -450,9 +450,9 @@ export default function AdminSalesOrdersClientPage({ initialOrders, stats }: {
                  <Accordion type="multiple" className="space-y-4" defaultValue={Object.keys(groupedUnattendedOrders)}>
                     {Object.entries(groupedUnattendedOrders).map(([date, orders]) => <OrderDailyGroup key={date} date={date} orders={orders} handleStatusUpdate={handleStatusUpdate} pendingOrderId={pendingOrderId} />)}
                     {Object.keys(groupedUnattendedOrders).length === 0 && (
-                         <div className="text-center py-40 bg-white rounded-[40px] border-4 border-dashed border-muted-foreground/10 flex flex-col items-center">
-                            <Check className="h-16 w-16 text-emerald-500/20 mb-4" />
-                            <p className="text-sm font-black uppercase tracking-[3px] text-muted-foreground font-poppins italic">Zero pending actions</p>
+                         <div className="text-center py-20 bg-white/50 rounded-[24px] border border-dashed border-muted-foreground/20 flex flex-col items-center">
+                            <Check className="h-12 w-12 text-emerald-500/30 mb-3" />
+                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest font-poppins">Zero pending actions</p>
                         </div>
                     )}
                 </Accordion>
