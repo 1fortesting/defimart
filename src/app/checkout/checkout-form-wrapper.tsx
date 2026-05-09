@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Tables } from '@/types/supabase';
@@ -35,7 +34,7 @@ export function CheckoutFormWrapper({ cartItems, subtotal }: { cartItems: CartIt
       return cartItems.reduce((acc, item) => {
           const product = item.products || item.vendor_products;
           if (product?.offers_delivery && product.delivery_price_type === 'fixed') {
-              return acc + (product.delivery_price || 0);
+              return acc + Number(product.delivery_price || 0);
           }
           return acc;
       }, 0);
@@ -129,10 +128,12 @@ export function CheckoutFormWrapper({ cartItems, subtotal }: { cartItems: CartIt
                     {cartItems.map(item => {
                         const product = item.products || item.vendor_products;
                         if (!product) return null;
+                        
+                        const price = Number(product.price);
                         const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
                         const finalPrice = isDiscountActive
-                            ? product.price - (product.price * (product.discount_percentage! / 100))
-                            : product.price;
+                            ? price - (price * (Number(product.discount_percentage!) / 100))
+                            : price;
 
                         return (
                             <div key={item.id} className="space-y-3">

@@ -9,8 +9,8 @@ import { ShoppingBag, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 type CartItemWithProduct = Tables<'cart_items'> & {
-  products: any | null;
-  vendor_products?: any | null;
+  products: Tables<'products'> | null;
+  vendor_products: Tables<'vendor_products'> | null;
 };
 
 export default async function CheckoutPage() {
@@ -25,15 +25,20 @@ export default async function CheckoutPage() {
     );
   }
 
-  const { data: cartItems, error } = await supabase
+  // Use explicit joins to ensure product details are loaded correctly for both types
+  const { data: cartItemsRaw, error } = await supabase
     .from('cart_items')
     .select(`
-      *, 
-      products(name, price, discount_percentage, discount_end_date, image_urls, offers_delivery, delivery_price_type, delivery_price),
-      vendor_products:vendor_product_id(name, price, discount_percentage, discount_end_date, image_urls, offers_delivery, delivery_price_type, delivery_price)
+      id,
+      quantity,
+      product_id,
+      vendor_product_id,
+      products:product_id(name, price, discount_percentage, discount_end_date, image_urls, offers_delivery, delivery_price_type, delivery_price, seller_id, cost_price),
+      vendor_products:vendor_product_id(name, price, discount_percentage, discount_end_date, image_urls, offers_delivery, delivery_price_type, delivery_price, seller_id, cost_price)
     `)
-    .eq('user_id', user.id)
-    .returns<CartItemWithProduct[]>();
+    .eq('user_id', user.id);
+
+  const cartItems = (cartItemsRaw || []) as any as CartItemWithProduct[];
 
   if (error || !cartItems || cartItems.length === 0) {
     return (
@@ -51,13 +56,16 @@ export default async function CheckoutPage() {
   }
   
   const subtotal = cartItems.reduce((acc, item) => {
+    // Resolve which product object exists (Supabase returns aliased joins as objects)
     const product = item.products || item.vendor_products;
-    if (!product || typeof product.price !== 'number') return acc;
+    if (!product) return acc;
     
+    const price = Number(product.price);
     const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
+    
     const finalPrice = isDiscountActive
-      ? product.price - (product.price * (product.discount_percentage! / 100))
-      : product.price;
+      ? price - (price * (Number(product.discount_percentage) / 100))
+      : price;
       
     return acc + (finalPrice * (item.quantity || 1));
   }, 0);
