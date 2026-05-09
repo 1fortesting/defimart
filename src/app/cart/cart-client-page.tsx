@@ -49,8 +49,7 @@ function QuantitySelector({ item, onQuantityChange, isPending }: { item: CartIte
 function CartItemUI({ item, onQuantityChange, onRemove, isPending }: { item: CartItemWithProduct, onQuantityChange: (itemId: string, newQuantity: number) => void, onRemove: (itemId: string) => void, isPending: boolean }) {
   const product = item.products || item.vendor_products;
   
-  // Robust check: if the join data is missing but IDs exist, we still show the entry placeholder
-  // but usually we expect product data for a valid cart item.
+  // Robust fallback: if join data is missing but IDs exist, item is invalid.
   if (!product) return null;
 
   const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
@@ -123,9 +122,11 @@ export function CartClientPage({ user, initialItems }: { user: User | null, init
         }
         setLoading(false);
     } else {
-        setItems(initialItems);
+        // Only use DB items once authenticated, but filter out ones that didn't join correctly
+        const validItems = initialItems.filter(i => i.products || i.vendor_products);
+        setItems(validItems);
         // Sync local cache for badges
-        localStorage.setItem('cart', JSON.stringify(initialItems));
+        localStorage.setItem('cart', JSON.stringify(validItems));
         window.dispatchEvent(new Event('cart-updated'));
     }
   }, [user, initialItems]);

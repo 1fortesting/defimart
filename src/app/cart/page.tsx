@@ -9,7 +9,7 @@ export default async function CartPage() {
 
   if (user) {
     // Fetch cart items with an explicit, robust join for both platform and vendor products
-    // We use the constraint names to ensure the correct foreign key is used.
+    // Note: If you just ran the SQL, it may take a few seconds for the cache to clear.
     const { data: dbItems, error } = await supabase
       .from('cart_items')
       .select(`

@@ -26,7 +26,7 @@ export default async function CheckoutPage() {
   }
 
   // Strictly database-driven checkout to ensure integrity
-  // Use explicit joins to avoid ambiguity
+  // Use explicit joins to avoid ambiguity and match Cart Page logic
   const { data: cartItemsRaw, error } = await supabase
     .from('cart_items')
     .select(`
