@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { updateOrderStatus } from '../actions';
 import { useState, useTransition, useEffect, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { ArrowDown, Eye, Loader2, RefreshCw, DollarSign, Package, AlertCircle, Calendar as CalendarIcon, Download, FilterX, Search, ChevronRight, TrendingUp } from 'lucide-react';
+import { ArrowDown, Eye, Loader2, RefreshCw, DollarSign, Package, AlertCircle, Calendar as CalendarIcon, Download, FilterX, Search, ChevronRight, TrendingUp, Phone, MapPin, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -28,14 +28,16 @@ export type OrderWithDetails = Tables<'orders'> & {
 };
 
 const StatCard = ({ title, value, icon: Icon }: { title: string, value: string | number, icon: React.ElementType }) => (
-    <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{title}</CardTitle>
-            <Icon className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-            <div className="text-2xl font-bold">{value}</div>
-        </CardContent>
+    <Card className="bg-white border-none shadow-sm rounded-2xl p-5 group hover:shadow-md transition-all">
+        <div className="flex justify-between items-start">
+            <div className="space-y-1">
+                <p className="text-[11px] font-black uppercase tracking-[2px] text-muted-foreground font-poppins">{title}</p>
+                <h3 className="text-2xl font-black text-foreground font-montserrat tracking-tight">{value}</h3>
+            </div>
+            <div className="bg-primary/10 p-2.5 rounded-xl text-primary group-hover:scale-110 transition-transform">
+                <Icon className="h-5 w-5" />
+            </div>
+        </div>
     </Card>
 );
 
@@ -57,18 +59,18 @@ function StatusSelector({ orderId, currentStatus, onUpdate, isPending }: {
     return (
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
             <Select name="status" defaultValue={currentStatus} onValueChange={(value) => setStatus(value as any)}>
-                <SelectTrigger className="w-[140px]">
+                <SelectTrigger className="w-[140px] h-10 border-2 rounded-xl text-xs font-bold uppercase tracking-widest font-poppins">
                     <SelectValue placeholder="Status" />
                 </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="ready">Ready</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectContent className="rounded-xl font-poppins">
+                    <SelectItem value="pending" className="text-xs uppercase font-bold">Pending</SelectItem>
+                    <SelectItem value="ready" className="text-xs uppercase font-bold">Ready</SelectItem>
+                    <SelectItem value="completed" className="text-xs uppercase font-bold">Completed</SelectItem>
+                    <SelectItem value="cancelled" className="text-xs uppercase font-bold">Cancelled</SelectItem>
                 </SelectContent>
             </Select>
             <input type="hidden" name="orderId" value={orderId} />
-            <Button size="sm" type="submit" disabled={isPending} className="w-[60px]">
+            <Button size="sm" type="submit" disabled={isPending} className="h-10 px-5 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-md">
                 {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
             </Button>
         </form>
@@ -79,27 +81,25 @@ const OrderDailyGroup = ({ date, orders, handleStatusUpdate, pendingOrderId }: {
     const router = useRouter();
     const totalSales = orders.reduce((sum, order) => sum + (order.price_per_item * order.quantity), 0);
     return (
-        <AccordionItem value={date}>
-            <AccordionTrigger className="hover:bg-muted/50 px-4 rounded-md">
-                <div className="flex justify-between items-center w-full">
-                    <span className="font-semibold text-lg">{format(new Date(date), 'PPP')}</span>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{orders.length} {orders.length === 1 ? 'Order' : 'Orders'}</span>
-                        <span className="hidden sm:inline">Total: GHS {totalSales.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+        <AccordionItem value={date} className="border-none mb-4">
+            <AccordionTrigger className="hover:bg-muted/50 px-6 h-16 rounded-[20px] bg-white border-2 border-transparent data-[state=open]:border-primary/20 data-[state=open]:rounded-b-none transition-all shadow-sm">
+                <div className="flex justify-between items-center w-full pr-4">
+                    <span className="font-montserrat font-black text-base uppercase tracking-tighter italic">{format(new Date(date), 'PPP')}</span>
+                    <div className="flex items-center gap-4 text-[11px] font-bold text-muted-foreground uppercase tracking-widest font-poppins">
+                        <span>{orders.length} Units</span>
+                        <span className="hidden sm:inline bg-primary/5 text-primary px-3 py-1 rounded-full border border-primary/10">Total: GHS {totalSales.toLocaleString()}</span>
                     </div>
                 </div>
             </AccordionTrigger>
-            <AccordionContent>
+            <AccordionContent className="bg-white rounded-b-[20px] border-2 border-t-0 border-primary/20 p-4 md:p-6 shadow-sm">
                  <div className="hidden md:block">
                     <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Customer</TableHead>
-                                <TableHead>Product</TableHead>
-                                <TableHead className="hidden sm:table-cell">Pricing</TableHead>
-                                <TableHead className="hidden lg:table-cell">Time</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Actions</TableHead>
+                        <TableHeader className="bg-muted/10">
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead className="text-[11px] font-black uppercase font-poppins h-10">Buyer</TableHead>
+                                <TableHead className="text-[11px] font-black uppercase font-poppins h-10">Commodity</TableHead>
+                                <TableHead className="text-[11px] font-black uppercase font-poppins h-10">Pricing</TableHead>
+                                <TableHead className="text-[11px] font-black uppercase font-poppins h-10 text-right">Processing</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -107,34 +107,30 @@ const OrderDailyGroup = ({ date, orders, handleStatusUpdate, pendingOrderId }: {
                                 const wasDiscounted = order.original_price_per_item > order.price_per_item;
                                 const finalTotal = order.price_per_item * order.quantity;
                                 return (
-                                    <TableRow key={order.id} onClick={() => router.push(`/admin/sales/${order.id}`)} className="cursor-pointer">
-                                        <TableCell>
-                                            <Link href={`/admin/sales/customers/${order.profiles?.id}`} className="hover:underline font-medium">{order.profiles?.display_name || 'N/A'}</Link>
-                                            <div className="text-sm text-muted-foreground hidden lg:block">{order.profiles?.phone_number || 'No phone'}</div>
+                                    <TableRow key={order.id} onClick={() => router.push(`/admin/sales/${order.id}`)} className="cursor-pointer hover:bg-muted/5 border-muted/20">
+                                        <TableCell className="py-4">
+                                            <Link href={`/admin/sales/customers/${order.profiles?.id}`} className="hover:underline font-black text-[13px] font-montserrat uppercase tracking-tight" onClick={(e) => e.stopPropagation()}>{order.profiles?.display_name || 'N/A'}</Link>
+                                            <div className="text-[11px] font-bold text-muted-foreground mt-1 font-roboto uppercase">{order.profiles?.phone_number || 'No contact'}</div>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <Image src={order.products?.image_urls?.[0] || 'https://picsum.photos/seed/1/40/40'} alt={order.products?.name || 'Product'} width={40} height={40} className="rounded-md object-cover hidden sm:block" />
-                                                <div>
-                                                    <div>{order.products?.name || 'N/A'}</div>
-                                                    <div className="text-sm text-muted-foreground">Qty: {order.quantity}</div>
+                                            <div className="flex items-center gap-3">
+                                                <Image src={order.products?.image_urls?.[0] || 'https://picsum.photos/seed/1/40/40'} alt={order.products?.name || 'Product'} width={44} height={44} className="rounded-lg object-cover hidden sm:block border shadow-sm" />
+                                                <div className="min-w-0">
+                                                    <div className="text-[13px] font-bold truncate max-w-[150px] font-inter">{order.products?.name || 'N/A'}</div>
+                                                    <div className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-0.5 font-poppins">Qty: {order.quantity}</div>
                                                 </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="hidden sm:table-cell">
-                                            {wasDiscounted ? (
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-base">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                                    <Badge variant="destructive" className="flex items-center gap-1"><ArrowDown className="h-3 w-3" /></Badge>
-                                                </div>
-                                            ) : (
-                                                <span className="font-bold">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                            )}
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="font-black text-[14px] text-foreground font-roboto">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                {wasDiscounted && <Badge variant="destructive" className="w-fit h-4 px-1 text-[8px] font-black uppercase mt-1">Sale</Badge>}
+                                            </div>
                                         </TableCell>
-                                        <TableCell className="hidden lg:table-cell">{new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</TableCell>
-                                        <TableCell><Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : order.status === 'cancelled' ? 'destructive' : 'outline'}>{order.status}</Badge></TableCell>
-                                        <TableCell onClick={(e) => e.stopPropagation()}>
-                                            <StatusSelector orderId={order.id} currentStatus={order.status} onUpdate={handleStatusUpdate} isPending={pendingOrderId === order.id} />
+                                        <TableCell onClick={(e) => e.stopPropagation()} className="text-right">
+                                            <div className="flex justify-end">
+                                                <StatusSelector orderId={order.id} currentStatus={order.status} onUpdate={handleStatusUpdate} isPending={pendingOrderId === order.id} />
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 );
@@ -154,34 +150,40 @@ const OrderCard = ({ order, handleStatusUpdate, pendingOrderId }: { order: Order
     const router = useRouter();
     const finalTotal = order.price_per_item * order.quantity;
     return (
-        <Card onClick={() => router.push(`/admin/sales/${order.id}`)} className="cursor-pointer">
-            <CardHeader>
-                <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle className="text-base">{order.products?.name || 'N/A'}</CardTitle>
-                        <CardDescription>
-                            by <Link href={`/admin/sales/customers/${order.profiles?.id}`} className="hover:underline font-medium">{order.profiles?.display_name || 'N/A'}</Link> &bull; Qty: {order.quantity}
-                        </CardDescription>
+        <Card onClick={() => router.push(`/admin/sales/${order.id}`)} className="cursor-pointer border-none shadow-sm rounded-2xl bg-muted/20 overflow-hidden hover:bg-muted/30 transition-all">
+            <div className="p-4 space-y-4">
+                <div className="flex justify-between items-start gap-4">
+                    <div className="min-w-0 flex-1">
+                        <Badge className="text-[9px] font-black h-5 uppercase tracking-widest mb-2" variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : order.status === 'cancelled' ? 'destructive' : 'outline'}>
+                            {order.status}
+                        </Badge>
+                        <h3 className="text-[14px] font-black uppercase tracking-tight font-montserrat truncate">{order.products?.name || 'Item Information Unavailable'}</h3>
+                        <div className="flex items-center gap-2 mt-1 text-[11px] font-bold text-muted-foreground uppercase font-poppins">
+                            <User className="h-3 w-3" /> {order.profiles?.display_name || 'Anonymous'}
+                        </div>
                     </div>
-                     <Badge variant={order.status === 'completed' ? 'default' : order.status === 'ready' ? 'secondary' : order.status === 'cancelled' ? 'destructive' : 'outline'}>{order.status}</Badge>
+                    <div className="text-right">
+                         <p className="text-[15px] font-black text-primary font-roboto leading-none mt-1">GHS {finalTotal.toLocaleString()}</p>
+                         <p className="text-[10px] font-bold text-muted-foreground mt-2 uppercase font-poppins">Qty: {order.quantity}</p>
+                    </div>
                 </div>
-            </CardHeader>
-            <CardContent>
-                <div className="flex justify-between items-center">
-                    <div className="font-bold">GHS {finalTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                    <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleString()}</p>
-                </div>
-            </CardContent>
-            <CardFooter className="flex-col items-stretch gap-2">
-                 <div onClick={(e) => e.stopPropagation()}>
+                
+                {order.delivery_location && (
+                    <div className="bg-primary/5 p-3 rounded-xl flex items-center gap-3 border border-primary/10">
+                        <MapPin className="h-4 w-4 text-primary shrink-0" />
+                        <span className="text-[10px] font-black uppercase tracking-tighter text-primary font-poppins truncate">{order.delivery_location}</span>
+                    </div>
+                )}
+
+                <div onClick={(e) => e.stopPropagation()} className="pt-2 border-t border-muted-foreground/10">
                      <StatusSelector 
                         orderId={order.id} 
                         currentStatus={order.status}
                         onUpdate={handleStatusUpdate}
                         isPending={pendingOrderId === order.id}
                       />
-                 </div>
-            </CardFooter>
+                </div>
+            </div>
         </Card>
     )
 }
@@ -262,7 +264,7 @@ export default function AdminSalesOrdersClientPage({ initialOrders, stats }: {
         startRefreshTransition(async () => {
             const result = await updateOrderStatus(formData);
             if (result.success) {
-                toast({ title: "Success", description: "Order status updated." });
+                toast({ variant: 'success', title: "Confirmed", description: "Status synchronized with database." });
                 router.refresh();
             } else if (result.error) {
                 toast({ variant: 'destructive', title: "Update Failed", description: result.error });
@@ -331,32 +333,35 @@ export default function AdminSalesOrdersClientPage({ initialOrders, stats }: {
     const hasActiveFilters = searchQuery !== '' || statusFilter !== 'all';
 
   return (
-    <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-between">
-            <h1 className="text-lg font-semibold md:text-2xl">Sales Dashboard</h1>
-            <div className="flex items-center gap-2">
-                 <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline" size="sm">
-                    <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    Refresh
+    <div className="flex flex-col gap-8 pb-10">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+            <div>
+                <h1 className="text-3xl font-black italic uppercase tracking-tighter font-montserrat">Sales Desk</h1>
+                <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[3px] mt-2 font-poppins">Managed Platform Operations</p>
+            </div>
+            <div className="flex items-center gap-3">
+                 <Button onClick={handleRefresh} disabled={isRefreshing} variant="outline" size="sm" className="h-11 px-6 rounded-2xl font-black text-[11px] uppercase tracking-widest border-2">
+                    <RefreshCw className={cn("mr-2 h-4 w-4", isRefreshing && "animate-spin")} />
+                    Sync
                 </Button>
                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild><Button><Download className="mr-2 h-4 w-4" />Download Reports</Button></DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Export Orders</DropdownMenuLabel>
+                    <DropdownMenuTrigger asChild><Button className="h-11 px-6 rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-primary/20">Reports</Button></DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[240px] rounded-2xl p-2 font-poppins">
+                        <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest opacity-50 px-3">Export Protocol</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={handleDownloadAllFiltered}>Download Filtered Orders (.csv)</DropdownMenuItem>
+                        <DropdownMenuItem onSelect={handleDownloadAllFiltered} className="rounded-xl py-3 text-xs font-bold uppercase">Filtered History (.csv)</DropdownMenuItem>
                          <DropdownMenuSub>
-                            <DropdownMenuSubTrigger>Download by Date</DropdownMenuSubTrigger>
+                            <DropdownMenuSubTrigger className="rounded-xl py-3 text-xs font-bold uppercase">Select Date</DropdownMenuSubTrigger>
                             <DropdownMenuPortal>
-                                <DropdownMenuSubContent>
+                                <DropdownMenuSubContent className="p-3 rounded-2xl shadow-2xl bg-white border-none">
                                     <Popover open={isDownloadPickerOpen} onOpenChange={setIsDownloadPickerOpen}>
                                         <PopoverTrigger asChild>
-                                            <Button variant="ghost" className="w-full justify-start font-normal">
-                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                {downloadDate ? format(downloadDate, 'PPP') : 'Select a date'}
+                                            <Button variant="outline" className="w-full justify-start font-bold h-12 rounded-xl text-xs uppercase border-2">
+                                                <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
+                                                {downloadDate ? format(downloadDate, 'PPP') : 'Pick Date'}
                                             </Button>
                                         </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
+                                        <PopoverContent className="w-auto p-0 border-none shadow-2xl rounded-3xl overflow-hidden" align="start">
                                             <Calendar 
                                                 mode="single" 
                                                 selected={downloadDate} 
@@ -368,7 +373,7 @@ export default function AdminSalesOrdersClientPage({ initialOrders, stats }: {
                                             />
                                         </PopoverContent>
                                     </Popover>
-                                     <Button disabled={!downloadDate} onClick={() => handleDownloadForDate(downloadDate)} className="w-full mt-2">Download for Selected Date</Button>
+                                     <Button disabled={!downloadDate} onClick={() => handleDownloadForDate(downloadDate)} className="w-full mt-3 h-12 rounded-xl font-black text-[10px] uppercase tracking-widest">Download .csv</Button>
                                 </DropdownMenuSubContent>
                             </DropdownMenuPortal>
                         </DropdownMenuSub>
@@ -376,69 +381,83 @@ export default function AdminSalesOrdersClientPage({ initialOrders, stats }: {
                 </DropdownMenu>
             </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <StatCard title="Today's Revenue" value={`GHS ${stats.todaysRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`} icon={DollarSign} />
-            <StatCard title="Today's Profit" value={`GHS ${stats.todaysProfit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`} icon={TrendingUp} />
-            <StatCard title="Pending Orders" value={stats.pendingOrdersCount} icon={AlertCircle} />
-            <StatCard title="Ready for Pickup" value={stats.readyForPickupCount} icon={Package} />
+
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+            <StatCard title="Daily Liquidity" value={`GHS ${stats.todaysRevenue.toLocaleString()}`} icon={DollarSign} />
+            <StatCard title="Profit Index" value={`GHS ${stats.todaysProfit.toLocaleString()}`} icon={TrendingUp} />
+            <StatCard title="Pending Review" value={stats.pendingOrdersCount} icon={AlertCircle} />
+            <StatCard title="Active Pickup" value={stats.readyForPickupCount} icon={Package} />
         </div>
-         <Card>
-            <CardHeader>
-                <CardTitle>Filter & Sort Orders</CardTitle>
+
+         <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
+            <CardHeader className="bg-muted/5 border-b p-6 md:p-8">
+                <CardTitle className="text-[11px] font-black uppercase tracking-[3px] text-muted-foreground font-poppins">Registry Filters</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col sm:flex-row flex-wrap items-center gap-4">
-                <div className="relative w-full sm:w-auto sm:flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input placeholder="Search by product, customer..." className="pl-10" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            <CardContent className="flex flex-col sm:flex-row flex-wrap items-center gap-4 p-6 md:p-8">
+                <div className="relative w-full sm:w-auto sm:flex-1 group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                    <Input placeholder="Search records..." className="pl-11 h-12 border-2 rounded-2xl bg-muted/20 text-sm font-medium focus:border-primary/40 transition-all font-inter" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
                 </div>
                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Filter by status" />
+                    <SelectTrigger className="w-full sm:w-[180px] h-12 border-2 rounded-2xl text-xs font-black uppercase tracking-widest bg-muted/20 font-poppins">
+                        <SelectValue placeholder="All Status" />
                     </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Statuses</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="ready">Ready</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                    <SelectContent className="rounded-2xl font-poppins">
+                        <SelectItem value="all" className="text-xs uppercase font-bold">Show All</SelectItem>
+                        <SelectItem value="pending" className="text-xs uppercase font-bold">New Only</SelectItem>
+                        <SelectItem value="ready" className="text-xs uppercase font-bold">Processing</SelectItem>
+                        <SelectItem value="completed" className="text-xs uppercase font-bold">Finished</SelectItem>
+                        <SelectItem value="cancelled" className="text-xs uppercase font-bold">Archived</SelectItem>
                     </SelectContent>
                 </Select>
                 <Select value={sortOrder} onValueChange={setSortOrder}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder="Sort by" />
+                    <SelectTrigger className="w-full sm:w-[180px] h-12 border-2 rounded-2xl text-xs font-black uppercase tracking-widest bg-muted/20 font-poppins">
+                        <SelectValue placeholder="Sort" />
                     </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="newest-first">Newest First</SelectItem>
-                        <SelectItem value="oldest-first">Oldest First</SelectItem>
-                        <SelectItem value="price-high-low">Price: High to Low</SelectItem>
-                        <SelectItem value="price-low-high">Price: Low to High</SelectItem>
+                    <SelectContent className="rounded-2xl font-poppins">
+                        <SelectItem value="newest-first" className="text-xs uppercase font-bold">Most Recent</SelectItem>
+                        <SelectItem value="oldest-first" className="text-xs uppercase font-bold">Historical</SelectItem>
+                        <SelectItem value="price-high-low" className="text-xs uppercase font-bold">Highest Value</SelectItem>
+                        <SelectItem value="price-low-high" className="text-xs uppercase font-bold">Lowest Value</SelectItem>
                     </SelectContent>
                 </Select>
                  {hasActiveFilters && (
-                    <Button variant="ghost" onClick={handleClearFilters}><FilterX className="mr-2 h-4 w-4" />Clear</Button>
+                    <Button variant="ghost" onClick={handleClearFilters} className="h-12 rounded-2xl font-black text-[11px] uppercase text-destructive font-poppins"><FilterX className="mr-2 h-4 w-4" />Clear</Button>
                 )}
             </CardContent>
         </Card>
-        <Tabs defaultValue="all">
-            <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="all">All Orders ({filteredOrders.length})</TabsTrigger>
-                <TabsTrigger value="unattended">Unattended ({unattendedOrders.length})</TabsTrigger>
+
+        <Tabs defaultValue="all" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-muted/40 p-1.5 rounded-[24px] h-16 shadow-inner font-poppins">
+                <TabsTrigger value="all" className="rounded-[18px] h-full text-xs font-black uppercase tracking-widest data-[state=active]:shadow-lg">All Records ({filteredOrders.length})</TabsTrigger>
+                <TabsTrigger value="unattended" className="rounded-[18px] h-full text-xs font-black uppercase tracking-widest data-[state=active]:shadow-lg relative">
+                    Action Required ({unattendedOrders.length})
+                    {unattendedOrders.length > 0 && <span className="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full animate-ping" />}
+                </TabsTrigger>
             </TabsList>
-            <TabsContent value="all">
-                <Accordion type="multiple" className="space-y-2" defaultValue={Object.keys(groupedAllOrders).slice(0, 1)}>
+            <TabsContent value="all" className="mt-8">
+                <Accordion type="multiple" className="space-y-4" defaultValue={Object.keys(groupedAllOrders).slice(0, 1)}>
                     {Object.entries(groupedAllOrders).map(([date, orders]) => <OrderDailyGroup key={date} date={date} orders={orders} handleStatusUpdate={handleStatusUpdate} pendingOrderId={pendingOrderId} />)}
-                    {Object.keys(groupedAllOrders).length === 0 && <p className="text-center text-muted-foreground py-16">No orders match the current filters.</p>}
+                    {Object.keys(groupedAllOrders).length === 0 && (
+                         <div className="text-center py-40 bg-white rounded-[40px] border-4 border-dashed border-muted-foreground/10 flex flex-col items-center">
+                            <Package className="h-16 w-16 text-muted-foreground/20 mb-4" />
+                            <p className="text-sm font-black uppercase tracking-[3px] text-muted-foreground font-poppins italic">Logbook is currently clear</p>
+                        </div>
+                    )}
                 </Accordion>
             </TabsContent>
-            <TabsContent value="unattended">
-                 <Accordion type="multiple" className="space-y-2" defaultValue={Object.keys(groupedUnattendedOrders)}>
+            <TabsContent value="unattended" className="mt-8">
+                 <Accordion type="multiple" className="space-y-4" defaultValue={Object.keys(groupedUnattendedOrders)}>
                     {Object.entries(groupedUnattendedOrders).map(([date, orders]) => <OrderDailyGroup key={date} date={date} orders={orders} handleStatusUpdate={handleStatusUpdate} pendingOrderId={pendingOrderId} />)}
-                    {Object.keys(groupedUnattendedOrders).length === 0 && <p className="text-center text-muted-foreground py-16">No unattended orders match the current filters.</p>}
+                    {Object.keys(groupedUnattendedOrders).length === 0 && (
+                         <div className="text-center py-40 bg-white rounded-[40px] border-4 border-dashed border-muted-foreground/10 flex flex-col items-center">
+                            <Check className="h-16 w-16 text-emerald-500/20 mb-4" />
+                            <p className="text-sm font-black uppercase tracking-[3px] text-muted-foreground font-poppins italic">Zero pending actions</p>
+                        </div>
+                    )}
                 </Accordion>
             </TabsContent>
         </Tabs>
     </div>
   );
 }
-
-    

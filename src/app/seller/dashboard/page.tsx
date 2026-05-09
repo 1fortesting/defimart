@@ -42,7 +42,10 @@ import {
     MapPin,
     StickyNote,
     Check,
-    X
+    X,
+    Calendar,
+    ChevronRight,
+    User as UserIcon
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -456,6 +459,80 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
     );
 }
 
+function SellerOrderCard({ order, onUpdateStatus, onDeleteOrder }: { order: any, onUpdateStatus: (id: string, s: string) => void, onDeleteOrder: (id: string) => void }) {
+    const prod = order.products || order.vendor_products;
+    const isDelivery = prod?.offers_delivery;
+    const isAccepted = order.status === 'ready' || order.status === 'completed';
+    const isDeclined = order.status === 'cancelled';
+
+    return (
+        <Card className="border-none shadow-sm rounded-2xl overflow-hidden bg-white mb-4 animate-in fade-in duration-300">
+            <div className="p-4 space-y-4">
+                <div className="flex justify-between items-start gap-4">
+                    <div className="min-w-0">
+                         <div className="flex items-center gap-2 mb-2">
+                            <Badge 
+                                className="text-[9px] font-black h-5 px-2 uppercase tracking-widest font-poppins" 
+                                variant={order.status === 'completed' ? 'default' : isDeclined ? 'destructive' : isAccepted ? 'secondary' : 'outline'}
+                            >
+                                {order.status === 'ready' ? (isDelivery ? 'In Transit' : 'Accepted') : order.status}
+                            </Badge>
+                        </div>
+                        <h3 className="text-[14px] font-black uppercase tracking-tight font-montserrat truncate max-w-[200px] leading-tight">
+                            {prod?.name || 'Item Detail Missing'}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1.5 text-[11px] font-bold text-muted-foreground uppercase font-poppins tracking-tighter">
+                            <UserIcon className="h-3 w-3" /> {order.profiles?.display_name || 'Anonymous Buyer'}
+                        </div>
+                    </div>
+                    <div className="text-right">
+                         <p className="text-[15px] font-black text-primary font-roboto">GHS {(order.price_per_item * order.quantity).toFixed(2)}</p>
+                         <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase font-poppins">Qty: {order.quantity}</p>
+                    </div>
+                </div>
+
+                {order.delivery_location && (
+                    <div className="bg-primary/5 p-3 rounded-xl flex items-center gap-3 border border-primary/10">
+                        <MapPin className="h-4 w-4 text-primary shrink-0" />
+                        <span className="text-[11px] font-black uppercase tracking-tighter text-primary font-poppins truncate leading-none">{order.delivery_location}</span>
+                    </div>
+                )}
+
+                {order.notes && (
+                    <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl shadow-sm">
+                        <div className="flex items-center gap-2 mb-2 opacity-70">
+                            <StickyNote className="h-3.5 w-3.5 text-amber-800" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-amber-900 font-poppins">Special Request</span>
+                        </div>
+                        <p className="text-[12px] text-amber-800 leading-relaxed italic font-inter">&ldquo;{order.notes}&rdquo;</p>
+                    </div>
+                )}
+
+                <div className="pt-3 border-t border-muted/20 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex gap-2">
+                        {order.status === 'pending' && (
+                            <>
+                                <Button size="sm" className="h-9 px-5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[10px] uppercase rounded-xl tracking-widest font-poppins" onClick={() => onUpdateStatus(order.id, 'ready')}>Accept</Button>
+                                <Button variant="outline" size="sm" className="h-9 px-5 border-2 border-destructive/20 text-destructive font-black text-[10px] uppercase rounded-xl tracking-widest font-poppins" onClick={() => onUpdateStatus(order.id, 'cancelled')}>Decline</Button>
+                            </>
+                        )}
+                        {order.status === 'ready' && (
+                            <Button size="sm" className="h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase rounded-xl tracking-widest font-poppins" onClick={() => onUpdateStatus(order.id, 'completed')}>
+                                {isDelivery ? 'Delivered' : 'Completed'}
+                            </Button>
+                        )}
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all" asChild><Link href={`/admin/sales/${order.id}`}><Eye className="h-4.5 w-4.5" /></Link></Button>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase font-roboto">{format(new Date(order.created_at), 'MMM d, h:mm a')}</span>
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl text-destructive/40 hover:text-destructive hover:bg-destructive/5 transition-all" onClick={() => onDeleteOrder(order.id)}><Trash2 className="h-4.5 w-4.5" /></Button>
+                    </div>
+                </div>
+            </div>
+        </Card>
+    );
+}
+
 export default function SellerDashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
@@ -514,7 +591,7 @@ export default function SellerDashboardPage() {
     startTransition(async () => {
         await fetchData();
         router.refresh();
-        toast({ title: 'Data Synchronized', description: 'Your shop information is now up to date.' });
+        toast({ variant: 'success', title: 'Operational Sync', description: 'Real-time database records retrieved.' });
     });
   };
 
@@ -660,7 +737,7 @@ export default function SellerDashboardPage() {
           <div className="flex justify-between items-start">
               <div className="space-y-1">
                   <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground font-poppins">{title}</p>
-                  <h3 className="text-xl md:text-2xl font-black text-foreground font-montserrat">{value}</h3>
+                  <h3 className="text-xl md:text-2xl font-black text-foreground font-montserrat tracking-tight leading-none">{value}</h3>
               </div>
               <div className="bg-primary/10 p-2.5 rounded-xl text-primary group-hover:scale-110 transition-transform">
                   <Icon className="h-5 w-5" />
@@ -675,7 +752,7 @@ export default function SellerDashboardPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex flex-col md:flex-row w-full overflow-hidden font-inter">
+    <div className="min-h-screen bg-[#F8F9FA] flex flex-col md:flex-row w-full overflow-hidden font-inter pb-20 md:pb-0">
       
       <Tabs defaultValue="dashboard" className="w-full flex flex-col md:flex-row h-screen overflow-hidden">
         
@@ -815,15 +892,15 @@ export default function SellerDashboardPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                          <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
                             <CardHeader className="bg-white border-b px-6 py-4 flex flex-row items-center justify-between">
-                                <CardTitle className="text-[11px] font-black uppercase tracking-widest text-muted-foreground font-poppins">Order Registry</CardTitle>
-                                <Button variant="link" className="text-primary text-[11px] font-black uppercase p-0 h-auto font-poppins">Full Log</Button>
+                                <CardTitle className="text-[11px] font-black uppercase tracking-widest text-muted-foreground font-poppins">Recent Orders</CardTitle>
+                                <ShoppingBag className="h-4 w-4 text-muted-foreground opacity-50" />
                             </CardHeader>
                             <div className="overflow-x-auto">
                                 <Table>
                                     <TableHeader className="bg-muted/10">
                                         <TableRow className="hover:bg-transparent">
-                                            <TableHead className="text-[11px] font-black uppercase px-6 h-10 font-poppins">ID</TableHead>
-                                            <TableHead className="text-[11px] font-black uppercase h-10 font-poppins">Commodity</TableHead>
+                                            <TableHead className="text-[11px] font-black uppercase px-6 h-10 font-poppins">Ref</TableHead>
+                                            <TableHead className="text-[11px] font-black uppercase h-10 font-poppins">Item</TableHead>
                                             <TableHead className="text-[11px] font-black uppercase text-right px-6 h-10 font-poppins">Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -840,12 +917,17 @@ export default function SellerDashboardPage() {
                                                             className="text-[10px] h-5 px-2 uppercase font-black tracking-widest font-poppins" 
                                                             variant={order.status === 'completed' ? 'default' : isDeclined ? 'destructive' : isAccepted ? 'secondary' : 'outline'}
                                                         >
-                                                            {order.status === 'ready' ? 'Accepted' : order.status}
+                                                            {order.status === 'ready' ? 'Process' : order.status}
                                                         </Badge>
                                                     </TableCell>
                                                 </TableRow>
                                             );
                                         })}
+                                        {orders.length === 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={3} className="text-center py-10 text-xs text-muted-foreground font-inter">No transactions yet</TableCell>
+                                            </TableRow>
+                                        )}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -854,26 +936,26 @@ export default function SellerDashboardPage() {
                         <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
                              <CardHeader className="bg-white border-b px-6 py-4 flex flex-row items-center justify-between">
                                 <CardTitle className="text-[11px] font-black uppercase tracking-widest text-muted-foreground font-poppins">Market Activity</CardTitle>
-                                <FileText className="h-4 w-4 text-muted-foreground" />
+                                <TrendingUp className="h-4 w-4 text-primary" />
                             </CardHeader>
                             <CardContent className="p-6 space-y-5">
                                 {orders.length === 0 ? (
                                     <div className="text-center py-12 opacity-30 flex flex-col items-center">
                                         <Package className="h-10 w-10 mb-3" />
-                                        <p className="text-[11px] font-black uppercase tracking-widest font-poppins">Logs empty</p>
+                                        <p className="text-[11px] font-black uppercase tracking-widest font-poppins">No Logs Recorded</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
                                         {orders.slice(0, 4).map(o => (
-                                            <div key={o.id} className="flex gap-4 items-center">
-                                                <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                            <div key={o.id} className="flex gap-4 items-center group">
+                                                <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 transition-colors group-hover:bg-emerald-600 group-hover:text-white">
                                                     <DollarSign className="h-4.5 w-4.5" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-[13px] font-bold truncate font-inter">Purchase by {o.profiles?.display_name || 'Buyer'}</p>
-                                                    <p className="text-[11px] text-muted-foreground font-roboto">GHS {(o.price_per_item * o.quantity).toFixed(2)}</p>
+                                                    <p className="text-[13px] font-bold truncate font-inter">Deal by {o.profiles?.display_name || 'Buyer'}</p>
+                                                    <p className="text-[11px] text-muted-foreground font-roboto">Value: GHS {(o.price_per_item * o.quantity).toFixed(2)}</p>
                                                 </div>
-                                                <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap font-roboto">{new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                <span className="text-[11px] font-bold text-muted-foreground whitespace-nowrap font-roboto">{new Date(o.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -898,13 +980,14 @@ export default function SellerDashboardPage() {
                             <div className="relative w-full max-w-md group">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                 <Input 
-                                    placeholder="Filter catalog..." 
+                                    placeholder="Search catalog..." 
                                     className="pl-11 h-11 text-[13px] bg-muted/30 border-none rounded-xl font-inter" 
                                     value={globalSearch}
                                     onChange={(e) => setGlobalSearch(e.target.value)}
                                 />
                             </div>
                         </div>
+                        
                         <div className="bg-white overflow-x-auto">
                             <Table>
                                 <TableHeader className="bg-muted/10">
@@ -947,7 +1030,7 @@ export default function SellerDashboardPage() {
                                     ))}
                                     {filteredProducts.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-24 text-muted-foreground italic text-sm font-inter">No commodities in this sector.</TableCell>
+                                            <TableCell colSpan={4} className="text-center py-24 text-muted-foreground italic text-sm font-inter">No items found.</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>
@@ -956,28 +1039,32 @@ export default function SellerDashboardPage() {
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="orders" className="m-0 animate-in fade-in duration-500">
-                    <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
-                        <CardHeader className="bg-white border-b px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <CardTitle className="text-[11px] font-black uppercase tracking-widest text-muted-foreground font-poppins">Order Pipeline</CardTitle>
-                             <div className="relative w-full max-w-[300px] group">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                                <Input 
-                                    placeholder="Search order ID or buyer..." 
-                                    className="pl-10 h-10 text-[13px] bg-muted/30 border-none rounded-xl font-inter" 
-                                    value={globalSearch}
-                                    onChange={(e) => setGlobalSearch(e.target.value)}
-                                />
-                            </div>
-                        </CardHeader>
-                        <div className="bg-white overflow-x-auto">
+                <TabsContent value="orders" className="m-0 space-y-6 animate-in fade-in duration-500">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-2 px-1">
+                        <div>
+                            <h1 className="text-2xl font-black italic uppercase tracking-tighter text-foreground leading-none font-montserrat">Order Registry</h1>
+                            <p className="text-[11px] text-muted-foreground font-bold mt-2 uppercase tracking-[2px] font-poppins">Monitor and fulfill marketplace transactions.</p>
+                        </div>
+                        <div className="relative w-full max-w-[320px] group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                            <Input 
+                                placeholder="Search by name or order ref..." 
+                                className="pl-11 h-11 text-[13px] bg-white border-none shadow-sm rounded-xl font-inter" 
+                                value={globalSearch}
+                                onChange={(e) => setGlobalSearch(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="hidden md:block">
+                        <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
                             <Table>
                                 <TableHeader className="bg-muted/10">
                                     <TableRow className="hover:bg-transparent">
                                         <TableHead className="text-[11px] font-black uppercase px-6 h-12 font-poppins">Buyer Profile</TableHead>
-                                        <TableHead className="text-[11px] font-black uppercase h-12 font-poppins">Commodity Detail</TableHead>
-                                        <TableHead className="text-[11px] font-black uppercase h-12 font-poppins">Lifecycle Phase</TableHead>
-                                        <TableHead className="text-[11px] font-black uppercase text-right px-6 h-12 font-poppins">Actions</TableHead>
+                                        <TableHead className="text-[11px] font-black uppercase h-12 font-poppins">Commodity</TableHead>
+                                        <TableHead className="text-[11px] font-black uppercase h-12 font-poppins">Phase</TableHead>
+                                        <TableHead className="text-[11px] font-black uppercase text-right px-6 h-12 font-poppins">Management</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -1006,7 +1093,7 @@ export default function SellerDashboardPage() {
                                                             <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl max-w-[250px] shadow-sm">
                                                                 <div className="flex items-center gap-2 mb-1.5 opacity-70">
                                                                     <StickyNote className="h-3 w-3 text-amber-800" />
-                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-900 font-poppins">Special Request</span>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-900 font-poppins">Instruction</span>
                                                                 </div>
                                                                 <p className="text-[11px] text-amber-800 leading-relaxed italic font-inter">&ldquo;{o.notes}&rdquo;</p>
                                                             </div>
@@ -1015,11 +1102,11 @@ export default function SellerDashboardPage() {
                                                 </TableCell>
                                                 <TableCell className="py-6">
                                                     <div className="flex flex-col gap-2">
-                                                        {o.status === 'pending' && <Badge variant="outline" className="text-[11px] h-6 px-3 uppercase font-black bg-blue-50 text-blue-700 border-blue-200 font-poppins tracking-widest">New Order</Badge>}
+                                                        {o.status === 'pending' && <Badge variant="outline" className="text-[11px] h-6 px-3 uppercase font-black bg-blue-50 text-blue-700 border-blue-200 font-poppins tracking-widest">New</Badge>}
                                                         {o.status === 'ready' && (
                                                             <Badge variant="secondary" className="text-[11px] h-6 px-3 uppercase font-black bg-emerald-50 text-emerald-700 border-emerald-200 flex items-center gap-2 w-fit font-poppins tracking-widest">
                                                                 {isDelivery ? <Truck className="h-3 w-3" /> : <Package className="h-3 w-3" />}
-                                                                {isDelivery ? 'Pending Delivery' : 'Awaiting Collection'}
+                                                                {isDelivery ? 'In Transit' : 'Accepted'}
                                                             </Badge>
                                                         )}
                                                         {o.status === 'completed' && <Badge variant="default" className="text-[11px] h-6 px-3 uppercase font-black bg-emerald-600 text-white border-none font-poppins tracking-widest">Successful</Badge>}
@@ -1030,34 +1117,17 @@ export default function SellerDashboardPage() {
                                                     <div className="flex justify-end gap-3">
                                                         {o.status === 'pending' && (
                                                             <div className="flex gap-2">
-                                                                <Button 
-                                                                    size="sm" 
-                                                                    className="h-10 text-[11px] font-black uppercase px-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-500/10 font-poppins tracking-widest" 
-                                                                    onClick={() => handleUpdateStatus(o.id, 'ready')}
-                                                                >
-                                                                    Accept
-                                                                </Button>
-                                                                <Button 
-                                                                    variant="ghost" 
-                                                                    size="sm" 
-                                                                    className="h-10 text-[11px] font-black uppercase px-6 text-destructive hover:bg-destructive/10 rounded-xl border-2 border-destructive/10 font-poppins tracking-widest" 
-                                                                    onClick={() => handleUpdateStatus(o.id, 'cancelled')}
-                                                                >
-                                                                    Decline
-                                                                </Button>
+                                                                <Button size="sm" className="h-10 text-[11px] font-black uppercase px-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-poppins tracking-widest" onClick={() => handleUpdateStatus(o.id, 'ready')}>Accept</Button>
+                                                                <Button variant="ghost" size="sm" className="h-10 text-[11px] font-black uppercase px-6 text-destructive hover:bg-destructive/10 rounded-xl border-2 border-destructive/10 font-poppins tracking-widest" onClick={() => handleUpdateStatus(o.id, 'cancelled')}>Decline</Button>
                                                             </div>
                                                         )}
                                                         {o.status === 'ready' && (
-                                                            <Button 
-                                                                size="sm" 
-                                                                className="h-10 text-[11px] font-black uppercase px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 font-poppins tracking-widest" 
-                                                                onClick={() => handleUpdateStatus(o.id, 'completed')}
-                                                            >
-                                                                {isDelivery ? 'Mark Delivered' : 'Confirm Collection'}
+                                                            <Button size="sm" className="h-10 text-[11px] font-black uppercase px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 font-poppins tracking-widest" onClick={() => handleUpdateStatus(o.id, 'completed')}>
+                                                                {isDelivery ? 'Mark Delivered' : 'Confirm'}
                                                             </Button>
                                                         )}
                                                         <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-all" asChild><Link href={`/admin/sales/${o.id}`}><Eye className="h-5 w-5" /></Link></Button>
-                                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive hover:bg-destructive/5 rounded-xl transition-all" onClick={() => handleDeleteOrder(o.id)}>
+                                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-destructive/40 hover:text-destructive hover:bg-destructive/5 rounded-xl transition-all" onClick={() => handleDeleteOrder(o.id)}>
                                                             <Trash2 className="h-5 w-5" />
                                                         </Button>
                                                     </div>
@@ -1067,13 +1137,31 @@ export default function SellerDashboardPage() {
                                     })}
                                     {filteredOrders.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-32 text-muted-foreground italic text-[14px] font-inter">No marketplace transactions found.</TableCell>
+                                            <TableCell colSpan={4} className="text-center py-32 text-muted-foreground italic text-[14px] font-inter font-medium opacity-50">No orders currently match your query.</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>
                             </Table>
-                        </div>
-                    </Card>
+                        </Card>
+                    </div>
+
+                    {/* Mobile Order Pipeline Layout */}
+                    <div className="md:hidden space-y-4">
+                        {filteredOrders.map(o => (
+                            <SellerOrderCard 
+                                key={o.id} 
+                                order={o} 
+                                onUpdateStatus={handleUpdateStatus} 
+                                onDeleteOrder={handleDeleteOrder} 
+                            />
+                        ))}
+                        {filteredOrders.length === 0 && (
+                            <div className="text-center py-40 bg-white rounded-[32px] border-4 border-dashed border-muted-foreground/10 flex flex-col items-center">
+                                <ShoppingBasket className="h-16 w-16 text-muted-foreground/20 mb-4" />
+                                <p className="text-sm font-black uppercase tracking-[3px] text-muted-foreground font-poppins italic">Logbook is clear</p>
+                            </div>
+                        )}
+                    </div>
                 </TabsContent>
 
                 <TabsContent value="clients" className="m-0 animate-in fade-in duration-500">
@@ -1106,7 +1194,7 @@ export default function SellerDashboardPage() {
                     <div className="max-w-2xl mx-auto space-y-8">
                         <Card className="border-none shadow-sm rounded-[40px] overflow-hidden bg-white">
                             <CardHeader className="bg-muted/5 border-b p-8 md:p-10">
-                                <CardTitle className="text-[11px] font-black uppercase tracking-[3px] text-muted-foreground font-poppins">Digital Identity Management</CardTitle>
+                                <CardTitle className="text-[11px] font-black uppercase tracking-[3px] text-muted-foreground font-poppins">Branding & Logic</CardTitle>
                             </CardHeader>
                             <CardContent className="p-8 md:p-12">
                                 <form action={handleUpdateShop} className="space-y-10">
@@ -1122,27 +1210,27 @@ export default function SellerDashboardPage() {
                                             <Input id="logo_settings" name="logo" type="file" accept="image/*" className="hidden" onChange={handleLogoChange} />
                                         </div>
                                         <div className="text-center">
-                                            <p className="text-xs font-black uppercase tracking-[4px] text-primary font-poppins">Modify Marketplace Branding</p>
-                                            <p className="text-[11px] text-muted-foreground mt-2 font-medium uppercase tracking-widest font-poppins">Logo dimension optimal: 512x512</p>
+                                            <p className="text-xs font-black uppercase tracking-[4px] text-primary font-poppins">Identity Management</p>
+                                            <p className="text-[11px] text-muted-foreground mt-2 font-medium uppercase tracking-widest font-poppins">Logo optimal: 512x512</p>
                                         </div>
                                     </div>
 
                                     <div className="space-y-8">
                                         <div className="grid gap-2.5">
-                                            <Label htmlFor="shop_name_s" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Enterprise Name</Label>
+                                            <Label htmlFor="shop_name_s" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Shop Name</Label>
                                             <Input id="shop_name_s" name="shop_name" defaultValue={seller.shop_name} required className="h-14 border-2 rounded-2xl text-[15px] font-bold bg-muted/20 font-inter" />
                                         </div>
                                         <div className="grid gap-2.5">
-                                            <Label htmlFor="desc_s" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Store Biography</Label>
+                                            <Label htmlFor="desc_s" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Biography</Label>
                                             <Textarea id="desc_s" name="description" defaultValue={seller.description || ''} placeholder="Tell customers about your shop..." className="min-h-[160px] border-2 rounded-2xl text-[14px] bg-muted/20 resize-none p-5 font-inter leading-relaxed" />
                                         </div>
                                         <div className="grid grid-cols-2 gap-8">
                                             <div className="grid gap-2.5">
-                                                <Label className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Protocol Start</Label>
+                                                <Label className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Opens</Label>
                                                 <Input name="open_time" type="time" defaultValue={seller.open_time || "08:00"} className="h-14 border-2 rounded-2xl bg-muted/20 text-sm font-black font-roboto" />
                                             </div>
                                             <div className="grid gap-2.5">
-                                                <Label className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Protocol End</Label>
+                                                <Label className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Closes</Label>
                                                 <Input name="close_time" type="time" defaultValue={seller.close_time || "20:00"} className="h-14 border-2 rounded-2xl bg-muted/20 text-sm font-black font-roboto" />
                                             </div>
                                         </div>
