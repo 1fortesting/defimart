@@ -89,7 +89,7 @@ export function BottomNav() {
   navItems.push({ label: 'Profile', href: '/profile', icon: User });
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-primary/10 h-[72px] z-[100] flex items-center justify-around px-1 overflow-x-auto no-scrollbar shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-primary/10 h-[76px] z-[100] flex items-center justify-around px-2 overflow-x-auto no-scrollbar shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
       <div className="absolute inset-0 bg-gradient-to-t from-primary/[0.05] via-transparent to-blue-500/[0.01] pointer-events-none" />
       
       {navItems.map((item) => {
@@ -102,26 +102,26 @@ export function BottomNav() {
           <Link 
             key={item.href} 
             href={item.href}
-            className="flex flex-col items-center justify-center gap-1 min-w-[60px] relative z-10"
+            className="flex flex-col items-center justify-center gap-1.5 min-w-[64px] relative z-10"
           >
             <div className={cn(
-              "p-1.5 rounded-xl transition-all duration-300 flex items-center justify-center relative",
+              "p-2 rounded-xl transition-all duration-300 flex items-center justify-center relative",
               isActive ? "bg-primary/10 scale-110" : "bg-transparent"
             )}>
               {isProfile ? (
                  <Avatar className={cn(
-                    "h-6 w-6 border-2 transition-all",
+                    "h-7 w-7 border-2 transition-all",
                     isActive ? "border-[var(--gold)]" : "border-transparent"
                 )}>
                     {user ? (
                         <>
                             <AvatarImage src={user.user_metadata.avatar_url || undefined} />
-                            <AvatarFallback className="text-[10px] bg-primary/5 text-primary font-bold">
+                            <AvatarFallback className="text-[11px] bg-primary/5 text-primary font-bold">
                                 {user.user_metadata.display_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
                             </AvatarFallback>
                         </>
                     ) : (
-                        <AvatarFallback className="text-[10px] bg-muted text-muted-foreground font-bold uppercase">
+                        <AvatarFallback className="text-[11px] bg-muted text-muted-foreground font-bold uppercase">
                             U
                         </AvatarFallback>
                     )}
@@ -130,12 +130,12 @@ export function BottomNav() {
                 <>
                   <Icon 
                       className={cn(
-                      "w-[20px] h-[20px] stroke-[2px]",
+                      "w-[22px] h-[22px] stroke-[2.2px]",
                       isActive ? "text-[var(--gold)]" : "text-[var(--muted)]"
                       )} 
                   />
                   {isCart && cartCount > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-4 min-w-4 flex items-center justify-center p-0 text-[8px] bg-red-600 text-white font-black border-2 border-background animate-in zoom-in duration-300">
+                    <Badge className="absolute -top-1.5 -right-1.5 h-5 min-w-5 flex items-center justify-center p-0.5 text-[10px] bg-red-600 text-white font-black border-2 border-background animate-in zoom-in duration-300">
                       {cartCount}
                     </Badge>
                   )}
@@ -144,7 +144,7 @@ export function BottomNav() {
             </div>
             <span 
               className={cn(
-                "text-[9px] font-dm font-bold leading-none uppercase tracking-tighter",
+                "text-[10px] md:text-xs font-dm font-black leading-none uppercase tracking-tighter",
                 isActive ? "text-[var(--gold)]" : "text-[var(--muted)]"
               )}
             >

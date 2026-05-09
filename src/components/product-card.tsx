@@ -182,103 +182,103 @@ export function ProductCard({ product, user, isSaved, isVendor = false, onUnsave
         <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-blue-500/[0.01] rounded-full blur-3xl transition-all duration-700 opacity-20 group-hover:opacity-40 group-hover:scale-125 z-0" />
         
         {product.is_featured && (
-            <div className="absolute top-2 right-2 z-20 bg-yellow-400 text-white rounded-full p-1.5 shadow-md">
-                <Star className="h-4 w-4 fill-current" />
+            <div className="absolute top-2.5 right-2.5 z-20 bg-yellow-400 text-white rounded-full p-2 shadow-md">
+                <Star className="h-4.5 w-4.5 fill-current" />
             </div>
         )}
 
         <div className="relative z-10 flex flex-col h-full">
-            <div className="p-3">
+            <div className="p-4">
                 <div className="block relative aspect-square overflow-hidden rounded-2xl bg-primary/[0.01]">
                     {hasImage ? (
                         <Image
                             src={product.image_urls![0]}
                             alt={product.name}
                             fill
-                            className="object-contain p-2 group-hover:scale-110 transition-transform duration-500 drop-shadow-sm rounded-2xl"
+                            className="object-contain p-3 group-hover:scale-110 transition-transform duration-500 drop-shadow-sm rounded-2xl"
                         />
                     ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/30">
-                            <ImageIcon className="h-12 w-12 mb-1" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">No Image</span>
+                            <ImageIcon className="h-14 w-14 mb-2" />
+                            <span className="text-[11px] font-black uppercase tracking-widest">No Image</span>
                         </div>
                     )}
                 </div>
             </div>
             
-            <div className="p-4 pt-0 flex flex-col justify-between flex-grow">
+            <div className="p-5 pt-0 flex flex-col justify-between flex-grow">
                 <div>
-                    <h3 className="font-syne font-bold text-sm md:text-base leading-tight text-[var(--dark)] mb-1 group-hover:text-primary transition-colors">
+                    <h3 className="font-syne font-bold text-[15px] md:text-lg leading-tight text-[var(--dark)] mb-1.5 group-hover:text-primary transition-colors">
                         {product.name}
                     </h3>
-                     <div className="text-[11px] md:text-xs text-[var(--muted)] font-dm line-clamp-2 h-8 overflow-hidden mb-2">
+                     <div className="text-xs md:text-sm text-[var(--muted)] font-dm line-clamp-2 h-9 overflow-hidden mb-3">
                         {displayDescription}
                     </div>
-                    <div className="flex items-center gap-2 mb-3">
-                        <StarRating rating={product.average_rating || 0} size={14} showText={false} />
-                        {product.review_count !== undefined && product.review_count > 0 && <span className="text-[10px] text-[var(--muted)]">({product.review_count})</span>}
+                    <div className="flex items-center gap-2 mb-4">
+                        <StarRating rating={product.average_rating || 0} size={15} showText={false} />
+                        {product.review_count !== undefined && product.review_count > 0 && <span className="text-xs text-[var(--muted)]">({product.review_count})</span>}
                     </div>
                 </div>
                 
                 <div className="flex items-center justify-between mt-auto">
                      <div className="text-left flex flex-col">
                         {isDiscountActive && (
-                            <p className="text-[10px] text-red-500/70 line-through">GHS {formatPrice(product.price)}</p>
+                            <p className="text-[11px] text-red-500/70 font-bold line-through">GHS {formatPrice(product.price)}</p>
                         )}
-                        <p className="font-syne font-bold text-base md:text-lg text-[var(--dark)]">GHS {formatPrice(discountedPrice)}</p>
+                        <p className="font-syne font-bold text-lg md:text-xl text-[var(--dark)]">GHS {formatPrice(discountedPrice)}</p>
                     </div>
                     
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5">
                         <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="h-8 w-8 rounded-full text-[var(--muted)] hover:text-[var(--gold)] hover:bg-[var(--gold)]/10" 
+                            className="h-9 w-9 rounded-full text-[var(--muted)] hover:text-[var(--gold)] hover:bg-[var(--gold)]/10" 
                             onClick={handleShare}
                             aria-label="Share product"
                         >
-                            <Share2 className="h-4 w-4" />
+                            <Share2 className="h-4.5 w-4.5" />
                         </Button>
 
                         <Sheet open={showShareFallback} onOpenChange={setShowShareFallback}>
                             <SheetContent side="bottom" className="rounded-t-3xl border-t-0 p-0 overflow-hidden bg-gradient-to-b from-[var(--gold)] to-blue-500 z-[150]">
-                                <div className="w-12 h-1.5 bg-white/30 rounded-full mx-auto mt-3 mb-1" />
-                                <SheetHeader className="px-6 py-4 border-b border-white/10">
+                                <div className="w-12 h-2 bg-white/30 rounded-full mx-auto mt-4 mb-2" />
+                                <SheetHeader className="px-6 py-5 border-b border-white/10">
                                     <SheetTitle className="text-left text-sm font-syne font-black uppercase tracking-widest text-white">Share with friends</SheetTitle>
                                 </SheetHeader>
-                                <div className="p-6 grid grid-cols-3 gap-4">
-                                    <button onClick={shareWhatsApp} className="flex flex-col items-center gap-2 group">
-                                        <div className="h-14 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
-                                            <MessageCircle className="h-7 w-7" />
+                                <div className="p-8 grid grid-cols-3 gap-6">
+                                    <button onClick={shareWhatsApp} className="flex flex-col items-center gap-3 group">
+                                        <div className="h-16 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
+                                            <MessageCircle className="h-8 w-8" />
                                         </div>
-                                        <span className="text-[10px] font-bold font-dm uppercase tracking-tighter text-white/90">WhatsApp</span>
+                                        <span className="text-xs font-bold font-dm uppercase tracking-tighter text-white/90">WhatsApp</span>
                                     </button>
-                                    <button onClick={shareFacebook} className="flex flex-col items-center gap-2 group">
-                                        <div className="h-14 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
-                                            <Facebook className="h-7 w-7" />
+                                    <button onClick={shareFacebook} className="flex flex-col items-center gap-3 group">
+                                        <div className="h-16 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
+                                            <Facebook className="h-8 w-8" />
                                         </div>
-                                        <span className="text-[10px] font-bold font-dm uppercase tracking-tighter text-white/90">Facebook</span>
+                                        <span className="text-xs font-bold font-dm uppercase tracking-tighter text-white/90">Facebook</span>
                                     </button>
-                                    <button onClick={handleCopyLink} className="flex flex-col items-center gap-2 group">
-                                        <div className="h-14 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
-                                            {isCopied ? <Check className="h-7 w-7" /> : <Copy className="h-7 w-7" />}
+                                    <button onClick={handleCopyLink} className="flex flex-col items-center gap-3 group">
+                                        <div className="h-16 w-14 bg-white/20 text-white rounded-2xl flex items-center justify-center group-hover:bg-white group-hover:text-[var(--gold)] transition-all duration-300 shadow-sm">
+                                            {isCopied ? <Check className="h-8 w-8" /> : <Copy className="h-8 w-8" />}
                                         </div>
-                                        <span className="text-[10px] font-bold font-dm uppercase tracking-tighter text-white/90">{isCopied ? 'Copied!' : 'Copy Link'}</span>
+                                        <span className="text-xs font-bold font-dm uppercase tracking-tighter text-white/90">{isCopied ? 'Copied!' : 'Copy Link'}</span>
                                     </button>
                                 </div>
                             </SheetContent>
                         </Sheet>
 
-                        <Button onClick={handleToggleSave} size="icon" variant="ghost" className="h-8 w-8 rounded-full text-[var(--muted)] hover:text-[var(--gold)] hover:bg-[var(--gold)]/10" aria-label="Save for later">
-                            <Heart className={cn("h-4 w-4", isSavedState && "fill-[var(--gold)] text-[var(--gold)]")} />
+                        <Button onClick={handleToggleSave} size="icon" variant="ghost" className="h-9 w-9 rounded-full text-[var(--muted)] hover:text-[var(--gold)] hover:bg-[var(--gold)]/10" aria-label="Save for later">
+                            <Heart className={cn("h-4.5 w-4.5", isSavedState && "fill-[var(--gold)] text-[var(--gold)]")} />
                         </Button>
                     </div>
                 </div>
                 <Button 
                     onClick={handleAddToCart}
                     disabled={product.quantity === 0} 
-                    className="w-full mt-3 bg-gradient-to-r from-[var(--gold)] to-orange-600 hover:from-orange-600 hover:to-red-600 text-white transition-all duration-500 shadow-lg shadow-[var(--gold)]/20 border-none"
+                    className="w-full mt-5 h-12 bg-gradient-to-r from-[var(--gold)] to-orange-600 hover:from-orange-600 hover:to-red-600 text-white font-black uppercase tracking-widest transition-all duration-500 shadow-lg shadow-[var(--gold)]/20 border-none"
                 >
-                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    <ShoppingCart className="mr-2 h-5 w-5" />
                     {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
                 </Button>
             </div>
