@@ -1,3 +1,4 @@
+
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -17,7 +18,7 @@ export async function updateOrderStatus(formData: FormData) {
 
     const { data: order, error: fetchError } = await supabase
         .from('orders')
-        .select('*, products(name), vendor_products:vendor_product_id(name), profiles:buyer_id(phone_number, display_name)')
+        .select('*, products(name, offers_delivery), vendor_products:vendor_product_id(name, offers_delivery), profiles:buyer_id(phone_number, display_name)')
         .eq('id', orderId)
         .single();
 
@@ -68,7 +69,9 @@ export async function updateOrderStatus(formData: FormData) {
     // --- Notifications to Buyer ---
     const buyerPhoneNumber = order.profiles?.phone_number;
     const buyerName = order.profiles?.display_name || 'Customer';
-    const productName = order.products?.name || order.vendor_products?.name || 'Your order';
+    const prod = order.products || order.vendor_products;
+    const productName = prod?.name || 'Your order';
+    const isDeliveryOrder = prod?.offers_delivery;
     const pickupDate = getPickupDateString();
 
     if (buyerPhoneNumber) {
@@ -76,11 +79,16 @@ export async function updateOrderStatus(formData: FormData) {
         const orderShortId = order.id.substring(0, 8);
 
         if (newStatus === 'ready' && oldStatus !== 'ready') {
-            message = `DEFIMART: Hi ${buyerName}, your order #${orderShortId} for '${productName}' is ready! 📦 Pick it up on ${pickupDate}. Payment is required on collection. Thank you!`;
+            if (isDeliveryOrder) {
+                message = `DEFIMART: Hi ${buyerName}, your order #${orderShortId} for '${productName}' has been accepted! 🚚 Our team is preparing it for delivery. Payment is required on arrival. Thank you!`;
+            } else {
+                message = `DEFIMART: Hi ${buyerName}, your order #${orderShortId} for '${productName}' is ready! 📦 Pick it up on ${pickupDate}. Payment is required on collection. Thank you!`;
+            }
         } else if (newStatus === 'completed' && oldStatus !== 'completed') {
-            message = `DEFIMART: Order #${orderShortId} is now complete! ✅ Thank you for shopping with us, ${buyerName}. We hope you enjoy your purchase!`;
+            const deliveryNote = isDeliveryOrder ? 'delivered' : 'completed';
+            message = `DEFIMART: Order #${orderShortId} is now ${deliveryNote}! ✅ Thank you for shopping with us, ${buyerName}. We hope you enjoy your purchase!`;
         } else if (newStatus === 'cancelled' && oldStatus !== 'cancelled') {
-            message = `DEFIMART: Order #${orderShortId} for '${productName}' has been cancelled. ❌ If you didn't request this, please contact support immediately.`;
+            message = `DEFIMART: Order #${orderShortId} for '${productName}' was not accepted by the vendor and has been declined. ❌ Please browse our other listings or contact support for help.`;
         }
 
         if (message) {

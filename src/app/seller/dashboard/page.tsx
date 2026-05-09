@@ -41,7 +41,9 @@ import {
     Box,
     ShoppingBasket,
     MapPin,
-    StickyNote
+    StickyNote,
+    Check,
+    X
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -492,7 +494,7 @@ export default function SellerDashboardPage() {
 
             const { data: ordersData } = await supabase
               .from('orders')
-              .select('*, products:product_id(name, image_urls), vendor_products:vendor_product_id(name, image_urls), profiles:buyer_id(display_name, phone_number, id)')
+              .select('*, products:product_id(name, image_urls, offers_delivery), vendor_products:vendor_product_id(name, image_urls, offers_delivery), profiles:buyer_id(display_name, phone_number, id)')
               .eq('seller_id', user.id)
               .order('created_at', { ascending: false });
             setOrders(ordersData || []);
@@ -537,7 +539,7 @@ export default function SellerDashboardPage() {
         const result = await updateOrderStatus(formData);
         if (result.success) {
             setOrders(orders.map(o => o.id === orderId ? { ...o, status } : o));
-            toast({ title: 'Order Status Updated', variant: 'success' });
+            toast({ title: status === 'cancelled' ? 'Order Declined' : 'Order Status Updated', variant: 'success' });
         } else {
             toast({ title: 'Update failed', description: result.error, variant: 'destructive' });
         }
@@ -622,7 +624,6 @@ export default function SellerDashboardPage() {
   if (loading) return <div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin h-12 w-12 text-primary" /></div>;
   if (!seller) return <div className="p-8 text-center h-screen flex items-center justify-center flex-col"><p className="text-muted-foreground">Seller profile not found.</p><Button asChild variant="outline" className="mt-4"><Link href="/">Return Home</Link></Button></div>;
 
-  // CRITICAL: Financials only count COMPLETED orders
   const totalRevenue = orders.filter(o => o.status === 'completed').reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
   
   const StatCard = ({ title, value, icon: Icon, subText }: { title: string, value: string | number, icon: any, subText?: string }) => (
@@ -825,15 +826,24 @@ export default function SellerDashboardPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {orders.slice(0, 5).map(order => (
-                                            <TableRow key={order.id} className="hover:bg-muted/5 transition-colors">
-                                                <TableCell className="text-[10px] font-mono px-5 py-3">#{order.id.substring(0, 6)}</TableCell>
-                                                <TableCell className="text-[10px] font-bold truncate max-w-[100px] py-3">{order.products?.name || order.vendor_products?.name}</TableCell>
-                                                <TableCell className="text-right px-5 py-3">
-                                                    <Badge className="text-[7px] h-3.5 px-1.5 uppercase font-black" variant={order.status === 'completed' ? 'default' : 'outline'}>{order.status}</Badge>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                        {orders.slice(0, 5).map(order => {
+                                            const isAccepted = order.status === 'ready' || order.status === 'completed';
+                                            const isDeclined = order.status === 'cancelled';
+                                            return (
+                                                <TableRow key={order.id} className="hover:bg-muted/5 transition-colors">
+                                                    <TableCell className="text-[10px] font-mono px-5 py-3">#{order.id.substring(0, 6)}</TableCell>
+                                                    <TableCell className="text-[10px] font-bold truncate max-w-[100px] py-3">{order.products?.name || order.vendor_products?.name}</TableCell>
+                                                    <TableCell className="text-right px-5 py-3">
+                                                        <Badge 
+                                                            className="text-[7px] h-3.5 px-1.5 uppercase font-black" 
+                                                            variant={order.status === 'completed' ? 'default' : isDeclined ? 'destructive' : isAccepted ? 'secondary' : 'outline'}
+                                                        >
+                                                            {order.status === 'ready' ? 'Accepted' : order.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
                                     </TableBody>
                                 </Table>
                             </div>
@@ -965,51 +975,89 @@ export default function SellerDashboardPage() {
                                 <TableHeader className="bg-muted/10">
                                     <TableRow>
                                         <TableHead className="text-[8px] font-black uppercase px-5 h-8">Buyer & Location</TableHead>
-                                        <TableHead className="text-[8px] font-black uppercase h-8">Item & Special Note</TableHead>
-                                        <TableHead className="text-[8px] font-black uppercase h-8">Total</TableHead>
-                                        <TableHead className="text-[8px] font-black uppercase text-right px-5 h-8">Process</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase h-8">Item & Note</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase h-8">Status Phase</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase text-right px-5 h-8">Management</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {filteredOrders.map(o => (
-                                        <TableRow key={o.id} className="hover:bg-muted/5 transition-colors align-top">
-                                            <TableCell className="px-5 py-3">
-                                                <div className="space-y-1">
-                                                    <div>
-                                                        <p className="text-[10px] font-black leading-none">{o.profiles?.display_name}</p>
-                                                        <p className="text-[8px] font-bold text-muted-foreground mt-0.5">{o.profiles?.phone_number}</p>
-                                                    </div>
-                                                    {o.delivery_location && (
-                                                        <div className="flex items-center gap-1 text-[8px] font-black text-primary bg-primary/5 px-1.5 py-0.5 rounded-md w-fit uppercase tracking-tighter mt-1">
-                                                            <MapPin className="h-2.5 w-2.5" /> {o.delivery_location}
+                                    {filteredOrders.map(o => {
+                                        const prod = o.products || o.vendor_products;
+                                        const isDelivery = prod?.offers_delivery;
+                                        return (
+                                            <TableRow key={o.id} className="hover:bg-muted/5 transition-colors align-top">
+                                                <TableCell className="px-5 py-3">
+                                                    <div className="space-y-1">
+                                                        <div>
+                                                            <p className="text-[10px] font-black leading-none">{o.profiles?.display_name}</p>
+                                                            <p className="text-[8px] font-bold text-muted-foreground mt-0.5">{o.profiles?.phone_number}</p>
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="px-5 py-3">
-                                                <div className="space-y-2">
-                                                    <p className="text-[10px] font-bold max-w-[150px] truncate">{o.products?.name || o.vendor_products?.name}</p>
-                                                    {o.notes && (
-                                                        <div className="bg-amber-50 border border-amber-100 p-2 rounded-lg max-w-[200px]">
-                                                            <div className="flex items-center gap-1 mb-1">
-                                                                <StickyNote className="h-2.5 w-2.5 text-amber-600" />
-                                                                <span className="text-[7px] font-black uppercase text-amber-600 tracking-tighter">Buyer Instruction</span>
+                                                        {o.delivery_location && (
+                                                            <div className="flex items-center gap-1 text-[8px] font-black text-primary bg-primary/5 px-1.5 py-0.5 rounded-md w-fit uppercase tracking-tighter mt-1">
+                                                                <MapPin className="h-2.5 w-2.5" /> {o.delivery_location}
                                                             </div>
-                                                            <p className="text-[9px] text-amber-800 leading-tight italic">"{o.notes}"</p>
-                                                        </div>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="px-5 py-3">
+                                                    <div className="space-y-2">
+                                                        <p className="text-[10px] font-bold max-w-[150px] truncate">{prod?.name}</p>
+                                                        {o.notes && (
+                                                            <div className="bg-amber-50 border border-amber-100 p-2 rounded-lg max-w-[180px]">
+                                                                <p className="text-[8px] text-amber-800 leading-tight italic line-clamp-2">"{o.notes}"</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="py-3">
+                                                    {o.status === 'pending' && <Badge variant="outline" className="text-[7px] h-3.5 px-1.5 uppercase font-black bg-blue-50 text-blue-700 border-blue-200">New Request</Badge>}
+                                                    {o.status === 'ready' && (
+                                                        <Badge variant="secondary" className="text-[7px] h-3.5 px-1.5 uppercase font-black bg-emerald-50 text-emerald-700 border-emerald-200 flex items-center gap-1 w-fit">
+                                                            {isDelivery ? <Truck className="h-2 w-2" /> : <Package className="h-2 w-2" />}
+                                                            {isDelivery ? 'Pending Delivery' : 'Accepted / Prep'}
+                                                        </Badge>
                                                     )}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-[10px] font-black py-3">GHS {o.price_per_item * o.quantity}</TableCell>
-                                            <TableCell className="text-right px-5 py-3">
-                                                <div className="flex justify-end gap-1.5">
-                                                    {o.status === 'pending' && <Button size="sm" className="h-6 text-[7px] font-black uppercase px-2 rounded-md" onClick={() => handleUpdateStatus(o.id, 'ready')}>Approve</Button>}
-                                                    {o.status === 'ready' && <Button size="sm" className="h-6 text-[7px] font-black uppercase px-2 rounded-md bg-emerald-500 text-white hover:bg-emerald-600" onClick={() => handleUpdateStatus(o.id, 'completed')}>Finalize</Button>}
-                                                    <Button variant="ghost" size="icon" className="h-6 w-6" asChild><Link href={`/admin/sales/${o.id}`}><Eye className="h-3 w-3" /></Link></Button>
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
+                                                    {o.status === 'completed' && <Badge variant="default" className="text-[7px] h-3.5 px-1.5 uppercase font-black bg-emerald-600 text-white border-none">{isDelivery ? 'Delivered' : 'Completed'}</Badge>}
+                                                    {o.status === 'cancelled' && <Badge variant="destructive" className="text-[7px] h-3.5 px-1.5 uppercase font-black">Declined</Badge>}
+                                                </TableCell>
+                                                <TableCell className="text-right px-5 py-3">
+                                                    <div className="flex justify-end gap-1.5">
+                                                        {o.status === 'pending' && (
+                                                            <div className="flex gap-1">
+                                                                <Button 
+                                                                    size="sm" 
+                                                                    className="h-7 w-7 p-0 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md shadow-sm" 
+                                                                    onClick={() => handleUpdateStatus(o.id, 'ready')}
+                                                                    title="Accept Order"
+                                                                >
+                                                                    <Check className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                                <Button 
+                                                                    variant="ghost" 
+                                                                    size="sm" 
+                                                                    className="h-7 w-7 p-0 text-destructive hover:bg-destructive/10 rounded-md" 
+                                                                    onClick={() => handleUpdateStatus(o.id, 'cancelled')}
+                                                                    title="Decline Order"
+                                                                >
+                                                                    <X className="h-3.5 w-3.5" />
+                                                                </Button>
+                                                            </div>
+                                                        )}
+                                                        {o.status === 'ready' && (
+                                                            <Button 
+                                                                size="sm" 
+                                                                className="h-7 text-[8px] font-black uppercase px-3 rounded-md bg-emerald-600 hover:bg-emerald-700 shadow-md" 
+                                                                onClick={() => handleUpdateStatus(o.id, 'completed')}
+                                                            >
+                                                                {isDelivery ? 'Mark Delivered' : 'Complete'}
+                                                            </Button>
+                                                        )}
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7" asChild><Link href={`/admin/sales/${o.id}`}><Eye className="h-3.5 w-3.5" /></Link></Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
                                     {filteredOrders.length === 0 && (
                                         <TableRow>
                                             <TableCell colSpan={4} className="text-center py-16 text-muted-foreground italic text-[11px]">No matching records found.</TableCell>
