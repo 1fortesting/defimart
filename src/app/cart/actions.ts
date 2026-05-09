@@ -201,15 +201,25 @@ export async function placeOrder(formData: FormData) {
             await sendSms({ phoneNumber: profile.phone_number, message });
         }
 
-        // 2. Notify Vendors
+        // 2. Notify Vendors (Enhanced with customer details)
+        const buyerName = profile?.display_name || 'A student';
+        const buyerPhone = profile?.phone_number || 'N/A';
+
         const uniqueSellerIds = Array.from(new Set(newOrders.map(o => o.seller_id)));
         for (const sellerId of uniqueSellerIds) {
             const { data: seller } = await supabase.from('sellers').select('phone_number').eq('user_id', sellerId).single();
             if (seller?.phone_number) {
+                // Get all orders for this specific seller in this session
+                const sellerOrders = newOrders.filter(o => o.seller_id === sellerId);
+                const totalAmount = sellerOrders.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
+                
+                // Get sample product name for the message
                 const prod = cartItems.find((i: any) => (i.products?.seller_id === sellerId || i.vendor_products?.seller_id === sellerId));
-                const name = prod?.products?.name || prod?.vendor_products?.name || "an item";
-                const message = `DEFIMART: New order alert for "${name}"! View details in your vendor hub.`;
-                await sendSms({ phoneNumber: seller.phone_number, message });
+                const itemName = prod?.products?.name || prod?.vendor_products?.name || "an item";
+                
+                const vendorMessage = `DEFIMART VENDOR: New order for "${itemName}"${sellerOrders.length > 1 ? ' and others' : ''}. Amount: GHS ${totalAmount.toLocaleString()}. Customer: ${buyerName} (${buyerPhone}). View in your hub.`;
+                
+                await sendSms({ phoneNumber: seller.phone_number, message: vendorMessage });
             }
         }
     };
