@@ -3,7 +3,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { Tables } from '@/types/supabase';
 import { sendSms } from '@/lib/sendSms';
 
 /**
@@ -35,10 +34,10 @@ export async function syncCart(items: { product_id?: string | null, vendor_produ
       const { data: existing } = await query.maybeSingle();
 
       if (existing) {
-          // If it exists, update quantity (take the higher of the two)
+          // If it exists, update quantity (take the higher of the two or aggregate)
           await supabase
             .from('cart_items')
-            .update({ quantity: Math.max(existing.quantity, item.quantity) })
+            .update({ quantity: existing.quantity + item.quantity })
             .eq('id', existing.id);
       } else {
           // If it doesn't exist, insert new record
@@ -193,15 +192,12 @@ export async function placeOrder(formData: FormData) {
 
     // --- Notifications ---
     const sendOrderNotifications = async () => {
-        // 1. Notify Buyer
         const { data: profile } = await supabase.from('profiles').select('phone_number, display_name').eq('id', user.id).single();
         if (profile?.phone_number) {
-            const orderCount = newOrders.length;
-            const message = `DEFIMART: Order received! 🛒 We've logged ${orderCount} item(s) in your request. Track status in your profile. Thank you for shopping with us, ${profile.display_name}!`;
+            const message = `DEFIMART: Order received! 🛒 Track status in your profile. Thank you for shopping with us, ${profile.display_name}!`;
             await sendSms({ phoneNumber: profile.phone_number, message });
         }
 
-        // 2. Notify Vendors (Enhanced with customer details)
         const buyerName = profile?.display_name || 'A student';
         const buyerPhone = profile?.phone_number || 'N/A';
 
@@ -209,16 +205,11 @@ export async function placeOrder(formData: FormData) {
         for (const sellerId of uniqueSellerIds) {
             const { data: seller } = await supabase.from('sellers').select('phone_number').eq('user_id', sellerId).single();
             if (seller?.phone_number) {
-                // Get all orders for this specific seller in this session
                 const sellerOrders = newOrders.filter(o => o.seller_id === sellerId);
                 const totalAmount = sellerOrders.reduce((sum, o) => sum + (o.price_per_item * o.quantity), 0);
-                
-                // Get sample product name for the message
                 const prod = cartItems.find((i: any) => (i.products?.seller_id === sellerId || i.vendor_products?.seller_id === sellerId));
                 const itemName = prod?.products?.name || prod?.vendor_products?.name || "an item";
-                
-                const vendorMessage = `DEFIMART VENDOR: New order for "${itemName}"${sellerOrders.length > 1 ? ' and others' : ''}. Amount: GHS ${totalAmount.toLocaleString()}. Customer: ${buyerName} (${buyerPhone}). View in your hub.`;
-                
+                const vendorMessage = `DEFIMART VENDOR: New order for "${itemName}". Amount: GHS ${totalAmount.toLocaleString()}. Customer: ${buyerName} (${buyerPhone}).`;
                 await sendSms({ phoneNumber: seller.phone_number, message: vendorMessage });
             }
         }

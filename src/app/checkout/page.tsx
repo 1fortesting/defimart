@@ -25,7 +25,7 @@ export default async function CheckoutPage() {
     );
   }
 
-  // Standardized query to ensure database rows are correctly fetched and joined
+  // Strictly database-driven checkout to ensure integrity
   const { data: cartItemsRaw, error } = await supabase
     .from('cart_items')
     .select(`
@@ -43,12 +43,12 @@ export default async function CheckoutPage() {
   if (error || !cartItems || cartItems.length === 0) {
     return (
         <main className="flex-1 p-4 md:p-8 flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <div className="bg-muted rounded-full p-6 mb-6">
+            <div className="bg-muted rounded-full p-6 mb-6 shadow-inner">
                 <ShoppingBag className="h-12 w-12 text-muted-foreground" />
             </div>
-            <h1 className="text-2xl font-black uppercase tracking-tight italic">Your bag is empty</h1>
-            <p className="text-muted-foreground mt-2 mb-8 font-medium">It looks like your synchronized cart doesn't have any items yet.</p>
-            <Button asChild className="rounded-2xl h-12 px-8 font-black uppercase tracking-widest">
+            <h1 className="text-2xl font-black uppercase tracking-tight italic">Synchronization Required</h1>
+            <p className="text-muted-foreground mt-2 mb-8 font-medium">Your synchronized cloud bag is currently empty.</p>
+            <Button asChild className="rounded-2xl h-12 px-8 font-black uppercase tracking-widest shadow-lg">
                 <Link href="/cart"><ArrowLeft className="mr-2 h-4 w-4" /> Go back to Cart</Link>
             </Button>
         </main>
@@ -56,7 +56,6 @@ export default async function CheckoutPage() {
   }
   
   const subtotal = cartItems.reduce((acc, item) => {
-    // Robust resolver to check both possible product sources
     const product = item.products || item.vendor_products;
     if (!product) return acc;
     
@@ -74,8 +73,8 @@ export default async function CheckoutPage() {
       <main className="flex-1 p-4 md:p-8 bg-muted/5 min-h-screen">
         <div className="max-w-7xl mx-auto">
             <div className="mb-8 flex flex-col gap-1">
-                <h1 className="text-3xl font-black tracking-tight uppercase italic">Secure Checkout</h1>
-                <p className="text-muted-foreground text-sm font-medium">Finalize your acquisition from the marketplace.</p>
+                <h1 className="text-3xl font-black tracking-tight uppercase italic leading-none">Marketplace Checkout</h1>
+                <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-1 opacity-60">Verified Cloud Transaction</p>
             </div>
             <CheckoutFormWrapper cartItems={cartItems} subtotal={subtotal} />
         </div>

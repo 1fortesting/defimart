@@ -11,6 +11,7 @@ import { TawkToManager } from '@/components/tawk-to-manager';
 import { FCMTokenManager } from '@/components/fcm-token-manager';
 import { NetworkStatus } from '@/components/network-status';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { CartSync } from '@/components/cart-sync';
 
 export const metadata: Metadata = {
   title: 'Defimart – Student Online Store in Ghana',
@@ -100,6 +101,7 @@ export default function RootLayout({
             <GlobalToaster />
           </Suspense>
           <FCMTokenManager />
+          <CartSync />
         </ThemeProvider>
         <TawkToManager />
         <script
