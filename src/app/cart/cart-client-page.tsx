@@ -48,6 +48,9 @@ function QuantitySelector({ item, onQuantityChange, isPending }: { item: CartIte
 
 function CartItemUI({ item, onQuantityChange, onRemove, isPending }: { item: CartItemWithProduct, onQuantityChange: (itemId: string, newQuantity: number) => void, onRemove: (itemId: string) => void, isPending: boolean }) {
   const product = item.products || item.vendor_products;
+  
+  // Robust check: if the join data is missing but IDs exist, we still show the entry placeholder
+  // but usually we expect product data for a valid cart item.
   if (!product) return null;
 
   const isDiscountActive = product.discount_percentage && product.discount_end_date && new Date(product.discount_end_date) > new Date();
@@ -108,18 +111,20 @@ function CartItemUI({ item, onQuantityChange, onRemove, isPending }: { item: Car
 export function CartClientPage({ user, initialItems }: { user: User | null, initialItems: CartItemWithProduct[] }) {
   const [items, setItems] = useState<CartItemWithProduct[]>(initialItems);
   const [isPending, startTransition] = useTransition();
-  const [loading, setLoading] = useState(!user); // If no user, we need to load from local storage
+  const [loading, setLoading] = useState(!user);
 
   useEffect(() => {
     if (!user) {
         const localCart = localStorage.getItem('cart');
         if (localCart) {
-            setItems(JSON.parse(localCart));
+            try {
+                setItems(JSON.parse(localCart));
+            } catch (e) {}
         }
         setLoading(false);
     } else {
         setItems(initialItems);
-        // Refresh local cache for badges
+        // Sync local cache for badges
         localStorage.setItem('cart', JSON.stringify(initialItems));
         window.dispatchEvent(new Event('cart-updated'));
     }
@@ -131,7 +136,6 @@ export function CartClientPage({ user, initialItems }: { user: User | null, init
         return;
     }
 
-    // Optimistic UI
     const updated = items.map(item => item.id === itemId ? { ...item, quantity: newQuantity } : item);
     setItems(updated);
     localStorage.setItem('cart', JSON.stringify(updated));
@@ -148,7 +152,6 @@ export function CartClientPage({ user, initialItems }: { user: User | null, init
   };
 
   const handleRemoveItem = (itemId: string) => {
-    // Optimistic UI
     const updated = items.filter(item => item.id !== itemId);
     setItems(updated);
     localStorage.setItem('cart', JSON.stringify(updated));
@@ -211,7 +214,7 @@ export function CartClientPage({ user, initialItems }: { user: User | null, init
                   </div>
                 </div>
                 
-                <Separator className="opacity-50" />
+                <div className="h-px bg-muted/20 w-full" />
                 
                 <div className="flex justify-between items-end">
                   <span className="text-[10px] font-black uppercase tracking-[3px] text-muted-foreground mb-1">Total Valuation</span>
@@ -245,5 +248,3 @@ export function CartClientPage({ user, initialItems }: { user: User | null, init
     </div>
   );
 }
-
-const Separator = ({ className }: { className?: string }) => <div className={cn("h-px bg-muted w-full", className)} />;
