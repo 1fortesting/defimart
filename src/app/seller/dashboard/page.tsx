@@ -454,6 +454,7 @@ export default function SellerDashboardPage() {
   const [isPending, startTransition] = useTransition();
   const [isUpdatePending, startUpdateTransition] = useTransition();
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [globalSearch, setGlobalSearch] = useState('');
 
   const { toast } = useToast();
 
@@ -573,6 +574,25 @@ export default function SellerDashboardPage() {
       });
   };
 
+  const filteredProducts = useMemo(() => {
+      if (!globalSearch) return products;
+      const lowerQuery = globalSearch.toLowerCase();
+      return products.filter(p => 
+          p.name?.toLowerCase().includes(lowerQuery) || 
+          p.category?.toLowerCase().includes(lowerQuery)
+      );
+  }, [products, globalSearch]);
+
+  const filteredOrders = useMemo(() => {
+      if (!globalSearch) return orders;
+      const lowerQuery = globalSearch.toLowerCase();
+      return orders.filter(o => 
+          o.profiles?.display_name?.toLowerCase().includes(lowerQuery) ||
+          o.id.toLowerCase().includes(lowerQuery) ||
+          (o.products?.name || o.vendor_products?.name)?.toLowerCase().includes(lowerQuery)
+      );
+  }, [orders, globalSearch]);
+
   const uniqueCustomers = useMemo(() => {
       const customersMap = new Map();
       orders.forEach(order => {
@@ -664,7 +684,7 @@ export default function SellerDashboardPage() {
                     </div>
                 </div>
 
-                <Button asChild variant="ghost" className="w-full text-white/70 hover:text-white hover:bg-white/10 justify-start gap-3 h-10 font-bold uppercase text-[9px] tracking-widest">
+                <Button asChild variant="destructive" className="w-full justify-start gap-3 h-10 font-bold uppercase text-[9px] tracking-widest shadow-lg shadow-red-900/20">
                     <Link href="/">
                         <Home className="h-4 w-4" /> Exit Store
                     </Link>
@@ -720,7 +740,7 @@ export default function SellerDashboardPage() {
                                     </span>
                                 </div>
                             </div>
-                            <Button asChild variant="ghost" className="w-full text-white/70 hover:text-white hover:bg-white/10 justify-start gap-4 font-bold uppercase text-[10px] tracking-widest">
+                            <Button asChild variant="destructive" className="w-full justify-start gap-4 h-12 font-black uppercase text-[10px] tracking-widest shadow-xl shadow-red-900/40">
                                 <Link href="/">
                                     <Home className="h-4 w-4" /> Exit Store
                                 </Link>
@@ -738,7 +758,12 @@ export default function SellerDashboardPage() {
             <header className="hidden md:flex h-14 bg-white border-b items-center px-8 justify-between flex-shrink-0">
                 <div className="relative w-full max-w-sm group">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                    <Input placeholder="Search orders, inventory..." className="pl-9 h-9 border-none bg-muted/30 focus-visible:ring-primary/10 rounded-xl text-[11px]" />
+                    <Input 
+                        placeholder="Search orders, inventory..." 
+                        className="pl-9 h-9 border-none bg-muted/30 focus-visible:ring-primary/10 rounded-xl text-[11px]" 
+                        value={globalSearch}
+                        onChange={(e) => setGlobalSearch(e.target.value)}
+                    />
                 </div>
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" onClick={handleSync} disabled={isPending} className="text-muted-foreground h-8 w-8 rounded-full">
@@ -850,7 +875,12 @@ export default function SellerDashboardPage() {
                         <div className="bg-white p-3 border-b">
                             <div className="relative w-full max-w-sm">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-                                <Input placeholder="Refine results..." className="pl-8 h-8 text-[10px] bg-muted/30 border-none rounded-lg" />
+                                <Input 
+                                    placeholder="Refine results..." 
+                                    className="pl-8 h-8 text-[10px] bg-muted/30 border-none rounded-lg" 
+                                    value={globalSearch}
+                                    onChange={(e) => setGlobalSearch(e.target.value)}
+                                />
                             </div>
                         </div>
                         <div className="bg-white overflow-x-auto">
@@ -864,7 +894,7 @@ export default function SellerDashboardPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {products.map(p => (
+                                    {filteredProducts.map(p => (
                                         <TableRow key={p.id} className="hover:bg-muted/5 transition-colors">
                                             <TableCell className="px-5 py-3">
                                                 <div className="flex items-center gap-2.5">
@@ -890,9 +920,9 @@ export default function SellerDashboardPage() {
                                             </TableCell>
                                         </TableRow>
                                     ))}
-                                    {products.length === 0 && (
+                                    {filteredProducts.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={4} className="text-center py-16 text-muted-foreground italic text-[11px]">No active commodity listings.</TableCell>
+                                            <TableCell colSpan={4} className="text-center py-16 text-muted-foreground italic text-[11px]">No matching commodities found.</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>
@@ -905,7 +935,16 @@ export default function SellerDashboardPage() {
                 <TabsContent value="orders" className="m-0 animate-in fade-in duration-500">
                     <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
                         <CardHeader className="bg-white border-b px-5 py-3 flex flex-row items-center justify-between">
-                            <CardTitle className="text-[11px] font-black uppercase tracking-widest">Active Order Ledger</CardTitle>
+                            <CardTitle className="text-[11px] font-black uppercase tracking-widest">Order Registry</CardTitle>
+                             <div className="relative w-full max-w-[200px]">
+                                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                                <Input 
+                                    placeholder="Filter registry..." 
+                                    className="pl-7 h-7 text-[9px] bg-muted/30 border-none rounded-lg" 
+                                    value={globalSearch}
+                                    onChange={(e) => setGlobalSearch(e.target.value)}
+                                />
+                            </div>
                         </CardHeader>
                         <div className="bg-white overflow-x-auto">
                             <Table>
@@ -918,7 +957,7 @@ export default function SellerDashboardPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {orders.map(o => (
+                                    {filteredOrders.map(o => (
                                         <TableRow key={o.id} className="hover:bg-muted/5 transition-colors">
                                             <TableCell className="px-5 py-3">
                                                 <p className="text-[10px] font-black">{o.profiles?.display_name}</p>
@@ -935,6 +974,11 @@ export default function SellerDashboardPage() {
                                             </TableCell>
                                         </TableRow>
                                     ))}
+                                    {filteredOrders.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={4} className="text-center py-16 text-muted-foreground italic text-[11px]">No matching records found.</TableCell>
+                                        </TableRow>
+                                    )}
                                 </TableBody>
                             </Table>
                         </div>
