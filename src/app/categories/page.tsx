@@ -14,6 +14,7 @@ export default async function CategoriesPage() {
         .select('*')
         .order('created_at', { ascending: false });
 
+    // Fetch reviews from both tables
     const { data: reviews } = await supabase.from('reviews').select('product_id, rating');
 
     const rawProducts = productsData || [];

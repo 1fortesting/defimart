@@ -17,12 +17,15 @@ export default async function SearchPage({
 
   // Fetch platform products and reviews
   const { data: products } = await supabase.from('products').select('*');
-  const { data: reviews } = await supabase.from('reviews').select('product_id, rating');
+  
+  // Fetch reviews from both tables for full coverage
+  const { data: platformReviews } = await supabase.from('reviews').select('product_id, rating');
+  const { data: vendorReviews } = await supabase.from('vendor_reviews' as any).select('vendor_product_id, rating');
   
   const officialProducts = products || [];
 
-  // Aggregate reviews
-  const reviewsByProduct = (reviews || []).reduce((acc: Record<string, number[]>, review: any) => {
+  // Map reviews for official products
+  const reviewsByProduct = (platformReviews || []).reduce((acc: Record<string, number[]>, review: any) => {
     if (!acc[review.product_id]) acc[review.product_id] = [];
     acc[review.product_id].push(review.rating);
     return acc;

@@ -78,10 +78,13 @@ export async function submitReview(prevState: any, formData: FormData) {
         return { success: false, message: 'Could not save review. Please try again.' };
     }
 
+    // Comprehensive revalidation to ensure ratings update everywhere
     revalidatePath(`/products/${productId}`);
     revalidatePath('/'); 
     revalidatePath('/shops');
+    revalidatePath('/saved');
     revalidatePath('/search');
+    revalidatePath('/categories');
     
     return { success: true, message: 'Feedback posted!' };
 }

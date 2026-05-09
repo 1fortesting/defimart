@@ -4,8 +4,16 @@ import { Tables } from '@/types/supabase';
 import ProductView from './product-view';
 import { BackButton } from '@/components/back-button';
 
-export type ReviewWithProfile = Tables<'reviews'> & {
-  profiles: Pick<Tables<'profiles'>, 'display_name' | 'avatar_url'> | null;
+export type ReviewWithProfile = {
+  id: string;
+  created_at: string;
+  user_id: string;
+  rating: number;
+  comment: string | null;
+  profiles: {
+    display_name: string | null;
+    avatar_url: string | null;
+  } | null;
 };
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
@@ -46,24 +54,25 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     
     // Check if the current user has saved this product
     const { data: savedProducts } = user 
-      ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id).eq('product_id', product.id).single() 
+      ? await supabase.from('saved_products').select('product_id').eq('user_id', user.id).eq('product_id', product.id).maybeSingle() 
       : { data: null };
     
     const isSaved = !!savedProducts;
 
     // Fetch reviews associated with this product ID from the correct table
-    const { data: reviews } = await supabase
+    const { data: reviewsData } = await supabase
         .from(reviewsTable as any)
         .select('*, profiles(display_name, avatar_url)')
         .eq(reviewForeignKey, id)
         .order('created_at', { ascending: false });
     
-    const totalRating = (reviews as any[])?.reduce((acc: number, review: any) => acc + review.rating, 0) ?? 0;
-    const averageRating = reviews && reviews.length > 0 ? totalRating / reviews.length : 0;
+    const reviews = (reviewsData as any[]) || [];
+    const totalRating = reviews.reduce((acc: number, review: any) => acc + review.rating, 0);
+    const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0;
     
     let userReview = null;
     if (user && reviews) {
-        userReview = (reviews as any[]).find((r: any) => r.user_id === user.id) || null;
+        userReview = reviews.find((r: any) => r.user_id === user.id) || null;
     }
 
     return (
@@ -75,10 +84,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 <ProductView 
                     product={product as any}
                     isSaved={isSaved}
-                    reviews={(reviews as any[]) || []}
+                    reviews={reviews as ReviewWithProfile[]}
                     averageRating={averageRating}
                     user={user}
-                    userReview={userReview}
+                    userReview={userReview as ReviewWithProfile}
                 />
             </div>
         </main>

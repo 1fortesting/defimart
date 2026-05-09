@@ -48,10 +48,10 @@ function SavedContent() {
                     : { data: [] };
                 
                 // Fetch reviews for vendor products
-                const vendorIds = (productsData as any[]).map(p => p.product_id).filter(Boolean); // Saved products uses 'product_id' for both usually in simple apps, but let's be careful
-                // Actually our schema uses 'product_id' as the polymorphic key in saved_products
-                const { data: vendorReviews } = platformIds.length > 0 
-                    ? await supabase.from('vendor_reviews' as any).select('vendor_product_id, rating').in('vendor_product_id', platformIds)
+                const vendorIds = (productsData as any[]).filter(p => !!p.vendor_products).map(p => p.vendor_product_id || p.product_id).filter(Boolean);
+                
+                const { data: vendorReviews } = vendorIds.length > 0 
+                    ? await supabase.from('vendor_reviews' as any).select('vendor_product_id, rating').in('vendor_product_id', vendorIds)
                     : { data: [] };
 
                 const reviewsByProduct = (platformReviews || []).reduce((acc: Record<string, number[]>, review: any) => {
@@ -74,7 +74,8 @@ function SavedContent() {
                         return { ...item, products: { ...item.products, average_rating, review_count } };
                     }
                     if (item.vendor_products) {
-                        const ratings = vendorReviewsByProduct[item.product_id] || [];
+                        const vId = item.vendor_product_id || item.product_id;
+                        const ratings = vendorReviewsByProduct[vId] || [];
                         const review_count = ratings.length;
                         const average_rating = review_count > 0 ? ratings.reduce((sum, r) => sum + r, 0) / review_count : 0;
                         return { ...item, vendor_products: { ...item.vendor_products, average_rating, review_count } };
