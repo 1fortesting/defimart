@@ -50,7 +50,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -123,6 +123,14 @@ function OrderDetailsDialog({ order, trigger }: { order: any, trigger: React.Rea
             <DialogContent className="w-[95%] max-w-[650px] p-0 overflow-hidden rounded-[32px] flex flex-col max-h-[85vh] border-none shadow-2xl animate-in zoom-in-95 duration-200">
                 <div className="bg-primary p-6 md:p-8 text-primary-foreground flex-shrink-0 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl -mr-24 -mt-24" />
+                    
+                    {/* Prominent Mobile Close Button */}
+                    <DialogClose asChild>
+                        <Button variant="ghost" size="icon" className="absolute top-4 right-4 h-10 w-10 rounded-full bg-white/10 text-white hover:bg-white/20 z-20 md:hidden">
+                            <X className="h-6 w-6" />
+                        </Button>
+                    </DialogClose>
+
                     <DialogHeader className="relative z-10">
                         <div className="flex items-center gap-3 mb-2">
                              <Badge className="bg-white/20 text-white border-none text-[10px] font-black uppercase tracking-widest px-3">
@@ -238,9 +246,11 @@ function OrderDetailsDialog({ order, trigger }: { order: any, trigger: React.Rea
                 </div>
 
                 <div className="p-6 border-t bg-muted/5 flex-shrink-0 flex justify-center pb-8 md:pb-6">
-                    <Button onClick={() => handleOpenChange(false)} variant="ghost" className="h-11 px-10 rounded-xl font-black text-[12px] uppercase tracking-[3px] text-muted-foreground hover:bg-muted/50 border-2">
-                        Close Registry
-                    </Button>
+                    <DialogClose asChild>
+                        <Button variant="ghost" className="h-11 px-10 rounded-xl font-black text-[12px] uppercase tracking-[3px] text-muted-foreground hover:bg-muted/50 border-2">
+                            Close Registry
+                        </Button>
+                    </DialogClose>
                 </div>
             </DialogContent>
         </Dialog>
@@ -616,7 +626,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
 
                     <div className="p-6 border-t bg-background flex-shrink-0">
                         <Button type="submit" className="w-full h-14 text-base font-black uppercase tracking-widest shadow-2xl shadow-primary/20 rounded-2xl font-poppins" disabled={isPending}>
-                            {isPending ? <Loader2 className="animate-spin mr-3 h-5 w-5" /> : 'Save Changes'}
+                            {isPending ? <Loader2 className="animate-spin h-5 w-5 mr-4" /> : 'Save Changes'}
                         </Button>
                     </div>
                 </form>
@@ -635,7 +645,7 @@ function SellerOrderCard({ order, onUpdateStatus, onDeleteOrder }: { order: any,
         <OrderDetailsDialog 
             order={order}
             trigger={
-                <Card className="border-none shadow-sm rounded-2xl overflow-hidden bg-white mb-4 animate-in fade-in duration-300 cursor-pointer hover:bg-muted/5 transition-all">
+                <Card className="border-2 border-primary/20 shadow-sm rounded-2xl overflow-hidden bg-white mb-4 animate-in fade-in duration-300 cursor-pointer hover:bg-primary/[0.02] transition-all">
                     <div className="p-4 space-y-4">
                         <div className="flex justify-between items-start gap-4">
                             <div className="min-w-0">
@@ -680,9 +690,6 @@ function SellerOrderCard({ order, onUpdateStatus, onDeleteOrder }: { order: any,
                                         {isDelivery ? 'Mark Delivered' : 'Confirm'}
                                     </Button>
                                 )}
-                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/5 text-muted-foreground hover:text-primary transition-all">
-                                    <Eye className="h-4.5 w-4.5" />
-                                </Button>
                             </div>
                             <div className="flex items-center gap-3">
                                 <span className="text-[10px] font-bold text-muted-foreground uppercase font-roboto">{format(new Date(order.created_at), 'MMM d, h:mm a')}</span>
