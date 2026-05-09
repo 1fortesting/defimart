@@ -143,11 +143,8 @@ export default function CartPage() {
                 quantity: i.quantity
             }));
             
-            const result = await syncCart(syncItems);
-            if (result.success) {
-                // Clear local storage after successful sync to prevent double-syncing
-                localStorage.removeItem('cart');
-            }
+            await syncCart(syncItems);
+            // Clear local storage after successful sync will be handled by setting the DB items below
             setIsSyncing(false);
         }
 
@@ -185,12 +182,14 @@ export default function CartPage() {
     localStorage.setItem('cart', JSON.stringify(updatedCart));
     window.dispatchEvent(new Event('cart-updated'));
 
-    startTransition(async () => {
-        const formData = new FormData();
-        formData.append('cartItemId', itemId);
-        formData.append('quantity', String(newQuantity));
-        await updateItemQuantity(formData);
-    });
+    if (user) {
+        startTransition(async () => {
+            const formData = new FormData();
+            formData.append('cartItemId', itemId);
+            formData.append('quantity', String(newQuantity));
+            await updateItemQuantity(formData);
+        });
+    }
   };
 
   const handleRemoveItem = (itemId: string) => {
@@ -199,11 +198,13 @@ export default function CartPage() {
     localStorage.setItem('cart', JSON.stringify(updatedCart));
     window.dispatchEvent(new Event('cart-updated'));
 
-    startTransition(async () => {
-        const formData = new FormData();
-        formData.append('cartItemId', itemId);
-        await removeItem(formData);
-    });
+    if (user) {
+        startTransition(async () => {
+            const formData = new FormData();
+            formData.append('cartItemId', itemId);
+            await removeItem(formData);
+        });
+    }
   };
 
   const subtotal = useMemo(() => {
