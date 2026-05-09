@@ -11,7 +11,7 @@
     --surface-2: #FFF7ED;
     --muted: #64748B;
     --border: #E2E8F0;
-    --radius: 16px;
+    --radius: 20px;
     --brand-dark: #0F172A;
     
     /* Font Variables */
@@ -38,15 +38,6 @@
   }
 
   .dark {
-    --gold: #F5A623;
-    --gold-light: #FFB84D;
-    --dark: #F8FAFC; 
-    --surface: #0F172A; 
-    --surface-2: #020617; 
-    --muted: #94A3B8;
-    --border: #1E293B;
-    --brand-dark: #0F172A;
-    
     /* Shadcn compatibility (dark) */
     --background: 222 47% 4%;
     --foreground: 210 40% 98%;
@@ -84,11 +75,13 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    font-weight: 700;
+    font-weight: 800;
+    letter-spacing: -0.025em;
   }
 
   button, nav, .font-ui {
     font-family: var(--font-ui);
+    font-weight: 600;
   }
 
   table, .font-mono, .font-data {
@@ -115,12 +108,5 @@
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
-  }
-  
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
   }
 }

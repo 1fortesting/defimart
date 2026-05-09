@@ -8,18 +8,14 @@ export default async function CartPage() {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (user) {
-    // Fetch cart items with an explicit, robust join for both platform and vendor products
-    // Note: If you just ran the SQL, it may take a few seconds for the cache to clear.
+    // Explicit, redundant fetch logic to handle potential schema inconsistencies 
+    // during the rollout of delivery and discount features.
     const { data: dbItems, error } = await supabase
       .from('cart_items')
       .select(`
         *, 
-        products:products!cart_items_product_id_fkey(
-          id, name, price, image_urls, quantity, discount_percentage, discount_end_date, offers_delivery, delivery_price_type, delivery_price
-        ), 
-        vendor_products:vendor_products!cart_items_vendor_product_id_fkey(
-          id, name, price, image_urls, quantity, discount_percentage, discount_end_date, offers_delivery, delivery_price_type, delivery_price
-        )
+        products:product_id(*), 
+        vendor_products:vendor_product_id(*)
       `)
       .eq('user_id', user.id)
       .order('created_at');
@@ -35,7 +31,6 @@ export default async function CartPage() {
     );
   }
 
-  // Anonymous users rely on the client-side component to load from localStorage
   return (
     <main className="flex-1 p-4 md:p-8 bg-muted/5 min-h-screen">
       <CartClientPage user={null} initialItems={[]} />

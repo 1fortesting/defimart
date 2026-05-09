@@ -1,4 +1,3 @@
-
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
@@ -62,8 +61,8 @@ export async function addSellerProduct(prevState: any, formData: FormData) {
 
     const finalCategory = category === 'Other' ? customCategory : category;
 
-    const { error: dbError } = await (supabase as any)
-      .from('vendor_products')
+    const { error: dbError } = await supabase
+      .from('vendor_products' as any)
       .insert({
         name,
         description: description || '',
@@ -120,7 +119,7 @@ export async function updateSellerProduct(prevState: any, formData: FormData) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { success: false, error: 'Authentication required' };
 
-    const { data: oldProduct } = await (supabase as any).from('vendor_products').select('price').eq('id', id).single();
+    const { data: oldProduct } = await supabase.from('vendor_products' as any).select('price').eq('id', id).single();
 
     const finalCategory = category === 'Other' ? customCategory : category;
     const updateData: any = {
@@ -148,8 +147,8 @@ export async function updateSellerProduct(prevState: any, formData: FormData) {
       updateData.image_urls = [urlData.publicUrl];
     }
 
-    const { error: dbError } = await (supabase as any)
-      .from('vendor_products')
+    const { error: dbError } = await supabase
+      .from('vendor_products' as any)
       .update(updateData)
       .eq('id', id)
       .eq('seller_id', user.id);
@@ -272,7 +271,7 @@ export async function deleteSellerOrder(orderId: string) {
     .from('orders')
     .delete()
     .eq('id', orderId)
-    .eq('seller_id', user.id); // Security check
+    .eq('seller_id', user.id);
 
   if (error) return { success: false, error: error.message };
 

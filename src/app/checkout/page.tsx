@@ -26,16 +26,12 @@ export default async function CheckoutPage() {
   }
 
   // Strictly database-driven checkout to ensure integrity
-  // Use explicit joins to avoid ambiguity and match Cart Page logic
   const { data: cartItemsRaw, error } = await supabase
     .from('cart_items')
     .select(`
-      id,
-      quantity,
-      product_id,
-      vendor_product_id,
-      products:products!cart_items_product_id_fkey(*),
-      vendor_products:vendor_products!cart_items_vendor_product_id_fkey(*)
+      *,
+      products:product_id(*),
+      vendor_products:vendor_product_id(*)
     `)
     .eq('user_id', user.id);
 
@@ -77,7 +73,7 @@ export default async function CheckoutPage() {
         <div className="max-w-7xl mx-auto">
             <div className="mb-8 flex flex-col gap-1">
                 <h1 className="text-3xl font-black tracking-tight uppercase italic leading-none">Marketplace Checkout</h1>
-                <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest mt-1 opacity-60">Verified Cloud Transaction</p>
+                <p className="text-muted-foreground text-[11px] font-bold uppercase tracking-widest mt-1 opacity-60">Verified Cloud Transaction</p>
             </div>
             <CheckoutFormWrapper cartItems={cartItems} subtotal={subtotal} />
         </div>

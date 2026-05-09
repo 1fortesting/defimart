@@ -11,12 +11,13 @@ export default {
     extend: {
       fontFamily: {
         sans: ['var(--font-body)', 'Inter', 'sans-serif'],
+        heading: ['var(--font-heading)', 'Montserrat', 'sans-serif'],
+        ui: ['var(--font-ui)', 'Poppins', 'sans-serif'],
+        data: ['var(--font-data)', 'Roboto', 'sans-serif'],
         montserrat: ['var(--font-heading)', 'Montserrat', 'sans-serif'],
         inter: ['var(--font-body)', 'Inter', 'sans-serif'],
         poppins: ['var(--font-ui)', 'Poppins', 'sans-serif'],
         roboto: ['var(--font-data)', 'Roboto', 'sans-serif'],
-        syne: ['Montserrat', 'sans-serif'], // Montserrat works well as a Syne alternative for italics
-        dm: ['Inter', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',
@@ -77,20 +78,12 @@ export default {
       },
       keyframes: {
         'accordion-down': {
-          from: {
-            height: '0',
-          },
-          to: {
-            height: 'var(--radix-accordion-content-height)',
-          },
+          from: { height: '0' },
+          to: { height: 'var(--radix-accordion-content-height)' },
         },
         'accordion-up': {
-          from: {
-            height: 'var(--radix-accordion-content-height)',
-          },
-          to: {
-            height: '0',
-          },
+          from: { height: 'var(--radix-accordion-content-height)' },
+          to: { height: '0' },
         },
         'pulse-second': {
           '0%, 100%': { opacity: '1' },
@@ -102,15 +95,6 @@ export default {
           '20%': { transform: 'scale(1)' },
           '100%': { transform: 'scale(1)' },
         },
-        'swing': {
-            '0%, 100%': { transform: 'rotate(10deg)' },
-            '50%': { transform: 'rotate(-10deg)' },
-        },
-        'peek-a-boo': {
-          '0%': { transform: 'translateX(0)' },
-          '10%, 30%': { transform: 'translateX(-24px)' },
-          '40%, 100%': { transform: 'translateX(0)' },
-        },
         'marquee': {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(-50%)' },
@@ -121,8 +105,6 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
         'pulse-second': 'pulse-second 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'heartbeat': 'heartbeat 1s ease-in-out infinite',
-        'swing': 'swing 3s ease-in-out infinite',
-        'peek-a-boo': 'peek-a-boo 3s ease-in-out 2 1s',
         'marquee': 'marquee 40s linear infinite',
       },
     },

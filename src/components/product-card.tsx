@@ -170,7 +170,6 @@ export function ProductCard({ product, user, isSaved, isVendor = false, onUnsave
     };
 
     const hasImage = product.image_urls && product.image_urls.length > 0;
-    const displayDescription = product.description?.replace(' (AI Enhanced)', '') || (product.category || 'General');
 
     return (
     <Card className="overflow-hidden group transition-all duration-300 ease-in-out bg-white border border-border shadow-sm hover:shadow-xl hover:shadow-primary/5 flex flex-col relative h-full cursor-pointer rounded-2xl" onClick={() => window.location.href = `/products/${product.id}`}>
@@ -195,36 +194,36 @@ export function ProductCard({ product, user, isSaved, isVendor = false, onUnsave
                     ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/30">
                             <ImageIcon className="h-12 w-12 mb-2" />
-                            <span className="text-[10px] font-black uppercase tracking-widest font-poppins">No Image</span>
+                            <span className="text-[11px] font-black uppercase tracking-widest font-poppins">No Image</span>
                         </div>
                     )}
                 </div>
             </div>
             
             <div className="p-4 pt-0 flex flex-col justify-between flex-grow">
-                <div>
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                        <Badge variant="outline" className="text-[9px] font-black uppercase tracking-tighter h-5 px-2 bg-muted/50 border-muted">
+                <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                        <Badge variant="outline" className="text-[10px] font-black uppercase tracking-tighter h-5 px-2 bg-muted/50 border-muted">
                             {isVendor ? 'Vendor' : 'Official'}
                         </Badge>
-                        {isDiscountActive && <Badge className="text-[9px] font-black h-5 px-2 bg-red-500 text-white border-none animate-pulse">Save {product.discount_percentage}%</Badge>}
+                        {isDiscountActive && <Badge className="text-[10px] font-black h-5 px-2 bg-red-500 text-white border-none animate-pulse">-{product.discount_percentage}%</Badge>}
                     </div>
-                    <h3 className="font-montserrat font-bold text-[14px] md:text-[16px] leading-tight text-foreground mb-1 group-hover:text-primary transition-colors line-clamp-2 h-10">
+                    <h3 className="font-montserrat font-bold text-[15px] leading-tight text-foreground group-hover:text-primary transition-colors line-clamp-2 min-h-[40px]">
                         {product.name}
                     </h3>
-                    <div className="flex items-center gap-2 mb-3">
-                        <StarRating rating={product.average_rating || 0} size={12} showText={false} />
-                        {product.review_count !== undefined && product.review_count > 0 && <span className="text-[10px] font-bold text-muted-foreground font-roboto">({product.review_count})</span>}
+                    <div className="flex items-center gap-2 mb-2">
+                        <StarRating rating={product.average_rating || 0} size={13} showText={false} />
+                        {product.review_count !== undefined && product.review_count > 0 && <span className="text-[11px] font-bold text-muted-foreground font-roboto">({product.review_count})</span>}
                     </div>
                 </div>
                 
                 <div className="flex items-center justify-between mt-auto">
                      <div className="text-left flex flex-col">
                         {isDiscountActive && (
-                            <p className="text-[10px] text-muted-foreground/60 font-bold line-through font-roboto">GHS {formatPrice(product.price).replace('GHS ', '')}</p>
+                            <p className="text-[11px] text-muted-foreground/60 font-bold line-through font-roboto leading-none mb-1">GHS {formatPrice(product.price).replace('GHS ', '')}</p>
                         )}
-                        <p className="font-montserrat font-black text-lg md:text-xl text-foreground tracking-tighter">
-                            <span className="text-xs font-bold mr-0.5">GHS</span>{formatPrice(discountedPrice).replace('GHS ', '')}
+                        <p className="font-montserrat font-black text-xl text-foreground tracking-tighter leading-none">
+                            <span className="text-[11px] font-bold mr-0.5">GHS</span>{formatPrice(discountedPrice).replace('GHS ', '')}
                         </p>
                     </div>
                     
@@ -232,10 +231,10 @@ export function ProductCard({ product, user, isSaved, isVendor = false, onUnsave
                         <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10" 
+                            className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10" 
                             onClick={handleShare}
                         >
-                            <Share2 className="h-4 w-4" />
+                            <Share2 className="h-4.5 w-4.5" />
                         </Button>
 
                         <Sheet open={showShareFallback} onOpenChange={setShowShareFallback}>
@@ -246,35 +245,35 @@ export function ProductCard({ product, user, isSaved, isVendor = false, onUnsave
                                         <div className="h-14 w-14 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-all shadow-sm">
                                             <MessageCircle className="h-6 w-6" />
                                         </div>
-                                        <span className="text-[10px] font-black font-poppins uppercase tracking-widest">WhatsApp</span>
+                                        <span className="text-[11px] font-black font-poppins uppercase tracking-widest">WhatsApp</span>
                                     </button>
                                     <button onClick={shareFacebook} className="flex flex-col items-center gap-3 group">
                                         <div className="h-14 w-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
                                             <Facebook className="h-6 w-6" />
                                         </div>
-                                        <span className="text-[10px] font-black font-poppins uppercase tracking-widest">Facebook</span>
+                                        <span className="text-[11px] font-black font-poppins uppercase tracking-widest">Facebook</span>
                                     </button>
                                     <button onClick={handleCopyLink} className="flex flex-col items-center gap-3 group">
                                         <div className="h-14 w-14 bg-muted text-foreground rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
                                             {isCopied ? <Check className="h-6 w-6" /> : <Copy className="h-6 w-6" />}
                                         </div>
-                                        <span className="text-[10px] font-black font-poppins uppercase tracking-widest">{isCopied ? 'Copied' : 'Link'}</span>
+                                        <span className="text-[11px] font-black font-poppins uppercase tracking-widest">{isCopied ? 'Copied' : 'Link'}</span>
                                     </button>
                                 </div>
                             </SheetContent>
                         </Sheet>
 
-                        <Button onClick={handleToggleSave} size="icon" variant="ghost" className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10">
-                            <Heart className={cn("h-4 w-4 transition-all", isSavedState && "fill-primary text-primary")} />
+                        <Button onClick={handleToggleSave} size="icon" variant="ghost" className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10">
+                            <Heart className={cn("h-4.5 w-4.5 transition-all", isSavedState && "fill-primary text-primary")} />
                         </Button>
                     </div>
                 </div>
                 <Button 
                     onClick={handleAddToCart}
                     disabled={product.quantity === 0} 
-                    className="w-full mt-4 h-11 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[11px] rounded-xl shadow-lg shadow-primary/20 border-none font-poppins"
+                    className="w-full mt-4 h-12 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[12px] rounded-xl shadow-lg shadow-primary/20 border-none font-poppins"
                 >
-                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    <ShoppingCart className="mr-2 h-5 w-5" />
                     {product.quantity === 0 ? 'Out of Stock' : 'Add to Bag'}
                 </Button>
             </div>

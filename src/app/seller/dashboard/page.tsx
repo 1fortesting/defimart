@@ -139,7 +139,7 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button className="bg-[#F5A623] hover:bg-[#E89512] text-white font-black uppercase tracking-[1.5px] text-xs rounded-xl px-5 h-11 border-none shadow-lg shadow-orange-500/10 font-poppins">
+                <Button className="bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-[1.5px] text-[11px] rounded-xl px-5 h-11 border-none shadow-lg shadow-orange-500/10 font-poppins">
                     <Plus className="h-4 w-4 mr-2" /> Publish Item
                 </Button>
             </DialogTrigger>
@@ -155,20 +155,20 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                 <form action={action} className="flex flex-col flex-1 overflow-hidden bg-background">
                     <div className="flex-1 overflow-y-auto px-6 md:px-10 py-6 space-y-6 hide-scrollbar">
                         <div className="grid gap-2">
-                            <Label htmlFor="name_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Item Name</Label>
+                            <Label htmlFor="name_add" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Item Name</Label>
                             <Input id="name_add" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} placeholder="e.g. MacBook Pro M3" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-inter" />
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="grid gap-2 col-span-1">
-                                <Label htmlFor="price_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Price (GHS)</Label>
+                                <Label htmlFor="price_add" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Price (GHS)</Label>
                                 <Input id="price_add" name="price" type="number" step="0.01" placeholder="0.00" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-roboto" />
                             </div>
                             <div className="grid gap-2 col-span-1">
-                                <Label htmlFor="quantity_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Stock Units</Label>
+                                <Label htmlFor="quantity_add" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Stock Units</Label>
                                 <Input id="quantity_add" name="quantity" type="number" min="0" placeholder="1" defaultValue="1" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-roboto" />
                             </div>
                             <div className="grid gap-2 col-span-1">
-                                <Label htmlFor="category_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Category</Label>
+                                <Label htmlFor="category_add" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Category</Label>
                                 <Select name="category" required onValueChange={setUploadCategory}>
                                     <SelectTrigger className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-inter">
                                         <SelectValue placeholder="Select" />
@@ -181,7 +181,7 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                         </div>
                         <div className="grid gap-2">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="description_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Description</Label>
+                                <Label htmlFor="description_add" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Description</Label>
                                 <Button type="button" variant="outline" size="sm" className="h-8 gap-1.5 px-3 text-[10px] font-black uppercase rounded-full border-primary/20 text-primary font-poppins" onClick={handleGenerateDescription} disabled={isGenerating}>
                                     {isGenerating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} AI Assistant
                                 </Button>
@@ -195,7 +195,7 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                                     <div className="bg-primary/10 p-2 rounded-lg text-primary">
                                         <Truck className="h-5 w-5" />
                                     </div>
-                                    <Label htmlFor="offers_delivery_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Offer Delivery</Label>
+                                    <Label htmlFor="offers_delivery_add" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Offer Delivery</Label>
                                 </div>
                                 <Switch 
                                     id="offers_delivery_add" 
@@ -209,7 +209,7 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                             {offersDelivery && (
                                 <div className="space-y-5 animate-in fade-in slide-in-from-top-2 duration-300 border-t border-muted pt-5">
                                     <div className="grid gap-3">
-                                        <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Pricing Model</Label>
+                                        <Label className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Pricing Model</Label>
                                         <RadioGroup name="delivery_price_type" value={deliveryPriceType} onValueChange={setDeliveryPriceType} className="flex flex-col sm:flex-row gap-4">
                                             <div className="flex items-center space-x-3 bg-white p-3 rounded-xl border-2 flex-1 cursor-pointer hover:border-primary/30 transition-all font-inter">
                                                 <RadioGroupItem value="fixed" id="fixed_add" />
@@ -223,7 +223,7 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                                     </div>
                                     {deliveryPriceType === 'fixed' && (
                                         <div className="grid gap-2">
-                                            <Label htmlFor="delivery_price_add" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Delivery Fee (GHS)</Label>
+                                            <Label htmlFor="delivery_price_add" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Delivery Fee (GHS)</Label>
                                             <Input id="delivery_price_add" name="delivery_price" type="number" step="0.01" placeholder="0.00" className="bg-background border-2 h-11 text-sm rounded-xl font-roboto" />
                                         </div>
                                     )}
@@ -232,7 +232,7 @@ function AddProductDialog({ onPublishSuccess }: { onPublishSuccess: () => void }
                         </div>
 
                         <div className="space-y-3">
-                            <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Product Media</Label>
+                            <Label className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Product Media</Label>
                             <Input id="image_add" name="image" type="file" accept="image/*" required onChange={handleImageChange} className="bg-muted/30 border-2 h-14 text-xs rounded-xl pt-4 cursor-pointer file:font-bold file:text-primary font-poppins" />
                             {imagePreview && (
                                 <div className="relative aspect-video w-full rounded-2xl overflow-hidden border-2 bg-muted shadow-inner group">
@@ -325,21 +325,21 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                     <input type="hidden" name="id" value={product.id} />
                     <div className="flex-1 overflow-y-auto px-6 md:px-10 py-6 space-y-6 hide-scrollbar">
                         <div className="grid gap-2">
-                            <Label htmlFor="name" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Product Name</Label>
+                            <Label htmlFor="name" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Product Name</Label>
                             <Input id="name" name="name" value={productName} onChange={(e) => setProductName(e.target.value)} required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-inter" />
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="grid gap-2">
-                                <Label htmlFor="price" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Price (GHS)</Label>
+                                <Label htmlFor="price" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Price (GHS)</Label>
                                 <Input id="price" name="price" type="number" step="0.01" defaultValue={product.price} required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-roboto" />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="quantity" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Units In Stock</Label>
+                                <Label htmlFor="quantity" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Units In Stock</Label>
                                 <Input id="quantity" name="quantity" type="number" min="0" defaultValue={product.quantity || 1} required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-roboto" />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="category" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Category</Label>
+                                <Label htmlFor="category" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Category</Label>
                                 <Select name="category" defaultValue={categories.includes(product.category) ? product.category : 'Other'} required onValueChange={setUploadCategory}>
                                     <SelectTrigger className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-inter">
                                         <SelectValue placeholder="Select" />
@@ -353,7 +353,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
 
                         {uploadCategory === 'Other' && (
                             <div className="grid gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                <Label htmlFor="custom_category" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Custom Category Name</Label>
+                                <Label htmlFor="custom_category" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Custom Category Name</Label>
                                 <Input id="custom_category" name="custom_category" defaultValue={!categories.includes(product.category) ? product.category : ''} placeholder="Custom category" required className="bg-muted/30 border-2 h-12 text-sm md:text-base rounded-xl font-inter" />
                             </div>
                         )}
@@ -364,7 +364,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                                     <div className="bg-primary/10 p-2 rounded-lg text-primary">
                                         <Truck className="h-5 w-5" />
                                     </div>
-                                    <Label htmlFor="offers_delivery_edit" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Offer Delivery</Label>
+                                    <Label htmlFor="offers_delivery_edit" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Offer Delivery</Label>
                                 </div>
                                 <Switch 
                                     id="offers_delivery_edit" 
@@ -378,7 +378,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                             {offersDelivery && (
                                 <div className="space-y-5 animate-in fade-in slide-in-from-top-2 duration-300 border-t border-muted pt-5">
                                     <div className="grid gap-3">
-                                        <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Pricing Model</Label>
+                                        <Label className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Pricing Model</Label>
                                         <RadioGroup name="delivery_price_type" value={deliveryPriceType} onValueChange={setDeliveryPriceType} className="flex flex-col sm:flex-row gap-4">
                                             <div className="flex items-center space-x-3 bg-white p-3 rounded-xl border-2 flex-1 cursor-pointer hover:border-primary/30 transition-all font-inter">
                                                 <RadioGroupItem value="fixed" id="fixed_edit" />
@@ -392,7 +392,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                                     </div>
                                     {deliveryPriceType === 'fixed' && (
                                         <div className="grid gap-2">
-                                            <Label htmlFor="delivery_price_edit" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Delivery Fee (GHS)</Label>
+                                            <Label htmlFor="delivery_price_edit" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Delivery Fee (GHS)</Label>
                                             <Input id="delivery_price_edit" name="delivery_price" type="number" step="0.01" defaultValue={product.delivery_price || 0} className="bg-background border-2 h-11 text-sm rounded-xl font-roboto" />
                                         </div>
                                     )}
@@ -402,7 +402,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
 
                         <div className="grid gap-2">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="description" className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Detailed Description</Label>
+                                <Label htmlFor="description" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Detailed Description</Label>
                                 <Button 
                                     type="button" 
                                     variant="outline" 
@@ -426,7 +426,7 @@ function EditProductDialog({ product, onUpdateSuccess }: { product: any, onUpdat
                         </div>
                         
                         <div className="space-y-3">
-                            <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground font-poppins">Update Image (Optional)</Label>
+                            <Label className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Update Image (Optional)</Label>
                             <div className="flex flex-col gap-4">
                                 <Input 
                                     id="image" 
@@ -659,7 +659,7 @@ export default function SellerDashboardPage() {
       <Card className="bg-white border-none shadow-sm rounded-2xl p-4 md:p-5 relative overflow-hidden flex flex-col justify-between group hover:shadow-md transition-all">
           <div className="flex justify-between items-start">
               <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground font-poppins">{title}</p>
+                  <p className="text-[11px] font-black uppercase tracking-widest text-muted-foreground font-poppins">{title}</p>
                   <h3 className="text-xl md:text-2xl font-black text-foreground font-montserrat">{value}</h3>
               </div>
               <div className="bg-primary/10 p-2.5 rounded-xl text-primary group-hover:scale-110 transition-transform">
@@ -667,7 +667,7 @@ export default function SellerDashboardPage() {
               </div>
           </div>
           {subText && (
-              <p className="text-[10px] font-bold text-muted-foreground mt-3 flex items-center gap-1.5 uppercase tracking-tighter font-inter">
+              <p className="text-[11px] font-bold text-muted-foreground mt-3 flex items-center gap-1.5 uppercase tracking-tighter font-inter">
                   {subText}
               </p>
           )}
@@ -707,7 +707,7 @@ export default function SellerDashboardPage() {
             <div className="p-6 mt-auto space-y-4">
                 <div className="bg-white/10 p-5 rounded-2xl space-y-3">
                     <div className="flex items-center justify-between">
-                        <Label htmlFor="shop-toggle-sidebar" className="text-[10px] font-black text-white uppercase tracking-widest cursor-pointer font-poppins">Shop Status</Label>
+                        <Label htmlFor="shop-toggle-sidebar" className="text-[11px] font-black text-white uppercase tracking-widest cursor-pointer font-poppins">Shop Status</Label>
                         <Switch 
                             id="shop-toggle-sidebar" 
                             checked={seller.is_open} 
@@ -718,13 +718,13 @@ export default function SellerDashboardPage() {
                     </div>
                     <div className="flex items-center gap-2">
                         <div className={cn("h-2 w-2 rounded-full animate-pulse", seller.is_open ? "bg-emerald-400" : "bg-red-400")} />
-                        <span className="text-[10px] font-black text-white/70 uppercase tracking-tighter font-poppins">
+                        <span className="text-[11px] font-black text-white/70 uppercase tracking-tighter font-poppins">
                             {seller.is_open ? "Accepting Orders" : "Currently Closed"}
                         </span>
                     </div>
                 </div>
 
-                <Button asChild variant="destructive" className="w-full justify-start gap-4 h-11 font-black uppercase text-[10px] tracking-widest shadow-lg shadow-red-900/20 bg-red-600 hover:bg-red-700 font-poppins rounded-xl">
+                <Button asChild variant="destructive" className="w-full justify-start gap-4 h-11 font-black uppercase text-[11px] tracking-widest shadow-lg shadow-red-900/20 bg-red-600 hover:bg-red-700 font-poppins rounded-xl">
                     <Link href="/">
                         <Home className="h-5 w-5" /> Exit Store
                     </Link>
@@ -753,11 +753,11 @@ export default function SellerDashboardPage() {
                         </div>
                         <div className="flex-1 px-4">
                              <TabsList className="flex flex-col h-auto bg-transparent gap-2 w-full">
-                                <SheetClose asChild><TabsTrigger value="dashboard" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Dashboard</TabsTrigger></SheetClose>
-                                <SheetClose asChild><TabsTrigger value="products" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Inventory</TabsTrigger></SheetClose>
-                                <SheetClose asChild><TabsTrigger value="orders" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Orders</TabsTrigger></SheetClose>
-                                <SheetClose asChild><TabsTrigger value="clients" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Customers</TabsTrigger></SheetClose>
-                                <SheetClose asChild><TabsTrigger value="settings" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[11px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Settings</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="dashboard" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[12px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Dashboard</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="products" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[12px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Inventory</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="orders" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[12px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Orders</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="clients" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[12px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Customers</TabsTrigger></SheetClose>
+                                <SheetClose asChild><TabsTrigger value="settings" className="w-full justify-start gap-4 rounded-xl py-4 px-6 text-white/70 font-black uppercase text-[12px] tracking-widest data-[state=active]:bg-white data-[state=active]:text-primary transition-all font-poppins">Settings</TabsTrigger></SheetClose>
                             </TabsList>
                         </div>
                     </SheetContent>
@@ -771,7 +771,7 @@ export default function SellerDashboardPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                     <Input 
                         placeholder="Search records..." 
-                        className="pl-11 h-11 border-none bg-muted/30 focus-visible:ring-primary/10 rounded-xl text-sm font-inter" 
+                        className="pl-11 h-11 border-none bg-muted/30 focus-visible:ring-primary/10 rounded-xl text-[13px] font-inter" 
                         value={globalSearch}
                         onChange={(e) => setGlobalSearch(e.target.value)}
                     />
@@ -783,7 +783,7 @@ export default function SellerDashboardPage() {
                     <Button onClick={handleBellClick} variant="ghost" size="icon" className="text-muted-foreground h-9 w-9 rounded-full relative">
                         <Bell className="h-4 w-4" />
                         {unattendedCount > 0 && (
-                            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-1 bg-red-500 text-white rounded-full text-[8px] font-black flex items-center justify-center border-2 border-white">
+                            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] px-1 bg-red-500 text-white rounded-full text-[9px] font-black flex items-center justify-center border-2 border-white">
                                 {unattendedCount}
                             </span>
                         )}
@@ -791,8 +791,8 @@ export default function SellerDashboardPage() {
                     <Separator orientation="vertical" className="h-6" />
                     <div className="flex items-center gap-3.5">
                          <div className="text-right">
-                            <p className="text-[11px] font-black text-foreground leading-none font-poppins uppercase tracking-tighter">{seller.shop_name}</p>
-                            <p className="text-[9px] text-muted-foreground leading-none mt-1 font-roboto uppercase">{user?.email}</p>
+                            <p className="text-[12px] font-black text-foreground leading-none font-poppins uppercase tracking-tighter">{seller.shop_name}</p>
+                            <p className="text-[10px] text-muted-foreground leading-none mt-1 font-roboto uppercase">{user?.email}</p>
                         </div>
                         <Avatar className="h-10 w-10 rounded-xl border border-primary/10 bg-white">
                             <AvatarImage src={user?.user_metadata?.avatar_url} className="object-cover" />
@@ -822,9 +822,9 @@ export default function SellerDashboardPage() {
                                 <Table>
                                     <TableHeader className="bg-muted/10">
                                         <TableRow className="hover:bg-transparent">
-                                            <TableHead className="text-[10px] font-black uppercase px-6 h-10 font-poppins">ID</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase h-10 font-poppins">Commodity</TableHead>
-                                            <TableHead className="text-[10px] font-black uppercase text-right px-6 h-10 font-poppins">Status</TableHead>
+                                            <TableHead className="text-[11px] font-black uppercase px-6 h-10 font-poppins">ID</TableHead>
+                                            <TableHead className="text-[11px] font-black uppercase h-10 font-poppins">Commodity</TableHead>
+                                            <TableHead className="text-[11px] font-black uppercase text-right px-6 h-10 font-poppins">Status</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -833,11 +833,11 @@ export default function SellerDashboardPage() {
                                             const isDeclined = order.status === 'cancelled';
                                             return (
                                                 <TableRow key={order.id} className="hover:bg-muted/5 transition-colors border-none">
-                                                    <TableCell className="text-[11px] font-mono px-6 py-4">#{order.id.substring(0, 6)}</TableCell>
+                                                    <TableCell className="text-[12px] font-mono px-6 py-4">#{order.id.substring(0, 6)}</TableCell>
                                                     <TableCell className="text-[13px] font-bold truncate max-w-[120px] py-4 font-inter">{order.products?.name || order.vendor_products?.name}</TableCell>
                                                     <TableCell className="text-right px-6 py-4">
                                                         <Badge 
-                                                            className="text-[9px] h-5 px-2 uppercase font-black tracking-widest font-poppins" 
+                                                            className="text-[10px] h-5 px-2 uppercase font-black tracking-widest font-poppins" 
                                                             variant={order.status === 'completed' ? 'default' : isDeclined ? 'destructive' : isAccepted ? 'secondary' : 'outline'}
                                                         >
                                                             {order.status === 'ready' ? 'Accepted' : order.status}
@@ -887,7 +887,7 @@ export default function SellerDashboardPage() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-2">
                         <div>
                             <h1 className="text-2xl font-black italic uppercase tracking-tighter text-foreground leading-none font-montserrat">Commodity Control</h1>
-                            <p className="text-xs text-muted-foreground font-bold mt-2 uppercase tracking-[2px] font-poppins">Manage your digital marketplace inventory.</p>
+                            <p className="text-[11px] text-muted-foreground font-bold mt-2 uppercase tracking-[2px] font-poppins">Manage your digital marketplace inventory.</p>
                         </div>
                         
                         <AddProductDialog onPublishSuccess={fetchData} />
@@ -896,10 +896,10 @@ export default function SellerDashboardPage() {
                     <Card className="border-none shadow-sm rounded-[32px] overflow-hidden bg-white">
                         <div className="bg-white p-5 border-b">
                             <div className="relative w-full max-w-md group">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary" />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                                 <Input 
                                     placeholder="Filter catalog..." 
-                                    className="pl-11 h-11 text-sm bg-muted/30 border-none rounded-xl font-inter" 
+                                    className="pl-11 h-11 text-[13px] bg-muted/30 border-none rounded-xl font-inter" 
                                     value={globalSearch}
                                     onChange={(e) => setGlobalSearch(e.target.value)}
                                 />
@@ -909,10 +909,10 @@ export default function SellerDashboardPage() {
                             <Table>
                                 <TableHeader className="bg-muted/10">
                                     <TableRow className="hover:bg-transparent">
-                                        <TableHead className="text-[10px] font-black uppercase px-6 h-12 font-poppins">Commodity</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase h-12 font-poppins">Valuation</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase h-12 font-poppins">Stock Level</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase text-right px-6 h-12 font-poppins">Management</TableHead>
+                                        <TableHead className="text-[11px] font-black uppercase px-6 h-12 font-poppins">Commodity</TableHead>
+                                        <TableHead className="text-[11px] font-black uppercase h-12 font-poppins">Valuation</TableHead>
+                                        <TableHead className="text-[11px] font-black uppercase h-12 font-poppins">Stock Level</TableHead>
+                                        <TableHead className="text-[11px] font-black uppercase text-right px-6 h-12 font-poppins">Management</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -930,7 +930,7 @@ export default function SellerDashboardPage() {
                                             <TableCell>
                                                 <div className="flex flex-col gap-1.5">
                                                     <span className="text-[13px] font-bold font-inter">{p.quantity || 0} Units</span>
-                                                    <Badge className="text-[9px] font-black h-5 px-2 uppercase tracking-widest w-fit font-poppins" variant={(p.quantity || 0) > 0 ? 'secondary' : 'destructive'}>
+                                                    <Badge className="text-[10px] font-black h-5 px-2 uppercase tracking-widest w-fit font-poppins" variant={(p.quantity || 0) > 0 ? 'secondary' : 'destructive'}>
                                                         {(p.quantity || 0) > 0 ? 'Active' : 'Empty'}
                                                     </Badge>
                                                 </div>
@@ -974,10 +974,10 @@ export default function SellerDashboardPage() {
                             <Table>
                                 <TableHeader className="bg-muted/10">
                                     <TableRow className="hover:bg-transparent">
-                                        <TableHead className="text-[10px] font-black uppercase px-6 h-12 font-poppins">Buyer Profile</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase h-12 font-poppins">Commodity Detail</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase h-12 font-poppins">Lifecycle Phase</TableHead>
-                                        <TableHead className="text-[10px] font-black uppercase text-right px-6 h-12 font-poppins">Actions</TableHead>
+                                        <TableHead className="text-[11px] font-black uppercase px-6 h-12 font-poppins">Buyer Profile</TableHead>
+                                        <TableHead className="text-[11px] font-black uppercase h-12 font-poppins">Commodity Detail</TableHead>
+                                        <TableHead className="text-[11px] font-black uppercase h-12 font-poppins">Lifecycle Phase</TableHead>
+                                        <TableHead className="text-[11px] font-black uppercase text-right px-6 h-12 font-poppins">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -1006,7 +1006,7 @@ export default function SellerDashboardPage() {
                                                             <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl max-w-[250px] shadow-sm">
                                                                 <div className="flex items-center gap-2 mb-1.5 opacity-70">
                                                                     <StickyNote className="h-3 w-3 text-amber-800" />
-                                                                    <span className="text-[9px] font-black uppercase tracking-widest text-amber-900 font-poppins">Special Request</span>
+                                                                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-900 font-poppins">Special Request</span>
                                                                 </div>
                                                                 <p className="text-[11px] text-amber-800 leading-relaxed italic font-inter">&ldquo;{o.notes}&rdquo;</p>
                                                             </div>
@@ -1015,15 +1015,15 @@ export default function SellerDashboardPage() {
                                                 </TableCell>
                                                 <TableCell className="py-6">
                                                     <div className="flex flex-col gap-2">
-                                                        {o.status === 'pending' && <Badge variant="outline" className="text-[10px] h-6 px-3 uppercase font-black bg-blue-50 text-blue-700 border-blue-200 font-poppins tracking-widest">New Order</Badge>}
+                                                        {o.status === 'pending' && <Badge variant="outline" className="text-[11px] h-6 px-3 uppercase font-black bg-blue-50 text-blue-700 border-blue-200 font-poppins tracking-widest">New Order</Badge>}
                                                         {o.status === 'ready' && (
-                                                            <Badge variant="secondary" className="text-[10px] h-6 px-3 uppercase font-black bg-emerald-50 text-emerald-700 border-emerald-200 flex items-center gap-2 w-fit font-poppins tracking-widest">
+                                                            <Badge variant="secondary" className="text-[11px] h-6 px-3 uppercase font-black bg-emerald-50 text-emerald-700 border-emerald-200 flex items-center gap-2 w-fit font-poppins tracking-widest">
                                                                 {isDelivery ? <Truck className="h-3 w-3" /> : <Package className="h-3 w-3" />}
                                                                 {isDelivery ? 'Pending Delivery' : 'Awaiting Collection'}
                                                             </Badge>
                                                         )}
-                                                        {o.status === 'completed' && <Badge variant="default" className="text-[10px] h-6 px-3 uppercase font-black bg-emerald-600 text-white border-none font-poppins tracking-widest">Successful</Badge>}
-                                                        {o.status === 'cancelled' && <Badge variant="destructive" className="text-[10px] h-6 px-3 uppercase font-black font-poppins tracking-widest">Declined</Badge>}
+                                                        {o.status === 'completed' && <Badge variant="default" className="text-[11px] h-6 px-3 uppercase font-black bg-emerald-600 text-white border-none font-poppins tracking-widest">Successful</Badge>}
+                                                        {o.status === 'cancelled' && <Badge variant="destructive" className="text-[11px] h-6 px-3 uppercase font-black font-poppins tracking-widest">Declined</Badge>}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-right px-6 py-6">
@@ -1123,26 +1123,26 @@ export default function SellerDashboardPage() {
                                         </div>
                                         <div className="text-center">
                                             <p className="text-xs font-black uppercase tracking-[4px] text-primary font-poppins">Modify Marketplace Branding</p>
-                                            <p className="text-[10px] text-muted-foreground mt-2 font-medium uppercase tracking-widest font-poppins">Logo dimension optimal: 512x512</p>
+                                            <p className="text-[11px] text-muted-foreground mt-2 font-medium uppercase tracking-widest font-poppins">Logo dimension optimal: 512x512</p>
                                         </div>
                                     </div>
 
                                     <div className="space-y-8">
                                         <div className="grid gap-2.5">
-                                            <Label htmlFor="shop_name_s" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground font-poppins">Enterprise Name</Label>
+                                            <Label htmlFor="shop_name_s" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Enterprise Name</Label>
                                             <Input id="shop_name_s" name="shop_name" defaultValue={seller.shop_name} required className="h-14 border-2 rounded-2xl text-[15px] font-bold bg-muted/20 font-inter" />
                                         </div>
                                         <div className="grid gap-2.5">
-                                            <Label htmlFor="desc_s" className="font-black text-[10px] uppercase tracking-widest text-muted-foreground font-poppins">Store Biography</Label>
+                                            <Label htmlFor="desc_s" className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Store Biography</Label>
                                             <Textarea id="desc_s" name="description" defaultValue={seller.description || ''} placeholder="Tell customers about your shop..." className="min-h-[160px] border-2 rounded-2xl text-[14px] bg-muted/20 resize-none p-5 font-inter leading-relaxed" />
                                         </div>
                                         <div className="grid grid-cols-2 gap-8">
                                             <div className="grid gap-2.5">
-                                                <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground font-poppins">Protocol Start</Label>
+                                                <Label className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Protocol Start</Label>
                                                 <Input name="open_time" type="time" defaultValue={seller.open_time || "08:00"} className="h-14 border-2 rounded-2xl bg-muted/20 text-sm font-black font-roboto" />
                                             </div>
                                             <div className="grid gap-2.5">
-                                                <Label className="font-black text-[10px] uppercase tracking-widest text-muted-foreground font-poppins">Protocol End</Label>
+                                                <Label className="font-black text-[11px] uppercase tracking-widest text-muted-foreground font-poppins">Protocol End</Label>
                                                 <Input name="close_time" type="time" defaultValue={seller.close_time || "20:00"} className="h-14 border-2 rounded-2xl bg-muted/20 text-sm font-black font-roboto" />
                                             </div>
                                         </div>
