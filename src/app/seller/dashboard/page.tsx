@@ -40,7 +40,8 @@ import {
     DollarSign,
     Box,
     ShoppingBasket,
-    MapPin
+    MapPin,
+    StickyNote
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
@@ -964,14 +965,14 @@ export default function SellerDashboardPage() {
                                 <TableHeader className="bg-muted/10">
                                     <TableRow>
                                         <TableHead className="text-[8px] font-black uppercase px-5 h-8">Buyer & Location</TableHead>
-                                        <TableHead className="text-[8px] font-black uppercase h-8">Item</TableHead>
+                                        <TableHead className="text-[8px] font-black uppercase h-8">Item & Special Note</TableHead>
                                         <TableHead className="text-[8px] font-black uppercase h-8">Total</TableHead>
                                         <TableHead className="text-[8px] font-black uppercase text-right px-5 h-8">Process</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {filteredOrders.map(o => (
-                                        <TableRow key={o.id} className="hover:bg-muted/5 transition-colors">
+                                        <TableRow key={o.id} className="hover:bg-muted/5 transition-colors align-top">
                                             <TableCell className="px-5 py-3">
                                                 <div className="space-y-1">
                                                     <div>
@@ -979,14 +980,27 @@ export default function SellerDashboardPage() {
                                                         <p className="text-[8px] font-bold text-muted-foreground mt-0.5">{o.profiles?.phone_number}</p>
                                                     </div>
                                                     {o.delivery_location && (
-                                                        <div className="flex items-center gap-1 text-[8px] font-black text-primary bg-primary/5 px-1.5 py-0.5 rounded-md w-fit uppercase tracking-tighter">
+                                                        <div className="flex items-center gap-1 text-[8px] font-black text-primary bg-primary/5 px-1.5 py-0.5 rounded-md w-fit uppercase tracking-tighter mt-1">
                                                             <MapPin className="h-2.5 w-2.5" /> {o.delivery_location}
                                                         </div>
                                                     )}
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="text-[10px] font-bold max-w-[120px] truncate">{o.products?.name || o.vendor_products?.name}</TableCell>
-                                            <TableCell className="text-[10px] font-black">GHS {o.price_per_item * o.quantity}</TableCell>
+                                            <TableCell className="px-5 py-3">
+                                                <div className="space-y-2">
+                                                    <p className="text-[10px] font-bold max-w-[150px] truncate">{o.products?.name || o.vendor_products?.name}</p>
+                                                    {o.notes && (
+                                                        <div className="bg-amber-50 border border-amber-100 p-2 rounded-lg max-w-[200px]">
+                                                            <div className="flex items-center gap-1 mb-1">
+                                                                <StickyNote className="h-2.5 w-2.5 text-amber-600" />
+                                                                <span className="text-[7px] font-black uppercase text-amber-600 tracking-tighter">Buyer Instruction</span>
+                                                            </div>
+                                                            <p className="text-[9px] text-amber-800 leading-tight italic">"{o.notes}"</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-[10px] font-black py-3">GHS {o.price_per_item * o.quantity}</TableCell>
                                             <TableCell className="text-right px-5 py-3">
                                                 <div className="flex justify-end gap-1.5">
                                                     {o.status === 'pending' && <Button size="sm" className="h-6 text-[7px] font-black uppercase px-2 rounded-md" onClick={() => handleUpdateStatus(o.id, 'ready')}>Approve</Button>}
