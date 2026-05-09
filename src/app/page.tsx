@@ -120,46 +120,46 @@ export default async function Home() {
                 categoriesData={categoriesData as any}
             />
 
-            <section className="bg-white dark:bg-slate-900 rounded-2xl p-8 md:p-12 my-16 shadow-lg border border-border overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-32 -mt-32 blur-3xl" />
-                <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/5 rounded-full -ml-32 -mb-32 blur-3xl" />
+            <section className="bg-white dark:bg-slate-900 rounded-[32px] p-8 md:p-16 my-16 shadow-2xl border-none overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full -mr-40 -mt-40 blur-3xl" />
+                <div className="absolute bottom-0 left-0 w-80 h-80 bg-orange-500/5 rounded-full -ml-40 -mb-40 blur-3xl" />
                 
-                <div className="max-w-4xl mx-auto relative z-10">
+                <div className="max-w-5xl mx-auto relative z-10">
                     <div className="text-center space-y-6">
-                        <h2 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
-                            Defimart: The Smart Way to Shop on Campus
+                        <h2 className="text-3xl md:text-5xl font-black italic uppercase tracking-tighter text-foreground">
+                            The Smart Way to Shop on Campus
                         </h2>
-                        <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-                            Defimart is a student-focused online store in Ghana that makes it easy to shop for products on campus using simple pickup-based transactions. We provide a reliable marketplace for everything from the latest electronics and fashion to everyday study essentials.
+                        <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-medium max-w-3xl mx-auto">
+                            DEFIMART is a dual-tier marketplace. We bridge the gap between official campus retail and independent student entrepreneurship, offering everything from tech essentials to local student-crafted gems.
                         </p>
                     </div>
 
-                    <div className="grid sm:grid-cols-3 gap-8 pt-12">
-                        <div className="flex flex-col items-center text-center space-y-4 group">
-                            <div className="bg-primary/10 p-4 rounded-2xl transition-transform group-hover:scale-110 duration-300">
-                                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <div className="grid sm:grid-cols-3 gap-10 pt-16">
+                        <div className="flex flex-col items-center text-center space-y-5 group">
+                            <div className="bg-primary/10 p-5 rounded-[24px] transition-all duration-500 group-hover:bg-primary group-hover:text-white group-hover:-translate-y-2 shadow-xl shadow-primary/5">
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                             </div>
                             <div>
-                                <h3 className="font-bold text-lg text-foreground">Fast & Reliable</h3>
-                                <p className="text-sm text-muted-foreground mt-2">Tailored for busy students. Order online and pick up at designated campus spots during our scheduled windows.</p>
+                                <h3 className="font-black text-xl text-foreground uppercase tracking-tight">Market Speed</h3>
+                                <p className="text-sm text-muted-foreground mt-3 font-medium leading-relaxed">Optimized for university life. Browse thousands of listings and collect your items at designated campus spots instantly.</p>
                             </div>
                         </div>
-                        <div className="flex flex-col items-center text-center space-y-4 group">
-                            <div className="bg-primary/10 p-4 rounded-2xl transition-transform group-hover:scale-110 duration-300">
-                                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div className="flex flex-col items-center text-center space-y-5 group">
+                            <div className="bg-primary/10 p-5 rounded-[24px] transition-all duration-500 group-hover:bg-primary group-hover:text-white group-hover:-translate-y-2 shadow-xl shadow-primary/5">
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </div>
                             <div>
-                                <h3 className="font-bold text-lg text-foreground">Pay on Pickup</h3>
-                                <p className="text-sm text-muted-foreground mt-2">Shop with confidence. No online payments required—simply pay when you collect your items in person.</p>
+                                <h3 className="font-black text-xl text-foreground uppercase tracking-tight">Safe Protocol</h3>
+                                <p className="text-sm text-muted-foreground mt-3 font-medium leading-relaxed">Risk-free commerce. No digital transfers are required upfront. Inspect your purchase physically and pay only when satisfied.</p>
                             </div>
                         </div>
-                        <div className="flex flex-col items-center text-center space-y-4 group">
-                            <div className="bg-primary/10 p-4 rounded-2xl transition-transform group-hover:scale-110 duration-300">
-                                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        <div className="flex flex-col items-center text-center space-y-5 group">
+                            <div className="bg-primary/10 p-5 rounded-[24px] transition-all duration-500 group-hover:bg-primary group-hover:text-white group-hover:-translate-y-2 shadow-xl shadow-primary/5">
+                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                             </div>
                             <div>
-                                <h3 className="font-bold text-lg text-foreground">Student Community</h3>
-                                <p className="text-sm text-muted-foreground mt-2">Built for the campus economy. Supporting student sellers and buyers with a specialized, localized experience.</p>
+                                <h3 className="font-black text-xl text-foreground uppercase tracking-tight">Student Led</h3>
+                                <p className="text-sm text-muted-foreground mt-3 font-medium leading-relaxed">Powering the campus economy. We support verified student vendors, fostering entrepreneurship within the university halls.</p>
                             </div>
                         </div>
                     </div>

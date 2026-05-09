@@ -1,62 +1,64 @@
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 export default function TermsAndConditionsPage() {
-  const lastUpdated = new Date(2026, 6, 26); // July 26, 2026
+  const lastUpdated = new Date(2026, 6, 26);
 
   const Section = ({ title, children }: { title: string, children: React.ReactNode }) => (
-    <div className="space-y-2">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      <div className="text-muted-foreground space-y-3">{children}</div>
+    <div className="space-y-3">
+      <h2 className="text-xl font-bold uppercase tracking-tight text-foreground">{title}</h2>
+      <div className="text-muted-foreground space-y-3 text-sm md:text-base leading-relaxed font-medium">{children}</div>
     </div>
   );
 
   return (
     <main className="flex-1 p-4 md:p-8 bg-muted/20">
       <div className="container mx-auto max-w-4xl">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl">Terms and Conditions</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Last Updated: {format(lastUpdated, 'MMMM d, yyyy')}
+        <Card className="border-none shadow-xl rounded-[32px]">
+          <CardHeader className="border-b bg-muted/5 p-8">
+            <CardTitle className="text-3xl font-black italic uppercase tracking-tighter">Terms of Service</CardTitle>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-2">
+              Last Protocol Update: {format(lastUpdated, 'MMMM d, yyyy')}
             </p>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <p>Welcome to DEFIMART. These terms and conditions outline the rules and regulations for the use of our platform. By accessing this website, we assume you accept these terms and conditions. Do not continue to use DEFIMART if you do not agree to all of the terms and conditions stated on this page.</p>
+          <CardContent className="p-8 md:p-12 space-y-10">
+            <p className="font-bold text-foreground">Welcome to DEFIMART. By accessing this marketplace, you agree to comply with the protocols outlined below. These terms govern your use of the platform as either a buyer or an independent vendor.</p>
             
-            <Section title="1. Accounts">
-              <p>When you create an account with us, you must provide information that is accurate, complete, and current at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our Service.</p>
-              <p>You are responsible for safeguarding the password that you use to access the Service and for any activities or actions under your password. You agree not to disclose your password to any third party.</p>
+            <Section title="1. Marketplace Identity">
+              <p>DEFIMART is a multi-vendor platform. Users may purchase items from the <strong>DEFIMART Official Store</strong> or from <strong>Independent Student Vendors</strong>. Your contract for purchase from a student vendor is strictly between you and that specific vendor.</p>
+              <p>You must provide accurate, complete, and current information when creating an account. Failure to do so constitutes a breach of protocol, which may result in account termination.</p>
             </Section>
 
-            <Section title="2. Orders and Payment">
-              <p>DEFIMART operates on a payment-on-pickup basis. No online payments are processed through our platform. By placing an order, you agree to pay the total amount in person at the time of pickup.</p>
-              <p>An order confirmation from us does not signify our acceptance of your order, nor does it constitute confirmation of our offer to sell. We reserve the right at any time after receipt of your order to accept or decline your order for any reason.</p>
+            <Section title="2. The Pay-on-Pickup Protocol">
+              <p>DEFIMART operates exclusively on a <strong>Payment on Collection</strong> basis. No online payments are processed or authorized through this platform. By placing an order, you commit to paying the full GHS valuation in person at the time of pickup or delivery.</p>
+              <p>Verified student vendors may offer hall delivery. In such cases, the payment must be made to the delivery agent upon successful inspection of the product.</p>
             </Section>
 
-            <Section title="3. Pickup Policy">
-              <p>Orders must be picked up according to the specified pickup schedule (Wednesdays and Saturdays). It is your responsibility to collect your items on the designated day. Failure to pick up an order may result in the suspension of your account.</p>
+            <Section title="3. Vendor & Marketplace Relations">
+              <p>Independent student vendors are solely responsible for the accuracy of their product descriptions, stock levels, and delivery times. DEFIMART facilitates the introduction and ordering process but does not own or handle the inventory of independent vendor shops.</p>
+              <p>DEFIMART reserves the right to suspend any vendor shop that violates our quality standards or fails to fulfill orders without valid reason.</p>
             </Section>
 
-            <Section title="4. User Conduct">
-              <p>You agree not to use the platform for any unlawful purpose or any purpose prohibited under this clause. You agree not to use the platform in any way that could damage the platform, the services, or the general business of DEFIMART.</p>
+            <Section title="4. Order Fulfillment & Pickup Schedule">
+              <p>Orders must be picked up according to the specified schedule (Wednesdays and Saturdays for platform items). Student vendors may have unique delivery windows as specified in their shop bio. It is the buyer's responsibility to coordinate collection within these windows.</p>
             </Section>
 
-            <Section title="5. Limitation of Liability">
-              <p>In no event shall DEFIMART, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.</p>
+            <Section title="5. Inspection and Returns">
+              <p>Since all transactions are completed in person, <strong>inspection is mandatory</strong> before payment. Once payment is made and the pickup/delivery is finalized, DEFIMART and its vendors are not liable for subsequent damages. Returns are handled on a case-by-case basis directly with the seller.</p>
             </Section>
 
-            <Section title="6. Changes to Terms">
-              <p>We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide at least 30 days' notice prior to any new terms taking effect. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms.</p>
+            <Section title="6. Limitation of Liability">
+              <p>DEFIMART is not liable for any indirect, incidental, or punitive damages resulting from transactions between buyers and independent student vendors. We provide the infrastructure for trade but are not party to the final physical exchange.</p>
             </Section>
 
-             <Section title="7. Contact Us">
-              <p>If you have any questions about these Terms, please contact us through the information provided on our Contact page.</p>
+            <Section title="7. Contact">
+              <p>For inquiries regarding these terms, please contact the command center via our <Link href="/contact" className="text-primary underline font-bold">Contact Page</Link>.</p>
             </Section>
           </CardContent>
-           <CardFooter>
-            <p className="text-xs text-muted-foreground mx-auto">
-                &copy; {new Date().getFullYear()} DEFIMART. All Rights Reserved.
+          <CardFooter className="bg-muted/5 p-6 rounded-b-[32px]">
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[3px] mx-auto text-center">
+                &copy; {new Date().getFullYear()} DEFIMART PLATFORM PROTOCOL.
             </p>
           </CardFooter>
         </Card>

@@ -8,12 +8,18 @@
     --gold-light: #FFB84D;
     --dark: #0F172A;
     --surface: #FFFFFF;
-    --surface-2: #FFF7ED; /* Slightly deeper orange tint */
+    --surface-2: #FFF7ED;
     --muted: #64748B;
     --border: #E2E8F0;
     --radius: 16px;
     --brand-dark: #0F172A;
     
+    /* Font Variables */
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-ui: 'Poppins', sans-serif;
+    --font-data: 'Roboto', sans-serif;
+
     /* Shadcn compatibility (light) */
     --background: 30 40% 98%;
     --foreground: 222 47% 11%;
@@ -32,7 +38,6 @@
   }
 
   .dark {
-    /* Brand variables in Dark Mode */
     --gold: #F5A623;
     --gold-light: #FFB84D;
     --dark: #F8FAFC; 
@@ -67,20 +72,27 @@
   
   body {
     background-color: var(--surface-2);
-    /* Deeper Ambient Orange Mesh Gradient */
     background-image: 
       radial-gradient(at 0% 0%, hsla(38, 92%, 55%, 0.12) 0, transparent 50%), 
       radial-gradient(at 50% 0%, hsla(30, 100%, 50%, 0.08) 0, transparent 50%),
       radial-gradient(at 100% 0%, hsla(38, 92%, 55%, 0.12) 0, transparent 50%);
     background-attachment: fixed;
     color: var(--dark);
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  h1, h2, h3, h4, h5, h6, .font-heading {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
     font-weight: 700;
+  }
+
+  button, nav, .font-ui {
+    font-family: var(--font-ui);
+  }
+
+  table, .font-mono, .font-data {
+    font-family: var(--font-data);
   }
 }
 
