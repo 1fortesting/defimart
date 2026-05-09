@@ -107,6 +107,7 @@ export async function addToCart(formData: FormData) {
   }
 
   revalidatePath('/cart');
+  revalidatePath('/checkout');
   return { success: true };
 }
 
@@ -125,6 +126,7 @@ export async function updateItemQuantity(formData: FormData) {
     }
 
     revalidatePath('/cart');
+    revalidatePath('/checkout');
 }
 
 export async function removeItem(formData: FormData) {
@@ -135,6 +137,7 @@ export async function removeItem(formData: FormData) {
     const cartItemId = formData.get('cartItemId') as string;
     await supabase.from('cart_items').delete().eq('id', cartItemId);
     revalidatePath('/cart');
+    revalidatePath('/checkout');
 }
 
 export async function placeOrder(formData: FormData) {
@@ -147,7 +150,11 @@ export async function placeOrder(formData: FormData) {
 
     const { data: cartItems, error: cartError } = await supabase
         .from('cart_items')
-        .select('*, products(*), vendor_products:vendor_product_id(*)')
+        .select(`
+            *, 
+            products(*), 
+            vendor_products:vendor_product_id(*)
+        `)
         .eq('user_id', user.id);
     
     if (cartError || !cartItems || cartItems.length === 0) {
@@ -203,5 +210,6 @@ export async function placeOrder(formData: FormData) {
     
     revalidatePath('/orders');
     revalidatePath('/cart');
+    revalidatePath('/checkout');
     redirect('/orders?success=Order placed successfully!');
 }

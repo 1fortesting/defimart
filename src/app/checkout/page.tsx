@@ -25,7 +25,7 @@ export default async function CheckoutPage() {
     );
   }
 
-  // Use explicit joins to ensure product details are loaded correctly for both types
+  // Standardized query to ensure database rows are correctly fetched and joined
   const { data: cartItemsRaw, error } = await supabase
     .from('cart_items')
     .select(`
@@ -33,8 +33,8 @@ export default async function CheckoutPage() {
       quantity,
       product_id,
       vendor_product_id,
-      products:product_id(name, price, discount_percentage, discount_end_date, image_urls, offers_delivery, delivery_price_type, delivery_price, seller_id, cost_price),
-      vendor_products:vendor_product_id(name, price, discount_percentage, discount_end_date, image_urls, offers_delivery, delivery_price_type, delivery_price, seller_id, cost_price)
+      products:product_id(*),
+      vendor_products:vendor_product_id(*)
     `)
     .eq('user_id', user.id);
 
@@ -56,7 +56,7 @@ export default async function CheckoutPage() {
   }
   
   const subtotal = cartItems.reduce((acc, item) => {
-    // Resolve which product object exists (Supabase returns aliased joins as objects)
+    // Robust resolver to check both possible product sources
     const product = item.products || item.vendor_products;
     if (!product) return acc;
     
