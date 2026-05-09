@@ -50,7 +50,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 
 interface ProductViewProps {
-    product: Tables<'products'>;
+    product: Tables<'products'> | any;
     isSaved: boolean;
     reviews: ReviewWithProfile[];
     averageRating: number;
@@ -69,6 +69,9 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
     const [timeLeft, setTimeLeft] = useState<{ hours: string; minutes: string; seconds: string } | null>(null);
 
     const [reviewState, reviewAction, isReviewPending] = useActionState(submitReview, { success: false, message: '' });
+
+    // Determine if this is a vendor product based on ID or explicit check
+    const isVendorProduct = !product.hasOwnProperty('brand'); // Brand only exists in the 'products' table in our current schema
 
     useEffect(() => {
         const fetchSeller = async () => {
@@ -137,9 +140,20 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
         toast({ title: 'Added to Cart', description: `${product.name} is in your bag!`, variant: 'success' });
         try {
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const idx = cart.findIndex((item: any) => item.product_id === product.id);
+            const idx = cart.findIndex((item: any) => item.product_id === product.id || item.vendor_product_id === product.id);
             if (idx > -1) cart[idx].quantity += 1;
-            else cart.push({ id: `local-${product.id}-${Date.now()}`, user_id: user?.id, product_id: product.id, quantity: 1, created_at: new Date().toISOString(), products: { ...product } });
+            else {
+                 const cartItem = {
+                    id: `local-${product.id}-${Date.now()}`,
+                    user_id: user?.id,
+                    product_id: isVendorProduct ? null : product.id,
+                    vendor_product_id: isVendorProduct ? product.id : null,
+                    quantity: 1,
+                    created_at: new Date().toISOString(),
+                    products: { ...product }
+                };
+                cart.push(cartItem);
+            }
             localStorage.setItem('cart', JSON.stringify(cart));
             window.dispatchEvent(new Event('cart-updated'));
         } catch (e) {}
@@ -147,6 +161,7 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
             startTransition(async () => {
                 const fd = new FormData();
                 fd.append('productId', product.id);
+                if (isVendorProduct) fd.append('isVendor', 'true');
                 await addToCart(fd);
             });
         }
@@ -211,7 +226,7 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                         <div className="space-y-1">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <Badge className="bg-blue-600 text-[10px] font-black uppercase tracking-tighter rounded-sm h-5">Official Store</Badge>
+                                    <Badge className="bg-blue-600 text-[10px] font-black uppercase tracking-tighter rounded-sm h-5">{isVendorProduct ? 'Vendor Partner' : 'Official Store'}</Badge>
                                     {product.is_featured && <Badge className="bg-orange-500 text-[10px] font-black uppercase tracking-tighter rounded-sm h-5">Super Deal</Badge>}
                                 </div>
                                 {user && (
@@ -350,6 +365,7 @@ export default function ProductView({ product, isSaved, reviews, averageRating, 
                              {user ? (
                                 <form action={reviewAction} className="space-y-4">
                                     <input type="hidden" name="productId" value={product.id} />
+                                    <input type="hidden" name="isVendor" value={isVendorProduct ? "true" : "false"} />
                                     <input type="hidden" name="rating" value={userRating} />
                                     <div className="flex justify-center gap-1.5 py-2">
                                         {[1, 2, 3, 4, 5].map((s) => (

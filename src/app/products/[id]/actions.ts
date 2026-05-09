@@ -8,6 +8,7 @@ const ReviewSchema = z.object({
   rating: z.coerce.number().min(1).max(5),
   comment: z.string().optional(),
   productId: z.string().uuid(),
+  isVendor: z.string().optional(), // Passed as a string "true" from hidden form input
 });
 
 export async function submitReview(prevState: any, formData: FormData) {
@@ -22,6 +23,7 @@ export async function submitReview(prevState: any, formData: FormData) {
         rating: formData.get('rating'),
         comment: formData.get('comment'),
         productId: formData.get('productId'),
+        isVendor: formData.get('isVendor'),
     });
 
     if (!validatedFields.success) {
@@ -32,14 +34,19 @@ export async function submitReview(prevState: any, formData: FormData) {
         };
     }
     
-    const { rating, comment, productId } = validatedFields.data;
+    const { rating, comment, productId, isVendor } = validatedFields.data;
+    const isVendorProduct = isVendor === 'true';
+
+    // Target the appropriate table
+    const table = isVendorProduct ? 'vendor_reviews' : 'reviews';
+    const foreignKeyField = isVendorProduct ? 'vendor_product_id' : 'product_id';
 
     // Check if user has already reviewed this specific ID 
     const { data: existingReview } = await supabase
-        .from('reviews')
+        .from(table)
         .select('id')
         .eq('user_id', user.id)
-        .eq('product_id', productId)
+        .eq(foreignKeyField, productId)
         .maybeSingle();
     
     let error;
@@ -47,7 +54,7 @@ export async function submitReview(prevState: any, formData: FormData) {
     if (existingReview) {
         // Update existing review
         const { error: updateError } = await supabase
-            .from('reviews')
+            .from(table)
             .update({ 
                 rating, 
                 comment: comment || null, 
@@ -57,8 +64,8 @@ export async function submitReview(prevState: any, formData: FormData) {
         error = updateError;
     } else {
         // Insert new review
-        const { error: insertError } = await supabase.from('reviews').insert({
-            product_id: productId,
+        const { error: insertError } = await supabase.from(table).insert({
+            [foreignKeyField]: productId,
             user_id: user.id,
             rating,
             comment: comment || null,

@@ -15,7 +15,7 @@ export default async function SearchPage({
   
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Fetch only platform products
+  // Fetch platform products and reviews
   const { data: products } = await supabase.from('products').select('*');
   const { data: reviews } = await supabase.from('reviews').select('product_id, rating');
   

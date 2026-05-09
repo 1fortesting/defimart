@@ -14,6 +14,7 @@ import Link from 'next/link';
 
 type SavedProductWithDetails = Tables<'saved_products'> & {
   products: (Tables<'products'> & { average_rating?: number, review_count?: number }) | null;
+  vendor_products?: (Tables<'vendor_products'> & { average_rating?: number, review_count?: number }) | null;
 };
 
 function SavedContent() {
@@ -33,36 +34,52 @@ function SavedContent() {
         setUser(user);
 
         if (user) {
-            // Fetch Products with details
+            // Fetch Products with details from both possible linked tables
             const { data: productsData } = await supabase
                 .from('saved_products')
-                .select('*, products(*)').eq('user_id', user.id)
+                .select('*, products(*), vendor_products(*)').eq('user_id', user.id)
                 .order('created_at', { ascending: false });
             
             if (productsData && productsData.length > 0) {
-                // Fetch reviews for these products to show ratings in wishlist
-                const productIds = (productsData as any[]).map(p => p.product_id);
-                const { data: reviews } = await supabase.from('reviews').select('product_id, rating').in('product_id', productIds);
+                // Fetch reviews for platform products
+                const platformIds = (productsData as any[]).map(p => p.product_id).filter(Boolean);
+                const { data: platformReviews } = platformIds.length > 0 
+                    ? await supabase.from('reviews').select('product_id, rating').in('product_id', platformIds)
+                    : { data: [] };
                 
-                const reviewsByProduct = (reviews || []).reduce((acc: Record<string, number[]>, review: any) => {
+                // Fetch reviews for vendor products
+                const vendorIds = (productsData as any[]).map(p => p.product_id).filter(Boolean); // Saved products uses 'product_id' for both usually in simple apps, but let's be careful
+                // Actually our schema uses 'product_id' as the polymorphic key in saved_products
+                const { data: vendorReviews } = platformIds.length > 0 
+                    ? await supabase.from('vendor_reviews' as any).select('vendor_product_id, rating').in('vendor_product_id', platformIds)
+                    : { data: [] };
+
+                const reviewsByProduct = (platformReviews || []).reduce((acc: Record<string, number[]>, review: any) => {
                     if (!acc[review.product_id]) acc[review.product_id] = [];
                     acc[review.product_id].push(review.rating);
                     return acc;
                 }, {} as Record<string, number[]>);
 
+                const vendorReviewsByProduct = (vendorReviews || []).reduce((acc: Record<string, number[]>, review: any) => {
+                    if (!acc[review.vendor_product_id]) acc[review.vendor_product_id] = [];
+                    acc[review.vendor_product_id].push(review.rating);
+                    return acc;
+                }, {} as Record<string, number[]>);
+
                 const enrichedProducts = (productsData as any[]).map(item => {
-                    if (!item.products) return item;
-                    const ratings = reviewsByProduct[item.product_id] || [];
-                    const review_count = ratings.length;
-                    const average_rating = review_count > 0 ? ratings.reduce((sum, r) => sum + r, 0) / review_count : 0;
-                    return {
-                        ...item,
-                        products: {
-                            ...item.products,
-                            average_rating,
-                            review_count
-                        }
-                    };
+                    if (item.products) {
+                        const ratings = reviewsByProduct[item.product_id] || [];
+                        const review_count = ratings.length;
+                        const average_rating = review_count > 0 ? ratings.reduce((sum, r) => sum + r, 0) / review_count : 0;
+                        return { ...item, products: { ...item.products, average_rating, review_count } };
+                    }
+                    if (item.vendor_products) {
+                        const ratings = vendorReviewsByProduct[item.product_id] || [];
+                        const review_count = ratings.length;
+                        const average_rating = review_count > 0 ? ratings.reduce((sum, r) => sum + r, 0) / review_count : 0;
+                        return { ...item, vendor_products: { ...item.vendor_products, average_rating, review_count } };
+                    }
+                    return item;
                 });
                 setSavedProducts(enrichedProducts);
             }
@@ -153,17 +170,19 @@ function SavedContent() {
             <TabsContent value="products" className="mt-0">
               {savedProducts.length > 0 ? (
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
-                  {savedProducts.map((item) => 
-                    item.products ? (
+                  {savedProducts.map((item) => {
+                    const productData = item.products || item.vendor_products;
+                    return productData ? (
                       <ProductCard 
                         key={item.id} 
-                        product={item.products} 
+                        product={productData} 
                         user={user} 
+                        isVendor={!!item.vendor_products}
                         isSaved={savedProductIds.has(item.product_id)} 
                         onUnsave={handleUnsaveProduct}
                       />
-                    ) : null
-                  )}
+                    ) : null;
+                  })}
                 </div>
               ) : (
                 <div className="text-center py-20 bg-background/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-muted flex flex-col items-center justify-center space-y-4">

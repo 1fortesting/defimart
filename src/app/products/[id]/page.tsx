@@ -1,4 +1,3 @@
-
 import { createClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { Tables } from '@/types/supabase';
@@ -21,6 +20,10 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         .eq('id', id)
         .single();
 
+    let isVendor = false;
+    let reviewsTable = 'reviews';
+    let reviewForeignKey = 'product_id';
+
     // 2. If not found in primary table, check the vendor_products table
     if (!product) {
         const { data: vendorProduct } = await (supabase as any)
@@ -29,6 +32,12 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             .eq('id', id)
             .single();
         product = vendorProduct;
+        
+        if (product) {
+            isVendor = true;
+            reviewsTable = 'vendor_reviews';
+            reviewForeignKey = 'vendor_product_id';
+        }
     }
 
     if (!product) {
@@ -42,11 +51,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     
     const isSaved = !!savedProducts;
 
-    // Fetch reviews associated with this product ID (works for both tables)
+    // Fetch reviews associated with this product ID from the correct table
     const { data: reviews } = await supabase
-        .from('reviews')
+        .from(reviewsTable as any)
         .select('*, profiles(display_name, avatar_url)')
-        .eq('product_id', id)
+        .eq(reviewForeignKey, id)
         .order('created_at', { ascending: false });
     
     const totalRating = (reviews as any[])?.reduce((acc: number, review: any) => acc + review.rating, 0) ?? 0;
