@@ -22,6 +22,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from '@/components/ui/sheet';
 import { cn, formatPrice } from '@/lib/utils';
 import Image from 'next/image';
+import Link from 'next/link';
 import type { VendorWithPerformance } from './page';
 
 export default function VendorAnalyticsClient({ vendors }: { vendors: VendorWithPerformance[] }) {
